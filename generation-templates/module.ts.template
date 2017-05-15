@@ -1,0 +1,8 @@
+import { Module } from 'nest.js';
+
+@Module({
+    components: [],
+    controllers: []
+})
+export class ValuesModule {
+}
