@@ -6,6 +6,16 @@
 
 [![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+## Installation
+
+### Git :
+```
+$ git clone https://github.com/nestjs/nest-cli.git <project>
+$ cd <project>
+$ npm install
+$ npm link
+```
+
 ## nestconfig.json
 
 While the CLI does not require a nestconfig.json file to work, default values can be overrided by implementing one. Currently, a nestconfig.json file is only the following:
