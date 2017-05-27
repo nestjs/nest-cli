@@ -5,6 +5,7 @@ export class CreateCommandDescriptor {
     command
       .argument('<name>', 'Nest application name')
       .argument('[destination]', 'Where the Nest application will be created')
-      .option('-r, --repository <repository>', 'Github repository where the project template is');
+      .option('-r, --repository <repository>', 'Github repository where the project template is')
+      .handler();
   }
 }
