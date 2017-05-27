@@ -5,7 +5,7 @@
 # Nest CLI
 
 [![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/ThomRick/nest-cli.svg?branch=master)](https://travis-ci.org/ThomRick/nest-cli)
+[![Build Status](https://travis-ci.org/ThomRick/nest-cli.svg?branch=develop)](https://travis-ci.org/ThomRick/nest-cli)
 
 ## Installation
 
