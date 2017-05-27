@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-const nestCli = require('./bin/index');
-nestCli.NestCli.start();
+const cli = require('./bin/index');
+cli.NestCliApplication.run();

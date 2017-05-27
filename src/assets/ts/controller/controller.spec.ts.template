@@ -1,0 +1,20 @@
+import {[NAME]} from './[name]';
+import {expect} from 'chai';
+
+describe('[NAME]', () => {
+    const controller: [NAME];
+
+    beforeEach(() => {
+        Test.createTestingModule({
+            controllers: [
+                [NAME]
+            ]
+        });
+
+        controller = Test.get([NAME]);
+    });
+
+    it('should exists', () => {
+        controller(service).to.exists;
+    });
+}

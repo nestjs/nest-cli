@@ -1,3 +1,6 @@
-export interface ICommand {
-  execute(args: any, options: any, logger: any): void
+export interface Command {
+  alias(name: string): Command
+  argument(name: string, description: string): Command
+  option(name: string, description: string): Command
+  handler(): Command
 }

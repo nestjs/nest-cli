@@ -1,0 +1,4 @@
+@Component()
+export class [NAME] {
+    constructor() {}
+}

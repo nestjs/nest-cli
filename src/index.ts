@@ -1,1 +1,1 @@
-export {NestCliApplication} from './core/nest-cli.application';
+export * from './nest-cli.application';

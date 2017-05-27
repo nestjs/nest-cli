@@ -1,7 +1,21 @@
-import {INestCliApplication} from '../common/interfaces/nest-cli.application.interface';
+import {Program} from './common/interfaces/program.interface';
+import {CaporalProgram} from './core/caporal/caporal.program';
+import {Command} from './common/interfaces/command.interface';
 
-export class NestCliApplication implements INestCliApplication {
-  public run() {
+export class NestCliApplication {
+  public static run() {
+    const program: Program = new CaporalProgram();
+    program
+      .version('1.0.0')
+      .help('Nest.js CLI');
+
+    const create: Command = program
+      .command('new', 'Create a new Nest application')
+      .handler();
+
+    const generate: Command = program.command('generate', 'Generate a new Nest asset');
+
+    program.listen();
     /*
     const cli = prog.version('1.0.0').help('Nest.js CLI');
 

@@ -1,2 +1,1 @@
-export {ICommand} from './command.interface';
-export {INestCliApplication} from './nest-cli.application.interface';
+export {CommandHandler} from './command.handler.interface';
