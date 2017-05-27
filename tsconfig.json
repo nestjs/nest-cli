@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "declaration": false,
+        "declaration": true,
         "noImplicitAny": false,
         "noUnusedLocals": false,
         "removeComments": true,
@@ -9,12 +9,15 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "target": "es6",
-        "sourceMap": true,
-        "allowJs": true,
-        "outDir": "dist"
+        "sourceMap": false,
+        "allowJs": false,
+        "outDir": "bin",
+        "typeRoots": [
+            "node_modules/@types"
+        ]
     },
-    "files": [
-        "src/nest.ts"
+    "include": [
+        "src"
     ],
     "exclude": [
         "node_modules"

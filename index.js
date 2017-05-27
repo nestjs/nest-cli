@@ -1,2 +1,3 @@
-require('ts-node/register');
-require('./src/nest');
+#!/usr/bin/env node
+const nestCli = require('./bin/index');
+nestCli.NestCli.start();
