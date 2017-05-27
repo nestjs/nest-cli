@@ -35,6 +35,14 @@ describe('CaporalProgram', () => {
     });
   });
 
+  describe('#declare()', () => {
+    it('should call the declaration handler', () => {
+      const handlerStub: sinon.SinonStub = sandbox.stub();
+      program.declare(handlerStub);
+      expect(handlerStub.called).to.be.true;
+    });
+  });
+
   describe('#command()', () => {
     it('should call caporal.command()', () => {
       const commandStub: sinon.SinonStub = sandbox.stub(caporal, 'command');

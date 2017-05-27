@@ -5,13 +5,14 @@ import {GenerateCommandDescriptor} from './lib/command-descriptors/generate.comm
 
 export class NestCliApplication {
   public static run() {
-    const program: Program = new CaporalProgram();
-    program
+    new CaporalProgram()
       .version('1.0.0')
-      .help('Nest.js CLI');
-    CreateCommandDescriptor.declare(program.command('new', 'Create a new Nest application'));
-    GenerateCommandDescriptor.declare(program.command('generate', 'Generate a new Nest asset'));
-    program.listen();
+      .help('Nest.js CLI')
+      .declare(program => {
+        CreateCommandDescriptor.declare(program.command('new', 'Create a new Nest application'));
+        GenerateCommandDescriptor.declare(program.command('generate', 'Generate a new Nest asset'));
+      })
+      .listen();
     /*
     const cli = prog.version('1.0.0').help('Nest.js CLI');
 

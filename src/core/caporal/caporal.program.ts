@@ -16,6 +16,11 @@ export class CaporalProgram implements Program {
     return this;
   }
 
+  public declare(handler: Function): Program {
+    handler(this);
+    return this;
+  }
+
   public command(name: string, description: string): Command {
     return new CaporalCommand(this.program.command(name, description));
   }
