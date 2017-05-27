@@ -1,6 +1,7 @@
 import {Program} from './common/interfaces/program.interface';
 import {CaporalProgram} from './core/caporal/caporal.program';
-import {Command} from './common/interfaces/command.interface';
+import {CreateCommandDescriptor} from './lib/command-descriptors/create.command-descriptor';
+import {GenerateCommandDescriptor} from './lib/command-descriptors/generate.command-descriptor';
 
 export class NestCliApplication {
   public static run() {
@@ -8,13 +9,8 @@ export class NestCliApplication {
     program
       .version('1.0.0')
       .help('Nest.js CLI');
-
-    const create: Command = program
-      .command('new', 'Create a new Nest application')
-      .handler();
-
-    const generate: Command = program.command('generate', 'Generate a new Nest asset');
-
+    CreateCommandDescriptor.declare(program.command('new', 'Create a new Nest application'));
+    GenerateCommandDescriptor.declare(program.command('generate', 'Generate a new Nest asset'));
     program.listen();
     /*
     const cli = prog.version('1.0.0').help('Nest.js CLI');
