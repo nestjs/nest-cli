@@ -3,6 +3,7 @@ import {CaporalCommand} from '../../caporal/caporal.command';
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 import * as caporal from 'caporal';
+import {CommandHandler} from '../../../common/interfaces/command.handler.interface';
 
 describe('CaporalCommand', () => {
   let sandbox: sinon.SinonSandbox;
@@ -47,11 +48,18 @@ describe('CaporalCommand', () => {
     });
   });
 
-  describe('#option()', () => {
+  describe('#handler()', () => {
+    class TestHandler implements CommandHandler {
+      public execute(args: any, options: any, logger: any): void {
+        throw new Error("Method not implemented.");
+      }
+    }
+
     it('should call caporal.command.action()', () => {
       const actionStub: sinon.SinonStub = sandbox.stub(staticCaporalCommand, 'action');
-      command.handler();
-      expect(actionStub.calledOnce).to.be.true;
+      const handler: CommandHandler = new TestHandler();
+      command.handler(handler);
+      expect(actionStub.calledWith(handler.execute)).to.be.true;
     });
   });
 });

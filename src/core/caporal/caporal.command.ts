@@ -1,4 +1,5 @@
 import {Command} from '../../common/interfaces/command.interface';
+import {CommandHandler} from '../../common/interfaces/command.handler.interface';
 
 export class CaporalCommand implements Command {
   constructor(private command) {}
@@ -18,10 +19,8 @@ export class CaporalCommand implements Command {
     return this;
   }
 
-  public handler(): Command {
-    this.command.action((args: any, options: any, logger: any) => {
-      console.log('command action');
-    });
+  public handler(handler: CommandHandler): Command {
+    this.command.action(handler.execute);
     return this;
   }
 

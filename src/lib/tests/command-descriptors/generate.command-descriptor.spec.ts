@@ -4,6 +4,7 @@ import {Program} from '../../../common/interfaces/program.interface';
 import {Command} from '../../../common/interfaces/command.interface';
 import * as sinon from 'sinon';
 import {expect} from 'chai';
+import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -53,8 +54,8 @@ describe('GenerateCommandDescriptor', () => {
       expect(argumentStub.calledWith('[destination]', 'The generated asset root relative path')).to.be.true;
     });
 
-    it('should call handler()', () => {
-      expect(handlerStub.calledOnce).to.be.true;
+    it('should call handler() with the GenerateCommandHandler', () => {
+      expect(handlerStub.calledWith(new GenerateCommandHandler())).to.be.true;
     });
   });
 });

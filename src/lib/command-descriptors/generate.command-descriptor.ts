@@ -1,4 +1,5 @@
 import {Command} from '../../common/interfaces/command.interface';
+import {GenerateCommandHandler} from '../handlers/generate-command.handler';
 
 export class GenerateCommandDescriptor {
   static declare(command: Command) {
@@ -7,6 +8,6 @@ export class GenerateCommandDescriptor {
       .argument('<asset>', 'The generated asset type')
       .argument('<name>', 'The generated asset name')
       .argument('[destination]', 'The generated asset root relative path')
-      .handler();
+      .handler(new GenerateCommandHandler());
   }
 }

@@ -4,6 +4,7 @@ import {Command} from '../../../common/interfaces/command.interface';
 import {Program} from '../../../common/interfaces/program.interface';
 import {CaporalProgram} from '../../../core/caporal/caporal.program';
 import {expect} from 'chai';
+import {CreateCommandHandler} from '../../handlers/create-command.handler';
 
 describe('CreateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -47,8 +48,8 @@ describe('CreateCommandDescriptor', () => {
       expect(optionStub.calledWith('-r, --repository <repository>', 'Github repository where the project template is')).to.be.true;
     });
 
-    it('should call handler()', () => {
-      expect(handlerStub.calledOnce).to.be.true;
+    it('should call handler() with the CreateCommandHandler', () => {
+      expect(handlerStub.calledWith(new CreateCommandHandler())).to.be.true;
     });
   });
 });
