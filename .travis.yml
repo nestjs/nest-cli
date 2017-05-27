@@ -3,4 +3,5 @@ node_js:
       - "7"
 script:
       - npm test
-      - npm run build
+      - npm run -s build
+after_success: npm run -s coverage

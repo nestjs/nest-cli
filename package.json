@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf bin/*",
+    "coverage": "nyc npm run -s test",
     "postinstall": "npm run build",
     "test": "mocha --require ts-node/register src/**/*.spec.ts"
   },
@@ -25,8 +26,30 @@
     "@types/sinon": "^2.2.2",
     "chai": "^4.0.0",
     "mocha": "^3.4.2",
+    "nyc": "^10.3.2",
     "sinon": "^2.3.2",
     "ts-node": "^3.0.4",
     "typescript": "^2.3.3"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules/",
+      "src/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }

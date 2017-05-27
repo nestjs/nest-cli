@@ -6,6 +6,7 @@
 
 [![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/ThomRick/nest-cli.svg?branch=develop)](https://travis-ci.org/ThomRick/nest-cli)
+[![Coverage Status](https://coveralls.io/repos/github/ThomRick/nest-cli/badge.svg?branch=develop)](https://coveralls.io/github/ThomRick/nest-cli?branch=develop)
 
 ## Installation
 
