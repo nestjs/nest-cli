@@ -6,8 +6,11 @@
     "nest": "index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run -s build:src && npm run -s build:assets",
+    "build:src": "tsc",
+    "build:assets": "cp -R src/assets bin/assets",
     "clean": "rm -rf bin/*",
+    "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc npm run -s test",
     "postinstall": "npm run build",
     "test": "mocha --require ts-node/register src/**/*.spec.ts"

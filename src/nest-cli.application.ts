@@ -1,4 +1,3 @@
-import {Program} from './common/interfaces/program.interface';
 import {CaporalProgram} from './core/caporal/caporal.program';
 import {CreateCommandDescriptor} from './lib/command-descriptors/create.command-descriptor';
 import {GenerateCommandDescriptor} from './lib/command-descriptors/generate.command-descriptor';
