@@ -12,8 +12,7 @@ describe('ModuleGenerator', () => {
 
   describe('#generate()', () => {
     it('should return a Promise', done => {
-      generator.generate('moduleName')
-        .then(done);
+      generator.generate('name').then(done);
     });
 
     it.skip('should create a folder with the given name', () => {
