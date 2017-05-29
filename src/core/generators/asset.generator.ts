@@ -4,6 +4,7 @@ import {ModuleGenerator} from './module.generator';
 import {ControllerGenerator} from './controller.generator';
 import {ComponentGenerator} from './component.generator';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export class AssetGenerator implements Generator {
   private module: Generator = new ModuleGenerator();
@@ -17,12 +18,18 @@ export class AssetGenerator implements Generator {
       .then(() => this.generateAssetFiles(name))
   }
 
-  private generateAssetFolderStructure(name: string): Promise<void> {
+  private generateAssetFolderStructure(target: string): Promise<void> {
     return new Promise<void>(resolve => {
-      fs.mkdir(name, error => {
-        console.log(error);
-        resolve();
-      });
+      target.split(path.sep).reduce((parent, child) => {
+        const current = path.resolve(parent, child);
+        try {
+          fs.statSync(current);
+        } catch (error) {
+          fs.mkdirSync(current);
+        }
+        return current;
+      }, '');
+      resolve();
     });
   }
 

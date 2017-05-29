@@ -16,15 +16,21 @@ describe('AssetGenerator', () => {
   let generator: Generator;
   describe('#generate()', () => {
     let generateStub: sinon.SinonStub;
-    let mkdirStub: sinon.SinonStub;
-    beforeEach(() => mkdirStub = sandbox.stub(fs, 'mkdir').callsFake((error, callback) => { callback() }));
+    let mkdirSyncStub: sinon.SinonStub;
+    beforeEach(() => {
+      mkdirSyncStub = sandbox.stub(fs, 'mkdirSync').callsFake(() => { });
+      sandbox.stub(fs, 'statSync').callsFake(() => { throw new Error() });
+    });
 
     it('should generate the asset folder structure', done => {
       generator = new AssetGenerator(AssetEnum.MODULE);
       generateStub = sandbox.stub(ModuleGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-      generator.generate('name')
+      generator.generate('path/to/asset')
         .then(() => {
-          expect(mkdirStub.calledOnce).to.be.true;
+          expect(mkdirSyncStub.calledThrice).to.be.true;
+          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path`)).to.be.true;
+          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path/to`)).to.be.true;
+          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path/to/asset`)).to.be.true;
           done();
         })
         .catch(done);
