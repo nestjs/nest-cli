@@ -50,7 +50,7 @@ describe('CaporalCommand', () => {
 
   describe('#handler()', () => {
     class TestHandler implements CommandHandler {
-      public execute(args: any, options: any, logger: any): void {
+      public execute(args: any, options: any, logger: any): Promise<void> {
         throw new Error("Method not implemented.");
       }
     }

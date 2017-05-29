@@ -6,6 +6,7 @@ import * as sinon from 'sinon';
 import {ModuleGenerator} from '../../generators/module.generator';
 import {ControllerGenerator} from '../../generators/controller.generator';
 import {ComponentGenerator} from '../../generators/component.generator';
+import * as fs from 'fs';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -15,6 +16,19 @@ describe('AssetGenerator', () => {
   let generator: Generator;
   describe('#generate()', () => {
     let generateStub: sinon.SinonStub;
+    let mkdirStub: sinon.SinonStub;
+    beforeEach(() => mkdirStub = sandbox.stub(fs, 'mkdir').callsFake((error, callback) => { callback() }));
+
+    it('should generate the asset folder structure', done => {
+      generator = new AssetGenerator(AssetEnum.MODULE);
+      generateStub = sandbox.stub(ModuleGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
+      generator.generate('name')
+        .then(() => {
+          expect(mkdirStub.calledOnce).to.be.true;
+          done();
+        })
+        .catch(done);
+    });
 
     it('should use the ModuleGenerator.generate()', done => {
       generator = new AssetGenerator(AssetEnum.MODULE);
