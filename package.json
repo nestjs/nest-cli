@@ -11,9 +11,9 @@
     "build:assets": "cp -R src/assets bin/assets",
     "clean": "rm -rf bin/*",
     "clean:build": "npm run -s clean && npm run -s build",
-    "coverage": "nyc npm run -s test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "postinstall": "npm run build",
-    "test": "mocha --require ts-node/register src/**/*.spec.ts"
+    "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec"
   },
   "dependencies": {
     "caporal": "^0.5.0",
@@ -28,6 +28,7 @@
     "@types/node": "^7.0.18",
     "@types/sinon": "^2.2.2",
     "chai": "^4.0.0",
+    "coveralls": "^2.13.1",
     "mocha": "^3.4.2",
     "nyc": "^10.3.2",
     "sinon": "^2.3.2",
