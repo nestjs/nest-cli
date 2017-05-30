@@ -24,14 +24,8 @@ describe('ControllerGenerator', () => {
       pipeStub = sandbox.stub(PassThrough.prototype, 'pipe');
     });
 
-    it('should throw an error', () => {
-      expect(() => {
-        generator.generate('name');
-      }).to.throw;
-    });
-
     context('mange the controller asset generation', () => {
-      it.skip('should create a read stream from the controller asset file', done => {
+      it('should create a read stream from the controller asset file', done => {
         generator.generate('path/to/asset')
           .then(() => {
             expect(createReadStreamStub.calledWith(
@@ -42,7 +36,7 @@ describe('ControllerGenerator', () => {
           .catch(done);
       });
 
-      it.skip('should create a write stream to the generated asset', done => {
+      it('should create a write stream to the generated asset', done => {
         const name: string = 'path/to/asset';
         generator.generate(name)
           .then(() => {
@@ -54,10 +48,10 @@ describe('ControllerGenerator', () => {
           .catch(done);
       });
 
-      it.skip('should pipe read stream to the write stream', done => {
+      it('should pipe read stream to the write stream', done => {
         generator.generate('path/to/asset')
           .then(() => {
-            expect(pipeStub.calledOnce).to.be.true;
+            expect(pipeStub.calledTwice).to.be.true;
             done();
           })
           .catch(done);
@@ -65,7 +59,7 @@ describe('ControllerGenerator', () => {
     });
 
     context('managing the test controller asset generation', () => {
-      it.skip('should create a read stream from the test controller asset file', done => {
+      it('should create a read stream from the test controller asset file', done => {
         generator.generate('path/to/asset')
           .then(() => {
             expect(createReadStreamStub.calledWith(
@@ -76,7 +70,7 @@ describe('ControllerGenerator', () => {
           .catch(done);
       });
 
-      it.skip('should create a write stream to the generated asset', done => {
+      it('should create a write stream to the generated asset', done => {
         const name: string = 'path/to/asset';
         generator.generate(name)
           .then(() => {
@@ -88,10 +82,10 @@ describe('ControllerGenerator', () => {
           .catch(done);
       });
 
-      it.skip('should pipe read stream to the write stream', done => {
+      it('should pipe read stream to the write stream', done => {
         generator.generate('path/to/asset')
           .then(() => {
-            expect(pipeStub.calledOnce).to.be.true;
+            expect(pipeStub.calledTwice).to.be.true;
             done();
           })
           .catch(done);
