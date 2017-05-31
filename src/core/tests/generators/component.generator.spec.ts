@@ -76,7 +76,7 @@ describe('ComponentGenerator', () => {
           expect(createWriteStreamStub.calledWith(
             path.resolve(process.cwd(), 'path/to/asset', 'asset.service.spec.ts')
           )).to.be.true;
-          expect(pipeStub.callCount).to.be.equal(6);
+          expect(pipeStub.callCount).to.be.equal(4);
           done();
         })
         .catch(done);
@@ -91,7 +91,7 @@ describe('ComponentGenerator', () => {
           expect(createWriteStreamStub.calledWith(
             path.resolve(process.cwd(), 'path/to/asset', 'asset.service.spec.ts')
           )).to.be.true;
-          expect(pipeStub.callCount).to.be.equal(6);
+          expect(pipeStub.callCount).to.be.equal(4);
           done();
         })
         .catch(done);

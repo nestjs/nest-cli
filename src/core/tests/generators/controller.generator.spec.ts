@@ -78,7 +78,7 @@ describe('ControllerGenerator', () => {
           expect(createWriteStreamStub.calledWith(
             path.resolve(process.cwd(), 'path/to/asset', 'asset.controller.ts')
           )).to.be.true;
-          expect(pipeStub.callCount).to.be.equal(6);
+          expect(pipeStub.callCount).to.be.equal(4);
           done();
         })
         .catch(done);
@@ -93,7 +93,7 @@ describe('ControllerGenerator', () => {
           expect(createWriteStreamStub.calledWith(
             path.resolve(process.cwd(), 'path/to/asset', 'asset.controller.spec.ts')
           )).to.be.true;
-          expect(pipeStub.callCount).to.be.equal(6);
+          expect(pipeStub.callCount).to.be.equal(4);
           done();
         })
         .catch(done);

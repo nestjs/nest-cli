@@ -9,6 +9,7 @@ import {FileNameBuilder} from '../builders/file-name.builder';
 import {LoggerService} from '../loggers/logger.service';
 import {Logger} from '../../common/interfaces/logger.interface';
 import {ColorService} from '../loggers/color.service';
+import {ControllerAsset, TestControllerAsset} from '../assets/controller.asset.interface';
 
 export class ControllerGenerator implements Generator {
   private templatePath: string = '../../assets/ts/controller/controller.ts.template';
@@ -22,20 +23,25 @@ export class ControllerGenerator implements Generator {
   }
 
   private generateAsset(name: string): void {
-    const asset = {
+    const asset: ControllerAsset = {
       path: name,
-      className: new ClassNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).build(),
-      filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addExtension('ts').build()
+      filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addExtension('ts').build(),
+      replacer: {
+        __CLASS_NAME__: new ClassNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).build(),
+        __URI_PATH__: ''
+      }
     };
     this.copy(asset);
   }
 
   private generateTestAsset(name: string): void {
-    const asset = {
+    const asset: TestControllerAsset = {
       path: name,
-      className: new ClassNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).build(),
       filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addTest(true).addExtension('ts').build(),
-      importFilename: new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addExtension('ts').build()
+      replacer: {
+        __CLASS_NAME__: new ClassNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).build(),
+        __IMPORT__: new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addExtension('ts').build(),
+      }
     };
     this.copy(asset, true);
   }
@@ -45,8 +51,7 @@ export class ControllerGenerator implements Generator {
     const reader: Readable = fs.createReadStream(template);
     const writer: Writable = fs.createWriteStream(path.resolve(process.cwd(), asset.path, asset.filename));
     reader
-      .pipe(new ReplaceTransform('[NAME]', asset.className))
-      .pipe(new ReplaceTransform('[name]', asset.importFilename))
+      .pipe(new ReplaceTransform(asset.replacer))
       .pipe(writer);
     this.logger.info(ColorService.green('create'), `${ asset.path }/${ asset.filename }`);
   }

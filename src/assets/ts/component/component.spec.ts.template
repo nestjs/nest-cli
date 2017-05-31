@@ -1,17 +1,17 @@
-import {[NAME]} from './[name]';
+import {__CLASS_NAME__} from './__IMPORT__';
 import {expect} from 'chai';
 
-describe('[NAME]', () => {
-    const service: [NAME];
+describe('__CLASS_NAME__', () => {
+    const service: __CLASS_NAME__;
 
     beforeEach(() => {
         Test.createTestingModule({
             components: [
-                [NAME]
+                __CLASS_NAME__
             ]
         });
 
-        service = Test.get([NAME]);
+        service = Test.get(__CLASS_NAME__);
     });
 
     it('should exists', () => {

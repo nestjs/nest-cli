@@ -1,17 +1,17 @@
-import {[NAME]} from './[name]';
+import {__CLASS_NAME__} from './__IMPORT__';
 import {expect} from 'chai';
 
-describe('[NAME]', () => {
-    const controller: [NAME];
+describe('__CLASS_NAME__', () => {
+    const controller: __CLASS_NAME__;
 
     beforeEach(() => {
         Test.createTestingModule({
             controllers: [
-                [NAME]
+                __CLASS_NAME__
             ]
         });
 
-        controller = Test.get([NAME]);
+        controller = Test.get(__CLASS_NAME__);
     });
 
     it('should exists', () => {
