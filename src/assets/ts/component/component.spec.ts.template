@@ -15,6 +15,6 @@ describe('[NAME]', () => {
     });
 
     it('should exists', () => {
-        expect(service).to.exists;
+        expect(service).to.exist;
     });
 }

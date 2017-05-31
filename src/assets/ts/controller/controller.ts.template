@@ -1,4 +1,4 @@
-@Controller([PATH])
+@Controller()
 export class [NAME] {
     constructor() {}
 }

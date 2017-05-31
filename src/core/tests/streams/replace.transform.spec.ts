@@ -47,4 +47,18 @@ describe('ReplaceTransform', () => {
       .pipe(transformer)
       .pipe(writer);
   });
+
+  it('should replace multiple data in the stream', done => {
+    const reader: Readable = new BufferedReadable(Buffer.from('[NAME]\n[NAME]'));
+    const transformer: Transform = new ReplaceTransform('[NAME]', 'value');
+    const writer: Writable = new BufferedWritable();
+
+    reader.on('end', () => {
+      expect((writer as BufferedWritable).getBuffer().toString()).to.be.equal('value\nvalue');
+      done();
+    });
+    reader
+      .pipe(transformer)
+      .pipe(writer);
+  });
 });

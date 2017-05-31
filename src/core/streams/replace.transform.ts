@@ -6,7 +6,7 @@ export class ReplaceTransform extends Transform {
   }
 
   _transform(chunk, encoding, done) {
-    this.push(chunk.toString().replace(this.origin, this.destination));
+    this.push(chunk.toString().split(this.origin).join(this.destination));
     done();
   }
 }
