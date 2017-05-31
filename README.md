@@ -18,11 +18,11 @@ $ npm install
 $ npm link
 ```
 
-## nestconfig.json
+## nestconfig.json (not implemented)
 
 While the CLI does not require a nestconfig.json file to work, default values can be overrided by implementing one. Currently, a nestconfig.json file is only the following:
 
-```
+```json
 {
     language: "ts" | "es" // default: "ts"
 }
@@ -30,7 +30,7 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 
 ## Commands
 
-### new
+### create (not implemented)
 Example: `nest new my-app`, `nest new my-app myapp/`, `nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
 
 Creates a new Nest application by cloning a given Git repository.
@@ -38,70 +38,98 @@ Creates a new Nest application by cloning a given Git repository.
 ### generate (or `g`)
 
 #### module
-Example: `nest g module users` or `nest g module users modules/users/users.module.ts`
+Example :
+`nest generate module path/to/<name>`
+ OR
+`nest g module path/to/<name>`
 
-Creates a templated module file. If no path is entered, it creates a {name}.module.{ext} file in the working directory.
+Creates a templated module file :
+`src/path/to/<name>/<name>.module.ts`
 
-```
-import { Module } from 'nest.js';
-
-@Module({
-    components: [],
-    controllers: []
-})
-export class ValuesModule {
-}
+```typescript
+@Module({})
+export class NameModule {}
 ```
 
 #### controller
-Example: `nest g controller users` or `nest g module users modules/users/users.controller.ts`
+Example: 
+`nest generate controller path/to/<name>` 
+OR
+`nest g controller path/to/<name>`
 
-Creates a templated controller file. If no path is entered, it creates a {name}.controller.{ext} file in the working directory.
+Creates a templated controller files : 
+`src/path/to/<name>/<name>.controller.ts`
 
-```
-import * as express from 'express';
-import { Controller, Response, Body, Param, Get, Post, HttpStatus } from 'nest.js';
-
-@Controller('values')
-export class ValuesController {
-    private _values = [1, 2, 3];
-
+```typescript
+@Controller()
+export class NameController {
     public constructor() {}
-
-    @Get()
-    public async getAll(@Response() res: express.Response) {
-        res.status(HttpStatus.OK).json(this._values);
-    }
-
-    @Get('/:id')
-    public async get(@Response() res: express.Response, @Param('id') id) {
-        const val = this._values[parseInt(id, 10)];
-
-        if (val) {
-            res.status(HttpStatus.OK).json(val);
-        } else {
-            res.status(HttpStatus.NOT_FOUND);
-        }
-    }
 }
+```
+
+`src/path/to/<name>/<name>.controller.spec.ts`
+
+```typescript
+import {NameController} from './name.controller';
+import {expect} from 'chai';
+
+describe('NameController', () => {
+    const controller: NameController;
+
+    beforeEach(() => {
+        Test.createTestingModule({
+            controllers: [
+                NameController
+            ]
+        });
+
+        controller = Test.get(NameController);
+    });
+
+    it('should exists', () => {
+        expect(controller).to.exist;
+    });
+}
+
 ```
 
 #### component
-Example: `nest g component users` or `nest g module users modules/users/users.component.ts`
+Example: 
+`nest generate component path/to/<name>` 
+OR
+`nest g component path/to/<name>`
 
-Creates a templated controller file. If no path is entered, it creates a {name}.component.{ext} file in the working directory.
+Creates a templated component files :
+`src/path/to/<name>/<name>.service.ts`
 
-```
-import { Component } from 'nest.js';
-
+```typescript
 @Component()
-export class ValuesService {
-    public getAll() {
-        return [1, 2, 3, 4];
-    }
-
-    public get(id: number) {
-        return id;
-    }
+export class NameService {
+    constructor() {}
 }
+```
+
+`src/path/to/<name>/<name>.service.spec.ts`
+```typescript
+import {NameService} from './name.service';
+import {expect} from 'chai';
+
+describe('NameService', () => {
+    const service: NameService;
+
+    beforeEach(() => {
+        Test.createTestingModule({
+            components: [
+                NameService
+            ]
+        });
+
+        service = Test.get(NameService);
+    });
+
+    it('should exists', () => {
+        expect(service).to.exist;
+    });
+}
+
 ```
