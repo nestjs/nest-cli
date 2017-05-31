@@ -4,20 +4,16 @@ import {expect} from 'chai';
 
 describe('ReplaceTransform', () => {
   class BufferedReadable extends Readable {
-    private index: number;
-    private length: number;
+    private isRead: boolean = false;
     constructor(private buffer: Buffer) {
       super();
-      this.index = 0;
-      this.length = buffer.length;
     }
-
     _read() {
-      const i = this.index++;
-      if (i > this.length) {
-        this.push(null);
+      if (!this.isRead) {
+        this.push(this.buffer);
+        this.isRead = !this.isRead;
       } else {
-        this.push(Buffer.from(this.buffer.slice(i , i + 1)));
+        this.push(null);
       }
     }
   }

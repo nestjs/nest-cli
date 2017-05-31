@@ -20,7 +20,7 @@ export class ModuleGenerator implements Generator {
     return {
       className: new ClassNameBuilder().addName(name).addAsset(AssetEnum.MODULE).build(),
       filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.MODULE).addExtension('ts').build()
-    }
+    };
   }
 
   private copyAsset(className: string, name: string, filename: string) {
