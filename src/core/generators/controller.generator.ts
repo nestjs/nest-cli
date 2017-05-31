@@ -8,6 +8,7 @@ import {AssetEnum} from '../../common/enums/asset.enum';
 import {FileNameBuilder} from '../builders/file-name.builder';
 import {LoggerService} from '../loggers/logger.service';
 import {Logger} from '../../common/interfaces/logger.interface';
+import {ColorService} from '../loggers/color.service';
 
 export class ControllerGenerator implements Generator {
   private templatePath: string = '../../assets/ts/controller/controller.ts.template';
@@ -47,6 +48,6 @@ export class ControllerGenerator implements Generator {
       .pipe(new ReplaceTransform('[NAME]', asset.className))
       .pipe(new ReplaceTransform('[name]', asset.importFilename))
       .pipe(writer);
-    this.logger.info(`\x1b[32m${ 'create' }\x1b[32m`, `\x1b[37m${ asset.path }/${ asset.filename }\x1b[37m`);
+    this.logger.info(ColorService.green('create'), `${ asset.path }/${ asset.filename }`);
   }
 }

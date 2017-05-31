@@ -8,6 +8,7 @@ import {FileNameBuilder} from '../builders/file-name.builder';
 import {ReplaceTransform} from '../streams/replace.transform';
 import {Logger} from '../../common/interfaces/logger.interface';
 import {LoggerService} from '../loggers/logger.service';
+import {ColorService} from '../loggers/color.service';
 
 export class ModuleGenerator implements Generator {
   private templatePath: string = path.resolve(__dirname, '../../assets/ts/module/module.ts.template');
@@ -27,6 +28,6 @@ export class ModuleGenerator implements Generator {
     const reader: Readable = fs.createReadStream(this.templatePath);
     const writer: Writable = fs.createWriteStream(path.resolve(process.cwd(), asset.path, asset.filename));
     reader.pipe(new ReplaceTransform('[NAME]', asset.className)).pipe(writer);
-    this.logger.info(`\x1b[32m${ 'create' }\x1b[32m`, `\x1b[37m${ asset.path }/${ asset.filename }\x1b[37m`);
+    this.logger.info(ColorService.green('create'), `${ asset.path }/${ asset.filename }`);
   }
 }
