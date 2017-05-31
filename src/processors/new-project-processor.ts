@@ -1,4 +1,3 @@
-import * as gitclone from "git-clone";
 import * as jsonfile from "jsonfile";
 import * as path from "path";
 import * as rimraf from "rimraf";
@@ -18,6 +17,7 @@ export class NewProjectProcessor {
     }
 
     private async clone() {
+        /*
         return new Promise((resolve, reject) => {
             gitclone(this._sourceRepository, this._destinationDirectory, {}, () => {
                 console.log(path.join(this._destinationDirectory , ".git"));
@@ -26,6 +26,7 @@ export class NewProjectProcessor {
                 });
             });
         });
+        */
     }
 
     private async updatePackageJson() {
