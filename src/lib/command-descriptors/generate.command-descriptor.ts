@@ -7,7 +7,6 @@ export class GenerateCommandDescriptor {
       .alias('g')
       .argument('<asset>', 'The generated asset type')
       .argument('<name>', 'The generated asset name')
-      .argument('[destination]', 'The generated asset root relative path')
       .handler(new GenerateCommandHandler());
   }
 }

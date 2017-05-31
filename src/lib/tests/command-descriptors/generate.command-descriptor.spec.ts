@@ -50,10 +50,6 @@ describe('GenerateCommandDescriptor', () => {
       expect(argumentStub.calledWith('<name>', 'The generated asset name')).to.be.true;
     });
 
-    it('should declare the optional destination argument with the right description', () => {
-      expect(argumentStub.calledWith('[destination]', 'The generated asset root relative path')).to.be.true;
-    });
-
     it('should call handler() with the GenerateCommandHandler', () => {
       expect(handlerStub.calledWith(new GenerateCommandHandler())).to.be.true;
     });
