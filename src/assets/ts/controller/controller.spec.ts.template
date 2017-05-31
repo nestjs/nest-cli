@@ -15,6 +15,6 @@ describe('[NAME]', () => {
     });
 
     it('should exists', () => {
-        controller(service).to.exists;
+        expect(controller).to.exists;
     });
 }
