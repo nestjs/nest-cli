@@ -7,11 +7,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {FileNameBuilder} from '../../builders/file-name.builder';
 import {ClassNameBuilder} from '../../builders/class-name.builder';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('ComponentGenerator', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
+
+  beforeEach(() => {
+    sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+      return {
+        info: () => {}
+      }
+    });
+  });
 
   let generator: Generator;
   beforeEach(() => generator = new ComponentGenerator());

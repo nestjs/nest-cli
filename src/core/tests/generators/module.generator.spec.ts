@@ -8,11 +8,20 @@ import {PassThrough} from 'stream';
 import {ReplaceTransform} from '../../streams/replace.transform';
 import {ClassNameBuilder} from '../../builders/class-name.builder';
 import {FileNameBuilder} from '../../builders/file-name.builder';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('ModuleGenerator', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
+
+  beforeEach(() => {
+    sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+      return {
+        info: () => {}
+      }
+    });
+  });
 
   let generator: Generator;
   beforeEach(() => generator = new ModuleGenerator());

@@ -9,11 +9,20 @@ import {ClassNameBuilder} from '../../builders/class-name.builder';
 import {FileNameBuilder} from '../../builders/file-name.builder';
 import {ReplaceTransform} from '../../streams/replace.transform';
 import {AssetEnum} from '../../../common/enums/asset.enum';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('ControllerGenerator', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
+
+  beforeEach(() => {
+    sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+      return {
+        info: () => {}
+      }
+    });
+  });
 
   let generator: Generator;
   beforeEach(() => generator = new ControllerGenerator());
