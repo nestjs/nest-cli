@@ -32,9 +32,9 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 
 ### new (not implemented)
 Examples : 
-    * `$> nest new my-app`
-    * `$> nest new my-app myapp/`
-    * `$> nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
+   * `$> nest new my-app`
+   * `$> nest new my-app myapp/`
+   * `$> nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
 
 Creates a new Nest application by cloning a given Git repository.
 
@@ -42,11 +42,11 @@ Creates a new Nest application by cloning a given Git repository.
 
 #### module
 Example :
-    * `$> nest generate module path/to/<name>`
-    * `$> nest g module path/to/<name>`
+   * `$> nest generate module path/to/<name>`
+   * `$> nest g module path/to/<name>`
 
 Creates a templated module file :
-`src/path/to/<name>/<name>.module.ts`
+   * `src/path/to/<name>/<name>.module.ts`
 
 ```typescript
 @Module({})
@@ -55,11 +55,11 @@ export class NameModule {}
 
 #### controller
 Examples : 
-    * `$> nest generate controller path/to/<name>` 
-    * `$> nest g controller path/to/<name>`
+   * `$> nest generate controller path/to/<name>` 
+   * `$> nest g controller path/to/<name>`
 
 Creates a templated controller files : 
-`src/path/to/<name>/<name>.controller.ts`
+   * `src/path/to/<name>/<name>.controller.ts`
 
 ```typescript
 @Controller()
@@ -68,7 +68,7 @@ export class NameController {
 }
 ```
 
-`src/path/to/<name>/<name>.controller.spec.ts`
+   * `src/path/to/<name>/<name>.controller.spec.ts`
 
 ```typescript
 import {NameController} from './name.controller';
@@ -95,11 +95,11 @@ describe('NameController', () => {
 
 #### component
 Examples : 
-    * `$> nest generate component path/to/<name>` 
-    * `$> nest g component path/to/<name>`
+   * `$> nest generate component path/to/<name>` 
+   * `$> nest g component path/to/<name>`
 
 Creates a templated component files :
-`src/path/to/<name>/<name>.service.ts`
+   * `src/path/to/<name>/<name>.service.ts`
 
 ```typescript
 @Component()
@@ -108,7 +108,7 @@ export class NameService {
 }
 ```
 
-`src/path/to/<name>/<name>.service.spec.ts`
+   * `src/path/to/<name>/<name>.service.spec.ts`
 ```typescript
 import {NameService} from './name.service';
 import {expect} from 'chai';
