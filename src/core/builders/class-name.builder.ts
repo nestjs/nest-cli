@@ -17,14 +17,10 @@ export class ClassNameBuilder {
   }
 
   public build(): string {
-    return `${ this.capitalizeName() }${ this.mapAssetClassName()}`;
+    return `${ this.capitalize(this.mapName()) }${ this.mapAsset()}`;
   }
 
-  private capitalizeName() {
-    return `${ this._name.charAt(0).toUpperCase() }${  this._name.slice(1, this._name.length )}`;
-  }
-
-  private mapAssetClassName(): string {
+  private mapAsset(): string {
     switch(this._asset) {
       case AssetEnum.MODULE:
         return 'Module';
@@ -33,5 +29,25 @@ export class ClassNameBuilder {
       case AssetEnum.COMPONENT:
         return 'Service';
     }
+  }
+
+  private mapName(): string {
+    if (this.isPath()) {
+      return this.mapNameFromPath();
+    }
+    return this._name;
+  }
+
+  private isPath(): boolean {
+    return this._name.indexOf('/') !== -1;
+  }
+
+  private mapNameFromPath(): string {
+    const elements: string[] = this._name.split('/');
+    return elements[elements.length - 1];
+  }
+
+  private capitalize(name: string) {
+    return `${ name.charAt(0).toUpperCase() }${  name.slice(1, name.length )}`;
   }
 }
