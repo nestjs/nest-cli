@@ -11,21 +11,18 @@ export class ModuleGenerator implements Generator {
   private templatePath: string = path.resolve(__dirname, '../../assets/ts/module/module.ts.template');
 
   public generate(name: string): Promise<void> {
-    const { className, filename } = this.buildAsset(name);
-    this.copyAsset(className, name, filename);
-    return Promise.resolve();
-  }
-
-  private buildAsset(name: string): any {
-    return {
+    const asset = {
+      path: name,
       className: new ClassNameBuilder().addName(name).addAsset(AssetEnum.MODULE).build(),
       filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.MODULE).addExtension('ts').build()
     };
+    this.copy(asset);
+    return Promise.resolve();
   }
 
-  private copyAsset(className: string, name: string, filename: string) {
+  private copy(asset: any, isTest: boolean = false) {
     const reader: Readable = fs.createReadStream(this.templatePath);
-    const writer: Writable = fs.createWriteStream(path.resolve(process.cwd(), name, filename));
-    reader.pipe(new ReplaceTransform('[NAME]', className)).pipe(writer);
+    const writer: Writable = fs.createWriteStream(path.resolve(process.cwd(), asset.path, asset.filename));
+    reader.pipe(new ReplaceTransform('[NAME]', asset.className)).pipe(writer);
   }
 }

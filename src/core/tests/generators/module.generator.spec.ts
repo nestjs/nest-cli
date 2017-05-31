@@ -27,70 +27,49 @@ describe('ModuleGenerator', () => {
       pipeStub = sandbox.stub(PassThrough.prototype, 'pipe').callsFake(() => new PassThrough());
     });
 
-    context('name generations', () => {
-      it('should build the asset class name', done => {
-        const addNameSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addName');
-        const addAssetSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addAsset');
-        const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
-        generator.generate('path/to/asset')
-          .then(() => {
-            expect(addNameSpy.calledOnce).to.be.true;
-            expect(addAssetSpy.calledOnce).to.be.true;
-            expect(buildSpy.calledOnce).to.be.true;
-            done();
-          })
-          .catch(done)
-      });
-
-      it('should build the asset file name', done =>{
-        const addNameSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addName');
-        const addAssetSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addAsset');
-        const addExtensionSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addExtension');
-        const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
-        generator.generate('path/to/asset')
-          .then(() => {
-            expect(addNameSpy.calledOnce).to.be.true;
-            expect(addAssetSpy.calledOnce).to.be.true;
-            expect(addExtensionSpy.calledOnce).to.be.true;
-            expect(buildSpy.calledOnce).to.be.true;
-            done();
-          })
-          .catch(done)
-      });
+    it('should build the asset class name', done => {
+      const addNameSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addName');
+      const addAssetSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addAsset');
+      const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
+      generator.generate('path/to/asset')
+        .then(() => {
+          expect(addNameSpy.calledOnce).to.be.true;
+          expect(addAssetSpy.calledOnce).to.be.true;
+          expect(buildSpy.calledOnce).to.be.true;
+          done();
+        })
+        .catch(done)
     });
 
-    context('file copy', () => {
-      it('should create a read stream from the module asset file', done => {
-        generator.generate('path/to/asset')
-          .then(() => {
-            expect(createReadStreamStub.calledWith(
-              path.resolve(__dirname, '../../../assets/ts/module/module.ts.template')
-            )).to.be.true;
-            done();
-          })
-          .catch(done);
-      });
+    it('should build the asset file name', done => {
+      const addNameSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addName');
+      const addAssetSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addAsset');
+      const addExtensionSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addExtension');
+      const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
+      generator.generate('path/to/asset')
+        .then(() => {
+          expect(addNameSpy.calledOnce).to.be.true;
+          expect(addAssetSpy.calledOnce).to.be.true;
+          expect(addExtensionSpy.calledOnce).to.be.true;
+          expect(buildSpy.calledOnce).to.be.true;
+          done();
+        })
+        .catch(done)
+    });
 
-      it('should create a write stream to the generated asset', done => {
-        const name: string = 'path/to/asset';
-        generator.generate(name)
-          .then(() => {
-            expect(createWriteStreamStub.calledWith(
-              path.resolve(process.cwd(), name, 'asset.module.ts')
-            )).to.be.true;
-            done();
-          })
-          .catch(done);
-      });
-
-      it('should pipe transform stream to the write stream', done => {
-        generator.generate('path/to/asset')
-          .then(() => {
-            expect(pipeStub.calledTwice).to.be.true;
-            done();
-          })
-          .catch(done);
-      });
+    it('should copy the asset file', done => {
+      generator.generate('path/to/asset')
+        .then(() => {
+          expect(createReadStreamStub.calledWith(
+            path.resolve(__dirname, '../../../assets/ts/module/module.ts.template')
+          )).to.be.true;
+          expect(createWriteStreamStub.calledWith(
+            path.resolve(process.cwd(), 'path/to/asset', 'asset.module.ts')
+          )).to.be.true;
+          expect(pipeStub.callCount).to.be.equal(2);
+          done();
+        })
+        .catch(done);
     });
   });
 });
