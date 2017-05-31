@@ -18,8 +18,8 @@
   "dependencies": {
     "caporal": "^0.5.0",
     "find-up": "^2.1.0",
-    "git-clone": "^0.1.0",
     "jsonfile": "^3.0.0",
+    "nodegit": "^0.18.3",
     "rimraf": "^2.6.1"
   },
   "devDependencies": {

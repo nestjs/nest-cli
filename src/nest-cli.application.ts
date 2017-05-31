@@ -33,26 +33,6 @@ export class NestCliApplication {
         });
       });
 
-    cli.command('generate', 'Generate a new Nest asset')
-      .alias('g')
-      .argument('<type>', 'What to generate', ['module', 'controller', 'component', 'middleware', 'gateway', 'gateway-middleware', 'filter'])
-      .argument('<name>', 'Name of the generated asset')
-      .argument('[destinationFile]', 'The destination file name (./{name}.{asset type}.ts by default)', null, null)
-      .action((args, options, logger) => {
-
-        const config = NestConfigService.getConfig();
-
-        const defaultFileName = `${args.name}.${args.type}.${config.language === "ts" ? "ts" : "js"}`
-
-        const processor = new NewAssetProcessor(
-          config,
-          args.type,
-          args.name,
-          `${process.cwd()}\\${args.destinationFile || defaultFileName}`);
-
-        processor.process();
-      });
-
     cli.command('serve', 'Start a localhost development server')
       .option('-p, --port <port>', 'Port to run the server on', '', 8080)
       .action((args, options, logger) => {
@@ -64,8 +44,6 @@ export class NestCliApplication {
       .action((args, options, logger) => {
         console.log(args, options);
       });
-
-    cli.parse(process.argv);
     */
   }
 }
