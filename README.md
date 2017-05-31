@@ -30,8 +30,11 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 
 ## Commands
 
-### create (not implemented)
-Example: `nest new my-app`, `nest new my-app myapp/`, `nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
+### new (not implemented)
+Examples : 
+    * `$> nest new my-app`
+    * `$> nest new my-app myapp/`
+    * `$> nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
 
 Creates a new Nest application by cloning a given Git repository.
 
@@ -39,9 +42,8 @@ Creates a new Nest application by cloning a given Git repository.
 
 #### module
 Example :
-`nest generate module path/to/<name>`
- OR
-`nest g module path/to/<name>`
+    * `$> nest generate module path/to/<name>`
+    * `$> nest g module path/to/<name>`
 
 Creates a templated module file :
 `src/path/to/<name>/<name>.module.ts`
@@ -52,10 +54,9 @@ export class NameModule {}
 ```
 
 #### controller
-Example: 
-`nest generate controller path/to/<name>` 
-OR
-`nest g controller path/to/<name>`
+Examples : 
+    * `$> nest generate controller path/to/<name>` 
+    * `$> nest g controller path/to/<name>`
 
 Creates a templated controller files : 
 `src/path/to/<name>/<name>.controller.ts`
@@ -90,14 +91,12 @@ describe('NameController', () => {
         expect(controller).to.exist;
     });
 }
-
 ```
 
 #### component
-Example: 
-`nest generate component path/to/<name>` 
-OR
-`nest g component path/to/<name>`
+Examples : 
+    * `$> nest generate component path/to/<name>` 
+    * `$> nest g component path/to/<name>`
 
 Creates a templated component files :
 `src/path/to/<name>/<name>.service.ts`
@@ -131,5 +130,4 @@ describe('NameService', () => {
         expect(service).to.exist;
     });
 }
-
 ```
