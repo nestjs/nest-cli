@@ -24,7 +24,7 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 
 ```json
 {
-    "language": "ts | es"  // default: "ts"
+    "language": "ts | es"
 }
 ```
 
