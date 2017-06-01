@@ -5,6 +5,7 @@ import {expect} from 'chai';
 import {FileSytemUtils} from '../../utils/file-system.utils';
 import {GitUtils} from '../../utils/git.utils';
 import * as path from 'path';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('GitRepository', () => {
   let sandbox: sinon.SinonSandbox;
