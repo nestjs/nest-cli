@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "caporal": "^0.5.0",
-    "find-up": "^2.1.0",
-    "jsonfile": "^3.0.0",
     "rimraf": "^2.6.1"
   },
   "devDependencies": {
