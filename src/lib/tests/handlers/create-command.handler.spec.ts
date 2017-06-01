@@ -3,6 +3,7 @@ import {CommandHandler} from '../../../common/interfaces/command.handler.interfa
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {LoggerService} from '../../../core/loggers/logger.service';
+import {GitRepository} from '../../../core/repositories/git.repository';
 
 describe('CreateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -15,18 +16,25 @@ describe('CreateCommandHandler', () => {
   });
 
   let setLoggerStub: sinon.SinonStub;
+  let cloneStub: sinon.SinonStub;
   beforeEach(() => {
     setLoggerStub = sandbox.stub(LoggerService, 'setLogger');
+    cloneStub = sandbox.stub(GitRepository.prototype, 'clone').callsFake(() => Promise.resolve());
   });
 
   describe('#execute()', () => {
-    it('should call LoggerService.setLogger() with the input logger', done => {
-      handler.execute({asset: 'module', name: 'name'}, {}, console)
+    it('should call LoggerService.setLogger() with the input logger', () => {
+      return handler.execute({ name: 'application', destination: 'path/to/application' }, {}, console)
         .then(() => {
           expect(setLoggerStub.calledWith(console)).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
+    });
+
+    it('should clone the project repository to destination', () => {
+      return handler.execute({ name: 'application', destination: 'path/to/application' }, {}, console)
+        .then(() => {
+          expect(cloneStub.calledOnce).to.be.true;
+        });
     });
   });
 });

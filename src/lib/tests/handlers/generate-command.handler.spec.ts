@@ -24,7 +24,7 @@ describe('GenerateCommandHandler', () => {
 
   describe('#execute()', () => {
     it('should call LoggerService.setLogger() with the input logger', done => {
-      handler.execute({asset: 'module', name: 'name'}, {}, console)
+      handler.execute({ asset: 'module', name: 'name' }, {}, console)
         .then(() => {
           expect(setLoggerStub.calledWith(console)).to.be.true;
           done();
@@ -33,7 +33,7 @@ describe('GenerateCommandHandler', () => {
     });
 
     it('should use the AssetGenerator.generate()', done => {
-      handler.execute({asset: 'module', name: 'name'}, {}, console)
+      handler.execute({ asset: 'module', name: 'name' }, {}, console)
         .then(() => {
           expect(generateStub.calledOnce).to.be.true;
           done();
