@@ -9,7 +9,7 @@
     "build": "npm run -s build:src && npm run -s build:assets",
     "build:src": "tsc",
     "build:assets": "cp -R src/assets bin/assets",
-    "clean": "rm -rf bin/*",
+    "clean": "rm -rf bin/* && rm -rf coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "postinstall": "npm run clean:build",
@@ -19,7 +19,6 @@
     "caporal": "^0.5.0",
     "find-up": "^2.1.0",
     "jsonfile": "^3.0.0",
-    "nodegit": "^0.18.3",
     "rimraf": "^2.6.1"
   },
   "devDependencies": {
