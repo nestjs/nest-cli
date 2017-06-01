@@ -1,4 +1,3 @@
-import * as jsonfile from "jsonfile";
 import * as path from "path";
 import * as rimraf from "rimraf";
 import { NestConfig } from "../nest-config";
@@ -30,11 +29,13 @@ export class NewProjectProcessor {
     }
 
     private async updatePackageJson() {
+        /*
         const packageJsonPath = path.join(this._destinationDirectory, "package.json");
 
         let packageJson = jsonfile.readFileSync(packageJsonPath);
         packageJson.name = this._appName;
 
         jsonfile.writeFileSync(packageJsonPath, packageJson, {spaces: 4});
+        */
     }
 }

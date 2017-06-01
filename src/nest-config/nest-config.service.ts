@@ -1,12 +1,12 @@
 import * as fs from 'fs';
-import * as findUp from 'find-up';
 
 import { NestConfig } from "./nest-config.model";
 
 export class NestConfigService {
     public static getConfig(): NestConfig {
+        /*
         let configPath = findUp.sync('nestconfig.json');
-        
+
         if (!configPath) {
             return new NestConfig({
                 language: "ts"
@@ -25,5 +25,7 @@ export class NestConfigService {
         } catch (ex) {
             throw "Could not parse nestconfig.json";
         }
+        */
+        return undefined;
     }
 }
