@@ -9,7 +9,6 @@ import {ClassNameBuilder} from '../builders/class-name.builder';
 import {LoggerService} from '../loggers/logger.service';
 import {Logger} from '../../common/interfaces/logger.interface';
 import {ColorService} from '../loggers/color.service';
-import {Asset} from '../../common/interfaces/asset.interface';
 import {ComponentAsset, TestComponentAsset} from '../assets/component.asset.interface';
 
 export class ComponentGenerator implements Generator {

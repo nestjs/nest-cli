@@ -9,7 +9,6 @@ import {ReplaceTransform} from '../streams/replace.transform';
 import {Logger} from '../../common/interfaces/logger.interface';
 import {LoggerService} from '../loggers/logger.service';
 import {ColorService} from '../loggers/color.service';
-import {Asset} from '../../common/interfaces/asset.interface';
 import {ModuleAsset} from '../assets/module.asset.interface';
 
 export class ModuleGenerator implements Generator {
