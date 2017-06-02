@@ -15,8 +15,16 @@
     "postinstall": "npm run clean:build",
     "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThomRick/nest-cli"
+  },
+  "author": "ThomRick",
+  "bugs": {
+    "url": "https://github.com/ThomRick/nest-cli/issues"
+  },
   "dependencies": {
-    "caporal": "^0.5.0",
+    "caporal": "^0.6.0",
     "rimraf": "^2.6.1"
   },
   "devDependencies": {
