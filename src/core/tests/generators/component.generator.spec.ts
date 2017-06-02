@@ -1,13 +1,12 @@
-import {Generator} from '../../../common/interfaces/generator.interface';
-import {ComponentGenerator} from '../../generators/component.generator';
+import {Generator} from '../../../common/interfaces';
+import {ComponentGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as fs from 'fs';
 import * as path from 'path';
-import {FileNameBuilder} from '../../builders/file-name.builder';
-import {ClassNameBuilder} from '../../builders/class-name.builder';
-import {LoggerService} from '../../loggers/logger.service';
+import {ClassNameBuilder, FileNameBuilder} from '../../builders';
+import {LoggerService} from '../../loggers';
 
 describe('ComponentGenerator', () => {
   let sandbox: sinon.SinonSandbox;

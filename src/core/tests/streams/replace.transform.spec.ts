@@ -1,8 +1,8 @@
 import {Readable, Transform, Writable} from 'stream';
-import {ReplaceTransform} from '../../streams/replace.transform';
+import {ReplaceTransform} from '../../streams';
 import {expect} from 'chai';
-import {AssetReplacer} from '../../replacers/asset-replacer.interface';
-import {Replacer} from '../../../common/interfaces/replacer.interface';
+import {AssetReplacer} from '../../replacers';
+import {Replacer} from '../../../common/interfaces';
 
 describe('ReplaceTransform', () => {
   class BufferedReadable extends Readable {

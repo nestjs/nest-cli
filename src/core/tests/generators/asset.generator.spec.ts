@@ -1,11 +1,8 @@
-import {Generator} from '../../../common/interfaces/generator.interface';
-import {AssetEnum} from '../../../common/enums/asset.enum';
-import {AssetGenerator} from '../../generators/asset.generator';
+import {Generator} from '../../../common/interfaces';
+import {AssetEnum} from '../../../common/enums';
+import {AssetGenerator, ComponentGenerator, ControllerGenerator, ModuleGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-import {ModuleGenerator} from '../../generators/module.generator';
-import {ControllerGenerator} from '../../generators/controller.generator';
-import {ComponentGenerator} from '../../generators/component.generator';
 import * as fs from 'fs';
 
 describe('AssetGenerator', () => {

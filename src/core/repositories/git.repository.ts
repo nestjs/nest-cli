@@ -1,6 +1,6 @@
 import {Repository} from '../../common/interfaces/repository.interface';
 import {GitUtils} from '../utils/git.utils';
-import {FileSytemUtils} from '../utils/file-system.utils';
+import {FileSystemUtils} from '../utils/file-system.utils';
 import * as path from 'path';
 import {Logger} from '../../common/interfaces/logger.interface';
 import {LoggerService} from '../loggers/logger.service';
@@ -15,7 +15,7 @@ export class GitRepository implements Repository {
     return GitUtils.clone(this._remote, this._destination)
       //.then(() => this.logger.debug(`${ ColorService.yellow('clone') } success`))
       //.then(() => this.logger.debug(`${ ColorService.yellow('delete') } ${ path.join(this._destination, '.git') } folder`))
-      .then(() => FileSytemUtils.rmdir(path.join(this._destination, '.git')))
+      .then(() => FileSystemUtils.rmdir(path.join(this._destination, '.git')))
       //.then(() => this.logger.debug(`${ ColorService.yellow('delete') } success`));
   }
 }

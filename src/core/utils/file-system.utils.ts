@@ -1,6 +1,6 @@
 import * as rimraf from 'rimraf';
 
-export class FileSytemUtils {
+export class FileSystemUtils {
   public static rmdir(path: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       rimraf(path, (error) => {

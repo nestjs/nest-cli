@@ -1,6 +1,6 @@
 import {CaporalProgram} from '../../caporal/caporal.program';
 import * as sinon from 'sinon';
-import {Program} from '../../../common/interfaces/program.interface';
+import {Program} from '../../../common/interfaces';
 import * as caporal from 'caporal';
 import {expect} from 'chai';
 

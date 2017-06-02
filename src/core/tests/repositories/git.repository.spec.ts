@@ -1,11 +1,9 @@
-import {Repository} from '../../../common/interfaces/repository.interface';
-import {GitRepository} from '../../repositories/git.repository';
+import {Repository} from '../../../common/interfaces';
+import {GitRepository} from '../../repositories';
 import * as sinon from 'sinon';
 import {expect} from 'chai';
-import {FileSytemUtils} from '../../utils/file-system.utils';
-import {GitUtils} from '../../utils/git.utils';
+import {FileSystemUtils, GitUtils} from '../../utils';
 import * as path from 'path';
-import {LoggerService} from '../../loggers/logger.service';
 
 describe('GitRepository', () => {
   let sandbox: sinon.SinonSandbox;
@@ -19,7 +17,7 @@ describe('GitRepository', () => {
   let rmdirStub: sinon.SinonStub;
   beforeEach(() => {
     cloneStub = sandbox.stub(GitUtils, 'clone').callsFake(() => Promise.resolve());
-    rmdirStub = sandbox.stub(FileSytemUtils, 'rmdir').callsFake(() => Promise.resolve());
+    rmdirStub = sandbox.stub(FileSystemUtils, 'rmdir').callsFake(() => Promise.resolve());
   });
 
   describe('#clone()', () => {

@@ -10,7 +10,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/ThomRick/nest-cli/badge.svg?branch=develop)](https://coveralls.io/github/ThomRick/nest-cli?branch=develop)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ## Installation
-
 ### Git :
 ```
 $ git clone https://github.com/nestjs/nest-cli.git <project>
@@ -19,10 +18,10 @@ $ npm install
 $ npm link
 ```
 
+###npm (not registered)
+
 ## nestconfig.json (not implemented)
-
 While the CLI does not require a nestconfig.json file to work, default values can be overrided by implementing one. Currently, a nestconfig.json file is only the following:
-
 ```json
 {
     "language": "ts | es (default: ts)"
@@ -30,26 +29,20 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 ```
 
 ## Commands
-
 ### new
-
 Examples : 
    * `$ nest new my-app`
    * `$ nest new my-app myapp/`
    * `$ nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
-
 Creates a new Nest application by cloning `https://github.com/KerryRitter/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
-
 #### module
 Example :
    * `$ nest generate module path/to/<name>`
    * `$ nest g module path/to/<name>`
-
 Creates a templated module file :
    * `src/path/to/<name>/<name>.module.ts`
-
 ```typescript
 @Module({})
 export class NameModule {}
@@ -59,19 +52,15 @@ export class NameModule {}
 Examples : 
    * `$ nest generate controller path/to/<name>` 
    * `$ nest g controller path/to/<name>`
-
 Creates a templated controller files : 
    * `src/path/to/<name>/<name>.controller.ts`
-
 ```typescript
 @Controller()
 export class NameController {
     public constructor() {}
 }
 ```
-
    * `src/path/to/<name>/<name>.controller.spec.ts`
-
 ```typescript
 import {NameController} from './name.controller';
 import {expect} from 'chai';
@@ -99,17 +88,14 @@ describe('NameController', () => {
 Examples : 
    * `$ nest generate component path/to/<name>` 
    * `$ nest g component path/to/<name>`
-
 Creates a templated component files :
    * `src/path/to/<name>/<name>.service.ts`
-
 ```typescript
 @Component()
 export class NameService {
     constructor() {}
 }
 ```
-
    * `src/path/to/<name>/<name>.service.spec.ts`
 ```typescript
 import {NameService} from './name.service';
@@ -133,3 +119,6 @@ describe('NameService', () => {
     });
 }
 ```
+
+### serve (not implemented)
+### build (not implemented)

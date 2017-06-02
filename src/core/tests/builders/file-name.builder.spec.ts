@@ -1,5 +1,5 @@
-import {FileNameBuilder} from '../../builders/file-name.builder';
-import {AssetEnum} from '../../../common/enums/asset.enum';
+import {FileNameBuilder} from '../../builders';
+import {AssetEnum} from '../../../common/enums';
 import {expect} from 'chai';
 
 describe('FileNameBuilder', () => {

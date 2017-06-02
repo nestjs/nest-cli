@@ -1,10 +1,9 @@
-import {CreateCommandDescriptor} from '../../command-descriptors/create.command-descriptor';
+import {CreateCommandDescriptor} from '../../command-descriptors';
 import * as sinon from 'sinon';
-import {Command} from '../../../common/interfaces/command.interface';
-import {Program} from '../../../common/interfaces/program.interface';
-import {CaporalProgram} from '../../../core/caporal/caporal.program';
+import {Command, Program} from '../../../common/interfaces';
+import {CaporalProgram} from '../../../core/caporal';
 import {expect} from 'chai';
-import {CreateCommandHandler} from '../../handlers/create-command.handler';
+import {CreateCommandHandler} from '../../handlers';
 
 describe('CreateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;

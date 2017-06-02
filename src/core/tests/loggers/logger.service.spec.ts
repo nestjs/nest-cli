@@ -1,4 +1,4 @@
-import {LoggerService} from '../../loggers/logger.service';
+import {LoggerService} from '../../loggers';
 import {expect} from 'chai';
 
 describe('LoggerService', () => {

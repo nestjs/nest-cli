@@ -1,15 +1,12 @@
-import {Generator} from '../../../common/interfaces/generator.interface';
-import {ControllerGenerator} from '../../generators/controller.generator';
+import {Generator} from '../../../common/interfaces';
+import {ControllerGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as fs from 'fs';
 import * as path from 'path';
-import {ClassNameBuilder} from '../../builders/class-name.builder';
-import {FileNameBuilder} from '../../builders/file-name.builder';
-import {ReplaceTransform} from '../../streams/replace.transform';
-import {AssetEnum} from '../../../common/enums/asset.enum';
-import {LoggerService} from '../../loggers/logger.service';
+import {ClassNameBuilder, FileNameBuilder} from '../../builders';
+import {LoggerService} from '../../loggers';
 
 describe('ControllerGenerator', () => {
   let sandbox: sinon.SinonSandbox;
