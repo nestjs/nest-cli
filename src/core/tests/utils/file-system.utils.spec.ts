@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import {expect} from 'chai';
 import {FileSystemUtils} from '../../utils/file-system.utils';
 import {Stats} from 'fs';
+import * as path from 'path';
 
 describe('FileSystemUtils', () => {
   let sandbox: sinon.SinonSandbox;
@@ -38,11 +39,30 @@ describe('FileSystemUtils', () => {
   });
 
   describe('#mkdir()', () => {
-    it('can call mkdir()', () => {
-      const path: string = 'path/to/folder';
-      return FileSystemUtils.mkdir(path);
+    const target: string = 'path/to/target';
+
+    let statStub: sinon.SinonStub;
+    let resolveStub: sinon.SinonStub;
+    let mkdirStub: sinon.SinonStub;
+    beforeEach(() => {
+      statStub = sandbox.stub(FileSystemUtils, 'stat').callsFake(() => Promise.reject('stat error'));
+      resolveStub = sandbox.stub(path, 'resolve').callsFake((parent: string, child: string) => parent.concat(path.sep).concat(child));
+      mkdirStub = sandbox.stub(fs, 'mkdir').callsFake((directoryName, callback) => callback());
     });
-    
+
+    it('should create recursively the path', () => {
+      return FileSystemUtils.mkdir(target)
+        .then(() => {
+          sinon.assert.callCount(statStub, 3);
+          sinon.assert.calledWith(statStub, '/path');
+          sinon.assert.calledWith(statStub, '/path/to');
+          sinon.assert.calledWith(statStub, '/path/to/target');
+          sinon.assert.callCount(mkdirStub, 3);
+          sinon.assert.calledWith(mkdirStub, '/path');
+          sinon.assert.calledWith(mkdirStub, '/path/to');
+          sinon.assert.calledWith(mkdirStub, '/path/to/target');
+        });
+    });
   });
 
   describe('#rmdir()', () => {
