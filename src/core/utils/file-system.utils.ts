@@ -18,14 +18,14 @@ export class FileSystemUtils {
   }
 
   public static mkdir(target: string): Promise<string> {
-      return target
-        .split(path.sep)
-        .reduce((previous: Promise<string>, child: string) => {
-          return previous.then(parent => {
-            const current: string = path.resolve(parent, child);
-            return this.mkdirProcess(current);
-          });
-        }, Promise.resolve(''));
+    return target
+      .split(path.sep)
+      .reduce((previous: Promise<string>, child: string) => {
+        return previous.then(parent => {
+          const current: string = path.resolve(parent, child);
+          return this.mkdirProcess(current);
+        });
+      }, Promise.resolve(''));
   }
 
   private static mkdirProcess(target: string): Promise<string> {
