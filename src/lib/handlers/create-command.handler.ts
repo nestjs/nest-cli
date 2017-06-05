@@ -1,6 +1,6 @@
 import {CommandArguments, CommandOptions, Logger, Repository} from '../../common/interfaces';
 import {GitRepository} from '../../core/repositories';
-import {AbstractCommandHandler} from './abstract-command.handler';
+import {CommandHandler} from '../../common/interfaces/command.handler.interface';
 
 export interface CreateCommandArguments extends CommandArguments {
   name: string
@@ -9,8 +9,8 @@ export interface CreateCommandArguments extends CommandArguments {
 
 export interface CreateCommandOptions extends CommandOptions {}
 
-export class CreateCommandHandler extends AbstractCommandHandler {
-  public run(args: CreateCommandArguments, options: CreateCommandOptions, logger: Logger): Promise<void> {
+export class CreateCommandHandler implements CommandHandler {
+  public execute(args: CreateCommandArguments, options: CreateCommandOptions, logger: Logger): Promise<void> {
     const name: string = args.name;
     const destination: string = args.destination || name;
     const repository: Repository = new GitRepository('https://github.com/KerryRitter/nest-typescript-starter', destination);

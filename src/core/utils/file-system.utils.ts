@@ -17,23 +17,21 @@ export class FileSystemUtils {
     });
   }
 
-  public static mkdir(target: string): Promise<void> {
-    return new Promise<void>(resolve => {
-      const promises: Promise<void>[] = [];
-      target.split(path.sep).reduce((parent: string, child: string) => {
-        const current: string = path.resolve(parent, child);
-        promises.push(this.createMkDirIterationPromise(current));
-        return current;
-      }, '');
-      Promise.all(promises).then(() => resolve());
-    });
+  public static mkdir(target: string): Promise<string> {
+      return target
+        .split(path.sep)
+        .reduce((previous: Promise<string>, child: string) => {
+          return previous.then(parent => {
+            const current: string = path.resolve(parent, child);
+            return this.mkdirProcess(current);
+          });
+        }, Promise.resolve(''));
   }
 
-  private static createMkDirIterationPromise(target: string): Promise<void> {
+  private static mkdirProcess(target: string): Promise<string> {
     return this.stat(target)
-      .catch(() => {
-        return this.fsmkdir(target);
-      });
+      .then(() => target)
+      .catch(() => this.fsmkdir(target).then(() => target));
   }
 
   private static fsmkdir(target: string): Promise<void> {
