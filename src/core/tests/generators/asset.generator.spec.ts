@@ -3,7 +3,7 @@ import {AssetEnum} from '../../../common/enums';
 import {AssetGenerator, ComponentGenerator, ControllerGenerator, ModuleGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-import * as fs from 'fs';
+import {FileSystemUtils} from '../../utils/file-system.utils';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -13,57 +13,45 @@ describe('AssetGenerator', () => {
   let generator: Generator;
   describe('#generate()', () => {
     let generateStub: sinon.SinonStub;
-    let mkdirSyncStub: sinon.SinonStub;
+    let mkdirStub: sinon.SinonStub;
     beforeEach(() => {
-      mkdirSyncStub = sandbox.stub(fs, 'mkdirSync').callsFake(() => { });
-      sandbox.stub(fs, 'statSync').callsFake(() => { throw new Error() });
+      mkdirStub = sandbox.stub(FileSystemUtils, 'mkdir').callsFake(() => Promise.resolve());
     });
 
-    it('should generate the asset folder structure', done => {
+    it('should generate the asset folder structure', () => {
       generator = new AssetGenerator(AssetEnum.MODULE);
       generateStub = sandbox.stub(ModuleGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-      generator.generate('path/to/asset')
+      return generator.generate('path/to/asset')
         .then(() => {
-          expect(mkdirSyncStub.calledThrice).to.be.true;
-          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path`)).to.be.true;
-          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path/to`)).to.be.true;
-          expect(mkdirSyncStub.calledWith(`${ process.cwd() }/path/to/asset`)).to.be.true;
-          done();
-        })
-        .catch(done);
+          sinon.assert.calledWith(mkdirStub, 'path/to/asset');
+        });
     });
 
-    it('should use the ModuleGenerator.generate()', done => {
+    it('should use the ModuleGenerator.generate()', () => {
       generator = new AssetGenerator(AssetEnum.MODULE);
       generateStub = sandbox.stub(ModuleGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-      generator.generate('name')
+      return generator.generate('name')
         .then(() => {
           expect(generateStub.calledOnce).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('should use the ControllerGenerator.generate()', done => {
+    it('should use the ControllerGenerator.generate()', () => {
       generator = new AssetGenerator(AssetEnum.CONTROLLER);
       generateStub = sandbox.stub(ControllerGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-      generator.generate('name')
+      return generator.generate('name')
         .then(() => {
           expect(generateStub.calledOnce).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('should use the ComponentGenerator.generate()', done => {
+    it('should use the ComponentGenerator.generate()', () => {
       generator = new AssetGenerator(AssetEnum.COMPONENT);
       generateStub = sandbox.stub(ComponentGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-      generator.generate('name')
+      return generator.generate('name')
         .then(() => {
           expect(generateStub.calledOnce).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
   });
 });

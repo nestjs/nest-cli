@@ -3,8 +3,7 @@ import {Generator} from '../../common/interfaces/generator.interface';
 import {ModuleGenerator} from './module.generator';
 import {ControllerGenerator} from './controller.generator';
 import {ComponentGenerator} from './component.generator';
-import * as fs from 'fs';
-import * as path from 'path';
+import {FileSystemUtils} from '../utils/file-system.utils';
 
 export class AssetGenerator implements Generator {
   private module: Generator = new ModuleGenerator();
@@ -14,23 +13,8 @@ export class AssetGenerator implements Generator {
   constructor(private _asset: AssetEnum) {}
 
   public generate(name: string): Promise<void> {
-    return this.generateAssetFolderStructure(name)
+    return FileSystemUtils.mkdir(name)
       .then(() => this.generateAssetFiles(name))
-  }
-
-  private generateAssetFolderStructure(target: string): Promise<void> {
-    return new Promise<void>(resolve => {
-      target.split(path.sep).reduce((parent, child) => {
-        const current = path.resolve(parent, child);
-        try {
-          fs.statSync(current);
-        } catch (error) {
-          fs.mkdirSync(current);
-        }
-        return current;
-      }, '');
-      resolve();
-    });
   }
 
   private generateAssetFiles(name: string) {

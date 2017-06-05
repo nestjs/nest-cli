@@ -23,22 +23,18 @@ describe('GenerateCommandHandler', () => {
   });
 
   describe('#execute()', () => {
-    it('should call LoggerService.setLogger() with the input logger', done => {
-      handler.execute({ asset: 'module', name: 'name' }, {}, console)
+    it('should call LoggerService.setLogger() with the input logger', () => {
+      return handler.execute({ asset: 'module', name: 'name' }, {}, console)
         .then(() => {
           expect(setLoggerStub.calledWith(console)).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('should use the AssetGenerator.generate()', done => {
+    it('should use the AssetGenerator.generate()', () => {
       handler.execute({ asset: 'module', name: 'name' }, {}, console)
         .then(() => {
           expect(generateStub.calledOnce).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
   });
 });

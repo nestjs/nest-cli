@@ -34,38 +34,34 @@ describe('ModuleGenerator', () => {
       pipeStub = sandbox.stub(PassThrough.prototype, 'pipe').callsFake(() => new PassThrough());
     });
 
-    it('should build the asset class name', done => {
+    it('should build the asset class name', () => {
       const addNameSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addName');
       const addAssetSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addAsset');
       const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
-      generator.generate('path/to/asset')
+      return generator.generate('path/to/asset')
         .then(() => {
           expect(addNameSpy.calledOnce).to.be.true;
           expect(addAssetSpy.calledOnce).to.be.true;
           expect(buildSpy.calledOnce).to.be.true;
-          done();
         })
-        .catch(done)
     });
 
-    it('should build the asset file name', done => {
+    it('should build the asset file name', () => {
       const addNameSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addName');
       const addAssetSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addAsset');
       const addExtensionSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addExtension');
       const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
-      generator.generate('path/to/asset')
+      return generator.generate('path/to/asset')
         .then(() => {
           expect(addNameSpy.calledOnce).to.be.true;
           expect(addAssetSpy.calledOnce).to.be.true;
           expect(addExtensionSpy.calledOnce).to.be.true;
           expect(buildSpy.calledOnce).to.be.true;
-          done();
         })
-        .catch(done)
     });
 
-    it('should copy the asset file', done => {
-      generator.generate('path/to/asset')
+    it('should copy the asset file', () => {
+      return generator.generate('path/to/asset')
         .then(() => {
           expect(createReadStreamStub.calledWith(
             path.resolve(__dirname, '../../../assets/ts/module/module.ts.template')
@@ -74,9 +70,7 @@ describe('ModuleGenerator', () => {
             path.resolve(process.cwd(), 'path/to/asset', 'asset.module.ts')
           )).to.be.true;
           expect(pipeStub.callCount).to.be.equal(2);
-          done();
-        })
-        .catch(done);
+        });
     });
   });
 });

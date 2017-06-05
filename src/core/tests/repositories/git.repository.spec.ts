@@ -21,22 +21,18 @@ describe('GitRepository', () => {
   });
 
   describe('#clone()', () => {
-    it('should clone the git remote repository to destination', done => {
-      repository.clone()
+    it('should clone the git remote repository to destination', () => {
+      return repository.clone()
         .then(() => {
           expect(cloneStub.calledWith('remote', 'destination')).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('should remove the .git folder from destination', done => {
-      repository.clone()
+    it('should remove the .git folder from destination', () => {
+      return repository.clone()
         .then(() => {
           expect(rmdirStub.calledWith(path.join('destination', '.git'))).to.be.true;
-          done();
-        })
-        .catch(done);
+        });
     });
   });
 });
