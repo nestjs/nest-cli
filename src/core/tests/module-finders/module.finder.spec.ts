@@ -7,8 +7,8 @@ describe('ModuleFinder', () => {
   });
 
   describe('#findFrom()', () => {
-    it('should return first the module absolute path from the origin path', () => {
-      
+    it('should return the first module absolute path from the origin path', () => {
+
     });
   });
 });

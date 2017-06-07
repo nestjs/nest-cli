@@ -68,4 +68,30 @@ describe('FileSystemUtils', () => {
   describe('#rmdir()', () => {
 
   });
+
+  describe('#readdir()', () => {
+    let readdirStub: sinon.SinonStub;
+    beforeEach(() => readdirStub = sandbox.stub(fs, 'readdir'));
+
+    it('should return the files as a Promise from fs readdir method', () => {
+      const readdirResult: string[] = [ 'filename1', 'filename2', 'filename3' ];
+      readdirStub.callsFake((dirname, callback) => { callback(null, readdirResult)});
+      return FileSystemUtils.readdir('path/to/dirName')
+        .then(fileNames => {
+          sinon.assert.calledWith(readdirStub, 'path/to/dirName');
+          expect(fileNames).to.be.deep.equal(readdirResult);
+        });
+    });
+
+    it('should reject the promise when fs readdir failed', () => {
+      readdirStub.callsFake((dirname, callback) => { callback(new Error('readdir error message'), null)});
+      return FileSystemUtils.readdir('path/to/dirname')
+        .then(() => {
+          throw new Error('should not be here');
+        })
+        .catch(error => {
+          expect(error.message).to.be.equal('readdir error message');
+        });
+    });
+  });
 });

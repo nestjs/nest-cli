@@ -55,4 +55,15 @@ export class FileSystemUtils {
       });
     });
   }
+
+  public static readdir(dirname: string): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      fs.readdir(dirname, (error: NodeJS.ErrnoException, files: string[]) => {
+        if (!isNullOrUndefined(error))
+          reject(error);
+        else
+          resolve(files);
+      });
+    });
+  }
 }
