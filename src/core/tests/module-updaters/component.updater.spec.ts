@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import {ModuleUpdater} from '../../../common/interfaces/module.updater.interface';
 import {ComponentUpdater} from '../../module-updaters/component.updater';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
+import {PassThrough, Transform} from 'stream';
+import {ImportTransform} from '../../streams/import.transform';
+import {expect} from 'chai';
 
 describe('ComponentUpdater', () => {
   let sandbox: sinon.SinonSandbox;
@@ -16,7 +19,7 @@ describe('ComponentUpdater', () => {
   let createReadStreamStub: sinon.SinonStub;
   beforeEach(() => {
     findFromStub = sandbox.stub(ModuleFinderImpl.prototype, 'findFrom');
-    createReadStreamStub = sandbox.stub(fs, 'createReadStream')
+    createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => new PassThrough());
   });
 
   describe('#update()', () => {
@@ -41,7 +44,10 @@ describe('ComponentUpdater', () => {
     });
 
     it.skip('should add the new component asset import', () => {
-
+      return updater.update(filename, className)
+        .then(() => {
+          // TODO: see how to check if ImportTransform constructor is called
+        });
     });
 
     it.skip('should add the new component asset class to the component module metadata', () => {

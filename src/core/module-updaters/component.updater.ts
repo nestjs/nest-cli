@@ -2,6 +2,7 @@ import {ModuleUpdater} from '../../common/interfaces/module.updater.interface';
 import {ModuleFinder} from '../../common/interfaces/module.finder.interface';
 import {ModuleFinderImpl} from '../module-finders/module.finder';
 import * as fs from 'fs';
+import {ImportTransform} from '../streams/import.transform';
 
 export class ComponentUpdater implements ModuleUpdater {
   private finder: ModuleFinder = new ModuleFinderImpl();
@@ -12,6 +13,7 @@ export class ComponentUpdater implements ModuleUpdater {
     return this.finder.findFrom(filename)
       .then(moduleFilename => {
         const reader: fs.ReadStream = fs.createReadStream(moduleFilename);
+        const transform = new ImportTransform(className, filename);
       });
   }
 }

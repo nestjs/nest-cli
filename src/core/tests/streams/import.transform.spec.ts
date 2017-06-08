@@ -1,39 +1,9 @@
-import {PassThrough, Readable, Transform, Writable} from 'stream';
+import {Readable, Transform, Writable} from 'stream';
 import {ImportTransform} from '../../streams/import.transform';
 import {expect} from 'chai';
+import {BufferedReadable, BufferedWritable} from './utils';
 
 describe('ImportTransform', () => {
-  class BufferedReadable extends Readable {
-    private isRead: boolean = false;
-    constructor(private buffer: Buffer) {
-      super();
-    }
-    _read() {
-      if (!this.isRead) {
-        this.push(this.buffer);
-        this.isRead = !this.isRead;
-      } else {
-        this.push(null);
-      }
-    }
-  }
-
-  class BufferedWritable extends Writable {
-    private buffer: string = '';
-    constructor() {
-      super();
-    }
-
-    _write(chunk, encoding, done) {
-      this.buffer += chunk.toString();
-      done();
-    }
-
-    public getBuffer() {
-      return Buffer.from(this.buffer);
-    }
-  }
-
   const content: string = '' +
     'import {Module} from \'@nestjs/common\';\n' +
     '\n' +
