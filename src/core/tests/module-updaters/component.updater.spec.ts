@@ -3,8 +3,6 @@ import * as fs from 'fs';
 import {ModuleUpdater} from '../../../common/interfaces/module.updater.interface';
 import {ComponentUpdater} from '../../module-updaters/component.updater';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
-import {PassThrough, Transform} from 'stream';
-import {ImportTransform} from '../../streams/import.transform';
 import {expect} from 'chai';
 import {BufferedReadable, BufferedWritable} from '../streams/test.utils';
 
@@ -39,7 +37,7 @@ describe('ComponentUpdater', () => {
 
   describe('#update()', () => {
     const filename: string = 'path/to/asset/asset.service.ts';
-    const relativeFilename: string = './asset.service.ts';
+    const relativeModuleFilename: string = './asset.service.ts';
     const className: string = 'AssetService';
     const moduleFilename: string = 'path/to/asset/asset.module.ts';
 
@@ -59,12 +57,12 @@ describe('ComponentUpdater', () => {
         });
     });
 
-    // TODO: develop a relative path resolver in FileSystemUtils
+    // TODO: develop a relative path resolver in PathUtils
     it.skip('should update the module filename content', done => {
       reader.on('end', () => {
         expect(writer.getBuffer().toString()).to.be.equal(
           'import {Module} from \'@nestjs/common\';\n' +
-          `import {${ className }} from ${ relativeFilename };\n` +
+          `import {${ className }} from ${ relativeModuleFilename };\n` +
           '\n' +
           '@Module({\n' +
           '  components: [\n' +
