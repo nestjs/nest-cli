@@ -6,6 +6,7 @@ import {ModuleFinderImpl} from '../../module-finders/module.finder';
 import {PassThrough, Transform} from 'stream';
 import {ImportTransform} from '../../streams/import.transform';
 import {expect} from 'chai';
+import {BufferedReadable, BufferedWritable} from '../streams/test.utils';
 
 describe('ComponentUpdater', () => {
   let sandbox: sinon.SinonSandbox;
@@ -15,15 +16,30 @@ describe('ComponentUpdater', () => {
   let updater: ModuleUpdater;
   beforeEach(() => updater = new ComponentUpdater());
 
+  let reader: BufferedReadable;
+  let writer: BufferedWritable;
+  beforeEach(() => {
+    const content: string =
+      'import {Module} from \'@nestjs/common\';\n' +
+      '\n' +
+      '@Module({})\n' +
+      'export class AssetModule {}\n';
+    reader = new BufferedReadable(Buffer.from(content));
+    writer = new BufferedWritable()
+  });
+
   let findFromStub: sinon.SinonStub;
   let createReadStreamStub: sinon.SinonStub;
+  let createWriteStream: sinon.SinonStub;
   beforeEach(() => {
     findFromStub = sandbox.stub(ModuleFinderImpl.prototype, 'findFrom');
-    createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => new PassThrough());
+    createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => reader);
+    createWriteStream = sandbox.stub(fs, 'createWriteStream').callsFake(() => writer);
   });
 
   describe('#update()', () => {
     const filename: string = 'path/to/asset/asset.service.ts';
+    const relativeFilename: string = './asset.service.ts';
     const className: string = 'AssetService';
     const moduleFilename: string = 'path/to/asset/asset.module.ts';
 
@@ -43,15 +59,30 @@ describe('ComponentUpdater', () => {
         });
     });
 
-    it.skip('should add the new component asset import', () => {
-      return updater.update(filename, className)
-        .then(() => {
-          // TODO: see how to check if ImportTransform constructor is called
-        });
+    // TODO: develop a relative path resolver in FileSystemUtils
+    it.skip('should update the module filename content', done => {
+      reader.on('end', () => {
+        expect(writer.getBuffer().toString()).to.be.equal(
+          'import {Module} from \'@nestjs/common\';\n' +
+          `import {${ className }} from ${ relativeFilename };\n` +
+          '\n' +
+          '@Module({\n' +
+          '  components: [\n' +
+          `    ${ className }\n` +
+          '  ]\n' +
+          '})\n' +
+          'export class AssetModule {}\n'
+        );
+        done();
+      });
+      updater.update(filename, className);
     });
 
-    it.skip('should add the new component asset class to the component module metadata', () => {
-
+    it('should write the updated module filename', () => {
+      return updater.update(filename, className)
+        .then(() => {
+          sinon.assert.calledWith(createWriteStream, moduleFilename);
+        });
     });
   });
 });

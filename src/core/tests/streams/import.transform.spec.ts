@@ -1,7 +1,7 @@
 import {Readable, Transform, Writable} from 'stream';
 import {ImportTransform} from '../../streams/import.transform';
 import {expect} from 'chai';
-import {BufferedReadable, BufferedWritable} from './utils';
+import {BufferedReadable, BufferedWritable} from './test.utils';
 
 describe('ImportTransform', () => {
   const content: string = '' +

@@ -1,7 +1,7 @@
 import {Readable, Transform, Writable} from 'stream';
 import {MetadataTransform} from '../../streams/metadata.transform';
 import {AssetEnum} from '../../../common/enums/asset.enum';
-import {BufferedReadable, BufferedWritable} from './utils';
+import {BufferedReadable, BufferedWritable} from './test.utils';
 import {expect} from 'chai';
 
 describe('MetadataTransform', () => {
