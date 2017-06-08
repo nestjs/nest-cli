@@ -58,7 +58,7 @@ describe('ComponentUpdater', () => {
     });
 
     // TODO: develop a relative path resolver in PathUtils
-    it.skip('should update the module filename content', done => {
+    it('should update the module filename content', done => {
       reader.on('end', () => {
         expect(writer.getBuffer().toString()).to.be.equal(
           'import {Module} from \'@nestjs/common\';\n' +
