@@ -57,7 +57,6 @@ describe('ComponentUpdater', () => {
         });
     });
 
-    // TODO: develop a relative path resolver in PathUtils
     it('should update the module filename content', done => {
       reader.on('end', () => {
         expect(writer.getBuffer().toString()).to.be.equal(
