@@ -5,6 +5,7 @@ import {ComponentAsset, TestComponentAsset} from '../assets/component.asset.inte
 import {AbstractAssetGenerator} from './abstract-asset.generator';
 import {ModuleUpdater} from '../../common/interfaces/module.updater.interface';
 import {ComponentUpdater} from '../module-updaters/component.updater';
+import * as path from 'path';
 
 export class ComponentGenerator extends AbstractAssetGenerator {
   private templatePath: string = '../../assets/ts/component/component.ts.template';
@@ -29,7 +30,7 @@ export class ComponentGenerator extends AbstractAssetGenerator {
       }
     };
     this.copy(asset, this.templatePath);
-    return this.updater.update(filename, className);
+    return this.updater.update(path.resolve(process.cwd(), asset.path, asset.filename), className);
   }
 
   private generateTestAsset(name: string): void {

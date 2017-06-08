@@ -95,9 +95,11 @@ describe('ComponentGenerator', () => {
     });
 
     it('should update the nearest module metadata and imports', () => {
-      return generator.generate('path/to/asset')
+      const name: string = 'path/to/asset';
+      sandbox.stub(process, 'cwd').callsFake(() => '');
+      return generator.generate(name)
         .then(() => {
-          sinon.assert.calledOnce(updateStub);
+          sinon.assert.calledWith(updateStub, `${ name }/asset.service.ts`);
         });
     });
   });
