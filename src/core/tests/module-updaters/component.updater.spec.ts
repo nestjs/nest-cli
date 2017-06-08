@@ -22,7 +22,7 @@ describe('ComponentUpdater', () => {
   describe('#update()', () => {
     const filename: string = 'path/to/asset/asset.service.ts';
     const className: string = 'AssetService';
-    const moduleFilename: string = 'path/to/asset.module.ts';
+    const moduleFilename: string = 'path/to/asset/asset.module.ts';
 
     beforeEach(() => findFromStub.callsFake(() => Promise.resolve(moduleFilename)));
 
@@ -35,9 +35,17 @@ describe('ComponentUpdater', () => {
 
     it('should read the module filename', () => {
       return updater.update(filename, className)
-        .then(name => {
+        .then(() => {
           sinon.assert.calledWith(createReadStreamStub, moduleFilename);
         });
+    });
+
+    it.skip('should add the new component asset import', () => {
+
+    });
+
+    it.skip('should add the new component asset class to the component module metadata', () => {
+
     });
   });
 });
