@@ -7,9 +7,13 @@ import {MetadataTransform} from '../streams/metadata.transform';
 import {AssetEnum} from '../../common/enums/asset.enum';
 import {PathUtils} from '../utils/path.utils';
 import {FileSystemUtils} from '../utils/file-system.utils';
+import {Logger} from '../../common/interfaces/logger.interface';
+import {LoggerService} from '../loggers/logger.service';
+import {ColorService} from '../loggers/color.service';
 
 export class ComponentUpdater implements ModuleUpdater {
   private finder: ModuleFinder = new ModuleFinderImpl();
+  private logger: Logger = LoggerService.getLogger();
 
   public update(filename: string, className: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
@@ -28,6 +32,7 @@ export class ComponentUpdater implements ModuleUpdater {
             intermediateReader.pipe(writer);
             intermediateReader.on('end', () => {
               FileSystemUtils.rm(`${ moduleFilename }.lock`)
+                .then(() => this.logger.info(ColorService.yellow('update'), `${ moduleFilename }`))
                 .then(() => resolve())
                 .catch(error => reject(error));
             });

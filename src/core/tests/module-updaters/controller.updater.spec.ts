@@ -6,11 +6,18 @@ import {ControllerUpdater} from '../../module-updaters/controller.updater';
 import {BufferedReadable, BufferedWritable} from '../streams/test.utils';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
 import {FileSystemUtils} from '../../utils/file-system.utils';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('ControllerUpdater', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
+
+  beforeEach(() => sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+    return {
+      info: () => {}
+    };
+  }));
 
   let updater: ModuleUpdater;
   beforeEach(() => updater = new ControllerUpdater());

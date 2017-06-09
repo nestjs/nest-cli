@@ -6,11 +6,19 @@ import {ModuleFinderImpl} from '../../module-finders/module.finder';
 import {expect} from 'chai';
 import {BufferedReadable, BufferedWritable} from '../streams/test.utils';
 import {FileSystemUtils} from '../../utils/file-system.utils';
+import {ConsoleLogger} from '../../loggers/console.logger';
+import {LoggerService} from '../../loggers/logger.service';
 
 describe('ComponentUpdater', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
+
+  beforeEach(() => sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+    return {
+      info: () => {}
+    };
+  }));
 
   let updater: ModuleUpdater;
   beforeEach(() => updater = new ComponentUpdater());
