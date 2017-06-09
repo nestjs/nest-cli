@@ -94,4 +94,16 @@ describe('FileSystemUtils', () => {
         });
     });
   });
+
+  describe('#rm', () => {
+    let unlinkStub: sinon.SinonStub;
+    beforeEach(() => unlinkStub = sandbox.stub(fs, 'unlink').callsFake((filename, callback) => { callback(); }));
+
+    it('should remove the file from the file system', () => {
+      return FileSystemUtils.rm('path/to/file.ext')
+        .then(() => {
+          sinon.assert.calledOnce(unlinkStub);
+        });
+    });
+  });
 });

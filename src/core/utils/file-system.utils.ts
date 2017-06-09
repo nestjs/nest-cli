@@ -66,4 +66,15 @@ export class FileSystemUtils {
       });
     });
   }
+
+  public static rm(filename: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      fs.unlink(filename, (error: NodeJS.ErrnoException) => {
+        if (!isNullOrUndefined(error))
+          reject(error);
+        else
+          resolve();
+      });
+    });
+  }
 }
