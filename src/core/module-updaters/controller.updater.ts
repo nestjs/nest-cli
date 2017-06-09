@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import {ModuleUpdater} from '../../common/interfaces/module.updater.interface';
-import {ModuleFinder} from '../../common/interfaces/module.finder.interface';
 import {ModuleFinderImpl} from '../module-finders/module.finder';
-import {ImportTransform} from '../streams/import.transform';
-import {MetadataTransform} from '../streams/metadata.transform';
-import {AssetEnum} from '../../common/enums/asset.enum';
+import {ModuleFinder} from '../../common/interfaces/module.finder.interface';
 import {PathUtils} from '../utils/path.utils';
 import {FileSystemUtils} from '../utils/file-system.utils';
+import {AssetEnum} from '../../common/enums/asset.enum';
+import {MetadataTransform} from '../streams/metadata.transform';
+import {ImportTransform} from '../streams/import.transform';
 
-export class ComponentUpdater implements ModuleUpdater {
+export class ControllerUpdater implements ModuleUpdater {
   private finder: ModuleFinder = new ModuleFinderImpl();
 
   public update(filename: string, className: string): Promise<void> {
@@ -20,7 +20,7 @@ export class ComponentUpdater implements ModuleUpdater {
           const intermediateWriter: fs.WriteStream = fs.createWriteStream(`${ moduleFilename }.lock`);
           reader
             .pipe(new ImportTransform(className, relativeAssetModuleFilename))
-            .pipe(new MetadataTransform(className, AssetEnum.COMPONENT))
+            .pipe(new MetadataTransform(className, AssetEnum.CONTROLLER))
             .pipe(intermediateWriter);
           reader.on('end', () => {
             const intermediateReader: fs.ReadStream = fs.createReadStream(`${ moduleFilename }.lock`);
