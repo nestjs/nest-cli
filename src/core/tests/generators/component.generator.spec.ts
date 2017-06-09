@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {ClassNameBuilder, FileNameBuilder} from '../../builders';
 import {LoggerService} from '../../loggers';
+import {ComponentUpdater} from '../../module-updaters/component.updater';
 
 describe('ComponentGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -19,6 +20,11 @@ describe('ComponentGenerator', () => {
         info: () => {}
       }
     });
+  });
+
+  let updateStub: sinon.SinonStub;
+  beforeEach(() => {
+    updateStub = sandbox.stub(ComponentUpdater.prototype, 'update').callsFake(() => Promise.resolve());
   });
 
   let generator: Generator;
@@ -85,6 +91,15 @@ describe('ComponentGenerator', () => {
             path.resolve(process.cwd(), 'path/to/asset', 'asset.service.spec.ts')
           )).to.be.true;
           expect(pipeStub.callCount).to.be.equal(4);
+        });
+    });
+
+    it('should update the nearest module metadata and imports', () => {
+      const name: string = 'path/to/asset';
+      sandbox.stub(process, 'cwd').callsFake(() => '');
+      return generator.generate(name)
+        .then(() => {
+          sinon.assert.calledWith(updateStub, `${ name }/asset.service.ts`);
         });
     });
   });

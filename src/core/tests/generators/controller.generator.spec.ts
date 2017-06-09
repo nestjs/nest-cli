@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {ClassNameBuilder, FileNameBuilder} from '../../builders';
 import {LoggerService} from '../../loggers';
+import {ControllerUpdater} from '../../module-updaters/controller.updater';
 
 describe('ControllerGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -19,6 +20,11 @@ describe('ControllerGenerator', () => {
         info: () => {}
       }
     });
+  });
+
+  let updateStub: sinon.SinonStub;
+  beforeEach(() => {
+    updateStub = sandbox.stub(ControllerUpdater.prototype, 'update').callsFake(() => Promise.resolve());
   });
 
   let generator: Generator;
@@ -85,6 +91,15 @@ describe('ControllerGenerator', () => {
             path.resolve(process.cwd(), 'path/to/asset', 'asset.controller.spec.ts')
           )).to.be.true;
           expect(pipeStub.callCount).to.be.equal(4);
+        });
+    });
+
+    it('should update the nearest module metadata and imports', () => {
+      const name: string = 'path/to/asset';
+      sandbox.stub(process, 'cwd').callsFake(() => '');
+      return generator.generate(name)
+        .then(() => {
+          sinon.assert.calledWith(updateStub, `${ name }/asset.controller.ts`);
         });
     });
   });
