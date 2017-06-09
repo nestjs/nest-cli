@@ -1,11 +1,9 @@
-import {ColorService} from '../loggers/color.service';
+import {ColorService, LoggerService} from '../loggers';
 import {ReplaceTransform} from '../streams/replace.transform';
 import * as path from 'path';
 import * as fs from 'fs';
 import {Readable, Writable} from 'stream';
-import {Logger} from '../../common/interfaces/logger.interface';
-import {LoggerService} from '../loggers/logger.service';
-import {Generator} from '../../common/interfaces/generator.interface';
+import {Generator, Logger} from '../../common/interfaces';
 
 export abstract class AbstractAssetGenerator implements Generator {
   protected logger: Logger = LoggerService.getLogger();

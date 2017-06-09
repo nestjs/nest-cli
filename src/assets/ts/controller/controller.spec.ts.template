@@ -1,3 +1,4 @@
+import {Test} from '@nestjs/testing';
 import {__CLASS_NAME__} from './__IMPORT__';
 import {expect} from 'chai';
 
@@ -10,11 +11,13 @@ describe('__CLASS_NAME__', () => {
                 __CLASS_NAME__
             ]
         });
+    });
 
+    beforeEach(() => {
         controller = Test.get(__CLASS_NAME__);
     });
 
-    it('should exists', () => {
+    it('should exist', () => {
         expect(controller).to.exist;
     });
 }
