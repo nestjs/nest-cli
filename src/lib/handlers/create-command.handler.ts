@@ -20,10 +20,8 @@ export class CreateCommandHandler implements CommandHandler {
     const destination: string = args.destination || name;
     const repository: Repository = new GitRepository(CreateCommandHandler.DEFAULT_REPOSITORY, destination);
     return repository.clone()
-      .then(() => {
-        return FileSystemUtils.readdir(path.join(process.cwd(), destination))
-          .then(files => files.forEach(file => logger.info(ColorService.green('create'), file)));
-      });
+      .then(() => FileSystemUtils.readdir(path.join(process.cwd(), destination)))
+      .then(files => files.forEach(file => logger.info(ColorService.green('create'), file)))
 
   }
 }
