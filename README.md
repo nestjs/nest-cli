@@ -33,8 +33,8 @@ While the CLI does not require a nestconfig.json file to work, default values ca
 Examples : 
    * `$ nest new my-app`
    * `$ nest new my-app myapp/`
-   * `$ nest new my-app --repo https://github.com/KerryRitter/nest-typescript-starter`
-Creates a new Nest application by cloning `https://github.com/KerryRitter/nest-typescript-starter` Git repository.
+   * `$ nest new my-app --repo https://github.com/ThomRick/nest-typescript-starter`
+Creates a new Nest application by cloning `https://github.com/ThomRick/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
 #### module

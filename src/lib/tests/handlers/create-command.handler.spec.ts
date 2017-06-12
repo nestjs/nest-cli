@@ -3,6 +3,7 @@ import {CommandHandler} from '../../../common/interfaces/command.handler.interfa
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {GitRepository} from '../../../core/repositories/git.repository';
+import {FileSystemUtils} from '../../../core/utils/file-system.utils';
 
 describe('CreateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -17,13 +18,14 @@ describe('CreateCommandHandler', () => {
   let cloneStub: sinon.SinonStub;
   beforeEach(() => {
     cloneStub = sandbox.stub(GitRepository.prototype, 'clone').callsFake(() => Promise.resolve());
+    sandbox.stub(FileSystemUtils, 'readdir').callsFake(() => Promise.resolve([]));
   });
 
   describe('#execute()', () => {
     it('should clone the project repository to destination', () => {
       return handler.execute({ name: 'application', destination: 'path/to/application' }, {}, console)
         .then(() => {
-          expect(cloneStub.calledOnce).to.be.true;
+          sinon.assert.calledOnce(cloneStub);
         });
     });
   });
