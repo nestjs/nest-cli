@@ -95,7 +95,7 @@ describe('FileSystemUtils', () => {
     });
   });
 
-  describe('#rm', () => {
+  describe('#rm()', () => {
     let unlinkStub: sinon.SinonStub;
     beforeEach(() => unlinkStub = sandbox.stub(fs, 'unlink').callsFake((filename, callback) => { callback(); }));
 
