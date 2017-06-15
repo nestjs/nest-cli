@@ -6,7 +6,7 @@ import {ModuleAsset} from '../interfaces/module.asset.interface';
 import {AbstractAssetGenerator} from './abstract-asset.generator';
 
 export class ModuleGenerator extends AbstractAssetGenerator {
-  private templatePath: string = path.resolve(__dirname, '../../assets/ts/module/module.ts.template');
+  private templatePath: string = path.resolve(__dirname, '../../../assets/ts/module/module.ts.template');
 
   public generate(name: string): Promise<void> {
     const asset: ModuleAsset = {

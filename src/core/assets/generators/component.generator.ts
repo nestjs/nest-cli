@@ -8,8 +8,8 @@ import {ComponentUpdater} from '../module-updaters/component.updater';
 import * as path from 'path';
 
 export class ComponentGenerator extends AbstractAssetGenerator {
-  private templatePath: string = '../../assets/ts/component/component.ts.template';
-  private testTemplatePath: string = '../../assets/ts/component/component.spec.ts.template';
+  private templatePath: string = '../../../assets/ts/component/component.ts.template';
+  private testTemplatePath: string = '../../../assets/ts/component/component.spec.ts.template';
   private updater: ModuleUpdater = new ComponentUpdater();
 
   private FILE_EXTENSION: string = 'ts';

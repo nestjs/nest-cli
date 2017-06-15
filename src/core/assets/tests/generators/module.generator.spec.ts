@@ -40,9 +40,9 @@ describe('ModuleGenerator', () => {
       const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
       return generator.generate('path/to/asset')
         .then(() => {
-          expect(addNameSpy.calledOnce).to.be.true;
-          expect(addAssetSpy.calledOnce).to.be.true;
-          expect(buildSpy.calledOnce).to.be.true;
+          sinon.assert.calledOnce(addNameSpy);
+          sinon.assert.calledOnce(addAssetSpy);
+          sinon.assert.calledOnce(buildSpy);
         })
     });
 
@@ -53,23 +53,19 @@ describe('ModuleGenerator', () => {
       const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
       return generator.generate('path/to/asset')
         .then(() => {
-          expect(addNameSpy.calledOnce).to.be.true;
-          expect(addAssetSpy.calledOnce).to.be.true;
-          expect(addExtensionSpy.calledOnce).to.be.true;
-          expect(buildSpy.calledOnce).to.be.true;
+          sinon.assert.calledOnce(addNameSpy);
+          sinon.assert.calledOnce(addAssetSpy);
+          sinon.assert.calledOnce(addExtensionSpy);
+          sinon.assert.calledOnce(buildSpy);
         })
     });
 
     it('should copy the asset file', () => {
       return generator.generate('path/to/asset')
         .then(() => {
-          expect(createReadStreamStub.calledWith(
-            path.resolve(__dirname, '../../../assets/ts/module/module.ts.template')
-          )).to.be.true;
-          expect(createWriteStreamStub.calledWith(
-            path.resolve(process.cwd(), 'path/to/asset', 'asset.module.ts')
-          )).to.be.true;
-          expect(pipeStub.callCount).to.be.equal(2);
+          sinon.assert.calledWith(createReadStreamStub, path.resolve(__dirname, '../../../../assets/ts/module/module.ts.template'));
+          sinon.assert.calledWith(createWriteStreamStub, path.resolve(process.cwd(), 'path/to/asset', 'asset.module.ts'));
+          sinon.assert.callCount(pipeStub, 2);
         });
     });
   });

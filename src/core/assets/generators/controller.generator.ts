@@ -8,8 +8,8 @@ import {ControllerUpdater} from '../module-updaters/controller.updater';
 import * as path from 'path';
 
 export class ControllerGenerator extends AbstractAssetGenerator {
-  private templatePath: string = '../../assets/ts/controller/controller.ts.template';
-  private testTemplatePath: string = '../../assets/ts/controller/controller.spec.ts.template';
+  private templatePath: string = '../../../assets/ts/controller/controller.ts.template';
+  private testTemplatePath: string = '../../../assets/ts/controller/controller.spec.ts.template';
   private updater: ModuleUpdater = new ControllerUpdater();
 
   public generate(name: string): Promise<void> {
