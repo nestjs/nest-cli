@@ -1,7 +1,7 @@
 import {CommandArguments, CommandOptions, Logger} from '../../common/interfaces';
-import {AssetEnum} from '../../common/enums';
-import {AssetGenerator} from '../../core/generators';
-import {CommandHandler} from '../../common/interfaces/command.handler.interface';
+import {AssetEnum} from '../../common/asset/enums';
+import {AssetGenerator} from '../../core/assets/generators';
+import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
