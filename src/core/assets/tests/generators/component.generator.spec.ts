@@ -1,6 +1,4 @@
-import {Generator} from '../../../../common/interfaces';
 import {ComponentGenerator} from '../../generators';
-import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as fs from 'fs';
@@ -8,6 +6,7 @@ import * as path from 'path';
 import {ClassNameBuilder, FileNameBuilder} from '../../builders';
 import {LoggerService} from '../../../logger';
 import {ComponentUpdater} from '../../module-updaters/component.updater';
+import {Generator} from '../../../../common/asset/interfaces/generator.interface';
 
 describe('ComponentGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -27,7 +26,7 @@ describe('ComponentGenerator', () => {
     updateStub = sandbox.stub(ComponentUpdater.prototype, 'update').callsFake(() => Promise.resolve());
   });
 
-  let generator: Generator;
+  let generator: Generator
   beforeEach(() => generator = new ComponentGenerator());
 
   describe('#generate()', () => {

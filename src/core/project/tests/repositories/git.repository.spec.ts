@@ -1,9 +1,9 @@
-import {Repository} from '../../../../common/interfaces';
 import {GitRepository} from '../../repositories';
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 import {FileSystemUtils, GitUtils} from '../../../utils';
 import * as path from 'path';
+import {Repository} from '../../../../common/project/interfaces/repository.interface';
 
 describe('GitRepository', () => {
   let sandbox: sinon.SinonSandbox;

@@ -3,7 +3,8 @@ import {ReplaceTransform} from '../streams/replace.transform';
 import * as path from 'path';
 import * as fs from 'fs';
 import {Readable, Writable} from 'stream';
-import {Generator, Logger} from '../../../common/interfaces';
+import {Logger} from '../../../common/logger/interfaces/logger.interface';
+import {Generator} from '../../../common/asset/interfaces/generator.interface';
 
 export abstract class AbstractAssetGenerator implements Generator {
   protected logger: Logger = LoggerService.getLogger();

@@ -1,8 +1,8 @@
 import {CaporalProgram} from '../../caporal/caporal.program';
 import * as sinon from 'sinon';
-import {Program} from '../../../../common/interfaces';
 import * as caporal from 'caporal';
 import {expect} from 'chai';
+import {Program} from '../../../../common/program/interfaces/program.interface';
 
 describe('CaporalProgram', () => {
   let sandbox: sinon.SinonSandbox;

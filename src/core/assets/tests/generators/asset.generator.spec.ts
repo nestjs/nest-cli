@@ -1,9 +1,9 @@
-import {Generator} from '../../../../common/interfaces';
-import {AssetEnum} from '../../../../common/asset/enums';
 import {AssetGenerator, ComponentGenerator, ControllerGenerator, ModuleGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
+import {Generator} from '../../../../common/asset/interfaces/generator.interface';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;

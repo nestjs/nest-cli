@@ -1,12 +1,11 @@
 import {ModuleGenerator} from '../../generators';
-import {Generator} from '../../../../common/interfaces';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
-import {expect} from 'chai';
 import * as path from 'path';
 import {PassThrough} from 'stream';
 import {ClassNameBuilder, FileNameBuilder} from '../../builders';
 import {LoggerService} from '../../../logger';
+import {Generator} from '../../../../common/asset/interfaces/generator.interface';
 
 describe('ModuleGenerator', () => {
   let sandbox: sinon.SinonSandbox;
