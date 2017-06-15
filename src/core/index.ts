@@ -1,7 +1,6 @@
 export * from './assets';
 export * from './assets/builders';
 export * from './program/caporal';
-export * from './configuration';
 export * from './assets/generators';
 export * from './logger';
 export * from './assets/replacers';
