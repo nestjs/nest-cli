@@ -1,3 +1,3 @@
-export {ModuleAsset} from './module.asset.interface';
-export {ControllerAsset} from './controller.asset.interface';
-export {ComponentAsset} from './component.asset.interface';
+export {ModuleAsset} from './interfaces/module.asset.interface';
+export {ControllerAsset} from './interfaces/controller.asset.interface';
+export {ComponentAsset} from './interfaces/component.asset.interface';

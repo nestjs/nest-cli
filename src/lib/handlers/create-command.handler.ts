@@ -1,9 +1,9 @@
 import {CommandArguments, CommandOptions, Logger, Repository} from '../../common/interfaces';
-import {GitRepository} from '../../core/repositories';
-import {CommandHandler} from '../../common/interfaces/command.handler.interface';
+import {GitRepository} from '../../core/project/repositories';
+import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 import {FileSystemUtils} from '../../core/utils/file-system.utils';
 import * as path from 'path';
-import {ColorService} from '../../core/loggers/color.service';
+import {ColorService} from '../../core/logger/color.service';
 
 export interface CreateCommandArguments extends CommandArguments {
   name: string
