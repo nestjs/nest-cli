@@ -7,6 +7,7 @@ import {FileSystemUtils} from '../../utils/file-system.utils';
 import {Asset} from '../../../common/asset/interfaces/asset.interface';
 import * as fs from 'fs';
 import {ReadStream, WriteStream} from 'fs';
+import {ReplaceTransform} from '../streams/replace.transform';
 
 export class AssetGenerator implements Generator {
   private module: Generator = new ModuleGenerator();
@@ -24,7 +25,11 @@ export class AssetGenerator implements Generator {
     return new Promise<void>((resolve, reject) => {
       const reader: ReadStream = fs.createReadStream(asset.template.filename);
       const writer: WriteStream = fs.createWriteStream(asset.filename);
-      resolve();
+      reader
+        .pipe(new ReplaceTransform(asset.template.replacer))
+        .pipe(writer);
+      reader.on('end', resolve);
+      reader.on('error', reject);
     });
   }
 

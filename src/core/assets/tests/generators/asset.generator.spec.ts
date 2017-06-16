@@ -8,6 +8,8 @@ import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {AssetBuilder} from '../../builders/asset.builder';
 import {TemplateBuilder} from '../../builders/template.builder';
 import * as fs from 'fs';
+import {PassThrough} from 'stream';
+import {ReplaceTransform} from '../../streams/replace.transform';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -70,9 +72,15 @@ describe('AssetGenerator', () => {
 
   let createReadStreamStub: sinon.SinonStub;
   let createWriteStreamStub: sinon.SinonStub;
+  let pipeSpy: sinon.SinonSpy;
   beforeEach(() => {
-    createReadStreamStub = sandbox.stub(fs, 'createReadStream');
-    createWriteStreamStub = sandbox.stub(fs, 'createWriteStream');
+    createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => {
+      const reader = new PassThrough();
+      reader.end();
+      return reader;
+    });
+    createWriteStreamStub = sandbox.stub(fs, 'createWriteStream').callsFake(() => new PassThrough());
+    pipeSpy = sandbox.spy(PassThrough.prototype, 'pipe');
   });
 
   describe('#generate()', () => {
@@ -98,6 +106,28 @@ describe('AssetGenerator', () => {
       return generator.generate(asset)
         .then(() => {
           sinon.assert.calledWith(createWriteStreamStub, asset.filename);
+        });
+    });
+
+    it('should pipe the read stream to the write stream by applying a reply transform', () => {
+      return generator.generate(asset)
+        .then(() => {
+          sinon.assert.called(pipeSpy);
+        });
+    });
+
+    it('should reject when an error occurred in the pipeline', () => {
+      createReadStreamStub.callsFake(() => {
+        const reader = new PassThrough();
+        reader.emit('error', 'error message');
+        return reader;
+      });
+      return generator.generate(asset)
+        .then(() => {
+          throw new Error('should not be here');
+        })
+        .catch(error => {
+          expect(error.message).to.be.equal('Unhandled "error" event. (error message)');
         });
     });
   });
