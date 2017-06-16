@@ -1,7 +1,10 @@
 import {Replacer} from './replacer.interface';
+import {Template} from './template.interface';
 
 export interface Asset {
-  path: string
   filename: string
-  replacer: Replacer
+  className?: string
+  template?: Template
+  path?: string
+  replacer?: Replacer
 }
