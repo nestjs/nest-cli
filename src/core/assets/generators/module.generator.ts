@@ -8,7 +8,7 @@ import {AbstractAssetGenerator} from './abstract-asset.generator';
 export class ModuleGenerator extends AbstractAssetGenerator {
   private templatePath: string = path.resolve(__dirname, '../../../assets/ts/module/module.ts.template');
 
-  public generate(name: string): Promise<void> {
+  public generateFrom(name: string): Promise<void> {
     const asset: ModuleAsset = {
       path: name,
       filename: new FileNameBuilder().addName(name).addAsset(AssetEnum.MODULE).addExtension('ts').build(),

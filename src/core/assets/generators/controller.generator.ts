@@ -6,18 +6,19 @@ import {AbstractAssetGenerator} from './abstract-asset.generator';
 import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
 import {ControllerUpdater} from '../module-updaters/controller.updater';
 import * as path from 'path';
+import {Asset} from '../../../common/asset/interfaces/asset.interface';
 
 export class ControllerGenerator extends AbstractAssetGenerator {
   private templatePath: string = '../../../assets/ts/controller/controller.ts.template';
   private testTemplatePath: string = '../../../assets/ts/controller/controller.spec.ts.template';
   private updater: ModuleUpdater = new ControllerUpdater();
 
-  public generate(name: string): Promise<void> {
+  public generateFrom(name: string): Promise<void> {
     this.generateTestAsset(name);
-    return this.generateAsset(name);
+    return this.generateClassAsset(name);
   }
 
-  private generateAsset(name: string): Promise<void> {
+  private generateClassAsset(name: string): Promise<void> {
     const filename: string = new FileNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).addExtension('ts').build();
     const className: string = new ClassNameBuilder().addName(name).addAsset(AssetEnum.CONTROLLER).build();
     const asset: ControllerAsset = {

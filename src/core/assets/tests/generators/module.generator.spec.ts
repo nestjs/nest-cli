@@ -23,7 +23,7 @@ describe('ModuleGenerator', () => {
   let generator: Generator;
   beforeEach(() => generator = new ModuleGenerator());
 
-  describe('#generate()', () => {
+  describe('#generateFrom()', () => {
     let createReadStreamStub: sinon.SinonStub;
     let createWriteStreamStub: sinon.SinonStub;
     let pipeStub: sinon.SinonStub;
@@ -37,7 +37,7 @@ describe('ModuleGenerator', () => {
       const addNameSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addName');
       const addAssetSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addAsset');
       const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledOnce(addNameSpy);
           sinon.assert.calledOnce(addAssetSpy);
@@ -50,7 +50,7 @@ describe('ModuleGenerator', () => {
       const addAssetSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addAsset');
       const addExtensionSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addExtension');
       const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledOnce(addNameSpy);
           sinon.assert.calledOnce(addAssetSpy);
@@ -60,7 +60,7 @@ describe('ModuleGenerator', () => {
     });
 
     it('should copy the asset file', () => {
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledWith(createReadStreamStub, path.resolve(__dirname, '../../../../assets/ts/module/module.ts.template'));
           sinon.assert.calledWith(createWriteStreamStub, path.resolve(process.cwd(), 'path/to/asset', 'asset.module.ts'));

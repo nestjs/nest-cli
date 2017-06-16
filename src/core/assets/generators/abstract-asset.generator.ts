@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import {Readable, Writable} from 'stream';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
 import {Generator} from '../../../common/asset/interfaces/generator.interface';
+import {Asset} from '../../../common/asset/interfaces/asset.interface';
 
 export abstract class AbstractAssetGenerator implements Generator {
   protected logger: Logger = LoggerService.getLogger();
@@ -19,5 +20,9 @@ export abstract class AbstractAssetGenerator implements Generator {
     this.logger.info(ColorService.green('create'), `${ asset.path }/${ asset.filename }`);
   }
 
-  public abstract generate(name: string): Promise<void>;
+  public abstract generateFrom(name: string): Promise<void>;
+
+  public generate(asset: Asset): Promise<void> {
+    return undefined;
+  }
 }

@@ -14,12 +14,12 @@ export class ComponentGenerator extends AbstractAssetGenerator {
 
   private FILE_EXTENSION: string = 'ts';
 
-  public generate(name: string): Promise<void> {
+  public generateFrom(name: string): Promise<void> {
     this.generateTestAsset(name);
-    return this.generateAsset(name);
+    return this.generateClassAsset(name);
   }
 
-  private generateAsset(name: string): Promise<void> {
+  private generateClassAsset(name: string): Promise<void> {
     const filename: string = new FileNameBuilder().addName(name).addAsset(AssetEnum.COMPONENT).addExtension(this.FILE_EXTENSION).build();
     const className: string = new ClassNameBuilder().addName(name).addAsset(AssetEnum.COMPONENT).build();
     const asset: ComponentAsset = {

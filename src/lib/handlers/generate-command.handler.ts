@@ -22,6 +22,6 @@ export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
     const asset: AssetEnum = ASSETS_MAP.get(args.asset);
     const name: string = args.name;
-    return new AssetGenerator(asset).generate(name);
+    return new AssetGenerator(asset).generateFrom(name);
   }
 }

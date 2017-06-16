@@ -16,7 +16,7 @@ describe('GenerateCommandHandler', () => {
 
   let generateStub: sinon.SinonStub;
   beforeEach(() => {
-    generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
+    generateStub = sandbox.stub(AssetGenerator.prototype, 'generateFrom').callsFake(() => Promise.resolve());
   });
 
   describe('#execute()', () => {

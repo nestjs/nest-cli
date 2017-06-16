@@ -29,7 +29,7 @@ describe('ControllerGenerator', () => {
   let generator: Generator;
   beforeEach(() => generator = new ControllerGenerator());
 
-  describe('#generate()', () => {
+  describe('#generateFrom()', () => {
     let createReadStreamStub: sinon.SinonStub;
     let createWriteStreamStub: sinon.SinonStub;
     let pipeStub: sinon.SinonStub;
@@ -43,7 +43,7 @@ describe('ControllerGenerator', () => {
       const addNameSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addName');
       const addAssetSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'addAsset');
       const buildSpy: sinon.SinonSpy = sandbox.spy(ClassNameBuilder.prototype, 'build');
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledTwice(addNameSpy);
           sinon.assert.calledTwice(addAssetSpy);
@@ -57,7 +57,7 @@ describe('ControllerGenerator', () => {
       const addTestSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addTest');
       const addExtensionSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'addExtension');
       const buildSpy: sinon.SinonSpy = sandbox.spy(FileNameBuilder.prototype, 'build');
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledThrice(addNameSpy);
           sinon.assert.calledThrice(addAssetSpy);
@@ -68,7 +68,7 @@ describe('ControllerGenerator', () => {
     });
 
     it('should copy the asset', () => {
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledWith(createReadStreamStub, path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'))
           sinon.assert.calledWith(createWriteStreamStub, path.resolve(process.cwd(), 'path/to/asset', 'asset.controller.ts'));
@@ -77,7 +77,7 @@ describe('ControllerGenerator', () => {
     });
 
     it('should copy the test asset files', () => {
-      return generator.generate('path/to/asset')
+      return generator.generateFrom('path/to/asset')
         .then(() => {
           sinon.assert.calledWith(createReadStreamStub, path.resolve(__dirname, '../../../../assets/ts/controller/controller.spec.ts.template'));
           sinon.assert.calledWith(createWriteStreamStub, path.resolve(process.cwd(), 'path/to/asset', 'asset.controller.spec.ts'));
@@ -88,7 +88,7 @@ describe('ControllerGenerator', () => {
     it('should update the nearest module metadata and imports', () => {
       const name: string = 'path/to/asset';
       sandbox.stub(process, 'cwd').callsFake(() => '');
-      return generator.generate(name)
+      return generator.generateFrom(name)
         .then(() => {
           sinon.assert.calledWith(updateStub, `${ name }/asset.controller.ts`);
         });
