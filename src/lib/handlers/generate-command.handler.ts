@@ -4,6 +4,8 @@ import {CommandArguments} from '../../common/program/interfaces/command.aguments
 import {CommandOptions} from '../../common/program/interfaces/command.options.interface';
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {ModuleProcessor} from '../../core/assets/processors/module.processor';
+import {ControllerProcessor} from '../../core/assets/processors/controller.processor';
+import {ComponentProcessor} from '../../core/assets/processors/component.processor';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
@@ -25,6 +27,10 @@ export class GenerateCommandHandler implements CommandHandler {
     switch (asset) {
       case AssetEnum.MODULE:
         return new ModuleProcessor(name).process();
+      case AssetEnum.CONTROLLER:
+        return new ControllerProcessor(name).process();
+      case AssetEnum.COMPONENT:
+        return new ComponentProcessor(name).process();
     }
   }
 }

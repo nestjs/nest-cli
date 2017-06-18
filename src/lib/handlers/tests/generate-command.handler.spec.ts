@@ -1,15 +1,9 @@
 import {GenerateCommandHandler} from '../generate-command.handler';
 import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
-import {AssetGenerator} from '../../../core/assets/generators/asset.generator';
 import * as sinon from 'sinon';
-import {expect} from 'chai';
-import {Asset} from '../../../common/asset/interfaces/asset.interface';
-import {AssetBuilder} from '../../../core/assets/builders/asset.builder';
-import {FileNameBuilder} from '../../../core/assets/builders/file-name.builder';
-import {AssetEnum} from '../../../common/asset/enums/asset.enum';
-import {ClassNameBuilder} from '../../../core/assets/builders/class-name.builder';
-import * as path from 'path';
 import {ModuleProcessor} from '../../../core/assets/processors/module.processor';
+import {ControllerProcessor} from '../../../core/assets/processors/controller.processor';
+import {ComponentProcessor} from '../../../core/assets/processors/component.processor';
 
 describe('GenerateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -30,15 +24,19 @@ describe('GenerateCommandHandler', () => {
         });
     });
 
-    it.skip('should generate controller assets', () => {
+    it('should generate controller assets', () => {
+      let processStub = sandbox.stub(ControllerProcessor.prototype, 'process').callsFake(() => Promise.resolve());
       return handler.execute({ asset: 'controller', name: 'name' }, {}, console)
         .then(() => {
+          sinon.assert.calledOnce(processStub);
         });
     });
 
-    it.skip('should generate component assets', () => {
+    it('should generate component assets', () => {
+      let processStub = sandbox.stub(ComponentProcessor.prototype, 'process').callsFake(() => Promise.resolve());
       return handler.execute({ asset: 'component', name: 'name' }, {}, console)
         .then(() => {
+          sinon.assert.calledOnce(processStub);
         });
     });
   });
