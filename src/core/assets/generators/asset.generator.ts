@@ -14,7 +14,7 @@ export class AssetGenerator implements Generator {
   private controller: Generator = new ControllerGenerator();
   private component: Generator = new ComponentGenerator();
 
-  constructor(private _asset: AssetEnum) {}
+  constructor(private _asset?: AssetEnum) {}
 
   public generateFrom(name: string): Promise<void> {
     return FileSystemUtils.mkdir(name)
