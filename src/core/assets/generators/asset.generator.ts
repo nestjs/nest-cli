@@ -8,6 +8,7 @@ import {Asset} from '../../../common/asset/interfaces/asset.interface';
 import * as fs from 'fs';
 import {ReadStream, WriteStream} from 'fs';
 import {ReplaceTransform} from '../streams/replace.transform';
+import * as path from 'path';
 
 export class AssetGenerator implements Generator {
   private module: Generator = new ModuleGenerator();
@@ -22,15 +23,18 @@ export class AssetGenerator implements Generator {
   }
 
   public generate(asset: Asset): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const reader: ReadStream = fs.createReadStream(asset.template.filename);
-      const writer: WriteStream = fs.createWriteStream(asset.filename);
-      reader
-        .pipe(new ReplaceTransform(asset.template.replacer))
-        .pipe(writer);
-      reader.on('end', resolve);
-      reader.on('error', reject);
-    });
+    return FileSystemUtils.mkdir(path.dirname(path.relative(process.cwd(), asset.filename)))
+      .then(() => {
+        return new Promise<void>((resolve, reject) => {
+          const reader: ReadStream = fs.createReadStream(asset.template.filename);
+          const writer: WriteStream = fs.createWriteStream(asset.filename);
+          reader
+            .pipe(new ReplaceTransform(asset.template.replacer))
+            .pipe(writer);
+          reader.on('end', resolve);
+          reader.on('error', reject);
+        });
+      });
   }
 
   private generateAssetFiles(name: string) {

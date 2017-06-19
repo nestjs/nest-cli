@@ -10,6 +10,7 @@ import {TemplateBuilder} from '../../builders/template.builder';
 import * as fs from 'fs';
 import {PassThrough} from 'stream';
 import {ReplaceTransform} from '../../streams/replace.transform';
+import * as path from 'path';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -70,10 +71,12 @@ describe('AssetGenerator', () => {
   let generator: Generator;
   beforeEach(() => generator = new AssetGenerator(null));
 
+  let mkdirStub: sinon.SinonStub;
   let createReadStreamStub: sinon.SinonStub;
   let createWriteStreamStub: sinon.SinonStub;
   let pipeSpy: sinon.SinonSpy;
   beforeEach(() => {
+    mkdirStub = sandbox.stub(FileSystemUtils, 'mkdir').callsFake(() => Promise.resolve());
     createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => {
       const reader = new PassThrough();
       reader.end();
@@ -94,6 +97,13 @@ describe('AssetGenerator', () => {
           .build()
       )
       .build();
+
+    it('should generate the asset folder structure', () => {
+      return generator.generate(asset)
+        .then(() => {
+          sinon.assert.calledWith(mkdirStub, path.dirname(path.relative(process.cwd(), asset.filename)));
+        });
+    });
 
     it('should open a read stream from the asset template filename', () => {
       return generator.generate(asset)
