@@ -1,16 +1,14 @@
-import {AssetGenerator, ComponentGenerator, ControllerGenerator, ModuleGenerator} from '../../generators';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
-import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 import {Generator} from '../../../../common/asset/interfaces/generator.interface';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {AssetBuilder} from '../../builders/asset.builder';
 import {TemplateBuilder} from '../../builders/template.builder';
 import * as fs from 'fs';
 import {PassThrough} from 'stream';
-import {ReplaceTransform} from '../../streams/replace.transform';
 import * as path from 'path';
+import {AssetGenerator} from '../../generators/asset.generator';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -18,58 +16,7 @@ describe('AssetGenerator', () => {
   afterEach(() => sandbox.restore());
 
   let generator: Generator;
-  describe('#generateFrom()', () => {
-    let generateStub: sinon.SinonStub;
-    let mkdirStub: sinon.SinonStub;
-    beforeEach(() => {
-      mkdirStub = sandbox.stub(FileSystemUtils, 'mkdir').callsFake(() => Promise.resolve());
-    });
-
-    it('should generate the asset folder structure', () => {
-      generator = new AssetGenerator(AssetEnum.MODULE);
-      generateStub = sandbox.stub(ModuleGenerator.prototype, 'generateFrom').callsFake(() => Promise.resolve());
-      return generator.generateFrom('path/to/asset')
-        .then(() => {
-          sinon.assert.calledWith(mkdirStub, 'path/to/asset');
-        });
-    });
-
-    it('should use the ModuleGenerator.generate()', () => {
-      generator = new AssetGenerator(AssetEnum.MODULE);
-      generateStub = sandbox.stub(ModuleGenerator.prototype, 'generateFrom').callsFake(() => Promise.resolve());
-      return generator.generateFrom('name')
-        .then(() => {
-          expect(generateStub.calledOnce).to.be.true;
-        });
-    });
-
-    it('should use the ControllerGenerator.generate()', () => {
-      generator = new AssetGenerator(AssetEnum.CONTROLLER);
-      generateStub = sandbox.stub(ControllerGenerator.prototype, 'generateFrom').callsFake(() => Promise.resolve());
-      return generator.generateFrom('name')
-        .then(() => {
-          expect(generateStub.calledOnce).to.be.true;
-        });
-    });
-
-    it('should use the ComponentGenerator.generate()', () => {
-      generator = new AssetGenerator(AssetEnum.COMPONENT);
-      generateStub = sandbox.stub(ComponentGenerator.prototype, 'generateFrom').callsFake(() => Promise.resolve());
-      return generator.generateFrom('name')
-        .then(() => {
-          expect(generateStub.calledOnce).to.be.true;
-        });
-    });
-  });
-});
-
-describe('AssetGenerator', () => {
-  let sandbox: sinon.SinonSandbox;
-  beforeEach(() => sandbox = sinon.sandbox.create());
-  afterEach(() => sandbox.restore());
-
-  let generator: Generator;
-  beforeEach(() => generator = new AssetGenerator(null));
+  beforeEach(() => generator = new AssetGenerator());
 
   let mkdirStub: sinon.SinonStub;
   let createReadStreamStub: sinon.SinonStub;
