@@ -10,6 +10,7 @@ import {FileSystemUtils} from '../../utils/file-system.utils';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
 import {LoggerService} from '../../logger/logger.service';
 import {ColorService} from '../../logger/color.service';
+import * as path from 'path';
 
 export class ComponentUpdater implements ModuleUpdater {
   private finder: ModuleFinder = new ModuleFinderImpl();
@@ -32,7 +33,7 @@ export class ComponentUpdater implements ModuleUpdater {
             intermediateReader.pipe(writer);
             intermediateReader.on('end', () => {
               FileSystemUtils.rm(`${ moduleFilename }.lock`)
-                .then(() => this.logger.info(ColorService.yellow('update'), `${ moduleFilename }`))
+                .then(() => this.logger.info(ColorService.yellow('update'), `${ path.relative(process.cwd(), moduleFilename) }`))
                 .then(() => resolve())
                 .catch(error => reject(error));
             });

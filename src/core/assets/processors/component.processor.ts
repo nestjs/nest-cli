@@ -8,19 +8,24 @@ import {AssetEnum} from '../../../common/asset/enums/asset.enum';
 import {FileNameBuilder} from '../builders/file-name.builder';
 import {AssetBuilder} from '../builders/asset.builder';
 import {ClassNameBuilder} from '../builders/class-name.builder';
+import {ComponentUpdater} from '../module-updaters/component.updater';
+import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
 
 export class ComponentProcessor implements Processor{
   private _generator: Generator;
+  private _updater: ModuleUpdater;
   private _assets: Asset[];
 
   constructor(private _name: string) {
     this._generator = new AssetGenerator();
+    this._updater = new ComponentUpdater();
     this._assets = [];
   }
 
   public process(): Promise<void> {
     this.buildAssets();
-    return this.generate();
+    return this.generate()
+      .then(() => this.updateModule());
   }
 
   private buildAssets() {
@@ -91,5 +96,9 @@ export class ComponentProcessor implements Processor{
   private generate(): Promise<void> {
     return this._generator.generate(this._assets[0])
       .then(() => this._generator.generate(this._assets[1]));
+  }
+
+  private updateModule(): Promise<void> {
+    return this._updater.update(this._assets[0].filename, this._assets[0].className);
   }
 }
