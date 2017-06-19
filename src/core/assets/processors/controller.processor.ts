@@ -51,7 +51,7 @@ export class ControllerProcessor implements Processor {
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../assets/ts/controller/controller.ts.template'))
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/controller/controller.ts.template'))
           .addReplacer({
             __CLASS_NAME__: className
           })
@@ -78,7 +78,7 @@ export class ControllerProcessor implements Processor {
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../assets/ts/controller/controller.spec.ts.template'))
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/controller/controller.spec.ts.template'))
           .addReplacer({
             __CLASS_NAME__: className,
             __IMPORT__: filename

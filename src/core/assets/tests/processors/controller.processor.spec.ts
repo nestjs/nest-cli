@@ -27,7 +27,7 @@ describe('ControllerProcessor', () => {
           filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.controller.ts'),
           className: 'NameController',
           template: {
-            filename: path.resolve(__dirname, '../../../assets/ts/controller/controller.ts.template'),
+            filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameController'
             }
@@ -37,7 +37,7 @@ describe('ControllerProcessor', () => {
           filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.controller.spec.ts'),
           className: 'NameController',
           template: {
-            filename: path.resolve(__dirname, '../../../assets/ts/controller/controller.spec.ts.template'),
+            filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.spec.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameController',
               __IMPORT__: 'name.controller.ts'

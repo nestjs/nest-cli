@@ -27,7 +27,7 @@ describe('ComponentProcessor', () => {
           filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.service.ts'),
           className: 'NameService',
           template: {
-            filename: path.resolve(__dirname, '../../../assets/ts/component/component.ts.template'),
+            filename: path.resolve(__dirname, '../../../../assets/ts/component/component.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameService'
             }
@@ -37,7 +37,7 @@ describe('ComponentProcessor', () => {
           filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.service.spec.ts'),
           className: 'NameService',
           template: {
-            filename: path.resolve(__dirname, '../../../assets/ts/component/component.spec.ts.template'),
+            filename: path.resolve(__dirname, '../../../../assets/ts/component/component.spec.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameService',
               __IMPORT__: 'name.service.ts'

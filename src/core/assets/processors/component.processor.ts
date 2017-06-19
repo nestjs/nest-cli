@@ -51,7 +51,7 @@ export class ComponentProcessor implements Processor{
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../assets/ts/component/component.ts.template'))
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.ts.template'))
           .addReplacer({
             __CLASS_NAME__: className
           })
@@ -78,7 +78,7 @@ export class ComponentProcessor implements Processor{
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../assets/ts/component/component.spec.ts.template'))
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.spec.ts.template'))
           .addReplacer({
             __CLASS_NAME__: className,
             __IMPORT__: filename
