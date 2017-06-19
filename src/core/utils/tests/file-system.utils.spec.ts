@@ -106,4 +106,37 @@ describe('FileSystemUtils', () => {
         });
     });
   });
+
+  describe('#readFile()', () => {
+    let readFileStub: sinon.SinonStub;
+    beforeEach(() => readFileStub = sandbox.stub(fs, 'readFile'));
+
+    it('can call readFile()', () => {
+      readFileStub.callsFake((filename, encoding, callback) => callback(null, Buffer.from('content')));
+      const filename: string = 'filename';
+      return FileSystemUtils.readFile(filename);
+    });
+
+    it('should return the read file content', () => {
+      readFileStub.callsFake((filename, encoding, callback) => callback(null, Buffer.from('content')));
+      const filename: string = 'filename';
+      return FileSystemUtils.readFile(filename)
+        .then(() => {
+          sinon.assert.calledOnce(readFileStub);
+        });
+    });
+
+    it('should reject an error if something wrong', () => {
+      readFileStub.callsFake((filename, encoding, callback) => callback('reject message', null));
+      const filename: string = 'filename';
+      return FileSystemUtils.readFile(filename)
+        .then(() => {
+          throw new Error('should not be here');
+        })
+        .catch(error => {
+          console.log(error);
+          expect(error.message).to.not.be.equal('should not be here');
+        });
+    });
+  });
 });
