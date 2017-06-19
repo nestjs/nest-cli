@@ -27,7 +27,7 @@ describe('ModuleProcessor', () => {
           filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.module.ts'),
           className: 'NameModule',
           template: {
-            filename: path.resolve(__dirname, '../../../assets/ts/module/module.ts.template'),
+            filename: path.resolve(__dirname, '../../../../assets/ts/module/module.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameModule'
             }

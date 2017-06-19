@@ -45,7 +45,7 @@ export class ModuleProcessor implements Processor {
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../assets/ts/module/module.ts.template'))
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/module/module.ts.template'))
           .addReplacer({
             __CLASS_NAME__: className
           })
