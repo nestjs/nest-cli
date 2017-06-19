@@ -1,6 +1,6 @@
 import {ClassNameBuilder} from '../../builders';
-import {AssetEnum} from '../../../../common/asset/enums';
 import {expect} from 'chai';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('ClassNameBuilder', () => {
   let builder: ClassNameBuilder;

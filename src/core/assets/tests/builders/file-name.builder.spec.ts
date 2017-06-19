@@ -1,6 +1,6 @@
 import {FileNameBuilder} from '../../builders';
-import {AssetEnum} from '../../../../common/asset/enums';
 import {expect} from 'chai';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('FileNameBuilder', () => {
   let builder: FileNameBuilder;

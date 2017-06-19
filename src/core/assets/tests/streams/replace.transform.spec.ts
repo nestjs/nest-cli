@@ -2,8 +2,8 @@ import {Readable, Transform, Writable} from 'stream';
 import {ReplaceTransform} from '../../streams';
 import {expect} from 'chai';
 import {AssetReplacer} from '../../replacers';
-import {Replacer} from '../../../../common/interfaces';
 import {BufferedReadable, BufferedWritable} from './test.utils';
+import {Replacer} from '../../../../common/asset/interfaces/replacer.interface';
 
 describe('ReplaceTransform', () => {
   it('should replace data in the stream', done => {

@@ -1,5 +1,5 @@
-import {Command} from '../../common/interfaces';
 import {GenerateCommandHandler} from '../handlers';
+import {Command} from '../../common/program/interfaces/command.interface';
 
 export class GenerateCommandDescriptor {
   static declare(command: Command) {

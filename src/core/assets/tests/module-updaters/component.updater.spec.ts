@@ -6,7 +6,6 @@ import {ModuleFinderImpl} from '../../module-finders/module.finder';
 import {expect} from 'chai';
 import {BufferedReadable, BufferedWritable} from '../streams/test.utils';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
-import {ConsoleLogger} from '../../../logger/console.logger';
 import {LoggerService} from '../../../logger/logger.service';
 
 describe('ComponentUpdater', () => {

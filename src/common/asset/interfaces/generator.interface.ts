@@ -1,3 +1,5 @@
+import {Asset} from './asset.interface';
+
 export interface Generator {
-  generate(name: string): Promise<void>
+  generate(asset: Asset): Promise<void>
 }

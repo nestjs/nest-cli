@@ -1,0 +1,104 @@
+import {Processor} from '../../../common/asset/interfaces/processor.interface';
+import {Generator} from '../../../common/asset/interfaces/generator.interface';
+import {Asset} from '../../../common/asset/interfaces/asset.interface';
+import {AssetGenerator} from '../generators/asset.generator';
+import * as path from 'path';
+import {TemplateBuilder} from '../builders/template.builder';
+import {AssetEnum} from '../../../common/asset/enums/asset.enum';
+import {FileNameBuilder} from '../builders/file-name.builder';
+import {AssetBuilder} from '../builders/asset.builder';
+import {ClassNameBuilder} from '../builders/class-name.builder';
+import {ComponentUpdater} from '../module-updaters/component.updater';
+import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
+
+export class ComponentProcessor implements Processor{
+  private _generator: Generator;
+  private _updater: ModuleUpdater;
+  private _assets: Asset[];
+
+  constructor(private _name: string) {
+    this._generator = new AssetGenerator();
+    this._updater = new ComponentUpdater();
+    this._assets = [];
+  }
+
+  public process(): Promise<void> {
+    this.buildAssets();
+    return this.generate()
+      .then(() => this.updateModule());
+  }
+
+  private buildAssets() {
+    const className: string = new ClassNameBuilder()
+      .addName(this._name)
+      .addAsset(AssetEnum.COMPONENT)
+      .build();
+    const filename: string = new FileNameBuilder()
+      .addAsset(AssetEnum.COMPONENT)
+      .addName(this._name)
+      .addExtension('ts')
+      .addTest(false)
+      .build();
+    this._assets.push(this.buildClassAsset(className, filename));
+    this._assets.push(this.buildTestAsset(className, filename));
+  }
+
+  private buildClassAsset(className: string, filename: string): Asset {
+    return new AssetBuilder()
+      .addClassName(className)
+      .addFilename(
+        path.join(
+          process.cwd(),
+          'src/app/modules',
+          this._name,
+          filename
+        )
+      )
+      .addTemplate(
+        new TemplateBuilder()
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.ts.template'))
+          .addReplacer({
+            __CLASS_NAME__: className
+          })
+          .build()
+      )
+      .build();
+  }
+
+  private buildTestAsset(className: string, filename: string): Asset {
+    return new AssetBuilder()
+      .addClassName(className)
+      .addFilename(
+        path.join(
+          process.cwd(),
+          'src/app/modules',
+          this._name,
+          new FileNameBuilder()
+            .addAsset(AssetEnum.COMPONENT)
+            .addName(this._name)
+            .addExtension('ts')
+            .addTest(true)
+            .build()
+        )
+      )
+      .addTemplate(
+        new TemplateBuilder()
+          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.spec.ts.template'))
+          .addReplacer({
+            __CLASS_NAME__: className,
+            __IMPORT__: filename
+          })
+          .build()
+      )
+      .build();
+  }
+
+  private generate(): Promise<void> {
+    return this._generator.generate(this._assets[0])
+      .then(() => this._generator.generate(this._assets[1]));
+  }
+
+  private updateModule(): Promise<void> {
+    return this._updater.update(this._assets[0].filename, this._assets[0].className);
+  }
+}

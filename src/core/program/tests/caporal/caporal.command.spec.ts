@@ -1,8 +1,9 @@
-import {Command, CommandHandler} from '../../../../common/interfaces';
 import {CaporalCommand} from '../../caporal';
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 import * as caporal from 'caporal';
+import {Command} from '../../../../common/program/interfaces/command.interface';
+import {CommandHandler} from '../../../../common/program/interfaces/command.handler.interface';
 
 describe('CaporalCommand', () => {
   let sandbox: sinon.SinonSandbox;
