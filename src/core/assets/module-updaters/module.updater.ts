@@ -9,8 +9,8 @@ import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as fs from 'fs';
 import {MetadataTransform} from '../streams/metadata.transform';
 import {ImportTransform} from '../streams/import.transform';
-import {PathUtils} from '../../../../bin/core/utils/path.utils';
 import {AssetEnum} from '../../../common/asset/enums/asset.enum';
+import {PathUtils} from '../../utils/path.utils';
 
 export class ModuleUpdaterImpl implements ModuleUpdater {
   private finder: ModuleFinder = new ModuleFinderImpl();
