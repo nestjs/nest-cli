@@ -8,13 +8,14 @@ import {ComponentUpdater} from '../../module-updaters/component.updater';
 
 describe('ComponentProcessor', () => {
   const name: string = 'name';
+  const extension: string = 'ts';
 
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
   let processor: Processor;
-  beforeEach(() => processor = new ComponentProcessor(name));
+  beforeEach(() => processor = new ComponentProcessor(name, extension));
 
   let generateStub: sinon.SinonStub;
   let updateStub: sinon.SinonStub;

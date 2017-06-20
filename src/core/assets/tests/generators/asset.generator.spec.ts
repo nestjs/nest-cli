@@ -9,19 +9,18 @@ import * as fs from 'fs';
 import {PassThrough} from 'stream';
 import * as path from 'path';
 import {AssetGenerator} from '../../generators/asset.generator';
+import {LoggerService} from '../../../logger/logger.service';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
-  let generator: Generator;
-  beforeEach(() => generator = new AssetGenerator());
-
   let mkdirStub: sinon.SinonStub;
   let createReadStreamStub: sinon.SinonStub;
   let createWriteStreamStub: sinon.SinonStub;
   let pipeSpy: sinon.SinonSpy;
+  let getLoggerStub: sinon.SinonStub;
   beforeEach(() => {
     mkdirStub = sandbox.stub(FileSystemUtils, 'mkdir').callsFake(() => Promise.resolve());
     createReadStreamStub = sandbox.stub(fs, 'createReadStream').callsFake(() => {
@@ -31,7 +30,15 @@ describe('AssetGenerator', () => {
     });
     createWriteStreamStub = sandbox.stub(fs, 'createWriteStream').callsFake(() => new PassThrough());
     pipeSpy = sandbox.spy(PassThrough.prototype, 'pipe');
+    getLoggerStub = sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+      return {
+        info: () => {}
+      };
+    });
   });
+
+  let generator: Generator;
+  beforeEach(() => generator = new AssetGenerator());
 
   describe('#generate()', () => {
     const asset: Asset = new AssetBuilder()

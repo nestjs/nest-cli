@@ -16,7 +16,7 @@ export class ComponentProcessor implements Processor{
   private _updater: ModuleUpdater;
   private _assets: Asset[];
 
-  constructor(private _name: string) {
+  constructor(private _name: string, private _extension: string) {
     this._generator = new AssetGenerator();
     this._updater = new ComponentUpdater();
     this._assets = [];
@@ -36,7 +36,7 @@ export class ComponentProcessor implements Processor{
     const filename: string = new FileNameBuilder()
       .addAsset(AssetEnum.COMPONENT)
       .addName(this._name)
-      .addExtension('ts')
+      .addExtension(this._extension)
       .addTest(false)
       .build();
     this._assets.push(this.buildClassAsset(className, filename));
@@ -56,7 +56,7 @@ export class ComponentProcessor implements Processor{
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.ts.template'))
+          .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/component/component.${ this._extension }.template`))
           .addReplacer({
             __CLASS_NAME__: className
           })
@@ -76,14 +76,14 @@ export class ComponentProcessor implements Processor{
           new FileNameBuilder()
             .addAsset(AssetEnum.COMPONENT)
             .addName(this._name)
-            .addExtension('ts')
+            .addExtension(this._extension)
             .addTest(true)
             .build()
         )
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../../assets/ts/component/component.spec.ts.template'))
+          .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/component/component.spec.${ this._extension }.template`))
           .addReplacer({
             __CLASS_NAME__: className,
             __IMPORT__: filename
