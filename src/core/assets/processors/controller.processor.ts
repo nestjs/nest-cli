@@ -8,8 +8,8 @@ import {Asset} from '../../../common/asset/interfaces/asset.interface';
 import {ClassNameBuilder} from '../builders/class-name.builder';
 import {AssetGenerator} from '../generators/asset.generator';
 import {Generator} from '../../../common/asset/interfaces/generator.interface';
-import {ControllerUpdater} from '../module-updaters/controller.updater';
 import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
+import {ModuleUpdaterImpl} from '../module-updaters/module.updater';
 
 export class ControllerProcessor implements Processor {
   private _generator: Generator;
@@ -18,7 +18,7 @@ export class ControllerProcessor implements Processor {
 
   constructor(private _name: string, private _extension: string) {
     this._generator = new AssetGenerator();
-    this._updater = new ControllerUpdater();
+    this._updater = new ModuleUpdaterImpl();
     this._assets = [];
   }
 
@@ -99,6 +99,6 @@ export class ControllerProcessor implements Processor {
   }
 
   private updateModule(): Promise<void> {
-    return this._updater.update(this._assets[0].filename, this._assets[0].className);
+    return this._updater.update(this._assets[0].filename, this._assets[0].className, AssetEnum.CONTROLLER);
   }
 }
