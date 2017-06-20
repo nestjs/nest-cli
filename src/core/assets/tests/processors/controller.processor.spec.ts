@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import * as path from 'path';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {ControllerProcessor} from '../../processors/controller.processor';
-import {ControllerUpdater} from '../../module-updaters/controller.updater';
+import {ModuleUpdaterImpl} from '../../module-updaters/module.updater';
 
 describe('ControllerProcessor', () => {
   const name: string = 'name';
@@ -21,7 +21,7 @@ describe('ControllerProcessor', () => {
   let updateStub: sinon.SinonStub;
   beforeEach(() => {
     generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-    updateStub = sandbox.stub(ControllerUpdater.prototype, 'update').callsFake(() => Promise.resolve());
+    updateStub = sandbox.stub(ModuleUpdaterImpl.prototype, 'update').callsFake(() => Promise.resolve());
   });
 
   describe('#process()', () => {
