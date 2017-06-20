@@ -13,7 +13,7 @@ export class ModuleProcessor implements Processor {
   private _generator: Generator;
   private _assets: Asset[];
 
-  constructor(private _name: string) {
+  constructor(private _name: string, private _extension: string) {
     this._generator = new AssetGenerator();
     this._assets = [];
   }
@@ -38,14 +38,14 @@ export class ModuleProcessor implements Processor {
           new FileNameBuilder()
             .addAsset(AssetEnum.MODULE)
             .addName(this._name)
-            .addExtension('ts')
+            .addExtension(this._extension)
             .addTest(false)
             .build()
         )
       )
       .addTemplate(
         new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, '../../../assets/ts/module/module.ts.template'))
+          .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/module/module.${ this._extension }.template`))
           .addReplacer({
             __CLASS_NAME__: className
           })

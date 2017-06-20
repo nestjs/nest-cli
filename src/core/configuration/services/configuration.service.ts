@@ -6,7 +6,7 @@ import * as path from 'path';
 export class ConfigurationService {
   private static PROPERTIES: Map<string, string> = new Map<string, string>();
 
-  static load(): Promise<void> {
+  public static load(): Promise<void> {
     return FileSystemUtils.readFile(path.join(process.cwd(), 'nestconfig.json'))
       .then(content => {
         return JSON.parse(content);
@@ -19,10 +19,10 @@ export class ConfigurationService {
       });
   }
 
-  static getProperty(propertyKey: string): string {
+  public static getProperty(propertyKey: string): string {
     let propertyValue: string = this.PROPERTIES.get(propertyKey);
     if (isNullOrUndefined(propertyValue))
-      throw `Missing property "${ propertyKey }"`;
+      throw new Error(`Missing property "${ propertyKey }"`);
     return propertyValue;
   }
 }

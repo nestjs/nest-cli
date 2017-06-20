@@ -7,13 +7,14 @@ import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 
 describe('ModuleProcessor', () => {
   const name: string = 'name';
+  const extension: string = 'ts';
 
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
   let processor: Processor;
-  beforeEach(() => processor = new ModuleProcessor(name));
+  beforeEach(() => processor = new ModuleProcessor(name, extension));
 
   let generateStub: sinon.SinonStub;
   beforeEach(() => {

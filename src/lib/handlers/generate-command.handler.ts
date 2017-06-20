@@ -6,6 +6,7 @@ import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {ModuleProcessor} from '../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../core/assets/processors/component.processor';
+import {ConfigurationService} from '../../core/configuration/services/configuration.service';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
@@ -24,13 +25,14 @@ export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
     const asset: AssetEnum = ASSETS_MAP.get(args.asset);
     const name: string = args.name;
+    const language: string = ConfigurationService.getProperty('language');
     switch (asset) {
       case AssetEnum.MODULE:
-        return new ModuleProcessor(name).process();
+        return new ModuleProcessor(name, language).process();
       case AssetEnum.CONTROLLER:
-        return new ControllerProcessor(name).process();
+        return new ControllerProcessor(name, language).process();
       case AssetEnum.COMPONENT:
-        return new ComponentProcessor(name).process();
+        return new ComponentProcessor(name, language).process();
     }
   }
 }

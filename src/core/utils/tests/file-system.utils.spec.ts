@@ -134,7 +134,6 @@ describe('FileSystemUtils', () => {
           throw new Error('should not be here');
         })
         .catch(error => {
-          console.log(error);
           expect(error.message).to.not.be.equal('should not be here');
         });
     });

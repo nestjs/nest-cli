@@ -8,13 +8,14 @@ import {ControllerUpdater} from '../../module-updaters/controller.updater';
 
 describe('ControllerProcessor', () => {
   const name: string = 'name';
+  const extension: string= 'ts';
 
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
   let processor: Processor;
-  beforeEach(() => processor = new ControllerProcessor(name));
+  beforeEach(() => processor = new ControllerProcessor(name, extension));
 
   let generateStub: sinon.SinonStub;
   let updateStub: sinon.SinonStub;
