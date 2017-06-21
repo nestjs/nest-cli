@@ -5,3 +5,8 @@ script:
       - npm test
       - npm run -s build
 after_success: npm run -s coverage
+deploy:
+  provider: npm
+  api_key: $NPM_API_TOKEN
+  on:
+    tags: true
