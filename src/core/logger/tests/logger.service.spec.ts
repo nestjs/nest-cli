@@ -1,5 +1,5 @@
-import {LoggerService} from '../';
 import {expect} from 'chai';
+import {LoggerService} from '../logger.service';
 
 describe('LoggerService', () => {
   describe('#setLogger()', () => {

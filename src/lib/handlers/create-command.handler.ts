@@ -1,4 +1,3 @@
-import {GitRepository} from '../../core/project/repositories';
 import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 import {FileSystemUtils} from '../../core/utils/file-system.utils';
 import * as path from 'path';
@@ -7,6 +6,7 @@ import {CommandArguments} from '../../common/program/interfaces/command.aguments
 import {CommandOptions} from '../../common/program/interfaces/command.options.interface';
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {Repository} from '../../common/project/interfaces/repository.interface';
+import {GitRepository} from '../../core/project/repositories/git.repository';
 
 export interface CreateCommandArguments extends CommandArguments {
   name: string

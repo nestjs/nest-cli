@@ -1,6 +1,6 @@
 import {CaporalProgram} from './core/program/caporal';
-import {CreateCommandDescriptor, GenerateCommandDescriptor} from './lib/command-descriptors';
-import {ConfigurationService} from './core/configuration/services/configuration.service';
+import {CreateCommandDescriptor} from './lib/command-descriptors/create.command-descriptor';
+import {GenerateCommandDescriptor} from './lib/command-descriptors/generate.command-descriptor';
 
 export class NestCliApplication {
   public static run() {

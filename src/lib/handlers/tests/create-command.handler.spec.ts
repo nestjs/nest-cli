@@ -1,6 +1,5 @@
 import {CreateCommandHandler} from '../create-command.handler';
 import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
-import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {GitRepository} from '../../../core/project/repositories/git.repository';
 import {FileSystemUtils} from '../../../core/utils/file-system.utils';
