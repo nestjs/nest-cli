@@ -1,5 +1,5 @@
 {
-  "name": "nest-cli",
+  "name": "nestjs-cli",
   "version": "1.4.1",
   "license": "MIT",
   "bin": {
@@ -12,7 +12,7 @@
     "clean": "rm -rf bin/* && rm -rf coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "postinstall": "npm run clean:build",
+    "prepublish": "npm run clean:build",
     "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec"
   },
   "repository": {
