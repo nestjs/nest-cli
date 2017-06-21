@@ -16,10 +16,22 @@ describe('GenerateCommandHandler', () => {
     handler = new GenerateCommandHandler();
   });
 
+  let loadStub: sinon.SinonStub;
   let getPropertyStub: sinon.SinonStub;
-  beforeEach(() => getPropertyStub = sandbox.stub(ConfigurationService, 'getProperty').callsFake(() => 'ts'));
+  beforeEach(() => {
+    loadStub = sandbox.stub(ConfigurationService, 'load').callsFake(() => Promise.resolve());
+    getPropertyStub = sandbox.stub(ConfigurationService, 'getProperty').callsFake(() => 'ts')
+  });
 
   describe('#execute()', () => {
+    it('should load the configuration file', () => {
+      sandbox.stub(ModuleProcessor.prototype, 'process').callsFake(() => Promise.resolve());
+      return handler.execute({ asset: 'module', name: 'name' }, {}, console)
+        .then(() => {
+          sinon.assert.calledOnce(loadStub);
+        });
+    });
+
     it('should get the project language from the configuration', () => {
       sandbox.stub(ModuleProcessor.prototype, 'process').callsFake(() => Promise.resolve());
       return handler.execute({ asset: 'module', name: 'name' }, {}, console)

@@ -1,7 +1,10 @@
+.idea/
+
 .nyc_output/
 coverage/
 node_modules/
 src/
+
 .gitignore
 .travis.yml
 tsconfig.json

@@ -23,16 +23,19 @@ export interface GenerateCommandOptions extends CommandOptions {}
 
 export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
-    const asset: AssetEnum = ASSETS_MAP.get(args.asset);
-    const name: string = args.name;
-    const language: string = ConfigurationService.getProperty('language');
-    switch (asset) {
-      case AssetEnum.MODULE:
-        return new ModuleProcessor(name, language).process();
-      case AssetEnum.CONTROLLER:
-        return new ControllerProcessor(name, language).process();
-      case AssetEnum.COMPONENT:
-        return new ComponentProcessor(name, language).process();
-    }
+    return ConfigurationService.load()
+      .then(() => {
+        const asset: AssetEnum = ASSETS_MAP.get(args.asset);
+        const name: string = args.name;
+        const language: string = ConfigurationService.getProperty('language');
+        switch (asset) {
+          case AssetEnum.MODULE:
+            return new ModuleProcessor(name, language).process();
+          case AssetEnum.CONTROLLER:
+            return new ControllerProcessor(name, language).process();
+          case AssetEnum.COMPONENT:
+            return new ComponentProcessor(name, language).process();
+        }
+      });
   }
 }
