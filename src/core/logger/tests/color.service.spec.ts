@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ColorService} from '../';
+import {ColorService} from '../color.service';
 
 describe('ColorService', () => {
   it('should return a white string', () => {

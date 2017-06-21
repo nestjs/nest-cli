@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import {ModuleProcessor} from '../../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../../core/assets/processors/component.processor';
-import {ConfigurationService} from '../../../core/configuration/services/configuration.service';
+import {ConfigurationService} from '../../../core/configuration/configuration.service';
 
 describe('GenerateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
