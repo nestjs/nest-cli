@@ -18,10 +18,12 @@ $ npm install
 $ npm link
 ```
 
-###npm (not registered)
+###npm
 
-## nestconfig.json (not implemented)
-While the CLI does not require a nestconfig.json file to work, default values can be overrided by implementing one. Currently, a nestconfig.json file is only the following:
+```npm install g nestjs-cli```
+
+## nestconfig.json
+The nestconfig.json is here to manage the CLI execution like asset generation.
 ```json
 {
     "language": "ts | es (default: ts)"
@@ -133,5 +135,8 @@ describe('NameService', () => {
 }
 ```
 
+#### middleware (not implemented)
+
 ### serve (not implemented)
+
 ### build (not implemented)
