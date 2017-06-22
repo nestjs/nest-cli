@@ -140,3 +140,5 @@ describe('NameService', () => {
 ### serve (not implemented)
 
 ### build (not implemented)
+
+### update (not implemented)
