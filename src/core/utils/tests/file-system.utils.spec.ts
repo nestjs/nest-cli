@@ -66,7 +66,45 @@ describe('FileSystemUtils', () => {
   });
 
   describe('#rmdir()', () => {
+    const dirname = 'path/to/dir';
 
+    let readdirStub: sinon.SinonStub;
+    let rmdirStub: sinon.SinonStub;
+    beforeEach(() => {
+      readdirStub = sandbox.stub(FileSystemUtils, 'readdir');
+      rmdirStub = sandbox.stub(fs, 'rmdir').callsFake((dirname, callback) => callback());
+    });
+
+    it('should read directory to check if it contains files', () => {
+      readdirStub.callsFake(() => Promise.resolve([]));
+      return FileSystemUtils.rmdir(dirname)
+        .then(() => {
+          sinon.assert.calledOnce(readdirStub);
+        });
+    });
+
+    it('should remove the diretory from the file system if no files or subdirectories inside', () => {
+      readdirStub.callsFake(() => Promise.resolve([]));
+      return FileSystemUtils.rmdir(dirname)
+        .then(() => {
+          sinon.assert.calledOnce(rmdirStub);
+        });
+    });
+
+    it('should remove each files from directory before deleting it', () => {
+      readdirStub.callsFake(() => Promise.resolve([
+        'filename1.ext',
+        'filename2.ext',
+        'filename3.ext',
+      ]));
+      const rmStub: sinon.SinonStub = sandbox.stub(FileSystemUtils, 'rm').callsFake(() => Promise.resolve());
+      return FileSystemUtils.rmdir(dirname)
+        .then(() => {
+          sinon.assert.callCount(rmStub, 3);
+          sinon.assert.calledWith(rmStub, path.join(dirname, 'filename1.ext'));
+          sinon.assert.calledWith(rmStub, path.join(dirname, 'filename2.ext'));
+        });
+    });
   });
 
   describe('#readdir()', () => {

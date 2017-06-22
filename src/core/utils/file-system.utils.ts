@@ -1,20 +1,39 @@
-import * as rimraf from 'rimraf';
 import * as fs from 'fs';
 import {Stats} from 'fs';
 import * as path from 'path';
 import {isNullOrUndefined} from 'util';
 
 export class FileSystemUtils {
-  public static rmdir(path: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      rimraf(path, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
+  public static rmdir(dirname: string): Promise<void> {
+    return this.readdir(dirname)
+      .then((files: string[]) => {
+        if (files.length === 0)
+          return this.fsrmdir(dirname);
+        else {
+          return this.rmdirFiles(dirname, files)
+            .then(() => {})
         }
       });
+  }
+
+  private static fsrmdir(dirname: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      fs.rmdir(dirname, (error: NodeJS.ErrnoException) => {
+        if (!isNullOrUndefined(error))
+          reject(error);
+        else
+          resolve();
+      });
     });
+  }
+
+  private static rmdirFiles(dirname: string, files: string[]): Promise<string> {
+    return files.reduce((previous: Promise<string>, current: string) => {
+      return previous.then(() => {
+        const filename: string = path.join(dirname, current);
+        return this.rm(filename);
+      });
+    }, Promise.resolve(''));
   }
 
   public static mkdir(target: string): Promise<string> {
