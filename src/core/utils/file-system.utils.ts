@@ -9,10 +9,13 @@ export class FileSystemUtils {
         return this.readdir(name)
           .then((files: string[]) => {
             return files.reduce((previous: Promise<string>, current: string) => {
+              const filename: string = path.join(name, current);
               return previous
                 .then(() => {
-                  const filename: string = path.join(name, current);
                   return this.rm(filename);
+                })
+                .catch(() => {
+                  return this.rmdir(filename);
                 });
             }, Promise.resolve(''));
           })

@@ -97,6 +97,7 @@ describe('FileSystemUtils', () => {
         'filename2',
         'filename3'
       ]));
+      rmStub.callsFake(() => Promise.resolve());
       return FileSystemUtils.rmdir(filename)
         .then(() => {
           sinon.assert.calledWith(fsrmdirStub, filename);
@@ -105,6 +106,37 @@ describe('FileSystemUtils', () => {
           sinon.assert.calledWith(rmStub, path.join(filename, 'filename1'));
           sinon.assert.calledWith(rmStub, path.join(filename, 'filename2'));
           sinon.assert.calledWith(rmStub, path.join(filename, 'filename3'));
+        });
+    });
+
+    it('should delete the subdirectories and the directory after', () => {
+      fsrmdirStub.callsFake((filename, callback) => {
+        if (fsrmdirStub.callCount < 3)
+          callback(new Error());
+        else
+          callback(null);
+      });
+      readdirStub.callsFake(dir => {
+        if (dir === filename)
+          return Promise.resolve(['sub-dir']);
+        else
+          return Promise.resolve([
+            'filename1',
+            'filename2',
+            'filename3'
+          ]);
+      });
+      rmStub.callsFake(file => {
+        if (file === path.join(filename, 'sub-dir'))
+          return Promise.reject(new Error());
+        else
+          return Promise.resolve();
+      });
+      return FileSystemUtils.rmdir(filename)
+        .then(() => {
+          sinon.assert.callCount(fsrmdirStub, 4);
+          sinon.assert.callCount(readdirStub, 2);
+          sinon.assert.callCount(rmStub, 4);
         });
     });
   });
