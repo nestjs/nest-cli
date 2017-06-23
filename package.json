@@ -24,8 +24,7 @@
     "url": "https://github.com/ThomRick/nest-cli/issues"
   },
   "dependencies": {
-    "caporal": "^0.6.0",
-    "rimraf": "^2.6.1"
+    "caporal": "^0.6.0"
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
