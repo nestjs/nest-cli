@@ -7,6 +7,7 @@ import {ModuleProcessor} from '../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../core/assets/processors/component.processor';
 import {ConfigurationService} from '../../core/configuration/configuration.service';
+import {LoggerService} from '../../core/logger/logger.service';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
@@ -23,6 +24,7 @@ export interface GenerateCommandOptions extends CommandOptions {}
 
 export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
+    LoggerService.setLogger(logger);
     return ConfigurationService.load()
       .then(() => {
         const asset: AssetEnum = ASSETS_MAP.get(args.asset);

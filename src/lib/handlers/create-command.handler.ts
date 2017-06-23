@@ -7,6 +7,7 @@ import {CommandOptions} from '../../common/program/interfaces/command.options.in
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {Repository} from '../../common/project/interfaces/repository.interface';
 import {GitRepository} from '../../core/project/repositories/git.repository';
+import {LoggerService} from '../../core/logger/logger.service';
 
 export interface CreateCommandArguments extends CommandArguments {
   name: string
@@ -19,6 +20,7 @@ export class CreateCommandHandler implements CommandHandler {
   private static DEFAULT_REPOSITORY: string = 'https://github.com/ThomRick/nest-typescript-starter.git';
 
   public execute(args: CreateCommandArguments, options: CreateCommandOptions, logger: Logger): Promise<void> {
+    LoggerService.setLogger(logger);
     const name: string = args.name;
     const destination: string = args.destination || name;
     const repository: Repository = new GitRepository(CreateCommandHandler.DEFAULT_REPOSITORY, destination);
