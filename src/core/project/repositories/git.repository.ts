@@ -4,6 +4,7 @@ import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as path from 'path';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
 import {LoggerService} from '../../logger/logger.service';
+import {ColorService} from '../../logger/color.service';
 
 export class GitRepository implements Repository {
   private logger: Logger = LoggerService.getLogger();
@@ -11,11 +12,14 @@ export class GitRepository implements Repository {
   constructor(private _remote: string, private _destination: string) {}
 
   public clone(): Promise<void> {
-    //this.logger.debug(`${ ColorService.yellow('clone') } ${ this._remote } git repository to ${ this._destination }...`);
+    this.logger.debug(`${ ColorService.blue('clone') } ${ this._remote } git repository to ${ this._destination }...`);
     return GitUtils.clone(this._remote, this._destination)
-      //.then(() => this.logger.debug(`${ ColorService.yellow('clone') } success`))
-      //.then(() => this.logger.debug(`${ ColorService.yellow('delete') } ${ path.join(this._destination, '.git') } folder`))
+      .then(() => this.logger.debug(`${ ColorService.blue('clone') } success`))
+      .then(() => this.logger.debug(`${ ColorService.blue('delete') } ${ path.join(this._destination, '.git') } folder...`))
       .then(() => FileSystemUtils.rmdir(path.join(this._destination, '.git')))
-      //.then(() => this.logger.debug(`${ ColorService.yellow('delete') } success`));
+      .then(() => this.logger.debug(`${ ColorService.blue('delete') } success`))
+      .then(() => this.logger.debug(`${ ColorService.blue('delete') } ${ path.join(this._destination, '.gitignore') } file...`))
+      .then(() => FileSystemUtils.rm(path.join(this._destination, '.gitignore')))
+      .then(() => this.logger.debug(`${ ColorService.blue('delete') } success`));
   }
 }

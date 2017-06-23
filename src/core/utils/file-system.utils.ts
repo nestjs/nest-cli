@@ -1,18 +1,37 @@
-import * as rimraf from 'rimraf';
 import * as fs from 'fs';
-import {Stats} from 'fs';
 import * as path from 'path';
 import {isNullOrUndefined} from 'util';
 
 export class FileSystemUtils {
-  public static rmdir(path: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      rimraf(path, (error) => {
-        if (error) {
+  public static rmdir(name: string): Promise<string> {
+    return this.fsrmdir(name)
+      .catch(() => {
+        return this.readdir(name)
+          .then((files: string[]) => {
+            return files.reduce((previous: Promise<string>, current: string) => {
+              const filename: string = path.join(name, current);
+              return previous
+                .then(() => {
+                  return this.rm(filename);
+                })
+                .catch(() => {
+                  return this.rmdir(filename);
+                });
+            }, Promise.resolve(''));
+          })
+          .then(() => {
+            return this.rmdir(name)
+          });
+      });
+  }
+
+  private static fsrmdir(dirname: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      fs.rmdir(dirname, (error: NodeJS.ErrnoException) => {
+        if (!isNullOrUndefined(error))
           reject(error);
-        } else {
-          resolve();
-        }
+        else
+          resolve(dirname);
       });
     });
   }
@@ -45,9 +64,9 @@ export class FileSystemUtils {
     });
   }
 
-  public static stat(filename: string): Promise<Stats> {
-    return new Promise<Stats>((resolve, reject) => {
-      fs.stat(filename, (error: NodeJS.ErrnoException, stats: Stats) => {
+  public static stat(filename: string): Promise<fs.Stats> {
+    return new Promise<fs.Stats>((resolve, reject) => {
+      fs.stat(filename, (error: NodeJS.ErrnoException, stats: fs.Stats) => {
         if (!isNullOrUndefined(error))
           reject(error);
         else
