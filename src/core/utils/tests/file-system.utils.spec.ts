@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as fs from 'fs';
 import {expect} from 'chai';
 import {FileSystemUtils} from '../file-system.utils';
-import {Stats} from 'fs';
+import {rmdir, Stats} from 'fs';
 import * as path from 'path';
 
 describe('FileSystemUtils', () => {
@@ -66,43 +66,45 @@ describe('FileSystemUtils', () => {
   });
 
   describe('#rmdir()', () => {
-    const dirname = 'path/to/dir';
+    const filename = 'path/to/dir';
 
+    let fsrmdirStub: sinon.SinonStub;
     let readdirStub: sinon.SinonStub;
-    let rmdirStub: sinon.SinonStub;
+    let rmStub: sinon.SinonStub;
     beforeEach(() => {
+      fsrmdirStub = sandbox.stub(fs, 'rmdir');
       readdirStub = sandbox.stub(FileSystemUtils, 'readdir');
-      rmdirStub = sandbox.stub(fs, 'rmdir').callsFake((dirname, callback) => callback());
+      rmStub = sandbox.stub(FileSystemUtils, 'rm');
     });
 
-    it('should read directory to check if it contains files', () => {
-      readdirStub.callsFake(() => Promise.resolve([]));
-      return FileSystemUtils.rmdir(dirname)
+    it('should delete the directory', () => {
+      fsrmdirStub.callsFake((filename, callback) => callback(null));
+      return FileSystemUtils.rmdir(filename)
         .then(() => {
-          sinon.assert.calledOnce(readdirStub);
+          sinon.assert.calledOnce(fsrmdirStub);
         });
     });
 
-    it('should remove the diretory from the file system if no files or subdirectories inside', () => {
-      readdirStub.callsFake(() => Promise.resolve([]));
-      return FileSystemUtils.rmdir(dirname)
-        .then(() => {
-          sinon.assert.calledOnce(rmdirStub);
-        });
-    });
-
-    it('should remove each files from directory before deleting it', () => {
+    it('should delete the directory files and delete the directory after', () => {
+      fsrmdirStub.callsFake((filename, callback) => {
+        if (fsrmdirStub.callCount === 1)
+          callback(new Error());
+        else
+          callback(null);
+      });
       readdirStub.callsFake(() => Promise.resolve([
-        'filename1.ext',
-        'filename2.ext',
-        'filename3.ext',
+        'filename1',
+        'filename2',
+        'filename3'
       ]));
-      const rmStub: sinon.SinonStub = sandbox.stub(FileSystemUtils, 'rm').callsFake(() => Promise.resolve());
-      return FileSystemUtils.rmdir(dirname)
+      return FileSystemUtils.rmdir(filename)
         .then(() => {
-          sinon.assert.callCount(rmStub, 3);
-          sinon.assert.calledWith(rmStub, path.join(dirname, 'filename1.ext'));
-          sinon.assert.calledWith(rmStub, path.join(dirname, 'filename2.ext'));
+          sinon.assert.calledWith(fsrmdirStub, filename);
+          sinon.assert.calledWith(fsrmdirStub, filename);
+          sinon.assert.calledWith(readdirStub, filename);
+          sinon.assert.calledWith(rmStub, path.join(filename, 'filename1'));
+          sinon.assert.calledWith(rmStub, path.join(filename, 'filename2'));
+          sinon.assert.calledWith(rmStub, path.join(filename, 'filename3'));
         });
     });
   });
