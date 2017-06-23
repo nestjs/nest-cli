@@ -16,23 +16,32 @@ describe('GitRepository', () => {
 
   let cloneStub: sinon.SinonStub;
   let rmdirStub: sinon.SinonStub;
+  let rmStub: sinon.SinonStub;
   beforeEach(() => {
     cloneStub = sandbox.stub(GitUtils, 'clone').callsFake(() => Promise.resolve());
     rmdirStub = sandbox.stub(FileSystemUtils, 'rmdir').callsFake(() => Promise.resolve());
+    rmStub = sandbox.stub(FileSystemUtils, 'rm').callsFake(() => Promise.resolve());
   });
 
   describe('#clone()', () => {
     it('should clone the git remote repository to destination', () => {
       return repository.clone()
         .then(() => {
-          expect(cloneStub.calledWith('remote', 'destination')).to.be.true;
+          sinon.assert.calledWith(cloneStub, 'remote', 'destination');
         });
     });
 
     it('should remove the .git folder from destination', () => {
       return repository.clone()
         .then(() => {
-          expect(rmdirStub.calledWith(path.join('destination', '.git'))).to.be.true;
+          sinon.assert.calledWith(rmdirStub, path.join('destination', '.git'));
+        });
+    });
+
+    it('should remove the .gitignore file from destination', () => {
+      return repository.clone()
+        .then(() => {
+          sinon.assert.calledWith(rmStub, path.join('destination', '.gitignore'));
         });
     });
   });
