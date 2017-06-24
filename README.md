@@ -44,7 +44,7 @@ Examples :
    * `$ nest g module <assetName> [moduleName1/moduleName2/moduleName3]`
 - Creates a templated module file :
    * `src/app/modules/<assetName>/<assetName>.module.ts`
-   * `src/app/modules/[moduleName]/modules/<assetName>/<assetName>.module.ts` 
+   * `src/app/modules/[moduleName]/modules/<assetName>/<assetName>.module.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/modules/<assetName>/<assetName>.module.ts` 
 ```typescript
 @Module({})
@@ -53,17 +53,22 @@ export class NameModule {}
 
 #### controller
 Examples : 
-   * `$ nest generate controller path/to/<name>` 
-   * `$ nest g controller path/to/<name>`
+   * `$ nest generate controller <assetName>` OR `$ nest g controller <assetName>` 
+   * `$ nest g controller <assetName> [moduleName]`
+   * `$ nest g controller <assetName> [moduleName1/moduleName2/moduleName3]`
 Creates a templated controller files : 
-   * `src/path/to/<name>/<name>.controller.ts`
+   * `src/app/controllers/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/controllers/<assetName>.controller.ts`
 ```typescript
 @Controller()
 export class NameController {
     public constructor() {}
 }
 ```
-   * `src/path/to/<name>/<name>.controller.spec.ts`
+   * `src/app/controllers/<assetName>.controller.spec.ts`
+   * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.spec.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/controllers/<assetName>.controller.spec.ts`
 ```typescript
 import {NameController} from './name.controller';
 import {expect} from 'chai';
@@ -89,17 +94,22 @@ describe('NameController', () => {
 
 #### component
 Examples : 
-   * `$ nest generate component path/to/<name>` 
-   * `$ nest g component path/to/<name>`
+   * `$ nest generate component <assetName>` OR `$ nest g component <assetName>` 
+   * `$ nest g component <assetName> [moduleName]`
+   * `$ nest g component <assetName> [moduleName1/moduleName2/moduleName3]`
 Creates a templated component files :
-   * `src/path/to/<name>/<name>.service.ts`
+   * `src/app/services/<assetName>.service.ts`
+   * `src/app/modules/[moduleName]/modules/services/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.ts`
 ```typescript
 @Component()
 export class NameService {
     constructor() {}
 }
 ```
-   * `src/path/to/<name>/<name>.service.spec.ts`
+   * `src/app/services/<assetName>.service.spec.ts`
+   * `src/app/modules/[moduleName]/modules/services/<assetName>.service.spec.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.spec.ts`
 ```typescript
 import {NameService} from './name.service';
 import {expect} from 'chai';
