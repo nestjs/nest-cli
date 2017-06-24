@@ -16,8 +16,9 @@ const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
 ]);
 
 export interface GenerateCommandArguments extends CommandArguments {
-  asset: string
-  name: string
+  assetType: string
+  assetName: string
+  moduleName: string
 }
 
 export interface GenerateCommandOptions extends CommandOptions {}
@@ -27,16 +28,17 @@ export class GenerateCommandHandler implements CommandHandler {
     LoggerService.setLogger(logger);
     return ConfigurationService.load()
       .then(() => {
-        const asset: AssetEnum = ASSETS_MAP.get(args.asset);
-        const name: string = args.name;
+        const assetType: AssetEnum = ASSETS_MAP.get(args.assetType);
+        const assetName: string = args.assetName;
+        const moduleName: string = args.moduleName || 'app';
         const language: string = ConfigurationService.getProperty('language');
-        switch (asset) {
+        switch (assetType) {
           case AssetEnum.MODULE:
-            return new ModuleProcessor(name, language).process();
+            return new ModuleProcessor(assetName, language).process();
           case AssetEnum.CONTROLLER:
-            return new ControllerProcessor(name, language).process();
+            return new ControllerProcessor(assetName, language).process();
           case AssetEnum.COMPONENT:
-            return new ComponentProcessor(name, language).process();
+            return new ComponentProcessor(assetName, language).process();
         }
       });
   }
