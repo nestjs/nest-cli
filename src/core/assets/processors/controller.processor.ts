@@ -10,28 +10,38 @@ import {AssetGenerator} from '../generators/asset.generator';
 import {Generator} from '../../../common/asset/interfaces/generator.interface';
 import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
 import {ModuleUpdaterImpl} from '../module-updaters/module.updater';
+import {ModuleFinder} from '../../../common/asset/interfaces/module.finder.interface';
+import {ModuleFinderImpl} from '../module-finders/module.finder';
 
 export class ControllerProcessor implements Processor {
+  private _finder: ModuleFinder;
   private _generator: Generator;
   private _updater: ModuleUpdater;
 
-  constructor(private _name: string, private _extension: string) {
+  constructor(
+    private _name: string,
+    private _moduleName: string,
+    private _extension: string
+  ) {
+    this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
     this._updater = new ModuleUpdaterImpl();
   }
 
   public process(): Promise<void> {
-    const assets: Asset[] = this.buildAssets();
-    return this.generate(assets)
-      .then(() => this.updateModule(assets));
+    return this._finder.find(this._moduleName)
+      .then(moduleFilename => {
+        const assets: Asset[] = this.buildAssets(moduleFilename);
+        return this.generate(assets);
+      });
   }
 
-  private buildAssets(): Asset[] {
+  private buildAssets(moduleFilename: string): Asset[] {
     const assets: Asset[] = [];
     const className: string = this.buildClassName();
     const filename: string = this.buildFileName();
-    assets.push(this.buildClassAsset(className, filename));
-    assets.push(this.buildTestAsset(className, filename));
+    assets.push(this.buildClassAsset(className, filename, moduleFilename));
+    assets.push(this.buildTestAsset(className, filename, moduleFilename));
     return assets;
   }
 
@@ -51,19 +61,19 @@ export class ControllerProcessor implements Processor {
       .build();
   }
 
-  private buildClassAsset(className: string, filename: string): Asset {
+  private buildClassAsset(className: string, filename: string, moduleFilename: string): Asset {
     return new AssetBuilder()
       .addClassName(className)
-      .addFilename(this.buildClassAssetFileName(filename))
+      .addFilename(this.buildClassAssetFileName(filename, moduleFilename))
       .addTemplate(this.buildClassAssetTemplate(className))
       .build();
   }
 
-  private buildClassAssetFileName(filename: string) {
+  private buildClassAssetFileName(filename: string, moduleFilename: string) {
     return path.join(
       process.cwd(),
-      'src/app/modules',
-      this._name,
+      path.dirname(moduleFilename),
+      'controllers',
       filename
     );
   }
@@ -77,19 +87,19 @@ export class ControllerProcessor implements Processor {
       .build();
   }
 
-  private buildTestAsset(className: string, filename: string): Asset {
+  private buildTestAsset(className: string, filename: string, moduleFilename: string): Asset {
     return new AssetBuilder()
       .addClassName(className)
-      .addFilename(this.buildTestAssetFileName())
+      .addFilename(this.buildTestAssetFileName(moduleFilename))
       .addTemplate(this.buildTestAssetTemplate(className, filename))
       .build();
   }
 
-  private buildTestAssetFileName() {
+  private buildTestAssetFileName(moduleFilename: string) {
     return path.join(
       process.cwd(),
-      'src/app/modules',
-      this._name,
+      path.dirname(moduleFilename),
+      'controllers',
       new FileNameBuilder()
         .addAsset(AssetEnum.CONTROLLER)
         .addName(this._name)

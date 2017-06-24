@@ -36,7 +36,7 @@ export class GenerateCommandHandler implements CommandHandler {
           case AssetEnum.MODULE:
             return new ModuleProcessor(assetName, moduleName, language).process();
           case AssetEnum.CONTROLLER:
-            return new ControllerProcessor(assetName, language).process();
+            return new ControllerProcessor(assetName, moduleName, language).process();
           case AssetEnum.COMPONENT:
             return new ComponentProcessor(assetName, language).process();
         }
