@@ -11,14 +11,18 @@ import {MetadataTransform} from '../streams/metadata.transform';
 import {ImportTransform} from '../streams/import.transform';
 import {AssetEnum} from '../../../common/asset/enums/asset.enum';
 import {PathUtils} from '../../utils/path.utils';
+import {Asset} from '../../../common/asset/interfaces/asset.interface';
+import {ImportTransformV2} from '../streams/importV2.transform';
+import {ReplaceTransform} from '../streams/replace.transform';
+import {MetadataTransformV2} from '../streams/metadataV2.transform';
 
 export class ModuleUpdaterImpl implements ModuleUpdater {
-  private finder: ModuleFinder = new ModuleFinderImpl();
-  private logger: Logger = LoggerService.getLogger();
+  private _finder: ModuleFinder = new ModuleFinderImpl();
+  private _logger: Logger = LoggerService.getLogger();
 
-  public update(filename: string, className: string, asset: AssetEnum): Promise<void> {
+  public updateV1(filename: string, className: string, asset: AssetEnum): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.finder.findFrom(filename)
+      this._finder.findFrom(filename)
         .then(moduleFilename => {
           const relativeAssetModuleFilename = PathUtils.relative(moduleFilename, filename);
           const reader: fs.ReadStream = fs.createReadStream(moduleFilename);
@@ -33,11 +37,37 @@ export class ModuleUpdaterImpl implements ModuleUpdater {
             intermediateReader.pipe(writer);
             intermediateReader.on('end', () => {
               FileSystemUtils.rm(`${ moduleFilename }.lock`)
-                .then(() => this.logger.info(ColorService.yellow('update'), `${ path.relative(process.cwd(), moduleFilename) }`))
+                .then(() => this._logger.info(ColorService.yellow('update'), `${ path.relative(process.cwd(), moduleFilename) }`))
                 .then(() => resolve())
                 .catch(error => reject(error));
             });
           });
+        });
+    });
+  }
+
+  public updateV2(moduleFilename: string, asset: Asset): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const reader: fs.ReadStream = fs.createReadStream(moduleFilename);
+      const intermediateWriter: fs.WriteStream = fs.createWriteStream(`${ moduleFilename }.lock`);
+      reader
+        .pipe(new ImportTransformV2())
+        .pipe(new MetadataTransformV2(asset.type))
+        .pipe(new ReplaceTransform(asset.template.replacer))
+        .pipe(intermediateWriter);
+      reader
+        .on('end', () => {
+          const intermediateReader: fs.ReadStream = fs.createReadStream(`${ moduleFilename }.lock`);
+          const writer: fs.WriteStream = fs.createWriteStream(moduleFilename);
+          intermediateReader
+            .pipe(writer);
+          intermediateReader
+            .on('end', () => {
+              FileSystemUtils.rm(`${ moduleFilename }.lock`)
+                .then(() => this._logger.info(ColorService.yellow('update'), `${ path.relative(process.cwd(), moduleFilename) }`))
+                .then(() => resolve())
+                .catch(error => reject(error));
+            });
         });
     });
   }

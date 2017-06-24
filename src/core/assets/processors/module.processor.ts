@@ -49,6 +49,7 @@ export class ModuleProcessor implements Processor {
 
   private buildClassAsset(className: string, moduleFilename: string): Asset {
     return new AssetBuilder()
+      .addType(AssetEnum.MODULE)
       .addClassName(className)
       .addFilename(this.buildClassAssetFilename(moduleFilename))
       .addTemplate(this.buildClassAssetTemplate(className))

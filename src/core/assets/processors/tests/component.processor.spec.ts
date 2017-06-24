@@ -5,6 +5,7 @@ import * as path from 'path';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {ComponentProcessor} from '../component.processor';
 import {ModuleUpdaterImpl} from '../../module-updaters/module.updater';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('ComponentProcessor', () => {
   const name: string = 'name';
@@ -21,12 +22,13 @@ describe('ComponentProcessor', () => {
   let updateStub: sinon.SinonStub;
   beforeEach(() => {
     generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-    updateStub = sandbox.stub(ModuleUpdaterImpl.prototype, 'update').callsFake(() => Promise.resolve());
+    updateStub = sandbox.stub(ModuleUpdaterImpl.prototype, 'updateV1').callsFake(() => Promise.resolve());
   });
 
   describe('#process()', () => {
     const assets: Asset[] = [
       {
+        type: AssetEnum.COMPONENT,
         filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.service.ts'),
         className: 'NameService',
         template: {
@@ -37,6 +39,7 @@ describe('ComponentProcessor', () => {
         }
       },
       {
+        type: AssetEnum.COMPONENT,
         filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.service.spec.ts'),
         className: 'NameService',
         template: {

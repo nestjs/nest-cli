@@ -6,6 +6,7 @@ import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {ControllerProcessor} from '../controller.processor';
 import {ModuleUpdaterImpl} from '../../module-updaters/module.updater';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('ControllerProcessor', () => {
   const name: string = 'name';
@@ -18,11 +19,13 @@ describe('ControllerProcessor', () => {
 
   let findStub: sinon.SinonStub;
   let generateStub: sinon.SinonStub;
-  let updateStub: sinon.SinonStub;
+  let updateV1Stub: sinon.SinonStub;
+  let updateV2Stub: sinon.SinonStub;
   beforeEach(() => {
     findStub = sandbox.stub(ModuleFinderImpl.prototype, 'find');
     generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-    updateStub = sandbox.stub(ModuleUpdaterImpl.prototype, 'update').callsFake(() => Promise.resolve());
+    updateV1Stub = sandbox.stub(ModuleUpdaterImpl.prototype, 'updateV1').callsFake(() => Promise.resolve());
+    updateV2Stub = sandbox.stub(ModuleUpdaterImpl.prototype, 'updateV2').callsFake(() => Promise.resolve());
   });
 
   describe('#process()', () => {
@@ -36,6 +39,7 @@ describe('ControllerProcessor', () => {
 
       const assets: Asset[] = [
         {
+          type: AssetEnum.CONTROLLER,
           filename: path.join(
             process.cwd(),
             'src/app',
@@ -46,11 +50,13 @@ describe('ControllerProcessor', () => {
           template: {
             filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
             replacer: {
-              __CLASS_NAME__: 'NameController'
+              __CLASS_NAME__: 'NameController',
+              __DIR_NAME__: '\'./controllers/name.controller.ts\''
             }
           }
         },
         {
+          type: AssetEnum.CONTROLLER,
           filename: path.join(
             process.cwd(),
             'src/app',
@@ -84,10 +90,11 @@ describe('ControllerProcessor', () => {
           });
       });
 
-      it.skip('should update the nearest parent module', () => {
+      it('should update the module', () => {
         return processor.process()
           .then(() => {
-            sinon.assert.calledWith(updateStub, assets[0].filename, assets[0].className);
+            sinon.assert.calledOnce(updateV2Stub);
+            sinon.assert.calledWith(updateV2Stub, path.join(process.cwd(), 'src/app/app.module.ts'), assets[0]);
           });
       });
     });

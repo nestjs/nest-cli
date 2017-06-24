@@ -45,6 +45,7 @@ export class ComponentProcessor implements Processor{
 
   private buildClassAsset(className: string, filename: string): Asset {
     return new AssetBuilder()
+      .addType(AssetEnum.COMPONENT)
       .addClassName(className)
       .addFilename(
         path.join(
@@ -67,6 +68,7 @@ export class ComponentProcessor implements Processor{
 
   private buildTestAsset(className: string, filename: string): Asset {
     return new AssetBuilder()
+      .addType(AssetEnum.COMPONENT)
       .addClassName(className)
       .addFilename(
         path.join(
@@ -99,6 +101,6 @@ export class ComponentProcessor implements Processor{
   }
 
   private updateModule(): Promise<void> {
-    return this._updater.update(this._assets[0].filename, this._assets[0].className, AssetEnum.COMPONENT);
+    return this._updater.updateV1(this._assets[0].filename, this._assets[0].className, AssetEnum.COMPONENT);
   }
 }

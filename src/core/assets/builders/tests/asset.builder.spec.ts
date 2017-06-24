@@ -2,10 +2,17 @@ import {AssetBuilder} from '../asset.builder';
 import {expect} from 'chai';
 import {Template} from '../../../../common/asset/interfaces/template.interface';
 import {TemplateBuilder} from '../template.builder';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('AssetBuilder', () => {
   let builder: AssetBuilder;
   beforeEach(() => builder = new AssetBuilder());
+
+  describe('#addType()', () => {
+    it('should return the builder instance', () => {
+      expect(builder.addType(AssetEnum.CONTROLLER)).to.be.equal(builder);
+    });
+  });
 
   describe('#addFilename()', () => {
     it('should return the builder instance', () => {
@@ -35,11 +42,13 @@ describe('AssetBuilder', () => {
     it('should return the expected asset', () => {
       expect(
         builder
+          .addType(AssetEnum.CONTROLLER)
           .addFilename(filename)
           .addClassName(className)
           .addTemplate(template)
           .build()
       ).to.be.deep.equal({
+        type: AssetEnum.CONTROLLER,
         filename: filename,
         className: className,
         template: template

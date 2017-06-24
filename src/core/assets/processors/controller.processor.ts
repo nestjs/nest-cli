@@ -32,7 +32,8 @@ export class ControllerProcessor implements Processor {
     return this._finder.find(this._moduleName)
       .then(moduleFilename => {
         const assets: Asset[] = this.buildAssets(moduleFilename);
-        return this.generate(assets);
+        return this.generate(assets)
+          .then(() => this.updateModule(moduleFilename, assets));
       });
   }
 
@@ -63,9 +64,10 @@ export class ControllerProcessor implements Processor {
 
   private buildClassAsset(className: string, filename: string, moduleFilename: string): Asset {
     return new AssetBuilder()
+      .addType(AssetEnum.CONTROLLER)
       .addClassName(className)
       .addFilename(this.buildClassAssetFileName(filename, moduleFilename))
-      .addTemplate(this.buildClassAssetTemplate(className))
+      .addTemplate(this.buildClassAssetTemplate(filename, className))
       .build();
   }
 
@@ -78,17 +80,19 @@ export class ControllerProcessor implements Processor {
     );
   }
 
-  private buildClassAssetTemplate(className: string) {
+  private buildClassAssetTemplate(filename: string, className: string) {
     return new TemplateBuilder()
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.${ this._extension }.template`))
       .addReplacer({
-        __CLASS_NAME__: className
+        __CLASS_NAME__: className,
+        __DIR_NAME__: `'./controllers/${ filename }'`
       })
       .build();
   }
 
   private buildTestAsset(className: string, filename: string, moduleFilename: string): Asset {
     return new AssetBuilder()
+      .addType(AssetEnum.CONTROLLER)
       .addClassName(className)
       .addFilename(this.buildTestAssetFileName(moduleFilename))
       .addTemplate(this.buildTestAssetTemplate(className, filename))
@@ -124,7 +128,7 @@ export class ControllerProcessor implements Processor {
       .then(() => this._generator.generate(assets[1]));
   }
 
-  private updateModule(assets: Asset[]): Promise<void> {
-    return this._updater.update(assets[0].filename, assets[0].className, AssetEnum.CONTROLLER);
+  private updateModule(moduleFilename: string, assets: Asset[]): Promise<void> {
+    return this._updater.updateV2(path.join(process.cwd(), moduleFilename), assets[0]);
   }
 }

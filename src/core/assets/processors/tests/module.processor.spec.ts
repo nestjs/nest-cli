@@ -4,8 +4,8 @@ import {AssetGenerator} from '../../generators/asset.generator';
 import * as sinon from 'sinon';
 import * as path from 'path';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
-import {ModuleFinder} from '../../../../common/asset/interfaces/module.finder.interface';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
+import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 
 describe('ModuleProcessor', () => {
   const assetName: string = 'name';
@@ -45,6 +45,7 @@ describe('ModuleProcessor', () => {
       it('should generate module assets', () => {
         const assets: Asset[] = [
           {
+            type: AssetEnum.MODULE,
             filename: path.join(process.cwd(), 'src/app', 'modules', 'name/name.module.ts'),
             className: 'NameModule',
             template: {
@@ -81,6 +82,7 @@ describe('ModuleProcessor', () => {
       it('should generate module assets', () => {
         const assets: Asset[] = [
           {
+            type: AssetEnum.MODULE,
             filename: path.join(
               process.cwd(),
               'src/app',

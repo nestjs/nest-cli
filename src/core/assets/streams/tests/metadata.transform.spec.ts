@@ -8,7 +8,6 @@ describe('MetadataTransform', () => {
   const className: string = 'AssetService';
   const dirName: string = './path/to/asset/asset.service';
 
-
   let reader: Readable;
   let writer: Writable;
 
