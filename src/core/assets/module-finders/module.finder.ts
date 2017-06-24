@@ -2,24 +2,21 @@ import {ModuleFinder} from '../../../common/asset/interfaces/module.finder.inter
 import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as path from 'path';
 import {isNullOrUndefined} from 'util';
+import {ModulePathSolver} from '../../../common/asset/interfaces/module.path-solver.interface';
+import {ModulePathSolverImpl} from '../module-path-solver/module.path-solver';
 
 export class ModuleFinderImpl implements ModuleFinder {
   private MODULE_FILENAME_REGEX = /.*.module.(ts|js)/;
-  private ROOT_DIRECTORY_NAME = 'src';
+
+  constructor(private _solver: ModulePathSolver = new ModulePathSolverImpl()) {}
 
   public find(moduleName: string): Promise<string> {
-    const rootDirectoryPath: string = path.join(process.cwd(), this.ROOT_DIRECTORY_NAME);
-    return FileSystemUtils.readdir(rootDirectoryPath)
+    const modulePath = this._solver.resolve(moduleName);
+    return FileSystemUtils.readdir(path.join(process.cwd(), modulePath))
       .then(files => {
-        const filename: string = files.find(filename => filename === moduleName);
-        if (!isNullOrUndefined(filename))
-
-          return Promise.resolve(`${ this.ROOT_DIRECTORY_NAME }/${ moduleName }/${ moduleName }.module.ts`);
+        const filename: string = files.find(filename => this.MODULE_FILENAME_REGEX.test(filename));
+        return path.join(modulePath, filename);
       });
-  }
-
-  private buildRegex(moduleName: string): RegExp {
-    return new RegExp(`${ moduleName }.module.(ts|js)`);
   }
 
   public findFrom(origin: string): Promise<string> {
