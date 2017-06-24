@@ -46,7 +46,7 @@ describe('ModuleFinder', () => {
     let readdirStub: sinon.SinonStub;
     beforeEach(() => readdirStub = sandbox.stub(FileSystemUtils, 'readdir'));
 
-    it('should return the app.module', () => {
+    it('should return the app module filename', () => {
       readdirStub.callsFake(() => Promise.resolve([
         'app',
         'filename1',
@@ -58,15 +58,30 @@ describe('ModuleFinder', () => {
         });
     });
 
-    it.skip('should return the requested module name in app modules', () => {
-      readdirStub.callsFake(() => Promise.resolve([
-        'module1',
-        'module2',
-        'module3'
-      ]));
+    it.skip('should return the requested module name filename in app modules', () => {
+      readdirStub.callsFake(() => {
+        if (readdirStub.callCount === 1) {
+          return Promise.resolve([
+            'app',
+            'filename1',
+            'filename2'
+          ]);
+        } else if (readdirStub.callCount === 2) {
+          return Promise.resolve([
+            'app.module.ts',
+            'modules'
+          ]);
+        } else {
+          return Promise.resolve([
+            'module1',
+            'module2',
+            'module3'
+          ]);
+        }
+      });
       return finder.find('module1')
         .then(filename => {
-          expect(filename).to.be.equal('src/app/app.module.ts');
+          expect(filename).to.be.equal('src/app/modules/module1/module1.module.ts');
         });
     });
   });

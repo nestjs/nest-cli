@@ -5,9 +5,21 @@ import {isNullOrUndefined} from 'util';
 
 export class ModuleFinderImpl implements ModuleFinder {
   private MODULE_FILENAME_REGEX = /.*.module.(ts|js)/;
+  private ROOT_DIRECTORY_NAME = 'src';
 
   public find(moduleName: string): Promise<string> {
-    return Promise.resolve('src/app/app.module.ts');
+    const rootDirectoryPath: string = path.join(process.cwd(), this.ROOT_DIRECTORY_NAME);
+    return FileSystemUtils.readdir(rootDirectoryPath)
+      .then(files => {
+        const filename: string = files.find(filename => filename === moduleName);
+        if (!isNullOrUndefined(filename))
+
+          return Promise.resolve(`${ this.ROOT_DIRECTORY_NAME }/${ moduleName }/${ moduleName }.module.ts`);
+      });
+  }
+
+  private buildRegex(moduleName: string): RegExp {
+    return new RegExp(`${ moduleName }.module.(ts|js)`);
   }
 
   public findFrom(origin: string): Promise<string> {
