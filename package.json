@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-cli",
+  "name": "@nestjs/cli",
   "version": "1.4.6",
   "license": "MIT",
   "bin": {
@@ -17,11 +17,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ThomRick/nest-cli"
+    "url": "git+https://github.com/nestjs/nest-cli.git"
   },
   "author": "ThomRick",
   "bugs": {
-    "url": "https://github.com/ThomRick/nest-cli/issues"
+    "url": "https://github.com/nestjs/nest-cli/issues"
   },
   "dependencies": {
     "caporal": "^0.6.0"
