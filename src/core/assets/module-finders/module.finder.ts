@@ -6,9 +6,8 @@ import {isNullOrUndefined} from 'util';
 export class ModuleFinderImpl implements ModuleFinder {
   private MODULE_FILENAME_REGEX = /.*.module.(ts|js)/;
 
-  public find(module?: string): Promise<string> {
-    if (isNullOrUndefined(module))
-      return Promise.resolve('src/app/app.module.ts');
+  public find(moduleName: string): Promise<string> {
+    return Promise.resolve('src/app/app.module.ts');
   }
 
   public findFrom(origin: string): Promise<string> {

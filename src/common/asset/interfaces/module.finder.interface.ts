@@ -1,4 +1,4 @@
 export interface ModuleFinder {
-  find(module?: string): Promise<string>;
+  find(moduleName: string): Promise<string>;
   findFrom(origin: string): Promise<string>
 }

@@ -34,7 +34,7 @@ export class GenerateCommandHandler implements CommandHandler {
         const language: string = ConfigurationService.getProperty('language');
         switch (assetType) {
           case AssetEnum.MODULE:
-            return new ModuleProcessor(assetName, language).process();
+            return new ModuleProcessor(assetName, moduleName, language).process();
           case AssetEnum.CONTROLLER:
             return new ControllerProcessor(assetName, language).process();
           case AssetEnum.COMPONENT:
