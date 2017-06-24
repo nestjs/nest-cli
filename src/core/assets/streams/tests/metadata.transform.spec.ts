@@ -1,23 +1,19 @@
 import {Readable, Transform, Writable} from 'stream';
-import {MetadataTransform} from '../metadata.transform';
 import {AssetEnum} from '../../../../common/asset/enums/asset.enum';
 import {BufferedReadable, BufferedWritable} from './test.utils';
 import {expect} from 'chai';
+import {MetadataTransform} from '../metadata.transform';
 
-describe('MetadataTransform', () => {
-  const className: string = 'AssetService';
-  const dirName: string = './path/to/asset/asset.service';
-
+describe('MetadataTransformV2', () => {
   let reader: Readable;
   let writer: Writable;
 
   let transform: Transform;
-  beforeEach(() => transform = new MetadataTransform(className, AssetEnum.COMPONENT));
+  beforeEach(() => transform = new MetadataTransform(AssetEnum.COMPONENT));
 
   context('no module metadata for asset type', () => {
     const content: string =
       'import {Module} from \'@nestjs/common\';\n' +
-      `import {${ className }} from ${ dirName };\n` +
       '\n' +
       '@Module({})\n' +
       'export class AssetModule {}\n';
@@ -29,11 +25,10 @@ describe('MetadataTransform', () => {
     it('should update the module metadata', done => {
       const newContent: string =
         'import {Module} from \'@nestjs/common\';\n' +
-        `import {${ className }} from ${ dirName };\n` +
         '\n' +
         '@Module({\n' +
         '  components: [\n' +
-        '    AssetService\n' +
+        '    __CLASS_NAME__\n' +
         '  ]\n' +
         '})\n' +
         'export class AssetModule {}\n';
@@ -48,7 +43,6 @@ describe('MetadataTransform', () => {
   context('existing metadata for asset type', () => {
     const content: string =
       'import {Module} from \'@nestjs/common\';\n' +
-      `import {${ className }} from ${ dirName };\n` +
       '\n' +
       '@Module({\n' +
       '  components: [\n' +
@@ -64,12 +58,11 @@ describe('MetadataTransform', () => {
     it('should update the module metadata', done => {
       const newContent: string =
         'import {Module} from \'@nestjs/common\';\n' +
-        `import {${ className }} from ${ dirName };\n` +
         '\n' +
         '@Module({\n' +
         '  components: [\n' +
         '    OtherAssetService,\n' +
-        '    AssetService\n' +
+        '    __CLASS_NAME__\n' +
         '  ]\n' +
         '})\n' +
         'export class AssetModule {}\n';
@@ -81,3 +74,4 @@ describe('MetadataTransform', () => {
     });
   });
 });
+

@@ -19,13 +19,11 @@ describe('ControllerProcessor', () => {
 
   let findStub: sinon.SinonStub;
   let generateStub: sinon.SinonStub;
-  let updateV1Stub: sinon.SinonStub;
-  let updateV2Stub: sinon.SinonStub;
+  let updateStub: sinon.SinonStub;
   beforeEach(() => {
     findStub = sandbox.stub(ModuleFinderImpl.prototype, 'find');
     generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve());
-    updateV1Stub = sandbox.stub(ModuleUpdaterImpl.prototype, 'updateV1').callsFake(() => Promise.resolve());
-    updateV2Stub = sandbox.stub(ModuleUpdaterImpl.prototype, 'updateV2').callsFake(() => Promise.resolve());
+    updateStub = sandbox.stub(ModuleUpdaterImpl.prototype, 'update').callsFake(() => Promise.resolve());
   });
 
   describe('#process()', () => {
@@ -93,8 +91,8 @@ describe('ControllerProcessor', () => {
       it('should update the module', () => {
         return processor.process()
           .then(() => {
-            sinon.assert.calledOnce(updateV2Stub);
-            sinon.assert.calledWith(updateV2Stub, path.join(process.cwd(), 'src/app/app.module.ts'), assets[0]);
+            sinon.assert.calledOnce(updateStub);
+            sinon.assert.calledWith(updateStub, path.join(process.cwd(), 'src/app/app.module.ts'), assets[0]);
           });
       });
     });

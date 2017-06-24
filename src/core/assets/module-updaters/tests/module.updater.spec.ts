@@ -53,147 +53,7 @@ describe('ModuleUpdaterImpl', () => {
     rmStub = sandbox.stub(FileSystemUtils, 'rm').callsFake(() => Promise.resolve());
   });
 
-  describe('#updateV1()', () => {
-    let updater: ModuleUpdater;
-    beforeEach(() => updater = new ModuleUpdaterImpl());
-
-    context('update from component asset', () => {
-      const filename: string = 'path/to/asset/asset.service.ts';
-      const relativeModuleFilename: string = './asset.service.ts';
-      const className: string = 'AssetService';
-      const moduleFilename: string = 'path/to/asset/asset.module.ts';
-
-      beforeEach(() => findFromStub.callsFake(() => Promise.resolve(moduleFilename)));
-      it('should use the module finder to retrieve the nearest module path', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledWith(findFromStub, filename);
-          });
-      });
-
-      it('should read the module filename', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledWith(createReadStreamStub, moduleFilename);
-          });
-      });
-
-      it('should update the module filename content', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            expect(intermediateWriter.getBuffer().toString()).to.be.equal(
-              'import {Module} from \'@nestjs/common\';\n' +
-              `import {${ className }} from ${ relativeModuleFilename };\n` +
-              '\n' +
-              '@Module({\n' +
-              '  components: [\n' +
-              `    ${ className }\n` +
-              '  ]\n' +
-              '})\n' +
-              'export class AssetModule {}\n'
-            );
-          });
-      });
-
-      it('should write the updated file content in a intermediate lock file', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledWith(createWriteStream, `${ moduleFilename }.lock`);
-          });
-      });
-
-      it('should read the updated intermediate module file when update write is end', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledWith(createReadStreamStub, `${ moduleFilename }.lock`);
-          });
-      });
-
-      it('should write the updated module filename', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledWith(createWriteStream, moduleFilename);
-          });
-      });
-
-      it('should delete the lock file when write is ended', () => {
-        return updater.updateV1(filename, className, AssetEnum.COMPONENT)
-          .then(() => {
-            sinon.assert.calledOnce(rmStub);
-          });
-      })
-    });
-
-    context('update from controller asset', () => {
-      const filename: string = 'path/to/asset/asset.controller.ts';
-      const relativeModuleFilename: string = './asset.controller.ts';
-      const className: string = 'AssetService';
-      const moduleFilename: string = 'path/to/asset/asset.module.ts';
-
-      beforeEach(() => findFromStub.callsFake(() => Promise.resolve(moduleFilename)));
-
-      it('should use the module finder to retrieve the nearest module path', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledWith(findFromStub, filename);
-          });
-      });
-
-      it('should read the module filename', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledWith(createReadStreamStub, moduleFilename);
-          });
-      });
-
-      it('should update the module filename content', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            expect(intermediateWriter.getBuffer().toString()).to.be.equal(
-              'import {Module} from \'@nestjs/common\';\n' +
-              `import {${ className }} from ${ relativeModuleFilename };\n` +
-              '\n' +
-              '@Module({\n' +
-              '  controllers: [\n' +
-              `    ${ className }\n` +
-              '  ]\n' +
-              '})\n' +
-              'export class AssetModule {}\n'
-            );
-          });
-      });
-
-      it('should write the updated file content in a intermediate lock file', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledWith(createWriteStream, `${ moduleFilename }.lock`);
-          });
-      });
-
-      it('should read the updated intermediate module file when update write is end', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledWith(createReadStreamStub, `${ moduleFilename }.lock`);
-          });
-      });
-
-      it('should write the updated module filename', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledWith(createWriteStream, moduleFilename);
-          });
-      });
-
-      it('should delete the lock file when write is ended', () => {
-        return updater.updateV1(filename, className, AssetEnum.CONTROLLER)
-          .then(() => {
-            sinon.assert.calledOnce(rmStub);
-          });
-      });
-    });
-  });
-
-  describe('#updateV2()', () => {
+  describe('#update()', () => {
     let updater: ModuleUpdater;
     beforeEach(() => updater = new ModuleUpdaterImpl());
 
@@ -217,14 +77,14 @@ describe('ModuleUpdaterImpl', () => {
     };
 
     it('should read the module filename', () => {
-      return updater.updateV2(moduleFilename, asset)
+      return updater.update(moduleFilename, asset)
         .then(() => {
           sinon.assert.calledWith(createReadStreamStub, moduleFilename);
         });
     });
 
     it('should update the module filename content', () => {
-      return updater.updateV2(moduleFilename, asset)
+      return updater.update(moduleFilename, asset)
         .then(() => {
           expect(intermediateWriter.getBuffer().toString()).to.be.equal(
             'import {Module} from \'@nestjs/common\';\n' +
@@ -241,21 +101,21 @@ describe('ModuleUpdaterImpl', () => {
     });
 
     it('should write the updated file content in a intermediate lock file', () => {
-      return updater.updateV2(moduleFilename, asset)
+      return updater.update(moduleFilename, asset)
         .then(() => {
           sinon.assert.calledWith(createWriteStream, `${ moduleFilename }.lock`);
         });
     });
 
     it('should write the updated module filename', () => {
-      return updater.updateV2(moduleFilename, asset)
+      return updater.update(moduleFilename, asset)
         .then(() => {
           sinon.assert.calledWith(createWriteStream, moduleFilename);
         });
     });
 
     it('should delete the lock file when write is ended', () => {
-      return updater.updateV2(moduleFilename, asset)
+      return updater.update(moduleFilename, asset)
         .then(() => {
           sinon.assert.calledOnce(rmStub);
         });

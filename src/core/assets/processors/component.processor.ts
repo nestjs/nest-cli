@@ -129,6 +129,6 @@ export class ComponentProcessor implements Processor{
   }
 
   private updateModule(moduleFilename: string, assets: Asset[]): Promise<void> {
-    return this._updater.updateV2(path.join(process.cwd(), moduleFilename), assets[0]);
+    return this._updater.update(path.join(process.cwd(), moduleFilename), assets[0]);
   }
 }
