@@ -41,4 +41,24 @@ describe('ModuleFinder', () => {
         });
     });
   });
+
+  describe('#find()', () => {
+    let readdirStub: sinon.SinonStub;
+    beforeEach(() => readdirStub = sandbox.stub(FileSystemUtils, 'readdir'));
+
+    it('should return the app.module by default', () => {
+      return finder.find()
+        .then(filename => {
+          expect(filename).to.be.equal('src/app/app.module.ts');
+        });
+    });
+
+    it.skip('should return the requested module name in app modules', () => {
+      readdirStub.callsFake(() => Promise.resolve([
+        'module1',
+        'module2',
+        'module3'
+      ]));
+    });
+  });
 });
