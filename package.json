@@ -1,6 +1,6 @@
 {
   "name": "nestjs-cli",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "license": "MIT",
   "bin": {
     "nest": "index.js"
