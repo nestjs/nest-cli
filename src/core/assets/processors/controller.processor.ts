@@ -14,91 +14,107 @@ import {ModuleUpdaterImpl} from '../module-updaters/module.updater';
 export class ControllerProcessor implements Processor {
   private _generator: Generator;
   private _updater: ModuleUpdater;
-  private _assets: Asset[];
 
   constructor(private _name: string, private _extension: string) {
     this._generator = new AssetGenerator();
     this._updater = new ModuleUpdaterImpl();
-    this._assets = [];
   }
 
   public process(): Promise<void> {
-    this.buildAssets();
-    return this.generate()
-      .then(() => this.updateModule());
+    const assets: Asset[] = this.buildAssets();
+    return this.generate(assets)
+      .then(() => this.updateModule(assets));
   }
 
-  private buildAssets() {
-    const className: string = new ClassNameBuilder()
+  private buildAssets(): Asset[] {
+    const assets: Asset[] = [];
+    const className: string = this.buildClassName();
+    const filename: string = this.buildFileName();
+    assets.push(this.buildClassAsset(className, filename));
+    assets.push(this.buildTestAsset(className, filename));
+    return assets;
+  }
+
+  private buildClassName() {
+    return new ClassNameBuilder()
       .addName(this._name)
       .addAsset(AssetEnum.CONTROLLER)
       .build();
-    const filename: string = new FileNameBuilder()
+  }
+
+  private buildFileName() {
+    return new FileNameBuilder()
       .addAsset(AssetEnum.CONTROLLER)
       .addName(this._name)
       .addExtension(this._extension)
       .addTest(false)
       .build();
-    this._assets.push(this.buildClassAsset(className, filename));
-    this._assets.push(this.buildTestAsset(className, filename));
   }
 
   private buildClassAsset(className: string, filename: string): Asset {
     return new AssetBuilder()
       .addClassName(className)
-      .addFilename(
-        path.join(
-          process.cwd(),
-          'src/app/modules',
-          this._name,
-          filename
-        )
-      )
-      .addTemplate(
-        new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.${ this._extension }.template`))
-          .addReplacer({
-            __CLASS_NAME__: className
-          })
-          .build()
-      )
+      .addFilename(this.buildClassAssetFileName(filename))
+      .addTemplate(this.buildClassAssetTemplate(className))
+      .build();
+  }
+
+  private buildClassAssetFileName(filename: string) {
+    return path.join(
+      process.cwd(),
+      'src/app/modules',
+      this._name,
+      filename
+    );
+  }
+
+  private buildClassAssetTemplate(className: string) {
+    return new TemplateBuilder()
+      .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.${ this._extension }.template`))
+      .addReplacer({
+        __CLASS_NAME__: className
+      })
       .build();
   }
 
   private buildTestAsset(className: string, filename: string): Asset {
     return new AssetBuilder()
       .addClassName(className)
-      .addFilename(
-        path.join(
-          process.cwd(),
-          'src/app/modules',
-          this._name,
-          new FileNameBuilder()
-            .addAsset(AssetEnum.CONTROLLER)
-            .addName(this._name)
-            .addExtension(this._extension)
-            .addTest(true)
-            .build()
-        )
-      )
-      .addTemplate(
-        new TemplateBuilder()
-          .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.spec.${ this._extension }.template`))
-          .addReplacer({
-            __CLASS_NAME__: className,
-            __IMPORT__: filename
-          })
-          .build()
-      )
+      .addFilename(this.buildTestAssetFileName())
+      .addTemplate(this.buildTestAssetTemplate(className, filename))
       .build();
   }
 
-  private generate(): Promise<void> {
-    return this._generator.generate(this._assets[0])
-      .then(() => this._generator.generate(this._assets[1]));
+  private buildTestAssetFileName() {
+    return path.join(
+      process.cwd(),
+      'src/app/modules',
+      this._name,
+      new FileNameBuilder()
+        .addAsset(AssetEnum.CONTROLLER)
+        .addName(this._name)
+        .addExtension(this._extension)
+        .addTest(true)
+        .build()
+    );
   }
 
-  private updateModule(): Promise<void> {
-    return this._updater.update(this._assets[0].filename, this._assets[0].className, AssetEnum.CONTROLLER);
+  private buildTestAssetTemplate(className: string, filename: string) {
+    return new TemplateBuilder()
+      .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.spec.${ this._extension }.template`))
+      .addReplacer({
+        __CLASS_NAME__: className,
+        __IMPORT__: filename
+      })
+      .build();
+  }
+
+  private generate(assets: Asset[]): Promise<void> {
+    return this._generator.generate(assets[0])
+      .then(() => this._generator.generate(assets[1]));
+  }
+
+  private updateModule(assets: Asset[]): Promise<void> {
+    return this._updater.update(assets[0].filename, assets[0].className, AssetEnum.CONTROLLER);
   }
 }

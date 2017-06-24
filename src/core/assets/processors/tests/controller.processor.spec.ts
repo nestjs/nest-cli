@@ -27,7 +27,11 @@ describe('ControllerProcessor', () => {
   describe('#process()', () => {
     const assets: Asset[] = [
       {
-        filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.controller.ts'),
+        filename: path.join(
+          process.cwd(),
+          'src/app/modules/',
+          'name/name.controller.ts'
+        ),
         className: 'NameController',
         template: {
           filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
@@ -37,7 +41,11 @@ describe('ControllerProcessor', () => {
         }
       },
       {
-        filename: path.join(process.cwd(), 'src/app/modules/', 'name/name.controller.spec.ts'),
+        filename: path.join(
+          process.cwd(),
+          'src/app/modules/',
+          'name/name.controller.spec.ts'
+        ),
         className: 'NameController',
         template: {
           filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.spec.ts.template'),
