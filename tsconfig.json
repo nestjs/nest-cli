@@ -1,22 +1,25 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noUnusedLocals": false,
-        "removeComments": true,
-        "noLib": false,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "target": "es6",
-        "sourceMap": true,
-        "allowJs": true,
-        "outDir": "dist"
-    },
-    "files": [
-        "src/nest.ts"
-    ],
-    "exclude": [
-        "node_modules"
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "removeComments": true,
+    "noLib": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es6",
+    "sourceMap": false,
+    "allowJs": false,
+    "outDir": "bin",
+    "typeRoots": [
+      "node_modules/@types"
     ]
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

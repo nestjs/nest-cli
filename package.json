@@ -1,20 +1,64 @@
 {
-  "name": "nest-cli",
-  "version": "0.0.1",
+  "name": "@nestjs/cli",
+  "version": "1.4.6",
   "license": "MIT",
+  "bin": {
+    "nest": "index.js"
+  },
   "scripts": {
-    "start": "node ./index"
+    "build": "npm run -s build:src && npm run -s build:assets",
+    "build:src": "tsc",
+    "build:assets": "cp -R src/assets bin/assets",
+    "clean": "rm -rf bin/* && rm -rf coverage/*",
+    "clean:build": "npm run -s clean && npm run -s build",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "prepare": "npm run clean:build",
+    "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nestjs/nest-cli.git"
+  },
+  "author": "ThomRick",
+  "bugs": {
+    "url": "https://github.com/nestjs/nest-cli/issues"
   },
   "dependencies": {
-    "caporal": "^0.5.0",
-    "find-up": "^2.1.0",
-    "git-clone": "^0.1.0",
-    "jsonfile": "^3.0.0",
-    "rimraf": "^2.6.1",
-    "ts-node": "^3.0.4",
-    "typescript": "^2.3.2"
+    "caporal": "^0.6.0"
   },
   "devDependencies": {
-    "@types/node": "^7.0.18"
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.18",
+    "@types/sinon": "^2.2.2",
+    "chai": "^4.0.0",
+    "coveralls": "^2.13.1",
+    "mocha": "^3.4.2",
+    "nyc": "^10.3.2",
+    "sinon": "^2.3.2",
+    "ts-node": "^3.0.4",
+    "typescript": "^2.3.3"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules/",
+      "src/**/*.spec.ts",
+      "src/**/test.utils.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }

@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+      - "8"
+script:
+      - npm test
+      - npm run -s build
+after_success: npm run -s coverage
+deploy:
+  provider: npm
+  email: $NPM_USER_MAIL
+  api_key: $NPM_API_TOKEN
+  on:
+    tags: true
