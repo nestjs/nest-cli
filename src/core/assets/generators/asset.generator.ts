@@ -15,7 +15,7 @@ export class AssetGenerator implements Generator {
   constructor() {}
 
   public generate(asset: Asset): Promise<void> {
-    this._logger.debug(ColorService.blue('[DEBUG]'), 'generate asset :', asset);
+    this._logger.debug(ColorService.blue('[DEBUG]'), 'generate asset :', JSON.stringify(asset, null, 2));
     const relativeFilename: string = path.relative(process.cwd(), asset.filename);
     return FileSystemUtils.mkdir(path.dirname(relativeFilename))
       .then(() => {

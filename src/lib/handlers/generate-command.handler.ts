@@ -34,8 +34,8 @@ export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
     LoggerService.setLogger(logger);
     logger.debug(ColorService.blue('[DEBUG]'), 'launch generate command');
-    logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', args);
-    logger.debug(ColorService.blue('[DEBUG]'), 'options   :', options);
+    logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', JSON.stringify(args, null, 2));
+    logger.debug(ColorService.blue('[DEBUG]'), 'options   :', JSON.stringify(options, null, 2));
     return ConfigurationService.load()
       .then(() => {
         const assetType: AssetEnum = ASSETS_MAP.get(args.assetType);
