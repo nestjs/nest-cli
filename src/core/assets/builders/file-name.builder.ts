@@ -46,6 +46,8 @@ export class FileNameBuilder {
         return 'pipe';
       case AssetEnum.MIDDLEWARE:
         return 'middleware';
+      case AssetEnum.GATEWAY:
+        return 'gateway';
     }
   }
 

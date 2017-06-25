@@ -33,6 +33,8 @@ export class ClassNameBuilder {
         return 'Pipe';
       case AssetEnum.MIDDLEWARE:
         return 'Middleware';
+      case AssetEnum.GATEWAY:
+        return 'Gateway';
     }
   }
 
