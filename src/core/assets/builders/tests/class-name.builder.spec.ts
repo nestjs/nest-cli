@@ -66,6 +66,15 @@ describe('ClassNameBuilder', () => {
             .build()
         ).to.be.equal('NameMiddleware');
       });
+
+      it('should build a gateway class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.GATEWAY)
+            .build()
+        ).to.be.equal('NameGateway');
+      });
     });
 
     context('snake case names', () => {

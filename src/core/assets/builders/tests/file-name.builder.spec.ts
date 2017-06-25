@@ -121,6 +121,17 @@ describe('FileNameBuilder', () => {
             .build()
         ).to.be.equal('name.middleware.ts');
       });
+
+      it('should builder a gateway file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.GATEWAY)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.gateway.ts');
+      });
     });
 
     context('snake case names', () => {

@@ -24,7 +24,7 @@ describe('MiddlewareProcessor', () => {
   });
 
   describe('#process()', () => {
-    context('generate component in app module', () => {
+    context('generate middleware in app module', () => {
       let processor: Processor;
       beforeEach(() => {
         moduleName = 'app';
