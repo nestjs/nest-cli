@@ -39,6 +39,7 @@ Examples :
 Creates a new Nest application by cloning `https://github.com/ThomRick/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
+
 #### module
 Examples :
    * `$ nest generate module <assetName>` OR `$ nest g module <assetName>`
@@ -49,6 +50,8 @@ Examples :
    * `src/app/modules/[moduleName]/modules/<assetName>/<assetName>.module.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/modules/<assetName>/<assetName>.module.ts` 
 ```typescript
+import {Module} from '@nestjs/common';
+
 @Module({})
 export class NameModule {}
 ```
@@ -63,10 +66,13 @@ Creates a templated controller files :
    * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/controllers/<assetName>.controller.ts`
 ```typescript
+import {Controller} from '@nestjs/common';
+
 @Controller()
 export class NameController {
-    public constructor() {}
+    constructor() {}
 }
+
 ```
    * `src/app/controllers/<assetName>.controller.spec.ts`
    * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.spec.ts`
@@ -94,6 +100,18 @@ describe('NameController', () => {
     });
 });
 ```
+Provides the controller in the specified `[moduleName]`
+```typescript
+import {Module} from '@nestjs/common';
+import {NameController} from './controllers/name.controller';
+
+@Module({
+  controllers: [
+    NameController
+  ]
+})
+export class ModuleNameModule {}
+```
 
 #### component
 Examples : 
@@ -105,6 +123,8 @@ Creates a templated component files :
    * `src/app/modules/[moduleName]/modules/services/<assetName>.controller.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.ts`
 ```typescript
+import {Component} from '@nestjs/common';
+
 @Component()
 export class NameService {
     constructor() {}
@@ -136,15 +156,28 @@ describe('NameService', () => {
     });
 });
 ```
-#### component
+Provides the component in the specified `[moduleName]`
+```typescript
+import {Module} from '@nestjs/common';
+import {NameService} from './services/name.service';
+
+@Module({
+  components: [
+    NameService
+  ]
+})
+export class ModuleNameModule {}
+```
+
+#### pipe
 Examples : 
    * `$ nest generate pipe <assetName>` OR `$ nest g pipe <assetName>` 
    * `$ nest g pipe <assetName> [moduleName]`
    * `$ nest g pipe <assetName> [moduleName1/moduleName2/moduleName3]`
-Creates a templated component files :
+Creates a templated pipe files :
    * `src/app/pipes/<assetName>.service.ts`
-   * `src/app/modules/[moduleName]/modules/pipes/<assetName>.controller.ts`
-   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/pipes/<assetName>.service.ts`
+   * `src/app/modules/[moduleName]/modules/pipes/<assetName>.pipe.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/pipes/<assetName>.pipe.ts`
 ```typescript
 import { PipeTransform, Pipe, ArgumentMetadata } from '@nestjs/common';
 
@@ -155,7 +188,56 @@ export class NamePipe implements PipeTransform {
     }
 }
 ```
-#### middleware (not implemented)
+
+#### middleware
+Examples : 
+   * `$ nest generate middleware <assetName>` OR `$ nest g middleware <assetName>` 
+   * `$ nest g middleware <assetName> [moduleName]`
+   * `$ nest g middleware <assetName> [moduleName1/moduleName2/moduleName3]`
+Creates a templated middleware files :
+   * `src/app/middlewares/<assetName>.service.ts`
+   * `src/app/modules/[moduleName]/modules/middlewares/<assetName>.middleware.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/middlewares/<assetName>.middleware.ts`
+```typescript
+import { Middleware, NestMiddleware } from '@nestjs/common';
+
+@Middleware()
+export class NameMiddleware implements NestMiddleware {
+    resolve(): (req, res, next) => void {
+        return (req, res, next) => {
+            next();
+        }
+    }
+}
+```
+
+#### gateway
+Examples : 
+   * `$ nest generate gateway <assetName>` OR `$ nest g gateway <assetName>` 
+   * `$ nest g gateway <assetName> [moduleName]`
+   * `$ nest g gateway <assetName> [moduleName1/moduleName2/moduleName3]`
+Creates a templated middleware files :
+   * `src/app/gateways/<assetName>.gateway.ts`
+   * `src/app/modules/[moduleName]/modules/gateways/<assetName>.gateway.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/gateways/<assetName>.gateway.ts`
+```typescript
+import { WebSocketGateway } from '@nestjs/websockets';
+
+@WebSocketGateway()
+export class NameGateway {}
+```
+Provides the gateway in the specified `[moduleName]`
+```typescript
+import {Module} from '@nestjs/common';
+import {NameGateway} from './gateways/name.gateway';
+
+@Module({
+  components: [
+    NameGateway
+  ]
+})
+export class ModuleNameModule {}
+```
 
 ### serve (not implemented)
 
