@@ -99,6 +99,17 @@ describe('FileNameBuilder', () => {
             .build()
         ).to.be.equal('name.service.spec.ts');
       });
+
+      it('should builder a middleware file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.MIDDLEWARE)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.middleware.ts');
+      });
     });
 
     context('snake case names', () => {

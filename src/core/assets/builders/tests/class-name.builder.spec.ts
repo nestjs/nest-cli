@@ -48,6 +48,15 @@ describe('ClassNameBuilder', () => {
             .build()
         ).to.be.equal('NameService');
       });
+
+      it('should build a middleware class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.MIDDLEWARE)
+            .build()
+        ).to.be.equal('NameMiddleware');
+      });
     });
 
     context('snake case names', () => {

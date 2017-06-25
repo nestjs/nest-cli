@@ -29,6 +29,8 @@ export class ClassNameBuilder {
         return 'Controller';
       case AssetEnum.COMPONENT:
         return 'Service';
+      case AssetEnum.MIDDLEWARE:
+        return 'Middleware';
     }
   }
 

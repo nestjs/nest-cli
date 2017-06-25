@@ -42,6 +42,8 @@ export class FileNameBuilder {
         return 'controller';
       case AssetEnum.COMPONENT:
         return 'service';
+      case AssetEnum.MIDDLEWARE:
+        return 'middleware';
     }
   }
 
