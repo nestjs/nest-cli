@@ -14,19 +14,24 @@ export interface CreateCommandArguments extends CommandArguments {
   destination?: string
 }
 
-export interface CreateCommandOptions extends CommandOptions {}
+export interface CreateCommandOptions extends CommandOptions {
+  repository: string
+}
 
 export class CreateCommandHandler implements CommandHandler {
   private static DEFAULT_REPOSITORY: string = 'https://github.com/ThomRick/nest-typescript-starter.git';
 
   public execute(args: CreateCommandArguments, options: CreateCommandOptions, logger: Logger): Promise<void> {
     LoggerService.setLogger(logger);
+    logger.debug(ColorService.blue('[DEBUG]'), 'launch new command');
+    logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', args);
+    logger.debug(ColorService.blue('[DEBUG]'), 'options   :', options);
     const name: string = args.name;
     const destination: string = args.destination || name;
-    const repository: Repository = new GitRepository(CreateCommandHandler.DEFAULT_REPOSITORY, destination);
-    return repository.clone()
-      .then(() => FileSystemUtils.readdir(path.join(process.cwd(), destination)))
-      .then(files => files.forEach(file => logger.info(ColorService.green('create'), file)))
-
+    const repository: string = options.repository || CreateCommandHandler.DEFAULT_REPOSITORY;
+    return new GitRepository(repository, destination)
+      .clone()
+        .then(() => FileSystemUtils.readdir(path.join(process.cwd(), destination)))
+        .then(files => files.forEach(file => logger.info(ColorService.green('create'), file)))
   }
 }
