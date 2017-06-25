@@ -49,7 +49,7 @@ describe('ControllerProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameController',
-              __DIR_NAME__: '\'./controllers/name.controller.ts\''
+              __DIR_NAME__: '\'./controllers/name.controller\''
             }
           }
         },
@@ -66,7 +66,7 @@ describe('ControllerProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.spec.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameController',
-              __IMPORT__: 'name.controller.ts'
+              __IMPORT__: 'name.controller'
             }
           }
         }
