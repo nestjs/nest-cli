@@ -2,6 +2,7 @@
   "name": "@nestjs/cli",
   "version": "1.4.7",
   "license": "MIT",
+  "private": false,
   "bin": {
     "nest": "index.js"
   },
