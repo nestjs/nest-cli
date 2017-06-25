@@ -72,11 +72,12 @@ export class NameController {
    * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.spec.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/controllers/<assetName>.controller.spec.ts`
 ```typescript
+import {Test} from '@nestjs/testing';
 import {NameController} from './name.controller';
 import {expect} from 'chai';
 
 describe('NameController', () => {
-    const controller: NameController;
+    let controller: NameController;
 
     beforeEach(() => {
         Test.createTestingModule({
@@ -91,7 +92,7 @@ describe('NameController', () => {
     it('should exists', () => {
         expect(controller).to.exist;
     });
-}
+});
 ```
 
 #### component
@@ -113,11 +114,12 @@ export class NameService {
    * `src/app/modules/[moduleName]/modules/services/<assetName>.service.spec.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.spec.ts`
 ```typescript
+import {Test} from '@nestjs/testing';
 import {NameService} from './name.service';
 import {expect} from 'chai';
 
 describe('NameService', () => {
-    const service: NameService;
+    let service: NameService;
 
     beforeEach(() => {
         Test.createTestingModule({
@@ -132,9 +134,27 @@ describe('NameService', () => {
     it('should exists', () => {
         expect(service).to.exist;
     });
+});
+```
+#### component
+Examples : 
+   * `$ nest generate pipe <assetName>` OR `$ nest g pipe <assetName>` 
+   * `$ nest g pipe <assetName> [moduleName]`
+   * `$ nest g pipe <assetName> [moduleName1/moduleName2/moduleName3]`
+Creates a templated component files :
+   * `src/app/pipes/<assetName>.service.ts`
+   * `src/app/modules/[moduleName]/modules/pipes/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/pipes/<assetName>.service.ts`
+```typescript
+import { PipeTransform, Pipe, ArgumentMetadata } from '@nestjs/common';
+
+@Pipe()
+export class NamePipe implements PipeTransform {
+    public transform(value, metadata: ArgumentMetadata) {
+        return value;
+    }
 }
 ```
-
 #### middleware (not implemented)
 
 ### serve (not implemented)
