@@ -100,7 +100,7 @@ describe('FileNameBuilder', () => {
         ).to.be.equal('name.service.spec.ts');
       });
 
-      it('should build a test pipe file name', () => {
+      it('should build a pipe file name', () => {
         expect(
           builder
             .addName('name')
@@ -109,6 +109,17 @@ describe('FileNameBuilder', () => {
             .addExtension('ts')
             .build()
         ).to.be.equal('name.pipe.ts');
+      });
+
+      it('should builder a middleware file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.MIDDLEWARE)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.middleware.ts');
       });
     });
 

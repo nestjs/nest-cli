@@ -10,12 +10,14 @@ import {ConfigurationService} from '../../core/configuration/configuration.servi
 import {LoggerService} from '../../core/logger/logger.service';
 import {ColorService} from '../../core/logger/color.service';
 import {PipeProcessor} from '../../core/assets/processors/pipe.processor';
+import {MiddlewareProcessor} from '../../core/assets/processors/middleware.processor';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
   [ 'controller', AssetEnum.CONTROLLER ],
   [ 'component', AssetEnum.COMPONENT ],
-  [ 'pipe' , AssetEnum.PIPE ]
+  [ 'pipe' , AssetEnum.PIPE ],
+  [ 'middleware', AssetEnum.MIDDLEWARE ]
 ]);
 
 export interface GenerateCommandArguments extends CommandArguments {
@@ -44,6 +46,8 @@ export class GenerateCommandHandler implements CommandHandler {
             return new ComponentProcessor(assetName, moduleName, language).process();
           case AssetEnum.PIPE:
             return new PipeProcessor(assetName, moduleName, language).process();
+          case AssetEnum.MIDDLEWARE:
+            return new MiddlewareProcessor(assetName, moduleName, language).process();
           default:
             logger.error(ColorService.red('error'), `asset ${ args.assetType } is not managed.`);
         }

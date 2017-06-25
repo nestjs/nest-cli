@@ -6,6 +6,7 @@ import {ControllerProcessor} from '../../../core/assets/processors/controller.pr
 import {ComponentProcessor} from '../../../core/assets/processors/component.processor';
 import {ConfigurationService} from '../../../core/configuration/configuration.service';
 import {PipeProcessor} from '../../../core/assets/processors/pipe.processor';
+import {MiddlewareProcessor} from '../../../core/assets/processors/middleware.processor';
 
 describe('GenerateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -68,6 +69,14 @@ describe('GenerateCommandHandler', () => {
     it('should generate pipe assets', () => {
       let processStub = sandbox.stub(PipeProcessor.prototype, 'process').callsFake(() => Promise.resolve());
       return handler.execute({ assetType: 'pipe', assetName: 'name' }, {}, console)
+        .then(() => {
+          sinon.assert.calledOnce(processStub);
+        });
+    });
+
+    it('should generate middleware assets', () => {
+      let processStub = sandbox.stub(MiddlewareProcessor.prototype, 'process').callsFake(() => Promise.resolve());
+      return handler.execute({ assetType: 'middleware', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(processStub);
         });

@@ -31,6 +31,8 @@ export class ClassNameBuilder {
         return 'Service';
       case AssetEnum.PIPE:
         return 'Pipe';
+      case AssetEnum.MIDDLEWARE:
+        return 'Middleware';
     }
   }
 
