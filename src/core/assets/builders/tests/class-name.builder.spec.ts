@@ -40,13 +40,22 @@ describe('ClassNameBuilder', () => {
         ).to.be.equal('NameController');
       });
 
-      it('should builder a component class name', () => {
+      it('should build a component class name', () => {
         expect(
           builder
             .addName('name')
             .addAsset(AssetEnum.COMPONENT)
             .build()
         ).to.be.equal('NameService');
+      });
+
+      it('should build a pipe class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.PIPE)
+            .build()
+        ).to.be.equal('NamePipe');
       });
     });
 
