@@ -85,7 +85,7 @@ export class ComponentProcessor implements Processor{
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/component/component.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./services/${ filename }'`
+        __DIR_NAME__: `'./services/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }
@@ -118,7 +118,7 @@ export class ComponentProcessor implements Processor{
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/component/component.spec.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __IMPORT__: filename
+        __IMPORT__: filename.replace(`.${ this._extension }`, '')
       })
       .build();
   }

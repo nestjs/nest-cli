@@ -71,7 +71,7 @@ describe('ModuleUpdaterImpl', () => {
         filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
         replacer: {
           __CLASS_NAME__: 'NameController',
-          __DIR_NAME__: '\'./controllers/name.controller.ts\''
+          __DIR_NAME__: '\'./controllers/name.controller\''
         }
       }
     };
@@ -88,7 +88,7 @@ describe('ModuleUpdaterImpl', () => {
         .then(() => {
           expect(intermediateWriter.getBuffer().toString()).to.be.equal(
             'import {Module} from \'@nestjs/common\';\n' +
-            `import {${ asset.className }} from './controllers/name.controller.ts';\n` +
+            `import {${ asset.className }} from './controllers/name.controller';\n` +
             '\n' +
             '@Module({\n' +
             '  controllers: [\n' +

@@ -49,7 +49,7 @@ describe('ComponentProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/component/component.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameService',
-              __DIR_NAME__: `'./services/name.service.ts'`
+              __DIR_NAME__: `'./services/name.service'`
             }
           }
         },
@@ -66,7 +66,7 @@ describe('ComponentProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/component/component.spec.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameService',
-              __IMPORT__: 'name.service.ts'
+              __IMPORT__: 'name.service'
             }
           }
         }

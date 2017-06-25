@@ -50,7 +50,7 @@ describe('ClassNameBuilder', () => {
       });
     });
 
-    context.skip('snake case names', () => {
+    context('snake case names', () => {
       it('should build a module class name', () => {
         expect(
           builder
