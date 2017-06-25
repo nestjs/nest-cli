@@ -1,0 +1,8 @@
+import { PipeTransform, Pipe, ArgumentMetadata } from '@nestjs/common';
+
+@Pipe()
+export class CustomPipe implements PipeTransform {
+    public transform(value, metadata: ArgumentMetadata) {
+        return value;
+    }
+}
