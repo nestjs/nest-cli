@@ -101,7 +101,7 @@ describe('FileNameBuilder', () => {
       });
     });
 
-    context.skip('snake case names', () => {
+    context('snake case names', () => {
       it('should build a module file name', () => {
         expect(
           builder

@@ -3,8 +3,9 @@ import {AssetEnum} from '../../../common/asset/enums/asset.enum';
 
 export class MetadataTransform extends Transform {
   private MODULE_METADATA_REGEX = /@Module\(([\s\S]*?)\)/;
+  private CLASS_NAME_TOKEN = '__CLASS_NAME__';
 
-  constructor(private className: string, private asset: AssetEnum) {
+  constructor(private _asset: AssetEnum) {
     super({ encoding: 'utf-8' });
   }
 
@@ -16,7 +17,7 @@ export class MetadataTransform extends Transform {
   }
 
   private update(metadata: any) {
-    switch (this.asset) {
+    switch (this._asset) {
       case AssetEnum.COMPONENT:
         metadata = this.updateComponents(metadata);
         break;
@@ -29,19 +30,20 @@ export class MetadataTransform extends Transform {
 
   private updateComponents(metadata: any) {
     if (metadata.hasOwnProperty('components')) {
-      (metadata['components'] as Array<string>).push(this.className);
+      (metadata['components'] as Array<string>).push(this.CLASS_NAME_TOKEN);
     } else {
-      metadata.components = [ this.className ];
+      metadata.components = [ this.CLASS_NAME_TOKEN ];
     }
     return metadata;
   }
 
   private updateControllers(metadata: any) {
     if (metadata.hasOwnProperty('controllers')) {
-      (metadata['controllers'] as Array<string>).push(this.className);
+      (metadata['controllers'] as Array<string>).push(this.CLASS_NAME_TOKEN);
     } else {
-      metadata.controllers = [ this.className ];
+      metadata.controllers = [ this.CLASS_NAME_TOKEN ];
     }
     return metadata;
   }
 }
+

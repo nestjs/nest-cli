@@ -1,9 +1,9 @@
 import {Readable, Transform, Writable} from 'stream';
-import {ImportTransform} from '../import.transform';
-import {expect} from 'chai';
 import {BufferedReadable, BufferedWritable} from './test.utils';
+import {expect} from 'chai';
+import {ImportTransform} from '../import.transform';
 
-describe('ImportTransform', () => {
+describe('ImportTransformV2', () => {
   const content: string = '' +
     'import {Module} from \'@nestjs/common\';\n' +
     '\n' +
@@ -20,12 +20,12 @@ describe('ImportTransform', () => {
   });
 
   let transform: Transform;
-  beforeEach(() => transform = new ImportTransform(className, dirname));
+  beforeEach(() => transform = new ImportTransform());
 
   it('should add the imported asset', done => {
     const newContent: string =
       'import {Module} from \'@nestjs/common\';\n' +
-      `import {${ className }} from ${ dirname };\n` +
+      `import {__CLASS_NAME__} from __DIR_NAME__;\n` +
       '\n' +
       '@Module({})\n' +
       'export class AssetModule {}\n';

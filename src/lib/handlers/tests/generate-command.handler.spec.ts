@@ -26,7 +26,7 @@ describe('GenerateCommandHandler', () => {
   describe('#execute()', () => {
     it('should load the configuration file', () => {
       sandbox.stub(ModuleProcessor.prototype, 'process').callsFake(() => Promise.resolve());
-      return handler.execute({ asset: 'module', name: 'name' }, {}, console)
+      return handler.execute({ assetType: 'module', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(loadStub);
         });
@@ -34,7 +34,7 @@ describe('GenerateCommandHandler', () => {
 
     it('should get the project language from the configuration', () => {
       sandbox.stub(ModuleProcessor.prototype, 'process').callsFake(() => Promise.resolve());
-      return handler.execute({ asset: 'module', name: 'name' }, {}, console)
+      return handler.execute({ assetType: 'module', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledWith(getPropertyStub, 'language');
         });
@@ -42,7 +42,7 @@ describe('GenerateCommandHandler', () => {
 
     it('should generate module assets', () => {
       let processStub = sandbox.stub(ModuleProcessor.prototype, 'process').callsFake(() => Promise.resolve());
-      return handler.execute({ asset: 'module', name: 'name' }, {}, console)
+      return handler.execute({ assetType: 'module', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(processStub);
         });
@@ -50,7 +50,7 @@ describe('GenerateCommandHandler', () => {
 
     it('should generate controller assets', () => {
       let processStub = sandbox.stub(ControllerProcessor.prototype, 'process').callsFake(() => Promise.resolve());
-      return handler.execute({ asset: 'controller', name: 'name' }, {}, console)
+      return handler.execute({ assetType: 'controller', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(processStub);
         });
@@ -58,7 +58,7 @@ describe('GenerateCommandHandler', () => {
 
     it('should generate component assets', () => {
       let processStub = sandbox.stub(ComponentProcessor.prototype, 'process').callsFake(() => Promise.resolve());
-      return handler.execute({ asset: 'component', name: 'name' }, {}, console)
+      return handler.execute({ assetType: 'component', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(processStub);
         });
