@@ -5,6 +5,9 @@ import {ModuleProcessor} from '../../../core/assets/processors/module.processor'
 import {ControllerProcessor} from '../../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../../core/assets/processors/component.processor';
 import {ConfigurationService} from '../../../core/configuration/configuration.service';
+import {PipeProcessor} from '../../../core/assets/processors/pipe.processor';
+import {MiddlewareProcessor} from '../../../core/assets/processors/middleware.processor';
+import {GatewayProcessor} from '../../../core/assets/processors/gateway.processor';
 
 describe('GenerateCommandHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -59,6 +62,30 @@ describe('GenerateCommandHandler', () => {
     it('should generate component assets', () => {
       let processStub = sandbox.stub(ComponentProcessor.prototype, 'process').callsFake(() => Promise.resolve());
       return handler.execute({ assetType: 'component', assetName: 'name' }, {}, console)
+        .then(() => {
+          sinon.assert.calledOnce(processStub);
+        });
+    });
+
+    it('should generate pipe assets', () => {
+      let processStub = sandbox.stub(PipeProcessor.prototype, 'process').callsFake(() => Promise.resolve());
+      return handler.execute({ assetType: 'pipe', assetName: 'name' }, {}, console)
+        .then(() => {
+          sinon.assert.calledOnce(processStub);
+        });
+    });
+
+    it('should generate middleware assets', () => {
+      let processStub = sandbox.stub(MiddlewareProcessor.prototype, 'process').callsFake(() => Promise.resolve());
+      return handler.execute({ assetType: 'middleware', assetName: 'name' }, {}, console)
+        .then(() => {
+          sinon.assert.calledOnce(processStub);
+        });
+    });
+
+    it('should generate gateway assets', () => {
+      let processStub = sandbox.stub(GatewayProcessor.prototype, 'process').callsFake(() => Promise.resolve());
+      return handler.execute({ assetType: 'gateway', assetName: 'name' }, {}, console)
         .then(() => {
           sinon.assert.calledOnce(processStub);
         });
