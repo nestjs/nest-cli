@@ -3,5 +3,6 @@ export enum AssetEnum {
   CONTROLLER,
   COMPONENT,
   PIPE,
-  MIDDLEWARE
+  MIDDLEWARE,
+  GATEWAY
 }
