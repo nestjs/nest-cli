@@ -32,7 +32,8 @@ describe('AssetGenerator', () => {
     pipeSpy = sandbox.spy(PassThrough.prototype, 'pipe');
     getLoggerStub = sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
       return {
-        info: () => {}
+        info: () => {},
+        debug: () => {}
       };
     });
   });
