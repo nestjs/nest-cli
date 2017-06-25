@@ -8,11 +8,14 @@ import {ControllerProcessor} from '../../core/assets/processors/controller.proce
 import {ComponentProcessor} from '../../core/assets/processors/component.processor';
 import {ConfigurationService} from '../../core/configuration/configuration.service';
 import {LoggerService} from '../../core/logger/logger.service';
+import {ColorService} from '../../core/logger/color.service';
+import {MiddlewareProcessor} from '../../core/assets/processors/middleware.processor';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
   [ 'controller', AssetEnum.CONTROLLER ],
   [ 'component', AssetEnum.COMPONENT ],
+  [ 'middleware', AssetEnum.MIDDLEWARE ],
 ]);
 
 export interface GenerateCommandArguments extends CommandArguments {
@@ -39,6 +42,10 @@ export class GenerateCommandHandler implements CommandHandler {
             return new ControllerProcessor(assetName, moduleName, language).process();
           case AssetEnum.COMPONENT:
             return new ComponentProcessor(assetName, moduleName, language).process();
+          case AssetEnum.MIDDLEWARE:
+            return new MiddlewareProcessor(assetName, moduleName, language).process();
+          default:
+            logger.error(ColorService.red('error'), `the asset '${ args.assetType }' is not supported`);
         }
       });
   }
