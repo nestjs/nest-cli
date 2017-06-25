@@ -2,7 +2,9 @@
   "name": "@nestjs/cli",
   "version": "1.4.7",
   "license": "MIT",
-  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "nest": "index.js"
   },
