@@ -19,6 +19,7 @@ export class MetadataTransform extends Transform {
   private update(metadata: any) {
     switch (this._asset) {
       case AssetEnum.COMPONENT:
+      case AssetEnum.GATEWAY:
         metadata = this.updateComponents(metadata);
         break;
       case AssetEnum.CONTROLLER:

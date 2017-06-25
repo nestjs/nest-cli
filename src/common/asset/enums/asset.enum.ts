@@ -1,5 +1,8 @@
 export enum AssetEnum {
   MODULE,
   CONTROLLER,
-  COMPONENT
+  COMPONENT,
+  PIPE,
+  MIDDLEWARE,
+  GATEWAY
 }

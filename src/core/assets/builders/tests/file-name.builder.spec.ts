@@ -78,7 +78,7 @@ describe('FileNameBuilder', () => {
         ).to.be.equal('name.controller.spec.ts');
       });
 
-      it('should builder a component file name', () => {
+      it('should build a component file name', () => {
         expect(
           builder
             .addName('name')
@@ -89,7 +89,7 @@ describe('FileNameBuilder', () => {
         ).to.be.equal('name.service.ts');
       });
 
-      it('should builder a test component file name', () => {
+      it('should build a test component file name', () => {
         expect(
           builder
             .addName('name')
@@ -98,6 +98,39 @@ describe('FileNameBuilder', () => {
             .addExtension('ts')
             .build()
         ).to.be.equal('name.service.spec.ts');
+      });
+
+      it('should build a pipe file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.PIPE)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.pipe.ts');
+      });
+
+      it('should builder a middleware file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.MIDDLEWARE)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.middleware.ts');
+      });
+
+      it('should builder a gateway file name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.GATEWAY)
+            .addTest(false)
+            .addExtension('ts')
+            .build()
+        ).to.be.equal('name.gateway.ts');
       });
     });
 

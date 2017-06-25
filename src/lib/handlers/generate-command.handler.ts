@@ -8,11 +8,18 @@ import {ControllerProcessor} from '../../core/assets/processors/controller.proce
 import {ComponentProcessor} from '../../core/assets/processors/component.processor';
 import {ConfigurationService} from '../../core/configuration/configuration.service';
 import {LoggerService} from '../../core/logger/logger.service';
+import {ColorService} from '../../core/logger/color.service';
+import {PipeProcessor} from '../../core/assets/processors/pipe.processor';
+import {MiddlewareProcessor} from '../../core/assets/processors/middleware.processor';
+import {GatewayProcessor} from '../../core/assets/processors/gateway.processor';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
   [ 'controller', AssetEnum.CONTROLLER ],
   [ 'component', AssetEnum.COMPONENT ],
+  [ 'pipe' , AssetEnum.PIPE ],
+  [ 'middleware', AssetEnum.MIDDLEWARE ],
+  [ 'gateway', AssetEnum.GATEWAY ]
 ]);
 
 export interface GenerateCommandArguments extends CommandArguments {
@@ -26,6 +33,9 @@ export interface GenerateCommandOptions extends CommandOptions {}
 export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
     LoggerService.setLogger(logger);
+    logger.debug(ColorService.blue('[DEBUG]'), 'launch generate command');
+    logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', JSON.stringify(args, null, 2));
+    logger.debug(ColorService.blue('[DEBUG]'), 'options   :', JSON.stringify(options, null, 2));
     return ConfigurationService.load()
       .then(() => {
         const assetType: AssetEnum = ASSETS_MAP.get(args.assetType);
@@ -39,6 +49,14 @@ export class GenerateCommandHandler implements CommandHandler {
             return new ControllerProcessor(assetName, moduleName, language).process();
           case AssetEnum.COMPONENT:
             return new ComponentProcessor(assetName, moduleName, language).process();
+          case AssetEnum.PIPE:
+            return new PipeProcessor(assetName, moduleName, language).process();
+          case AssetEnum.MIDDLEWARE:
+            return new MiddlewareProcessor(assetName, moduleName, language).process();
+          case AssetEnum.GATEWAY:
+            return new GatewayProcessor(assetName, moduleName, language).process();
+          default:
+            logger.error(ColorService.red('[ERROR]'), `asset '${ args.assetType }' is not managed.`);
         }
       });
   }
