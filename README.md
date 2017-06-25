@@ -20,7 +20,7 @@ $ npm link
 
 ###npm
 
-```npm install g @nestjs/cli```
+```npm install -g @nestjs/cli```
 
 ## nestconfig.json
 The nestconfig.json is here to manage the CLI execution like asset generation.
