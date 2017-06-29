@@ -1,6 +1,6 @@
-[![Nest Logo](http://kamilmysliwiec.com/public/nest-logo.png)](http://kamilmysliwiec.com/)
-
 Tool to manage Nest projects: Modern, powerful web application framework for [Node.js](http://nodejs.org).
+
+[![Nest Logo](http://kamilmysliwiec.com/public/nest-logo.png)](http://kamilmysliwiec.com/)
 
 # Nest CLI
 
