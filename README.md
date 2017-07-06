@@ -253,3 +253,6 @@ export class ModuleNameModule {}
 ### build (not implemented)
 
 ### update (not implemented)
+Examples : 
+   * `$ nest update`
+Used to update project dependencies.
