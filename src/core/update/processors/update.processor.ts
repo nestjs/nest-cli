@@ -1,11 +1,12 @@
 import {Processor} from '../../../common/asset/interfaces/processor.interface';
 import {UpdateCommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
 import {UpdateCommandOptions} from '../../../common/program/interfaces/command.options.interface';
-import {PackageJsonUpdater} from '../updaters/package-json.updater';
+import {Updater} from '../../../common/project/interfaces/updater.interface';
+import {NestUpdater} from '../updaters/nest.updater';
 
 export class UpdateProcessor implements Processor {
   constructor(
-    private _updater: PackageJsonUpdater = new PackageJsonUpdater()
+    private _updater: Updater = new NestUpdater()
   ) {}
 
   public process(): Promise<void> {

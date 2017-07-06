@@ -18,7 +18,7 @@ describe('NpmUtils', () => {
   });
 
   describe('#update()', () => {
-    it('should spawn a child process to update package.json dependencies', () => {
+    it('should spawn a child process to update dependencies', () => {
       const promise: Promise<void> = NpmUtils.update([
         'dep1',
         'dep2',
@@ -38,7 +38,7 @@ describe('NpmUtils', () => {
   });
 
   describe('#uninstall()', () => {
-    it('should spawn a child process to update package.json dependencies', () => {
+    it('should spawn a child process to uninstall dependencies', () => {
       const promise: Promise<void> = NpmUtils.uninstall([
         'dep1',
         'dep2',
@@ -49,6 +49,27 @@ describe('NpmUtils', () => {
         .then(() => {
           sinon.assert.calledWith(spawnStub, 'npm', [
             'uninstall',
+            '--save',
+            'dep1',
+            'dep2',
+            'dep3'
+          ]);
+        });
+    });
+  });
+
+  describe('#install()', () => {
+    it('should spawn a child process to install dependencies', () => {
+      const promise: Promise<void> = NpmUtils.install([
+        'dep1',
+        'dep2',
+        'dep3'
+      ]);
+      event.emit('exit');
+      return promise
+        .then(() => {
+          sinon.assert.calledWith(spawnStub, 'npm', [
+            'install',
             '--save',
             'dep1',
             'dep2',

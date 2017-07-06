@@ -24,4 +24,16 @@ export class NpmUtils {
       });
     });
   }
+
+  public static install(dependencies: string[]): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const spawned: ChildProcess = spawn('npm', [ 'install', '--save', ...dependencies ]);
+      spawned.on('exit', code => {
+        if (code === 1)
+          reject();
+        else
+          resolve();
+      });
+    });
+  }
 }

@@ -3,7 +3,8 @@ import {UpdateProcessor} from '../update.processor';
 import {UpdateCommandArguments} from '../../../../common/program/interfaces/command.aguments.interface';
 import {UpdateCommandOptions} from '../../../../common/program/interfaces/command.options.interface';
 import * as sinon from 'sinon';
-import {PackageJsonUpdater} from '../../updaters/package-json.updater';
+import {Updater} from '../../../../common/project/interfaces/updater.interface';
+import {NestUpdater} from '../../updaters/nest.updater';
 
 describe('UpdateProcessor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -13,7 +14,7 @@ describe('UpdateProcessor', () => {
   let processor: Processor;
   let updateStub: sinon.SinonStub;
   beforeEach(() => {
-    const updater: PackageJsonUpdater = new PackageJsonUpdater();
+    const updater: Updater = new NestUpdater();
     updateStub = sandbox.stub(updater, 'update').callsFake(() => Promise.resolve());
     processor = new UpdateProcessor(updater);
   });
