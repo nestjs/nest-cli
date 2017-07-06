@@ -12,6 +12,8 @@ import {FileNameBuilder} from '../builders/file-name.builder';
 import {AssetBuilder} from '../builders/asset.builder';
 import * as path from 'path';
 import {TemplateBuilder} from '../builders/template.builder';
+import {CommandOptions} from '../../../common/program/interfaces/command.options.interface';
+import {CommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
 
 export class GatewayProcessor implements Processor {
   private _finder: ModuleFinder;
@@ -26,6 +28,10 @@ export class GatewayProcessor implements Processor {
     this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
     this._updater = new ModuleUpdaterImpl();
+  }
+
+  public processV2(args: CommandArguments, options: CommandOptions): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
   public process(): Promise<void> {

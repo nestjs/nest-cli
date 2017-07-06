@@ -12,12 +12,14 @@ import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.int
 import {ModuleUpdaterImpl} from '../module-updaters/module.updater';
 import {ModuleFinder} from '../../../common/asset/interfaces/module.finder.interface';
 import {ModuleFinderImpl} from '../module-finders/module.finder';
+import {CommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
+import {CommandOptions} from '../../../common/program/interfaces/command.options.interface';
 
 export class ControllerProcessor implements Processor {
   private _finder: ModuleFinder;
   private _generator: Generator;
   private _updater: ModuleUpdater;
-
+  
   constructor(
     private _name: string,
     private _moduleName: string,
@@ -26,6 +28,10 @@ export class ControllerProcessor implements Processor {
     this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
     this._updater = new ModuleUpdaterImpl();
+  }
+
+  public processV2(args: CommandArguments, options: CommandOptions): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
   public process(): Promise<void> {

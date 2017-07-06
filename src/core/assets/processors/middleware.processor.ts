@@ -10,11 +10,13 @@ import {ClassNameBuilder} from '../builders/class-name.builder';
 import {AssetBuilder} from '../builders/asset.builder';
 import * as path from 'path';
 import {TemplateBuilder} from '../builders/template.builder';
+import {CommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
+import {CommandOptions} from '../../../common/program/interfaces/command.options.interface';
 
 export class MiddlewareProcessor implements Processor {
   private _finder: ModuleFinder;
   private _generator: Generator;
-  
+
   constructor(
     private _assetName: string,
     private _moduleName: string,
@@ -22,6 +24,10 @@ export class MiddlewareProcessor implements Processor {
   ) {
     this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
+  }
+
+  public processV2(args: CommandArguments, options: CommandOptions): Promise<void> {
+    return undefined;
   }
 
   public process(): Promise<void> {
