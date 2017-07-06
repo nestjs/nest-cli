@@ -13,7 +13,7 @@ export class UpdateProcessor implements Processor {
   }
 
   public processV2(args: UpdateCommandArguments, options: UpdateCommandOptions): Promise<void> {
-    throw new Error("Method not implemented.");
+    return this._updater.update();
   }
 
 }
