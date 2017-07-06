@@ -37,19 +37,19 @@ describe('CreateCommandDescriptor', () => {
     });
 
     it('should declare the mandatory name argument with the right description', () => {
-      expect(argumentStub.calledWith('<name>', 'Nest application name')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '<name>', 'Nest application name');
     });
 
     it('should declare the optional destination argument with the right description', () => {
-      expect(argumentStub.calledWith('[destination]', 'Where the Nest application will be created')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '[destination]', 'Where the Nest application will be created');
     });
 
     it('should declare the repository option with the right description', () => {
-      expect(optionStub.calledWith('-r, --repository <repository>', 'Github repository where the project template is')).to.be.true;
+      sinon.assert.calledWith(optionStub, '-r, --repository <repository>', 'Github repository where the project template is');
     });
 
     it('should call handler() with the CreateCommandHandler', () => {
-      expect(handlerStub.calledWith(new CreateCommandHandler())).to.be.true;
+      sinon.assert.calledWith(handlerStub, new CreateCommandHandler());
     });
   });
 });
