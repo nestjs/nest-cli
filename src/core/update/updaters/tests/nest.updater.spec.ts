@@ -2,6 +2,7 @@ import {Updater} from '../../../../common/project/interfaces/updater.interface';
 import {NestUpdater} from '../nest.updater';
 import * as sinon from 'sinon';
 import {NpmUtils} from '../../../utils/npm.utils';
+import {LoggerService} from '../../../logger/logger.service';
 
 describe('NestUpdater', () => {
   let sandbox: sinon.SinonSandbox;
@@ -13,6 +14,12 @@ describe('NestUpdater', () => {
   beforeEach(() => {
     uninstallStub = sandbox.stub(NpmUtils, 'uninstall').callsFake(() => Promise.resolve());
     installStub = sandbox.stub(NpmUtils, 'install').callsFake(() => Promise.resolve());
+    sandbox.stub(LoggerService, 'getLogger').callsFake(() => {
+      return {
+        info: () => {},
+        debug: () => {}
+      }
+    });
   });
 
   let updater: Updater;
