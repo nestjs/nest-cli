@@ -25,7 +25,7 @@ const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
 export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
     LoggerService.setLogger(logger);
-    logger.debug(ColorService.blue('[DEBUG]'), 'launch generate command');
+    logger.debug(ColorService.blue('[DEBUG]'), 'execute generate command');
     logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', JSON.stringify(args, null, 2));
     logger.debug(ColorService.blue('[DEBUG]'), 'options   :', JSON.stringify(options, null, 2));
     return ConfigurationService.load()

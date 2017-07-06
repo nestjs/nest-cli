@@ -13,7 +13,7 @@ export class CreateCommandHandler implements CommandHandler {
 
   public execute(args: CreateCommandArguments, options: CreateCommandOptions, logger: Logger): Promise<void> {
     LoggerService.setLogger(logger);
-    logger.debug(ColorService.blue('[DEBUG]'), 'launch new command');
+    logger.debug(ColorService.blue('[DEBUG]'), 'execute new command');
     logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', JSON.stringify(args, null, 2));
     logger.debug(ColorService.blue('[DEBUG]'), 'options   :', JSON.stringify(options, null, 2));
     const name: string = args.name;
