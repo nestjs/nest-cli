@@ -1,7 +1,6 @@
 import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 import {AssetEnum} from '../../common/asset/enums/asset.enum';
-import {CommandArguments} from '../../common/program/interfaces/command.aguments.interface';
-import {CommandOptions} from '../../common/program/interfaces/command.options.interface';
+import {GenerateCommandArguments} from '../../common/program/interfaces/command.aguments.interface';
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {ModuleProcessor} from '../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../core/assets/processors/controller.processor';
@@ -12,6 +11,7 @@ import {ColorService} from '../../core/logger/color.service';
 import {PipeProcessor} from '../../core/assets/processors/pipe.processor';
 import {MiddlewareProcessor} from '../../core/assets/processors/middleware.processor';
 import {GatewayProcessor} from '../../core/assets/processors/gateway.processor';
+import {GenerateCommandOptions} from '../../../bin/lib/handlers/generate-command.handler';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],
@@ -21,14 +21,6 @@ const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'middleware', AssetEnum.MIDDLEWARE ],
   [ 'gateway', AssetEnum.GATEWAY ]
 ]);
-
-export interface GenerateCommandArguments extends CommandArguments {
-  assetType: string
-  assetName: string
-  moduleName: string
-}
-
-export interface GenerateCommandOptions extends CommandOptions {}
 
 export class GenerateCommandHandler implements CommandHandler {
   public execute(args: GenerateCommandArguments, options: GenerateCommandOptions, logger: Logger): Promise<void> {
