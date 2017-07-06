@@ -11,7 +11,7 @@ import {ColorService} from '../../core/logger/color.service';
 import {PipeProcessor} from '../../core/assets/processors/pipe.processor';
 import {MiddlewareProcessor} from '../../core/assets/processors/middleware.processor';
 import {GatewayProcessor} from '../../core/assets/processors/gateway.processor';
-import {GenerateCommandOptions} from '../../../bin/lib/handlers/generate-command.handler';
+import {GenerateCommandOptions} from '../../common/program/interfaces/command.options.interface';
 
 const ASSETS_MAP: Map<string, AssetEnum> = new Map<string, AssetEnum>([
   [ 'module', AssetEnum.MODULE ],

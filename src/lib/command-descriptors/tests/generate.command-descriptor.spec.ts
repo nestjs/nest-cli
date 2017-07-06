@@ -1,10 +1,9 @@
-import {CaporalProgram} from '../../../core/program/caporal';
 import * as sinon from 'sinon';
-import {expect} from 'chai';
 import {Command} from '../../../common/program/interfaces/command.interface';
 import {Program} from '../../../common/program/interfaces/program.interface';
 import {GenerateCommandDescriptor} from '../generate.command-descriptor';
 import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
+import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;

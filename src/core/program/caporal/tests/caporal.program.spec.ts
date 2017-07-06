@@ -1,4 +1,4 @@
-import {CaporalProgram} from '../../caporal/caporal.program';
+import {CaporalProgram} from '../caporal.program';
 import * as sinon from 'sinon';
 import * as caporal from 'caporal';
 import {expect} from 'chai';
