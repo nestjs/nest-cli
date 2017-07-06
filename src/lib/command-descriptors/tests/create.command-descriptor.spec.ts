@@ -5,6 +5,7 @@ import {CreateCommandDescriptor} from '../create.command-descriptor';
 import {CreateCommandHandler} from '../../handlers/create-command.handler';
 import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
 import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
+import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 describe('CreateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -32,8 +33,10 @@ describe('CreateCommandDescriptor', () => {
       handlerStub = sandbox.stub(command, 'handler').callsFake(() => command);
     });
 
+    let handler: CommandHandler;
     beforeEach(() => {
-      const descriptor: CommandDescriptor = new CreateCommandDescriptor();
+      handler = new CreateCommandHandler();
+      const descriptor: CommandDescriptor = new CreateCommandDescriptor(handler);
       descriptor.describe(command);
     });
 
@@ -50,7 +53,7 @@ describe('CreateCommandDescriptor', () => {
     });
 
     it('should call handler() with the CreateCommandHandler', () => {
-      sinon.assert.calledWith(handlerStub, new CreateCommandHandler());
+      sinon.assert.calledWith(handlerStub, handler);
     });
   });
 });

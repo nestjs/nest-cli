@@ -5,6 +5,7 @@ import {GenerateCommandDescriptor} from '../generate.command-descriptor';
 import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
 import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
 import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
+import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -34,8 +35,10 @@ describe('GenerateCommandDescriptor', () => {
       handlerStub = sandbox.stub(command, 'handler').callsFake(() => command);
     });
 
+    let handler: CommandHandler;
     beforeEach(() => {
-      const descriptor: CommandDescriptor = new GenerateCommandDescriptor();
+      handler = new GenerateCommandHandler();
+      const descriptor: CommandDescriptor = new GenerateCommandDescriptor(handler);
       descriptor.describe(command);
     });
 
@@ -56,7 +59,7 @@ describe('GenerateCommandDescriptor', () => {
     });
 
     it('should call handler() with the GenerateCommandHandler', () => {
-      sinon.assert.calledWith(handlerStub, new GenerateCommandHandler());
+      sinon.assert.calledWith(handlerStub, handler);
     });
   });
 });
