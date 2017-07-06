@@ -5,6 +5,7 @@ import {Logger} from '../../../common/logger/interfaces/logger.interface';
 import {LoggerService} from '../../logger/logger.service';
 
 export class NestUpdater implements Updater {
+  private _logger: Logger = LoggerService.getLogger();
   private NEST_DEPENDENCIES: string[] = [
     '@nestjs/common',
     '@nestjs/core',
@@ -12,7 +13,6 @@ export class NestUpdater implements Updater {
     '@nestjs/testing',
     '@nestjs/websockets'
   ];
-  private _logger: Logger = LoggerService.getLogger();
 
   constructor() {}
 

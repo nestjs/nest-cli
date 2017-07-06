@@ -12,18 +12,15 @@ describe('UpdateCommandHandler', () => {
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
-  let processor: Processor;
-  beforeEach(() => processor = new UpdateProcessor());
-
   let setLoggerStub: sinon.SinonStub;
   let processStub: sinon.SinonStub;
   beforeEach(() => {
     setLoggerStub = sandbox.stub(LoggerService, 'setLogger');
-    processStub = sandbox.stub(processor, 'processV2').callsFake(() => Promise.resolve());
+    processStub = sandbox.stub(UpdateProcessor.prototype, 'processV2').callsFake(() => Promise.resolve());
   });
 
   let handler: CommandHandler;
-  beforeEach(() => handler = new UpdateCommandHandler(processor));
+  beforeEach(() => handler = new UpdateCommandHandler());
 
   describe('#execute()', () => {
     const args: UpdateCommandArguments = {};
