@@ -18,8 +18,30 @@ describe('NpmUtils', () => {
   });
 
   describe('#update()', () => {
+    it('should spawn a child process to update all dev dependencies', () => {
+      const promise: Promise<void> = NpmUtils.update('-dev');
+      event.emit('exit');
+      return promise.then(() => {
+        sinon.assert.calledWith(spawnStub, 'npm', [
+          'update',
+          '--save-dev'
+        ]);
+      });
+    });
+
+    it('should spawn a child process to update all production dependencies', () => {
+      const promise: Promise<void> = NpmUtils.update();
+      event.emit('exit');
+      return promise.then(() => {
+        sinon.assert.calledWith(spawnStub, 'npm', [
+          'update',
+          '--save'
+        ]);
+      });
+    });
+
     it('should spawn a child process to update dependencies', () => {
-      const promise: Promise<void> = NpmUtils.update([
+      const promise: Promise<void> = NpmUtils.update('', [
         'dep1',
         'dep2',
         'dep3'
@@ -39,7 +61,7 @@ describe('NpmUtils', () => {
 
   describe('#uninstall()', () => {
     it('should spawn a child process to uninstall dependencies', () => {
-      const promise: Promise<void> = NpmUtils.uninstall([
+      const promise: Promise<void> = NpmUtils.uninstall('', [
         'dep1',
         'dep2',
         'dep3'
@@ -60,7 +82,7 @@ describe('NpmUtils', () => {
 
   describe('#install()', () => {
     it('should spawn a child process to install dependencies', () => {
-      const promise: Promise<void> = NpmUtils.install([
+      const promise: Promise<void> = NpmUtils.install('', [
         'dep1',
         'dep2',
         'dep3'
@@ -71,6 +93,25 @@ describe('NpmUtils', () => {
           sinon.assert.calledWith(spawnStub, 'npm', [
             'install',
             '--save',
+            'dep1',
+            'dep2',
+            'dep3'
+          ]);
+        });
+    });
+
+    it('should spawn a child process to install dev dependencies', () => {
+      const promise: Promise<void> = NpmUtils.install('-dev', [
+        'dep1',
+        'dep2',
+        'dep3'
+      ]);
+      event.emit('exit');
+      return promise
+        .then(() => {
+          sinon.assert.calledWith(spawnStub, 'npm', [
+            'install',
+            '--save-dev',
             'dep1',
             'dep2',
             'dep3'

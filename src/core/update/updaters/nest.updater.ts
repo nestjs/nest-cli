@@ -11,7 +11,7 @@ export class NestUpdater implements Updater {
   ];
 
   public update(): Promise<void> {
-    return NpmUtils.uninstall(this.NEST_DEPENDENCIES)
-      .then(() => NpmUtils.install(this.NEST_DEPENDENCIES));
+    return NpmUtils.uninstall('', this.NEST_DEPENDENCIES)
+      .then(() => NpmUtils.install('', this.NEST_DEPENDENCIES));
   }
 }

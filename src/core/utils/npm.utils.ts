@@ -1,18 +1,18 @@
 import {ChildProcess, spawn} from 'child_process';
 
 export class NpmUtils {
-  public static update(dependencies: string[] = []): Promise<void> {
-    const spawned: ChildProcess = spawn('npm', [ 'update', '--save', ...dependencies ]);
+  public static update(dev: string = '', dependencies: string[] = []): Promise<void> {
+    const spawned: ChildProcess = spawn('npm', [ 'update', '--save'.concat(dev), ...dependencies ]);
     return this.handle(spawned);
   }
 
-  public static uninstall(dependencies: string[] = []): Promise<void> {
-    const spawned: ChildProcess = spawn('npm', [ 'uninstall', '--save', ...dependencies ]);
+  public static uninstall(dev: string = '', dependencies: string[] = []): Promise<void> {
+    const spawned: ChildProcess = spawn('npm', [ 'uninstall', '--save'.concat(dev), ...dependencies ]);
     return this.handle(spawned);
   }
 
-  public static install(dependencies: string[] = []): Promise<void> {
-    const spawned: ChildProcess = spawn('npm', [ 'install', '--save', ...dependencies ]);
+  public static install(dev: string = '', dependencies: string[] = []): Promise<void> {
+    const spawned: ChildProcess = spawn('npm', [ 'install', '--save'.concat(dev), ...dependencies ]);
     return this.handle(spawned);
   }
 

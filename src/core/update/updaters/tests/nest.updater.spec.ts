@@ -22,7 +22,7 @@ describe('NestUpdater', () => {
     it('should uninstall Nestjs dependencies', () => {
       return updater.update()
         .then(() => {
-          sinon.assert.calledWith(uninstallStub, [
+          sinon.assert.calledWith(uninstallStub, '', [
             '@nestjs/common',
             '@nestjs/core',
             '@nestjs/microservices',
@@ -35,7 +35,7 @@ describe('NestUpdater', () => {
     it('should install Nestjs dependencies', () => {
       return updater.update()
         .then(() => {
-          sinon.assert.calledWith(installStub, [
+          sinon.assert.calledWith(installStub, '', [
             '@nestjs/common',
             '@nestjs/core',
             '@nestjs/microservices',
