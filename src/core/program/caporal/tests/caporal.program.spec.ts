@@ -23,7 +23,7 @@ describe('CaporalProgram', () => {
     it('should call caporal.version()', () => {
       const versionStub: sinon.SinonStub = sandbox.stub(caporal, 'version');
       program.version('version');
-      expect(versionStub.calledWith('version')).to.be.true;
+      sinon.assert.calledWith(versionStub, 'version');
     });
   });
 
@@ -31,7 +31,7 @@ describe('CaporalProgram', () => {
     it('should call caporal.help()', () => {
       const helpStub: sinon.SinonStub = sandbox.stub(caporal, 'help');
       program.help('content');
-      expect(helpStub.calledWith('content')).to.be.true;
+      sinon.assert.calledWith(helpStub, 'content');
     });
   });
 
@@ -39,7 +39,7 @@ describe('CaporalProgram', () => {
     it('should call the declaration handler', () => {
       const handlerStub: sinon.SinonStub = sandbox.stub();
       program.declare(handlerStub);
-      expect(handlerStub.called).to.be.true;
+      sinon.assert.calledOnce(handlerStub);
     });
   });
 
@@ -47,7 +47,7 @@ describe('CaporalProgram', () => {
     it('should call caporal.command()', () => {
       const commandStub: sinon.SinonStub = sandbox.stub(caporal, 'command');
       program.command('name', 'description');
-      expect(commandStub.calledWith('name', 'description')).to.be.true;
+      sinon.assert.calledWith(commandStub, 'name', 'description');
     });
   });
 
@@ -55,7 +55,7 @@ describe('CaporalProgram', () => {
     it('should call caporal.parse()', () => {
       const parseStub: sinon.SinonStub = sandbox.stub(caporal, 'parse');
       program.listen();
-      expect(parseStub.calledWith(process.argv)).to.be.true;
+      sinon.assert.calledWith(parseStub, process.argv);
     });
   });
 });

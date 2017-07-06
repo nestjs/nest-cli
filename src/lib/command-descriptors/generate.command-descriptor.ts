@@ -1,8 +1,9 @@
 import {Command} from '../../common/program/interfaces/command.interface';
 import {GenerateCommandHandler} from '../handlers/generate-command.handler';
+import {CommandDescriptor} from '../../common/program/interfaces/command.descriptor.interface';
 
-export class GenerateCommandDescriptor {
-  static declare(command: Command) {
+export class GenerateCommandDescriptor implements CommandDescriptor {
+  public describe(command: Command): void {
     command
       .alias('g')
       .argument('<assetType>', 'The generated asset type')

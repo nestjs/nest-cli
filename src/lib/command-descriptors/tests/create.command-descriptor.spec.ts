@@ -4,6 +4,7 @@ import {Program} from '../../../common/program/interfaces/program.interface';
 import {CreateCommandDescriptor} from '../create.command-descriptor';
 import {CreateCommandHandler} from '../../handlers/create-command.handler';
 import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
+import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
 
 describe('CreateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -32,7 +33,8 @@ describe('CreateCommandDescriptor', () => {
     });
 
     beforeEach(() => {
-      CreateCommandDescriptor.declare(command);
+      const descriptor: CommandDescriptor = new CreateCommandDescriptor();
+      descriptor.describe(command);
     });
 
     it('should declare the mandatory name argument with the right description', () => {

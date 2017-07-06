@@ -9,9 +9,9 @@ export class NestCliApplication {
       .version('1.0.0')
       .help('Nest.js CLI')
       .declare(program => {
-        CreateCommandDescriptor.declare(program.command('new', 'Create a new Nest application'));
-        GenerateCommandDescriptor.declare(program.command('generate', 'Generate a new Nest asset'));
-        UpdateCommandDescriptor.declare(program.command('update', 'Update the Nest project'));
+        new CreateCommandDescriptor().describe(program.command('new', 'Create a new Nest application'));
+        new GenerateCommandDescriptor().describe(program.command('generate', 'Generate a new Nest asset'));
+        new UpdateCommandDescriptor().describe(program.command('update', 'Update the Nest project'));
       })
       .listen();
   }

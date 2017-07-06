@@ -4,6 +4,7 @@ import {Program} from '../../../common/program/interfaces/program.interface';
 import {GenerateCommandDescriptor} from '../generate.command-descriptor';
 import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
 import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
+import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -34,7 +35,8 @@ describe('GenerateCommandDescriptor', () => {
     });
 
     beforeEach(() => {
-      GenerateCommandDescriptor.declare(command);
+      const descriptor: CommandDescriptor = new GenerateCommandDescriptor();
+      descriptor.describe(command);
     });
 
     it('should declare the command alias g', () => {
