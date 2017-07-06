@@ -10,3 +10,5 @@ export interface GenerateCommandArguments extends CommandArguments {
   assetName: string
   moduleName: string
 }
+
+export interface UpdateCommandArguments extends CommandArguments {}

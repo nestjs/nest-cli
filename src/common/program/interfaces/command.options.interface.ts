@@ -5,3 +5,5 @@ export interface CreateCommandOptions extends CommandOptions {
 }
 
 export interface GenerateCommandOptions extends CommandOptions {}
+
+export interface UpdateCommandOptions extends CommandOptions {}
