@@ -10,6 +10,8 @@ import {FileNameBuilder} from '../builders/file-name.builder';
 import {ClassNameBuilder} from '../builders/class-name.builder';
 import * as path from 'path';
 import {TemplateBuilder} from '../builders/template.builder';
+import {CommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
+import {CommandOptions} from '../../../common/program/interfaces/command.options.interface';
 
 export class PipeProcessor implements Processor {
   private _finder: ModuleFinder;
@@ -22,6 +24,10 @@ export class PipeProcessor implements Processor {
   ) {
     this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
+  }
+
+  public processV2(args: CommandArguments, options: CommandOptions): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
   public process(): Promise<void> {

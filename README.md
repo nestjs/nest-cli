@@ -1,14 +1,23 @@
-[![Nest Logo](http://kamilmysliwiec.com/public/nest-logo.png)](http://kamilmysliwiec.com/)
+Tool to manage Nest projects: Modern, powerful web application framework for [Node.js](http://nodejs.org).
 
-**WARNING: The CLI is still a work in progress and is not ready for practical use. The repository is created to allow for insight and contributions.**
+[![Nest Logo](http://kamilmysliwiec.com/public/nest-logo.png)](http://kamilmysliwiec.com/)
 
 # Nest CLI
 
 [![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/ThomRick/nest-cli.svg?branch=develop)](https://travis-ci.org/ThomRick/nest-cli)
 [![Known Vulnerabilities](https://snyk.io/test/github/thomrick/nest-cli/badge.svg)](https://snyk.io/test/github/thomrick/nest-cli)
-[![Coverage Status](https://coveralls.io/repos/github/ThomRick/nest-cli/badge.svg?branch=develop)](https://coveralls.io/github/ThomRick/nest-cli?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/ThomRick/nest-cli/badge.svg?branch=master)](https://coveralls.io/github/ThomRick/nest-cli?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Description
+
+Nest is a powerful web framework for [Node.js](http://nodejs.org), which helps you effortlessly build efficient, scalable applications. It uses modern JavaScript, is built with [TypeScript](http://www.typescriptlang.org) and combines best concepts of both OOP (Object Oriented Progamming) and FP (Functional Programming).
+
+It is not just another framework. You do not have to wait for a large community, because Nest is built with awesome, popular well-known libraries - [Express](https://github.com/expressjs/express) and [socket.io](https://github.com/socketio/socket.io)! It means, that you could quickly start using framework without worrying about a third party plugins.
+
+The CLI tool helps to create, manage application architecture entities, build and run your project. 
+
 ## Installation
 ### Git :
 ```
@@ -18,7 +27,7 @@ $ npm install
 $ npm link
 ```
 
-###npm
+### npm :
 
 ```npm install -g @nestjs/cli```
 
@@ -35,7 +44,7 @@ The nestconfig.json is here to manage the CLI execution like asset generation.
 Examples : 
    * `$ nest new my-app`
    * `$ nest new my-app myapp/`
-   * `$ nest new my-app --repo https://github.com/ThomRick/nest-typescript-starter`
+   * `$ nest new my-app --repository https://github.com/ThomRick/nest-typescript-starter`
 Creates a new Nest application by cloning `https://github.com/ThomRick/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
@@ -120,7 +129,7 @@ Examples :
    * `$ nest g component <assetName> [moduleName1/moduleName2/moduleName3]`
 Creates a templated component files :
    * `src/app/services/<assetName>.service.ts`
-   * `src/app/modules/[moduleName]/modules/services/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName]/modules/services/<assetName>.service.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.ts`
 ```typescript
 import {Component} from '@nestjs/common';
@@ -243,4 +252,9 @@ export class ModuleNameModule {}
 
 ### build (not implemented)
 
-### update (not implemented)
+### update 
+Examples : 
+   * `$ nest update`
+Used to update project :
+   * @nestjs dependencies
+   * devDependencies

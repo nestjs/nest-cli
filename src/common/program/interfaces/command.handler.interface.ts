@@ -1,5 +1,7 @@
 import {Logger} from '../../logger/interfaces/logger.interface';
+import {CommandArguments} from './command.aguments.interface';
+import {CommandOptions} from './command.options.interface';
 
 export interface CommandHandler {
-  execute(args: any, options: any, logger: Logger): Promise<void>;
+  execute(args: CommandArguments, options: CommandOptions, logger: Logger): Promise<void>;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -32,15 +32,15 @@
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.18",
-    "@types/sinon": "^2.2.2",
+    "@types/node": "^7.0.33",
+    "@types/sinon": "^2.3.2",
     "chai": "^4.0.0",
     "coveralls": "^2.13.1",
     "mocha": "^3.4.2",
     "nyc": "^10.3.2",
-    "sinon": "^2.3.2",
-    "ts-node": "^3.0.4",
-    "typescript": "^2.3.3"
+    "sinon": "^2.3.6",
+    "ts-node": "^3.2.0",
+    "typescript": "^2.4.1"
   },
   "nyc": {
     "include": [
