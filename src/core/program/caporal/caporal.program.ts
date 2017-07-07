@@ -4,15 +4,17 @@ import {Command} from '../../../common/program/interfaces/command.interface';
 import {CaporalCommand} from './caporal.command';
 
 export class CaporalProgram implements Program {
-  constructor(private program = caporal) {}
+  constructor(
+    private _program = caporal
+  ) {}
 
   public version(version: string): Program {
-    this.program.version(version);
+    this._program.version(version);
     return this;
   }
 
   public help(content: string): Program {
-    this.program.help(content);
+    this._program.help(content);
     return this;
   }
 
@@ -22,11 +24,11 @@ export class CaporalProgram implements Program {
   }
 
   public command(name: string, description: string): Command {
-    return new CaporalCommand(this.program.command(name, description));
+    return new CaporalCommand(this._program.command(name, description));
   }
 
   public listen(): void {
-    this.program.parse(process.argv);
+    this._program.parse(process.argv);
   }
 
 }
