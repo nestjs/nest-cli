@@ -12,6 +12,8 @@ import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.int
 import {ModuleUpdaterImpl} from '../module-updaters/module.updater';
 import {ModuleFinderImpl} from '../module-finders/module.finder';
 import {ModuleFinder} from '../../../common/asset/interfaces/module.finder.interface';
+import {CommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
+import {CommandOptions} from '../../../common/program/interfaces/command.options.interface';
 
 export class ComponentProcessor implements Processor{
   private _finder: ModuleFinder;
@@ -26,6 +28,10 @@ export class ComponentProcessor implements Processor{
     this._finder = new ModuleFinderImpl();
     this._generator = new AssetGenerator();
     this._updater = new ModuleUpdaterImpl();
+  }
+
+  public processV2(args: CommandArguments, options: CommandOptions): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
   public process(): Promise<void> {

@@ -1,10 +1,11 @@
-import {CaporalProgram} from '../../../core/program/caporal';
 import * as sinon from 'sinon';
-import {expect} from 'chai';
 import {Command} from '../../../common/program/interfaces/command.interface';
 import {Program} from '../../../common/program/interfaces/program.interface';
 import {GenerateCommandDescriptor} from '../generate.command-descriptor';
 import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
+import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
+import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
+import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -34,8 +35,11 @@ describe('GenerateCommandDescriptor', () => {
       handlerStub = sandbox.stub(command, 'handler').callsFake(() => command);
     });
 
+    let handler: CommandHandler;
     beforeEach(() => {
-      GenerateCommandDescriptor.declare(command);
+      handler = new GenerateCommandHandler();
+      const descriptor: CommandDescriptor = new GenerateCommandDescriptor(handler);
+      descriptor.describe(command);
     });
 
     it('should declare the command alias g', () => {
@@ -55,7 +59,7 @@ describe('GenerateCommandDescriptor', () => {
     });
 
     it('should call handler() with the GenerateCommandHandler', () => {
-      sinon.assert.calledWith(handlerStub, new GenerateCommandHandler());
+      sinon.assert.calledWith(handlerStub, handler);
     });
   });
 });

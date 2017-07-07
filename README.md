@@ -27,7 +27,7 @@ $ npm install
 $ npm link
 ```
 
-###npm
+### npm :
 
 ```npm install -g @nestjs/cli```
 
@@ -44,7 +44,7 @@ The nestconfig.json is here to manage the CLI execution like asset generation.
 Examples : 
    * `$ nest new my-app`
    * `$ nest new my-app myapp/`
-   * `$ nest new my-app --repo https://github.com/ThomRick/nest-typescript-starter`
+   * `$ nest new my-app --repository https://github.com/ThomRick/nest-typescript-starter`
 Creates a new Nest application by cloning `https://github.com/ThomRick/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
@@ -129,7 +129,7 @@ Examples :
    * `$ nest g component <assetName> [moduleName1/moduleName2/moduleName3]`
 Creates a templated component files :
    * `src/app/services/<assetName>.service.ts`
-   * `src/app/modules/[moduleName]/modules/services/<assetName>.controller.ts`
+   * `src/app/modules/[moduleName]/modules/services/<assetName>.service.ts`
    * `src/app/modules/[moduleName1]>/modules/[moduleName2]>/modules/[moduleName3]>/services/<assetName>.service.ts`
 ```typescript
 import {Component} from '@nestjs/common';
@@ -252,4 +252,9 @@ export class ModuleNameModule {}
 
 ### build (not implemented)
 
-### update (not implemented)
+### update 
+Examples : 
+   * `$ nest update`
+Used to update project :
+   * @nestjs dependencies
+   * devDependencies

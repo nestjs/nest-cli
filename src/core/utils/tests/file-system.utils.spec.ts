@@ -184,13 +184,13 @@ describe('FileSystemUtils', () => {
     beforeEach(() => readFileStub = sandbox.stub(fs, 'readFile'));
 
     it('can call readFile()', () => {
-      readFileStub.callsFake((filename, encoding, callback) => callback(null, Buffer.from('content')));
+      readFileStub.callsFake((filename, callback) => callback(null, Buffer.from('content')));
       const filename: string = 'filename';
       return FileSystemUtils.readFile(filename);
     });
 
     it('should return the read file content', () => {
-      readFileStub.callsFake((filename, encoding, callback) => callback(null, Buffer.from('content')));
+      readFileStub.callsFake((filename, callback) => callback(null, Buffer.from('content')));
       const filename: string = 'filename';
       return FileSystemUtils.readFile(filename)
         .then(() => {
@@ -199,7 +199,7 @@ describe('FileSystemUtils', () => {
     });
 
     it('should reject an error if something wrong', () => {
-      readFileStub.callsFake((filename, encoding, callback) => callback('reject message', null));
+      readFileStub.callsFake((filename, callback) => callback('reject message', null));
       const filename: string = 'filename';
       return FileSystemUtils.readFile(filename)
         .then(() => {
