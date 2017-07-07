@@ -255,4 +255,6 @@ export class ModuleNameModule {}
 ### update (not implemented)
 Examples : 
    * `$ nest update`
-Used to update project dependencies.
+Used to update project :
+   * @nestjs dependencies
+   * devDependencies
