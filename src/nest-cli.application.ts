@@ -4,9 +4,9 @@ import {UpdateCommandDescriptor} from './lib/command-descriptors/update.command-
 import {CaporalProgram} from './core/program/caporal/caporal.program';
 
 export class NestCliApplication {
-  public static run() {
+  public static run(version: string) {
     new CaporalProgram()
-      .version('1.0.0')
+      .version(version)
       .help('Nest.js CLI')
       .declare(program => {
         new CreateCommandDescriptor().describe(program.command('new', 'Create a new Nest application'));
