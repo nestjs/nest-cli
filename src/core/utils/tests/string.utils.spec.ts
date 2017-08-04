@@ -20,7 +20,7 @@ describe('StringUtils', () => {
     it('should capitalize a Unix style path expression', () => {
       const expression: string = 'path/to/name';
       sandbox.stub(os, 'platform').callsFake(() => 'notWin32');
-      path.posix.sep = '/';
+      path.posix.sep = '\/';
       expect(StringUtils.capitalize(expression)).to.be.equal(capitalizeResult);
     });
 
