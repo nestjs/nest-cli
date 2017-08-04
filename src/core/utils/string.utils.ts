@@ -28,6 +28,6 @@ export class StringUtils {
     if (os.platform() === 'win32')
       return new RegExp('\\'.concat(path.win32.sep)).test(expression);
     else
-      return new RegExp(path.sep).test(expression);
+      return new RegExp(path.posix.sep).test(expression);
   }
 }
