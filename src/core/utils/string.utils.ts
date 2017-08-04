@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as os from 'os';
 
 export class StringUtils {
   public static capitalize(expression: string): string {
@@ -13,9 +14,20 @@ export class StringUtils {
   }
 
   private static computeSeparator(expression: string): string {
-    if (new RegExp('-').test(expression))
+    if (this.isDashSeparator(expression))
       return '-';
-    else if (new RegExp(path.sep).test(expression))
-      return path.sep;
+    else if (this.isPathSeparator(expression))
+      return os.platform() === 'win32' ? path.win32.sep : path.sep;
+  }
+
+  private static isDashSeparator(expression: string): boolean {
+    return new RegExp('-').test(expression);
+  }
+
+  private static isPathSeparator(expression: string): boolean {
+    if (os.platform() === 'win32')
+      return new RegExp('\\'.concat(path.win32.sep)).test(expression);
+    else
+      return new RegExp(path.sep).test(expression);
   }
 }
