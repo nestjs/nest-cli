@@ -17,7 +17,7 @@ export class StringUtils {
     if (this.isDashSeparator(expression))
       return '-';
     else if (this.isPathSeparator(expression))
-      return os.platform() === 'win32' ? path.win32.sep : path.sep;
+      return os.platform() === 'win32' ? path.win32.sep : path.posix.sep;
   }
 
   private static isDashSeparator(expression: string): boolean {
