@@ -2,6 +2,7 @@ import * as sinon from 'sinon';
 import {FileSystemUtils} from '../../../src/core/utils/file-system.utils';
 import {Clean} from '../clean';
 import * as os from 'os';
+import * as path from 'path';
 
 describe('Clean', () => {
   let sandbox: sinon.SinonSandbox;
@@ -77,6 +78,7 @@ describe('Clean', () => {
       beforeEach(() => {
         platformStub.callsFake(() => 'win32');
         rmdirStub.callsFake(() => Promise.resolve());
+        rmStub.callsFake(() => Promise.resolve());
         readdirStub.callsFake(() => Promise.resolve([
           'filename1',
           'filename2',
@@ -94,14 +96,17 @@ describe('Clean', () => {
           });
       });
 
-      it.skip('should remove * on win32 platform', () => {
+      it('should remove * on win32 platform', () => {
         statStub.callsFake(() => Promise.resolve({
-          isFile: () => false
+          isFile: () => true
         }));
 
         return Clean.execute(argv)
           .then(() => {
-            sinon.assert.calledWith(statStub, 'directory/');
+            sinon.assert.calledThrice(statStub);
+            sinon.assert.calledWith(statStub, path.join('directory', 'filename1'));
+            sinon.assert.calledWith(statStub, path.join('directory', 'filename2'));
+            sinon.assert.calledWith(statStub, path.join('directory', 'filename3'));
           });
       });
     });

@@ -1,5 +1,6 @@
 import {FileSystemUtils} from '../../src/core/utils/file-system.utils';
 import * as os from 'os';
+import * as path from 'path';
 
 export class Clean {
   public static execute(args: string[]): Promise<void[]> {
@@ -15,8 +16,9 @@ export class Clean {
   }
 
   private static extractWin32PlatformFiles(args: string[]): Promise<string[]> {
-    const filename: string = args[2];
-    return FileSystemUtils.readdir(filename.replace('*', ''));
+    const dirname: string = args[2].replace('*', '');
+    return FileSystemUtils.readdir(dirname)
+      .then(fileNames => fileNames.map(filename => path.join(dirname, filename)));
   }
 
   private static clean(filename: string): Promise<void> {
