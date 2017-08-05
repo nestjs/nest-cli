@@ -6,5 +6,5 @@ Clean.execute(process.argv)
     console.log('Succeed to clean');
   })
   .catch(error => {
-    console.log('Clean failed with error :', error);
+    console.log('Failed to clean with error\n', error);
   });

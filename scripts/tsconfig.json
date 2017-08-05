@@ -13,13 +13,13 @@
     "allowJs": false,
     "outDir": "bin",
     "typeRoots": [
-      "node_modules/@types"
+      "../node_modules/@types"
     ]
   },
   "include": [
     "."
   ],
   "exclude": [
-    "node_modules"
+    "../node_modules"
   ]
 }
