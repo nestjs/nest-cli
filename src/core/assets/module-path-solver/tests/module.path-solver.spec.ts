@@ -19,7 +19,7 @@ describe('ModulePathSolver', () => {
     });
 
     it('should return the sub module of app sub-module path', () => {
-      const moduleName: string = 'moduleName1/moduleName2/moduleName3';
+      const moduleName: string = path.normalize('moduleName1/moduleName2/moduleName3');
       expect(solver.resolve(moduleName)).to.be.equal(path.normalize('src/app/modules/moduleName1/modules/moduleName2/modules/moduleName3'));
     });
   });
