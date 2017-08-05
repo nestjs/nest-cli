@@ -3,19 +3,20 @@ import * as os from 'os';
 
 export class Clean {
   public static execute(args: string[]): Promise<void[]> {
-    const fileNames: string[] = args.slice(2, args.length);
-    return Promise.all(
-      fileNames
-        .map(filename => this.format(filename))
-        .map(filename => this.clean(filename)
-    ));
+    return this.extractFileNames(args)
+      .then(fileNames => Promise.all(fileNames.map(filename => this.clean(filename))));
   }
 
-  private static format(filename: string): string {
+  private static extractFileNames(args: string[]): Promise<string[]> {
     if (os.platform() === 'win32')
-      return filename.replace('*', '');
+      return this.extractWin32PlatformFiles(args);
     else
-      return filename;
+      return Promise.resolve(args.slice(2, args.length));
+  }
+
+  private static extractWin32PlatformFiles(args: string[]): Promise<string[]> {
+    const filename: string = args[2];
+    return FileSystemUtils.readdir(filename.replace('*', ''));
   }
 
   private static clean(filename: string): Promise<void> {

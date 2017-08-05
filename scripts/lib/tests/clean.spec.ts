@@ -11,11 +11,13 @@ describe('Clean', () => {
   let statStub: sinon.SinonStub;
   let rmStub: sinon.SinonStub;
   let rmdirStub: sinon.SinonStub;
+  let readdirStub: sinon.SinonStub;
   let platformStub: sinon.SinonStub;
   beforeEach(() => {
     statStub = sandbox.stub(FileSystemUtils, 'stat');
     rmStub = sandbox.stub(FileSystemUtils, 'rm');
     rmdirStub = sandbox.stub(FileSystemUtils, 'rmdir');
+    readdirStub = sandbox.stub(FileSystemUtils, 'readdir');
     platformStub = sandbox.stub(os, 'platform');
   });
 
@@ -75,9 +77,24 @@ describe('Clean', () => {
       beforeEach(() => {
         platformStub.callsFake(() => 'win32');
         rmdirStub.callsFake(() => Promise.resolve());
+        readdirStub.callsFake(() => Promise.resolve([
+          'filename1',
+          'filename2',
+          'filename3'
+        ]));
       });
 
-      it('should remove * on win32 platform', () => {
+      it('should extract files from directory', () => {
+        statStub.callsFake(() => Promise.resolve({
+          isFile: () => false
+        }));
+        return Clean.execute(argv)
+          .then(() => {
+            sinon.assert.called(readdirStub);
+          });
+      });
+
+      it.skip('should remove * on win32 platform', () => {
         statStub.callsFake(() => Promise.resolve({
           isFile: () => false
         }));
