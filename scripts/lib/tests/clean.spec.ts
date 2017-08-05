@@ -1,6 +1,7 @@
 import * as sinon from 'sinon';
 import {FileSystemUtils} from '../../../src/core/utils/file-system.utils';
 import {Clean} from '../clean';
+import * as os from 'os';
 
 describe('Clean', () => {
   let sandbox: sinon.SinonSandbox;
@@ -10,15 +11,21 @@ describe('Clean', () => {
   let statStub: sinon.SinonStub;
   let rmStub: sinon.SinonStub;
   let rmdirStub: sinon.SinonStub;
+  let platformStub: sinon.SinonStub;
   beforeEach(() => {
     statStub = sandbox.stub(FileSystemUtils, 'stat');
     rmStub = sandbox.stub(FileSystemUtils, 'rm');
     rmdirStub = sandbox.stub(FileSystemUtils, 'rmdir');
+    platformStub = sandbox.stub(os, 'platform');
   });
 
   describe('#execute()', () => {
-    context('should delete all item from argv[1] to the end of argv array', () => {
+    context('Unix platform', () => {
       const argv: string[] = [ 'node_process_call', 'script_call', 'filename1', 'filename2', 'filename3' ];
+
+      beforeEach(() => {
+        platformStub.callsFake(() => 'unix');
+      });
 
       it('should call stat per file', () => {
         statStub.callsFake(() => Promise.resolve({
@@ -58,6 +65,26 @@ describe('Clean', () => {
             sinon.assert.calledWith(rmdirStub, 'filename1');
             sinon.assert.calledWith(rmdirStub, 'filename2');
             sinon.assert.calledWith(rmdirStub, 'filename3');
+          });
+      });
+
+    });
+
+    context('win32 platform', () => {
+      const argv: string[] = [ 'node_process_call', 'script_call', 'directory/*' ];
+      beforeEach(() => {
+        platformStub.callsFake(() => 'win32');
+        rmdirStub.callsFake(() => Promise.resolve());
+      });
+
+      it('should remove * on win32 platform', () => {
+        statStub.callsFake(() => Promise.resolve({
+          isFile: () => false
+        }));
+
+        return Clean.execute(argv)
+          .then(() => {
+            sinon.assert.calledWith(statStub, 'directory/');
           });
       });
     });

@@ -1,9 +1,21 @@
 import {FileSystemUtils} from '../../src/core/utils/file-system.utils';
+import * as os from 'os';
 
 export class Clean {
   public static execute(args: string[]): Promise<void[]> {
     const fileNames: string[] = args.slice(2, args.length);
-    return Promise.all(fileNames.map(filename => this.clean(filename)));
+    return Promise.all(
+      fileNames
+        .map(filename => this.format(filename))
+        .map(filename => this.clean(filename)
+    ));
+  }
+
+  private static format(filename: string): string {
+    if (os.platform() === 'win32')
+      return filename.replace('*', '');
+    else
+      return filename;
   }
 
   private static clean(filename: string): Promise<void> {
