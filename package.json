@@ -15,7 +15,7 @@
     "clean": "ts-node scripts/clean.script.ts bin/* && ts-node scripts/clean.script.ts coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "prepare": "npm run clean:build",
+    "prepublishOnly": "npm run clean:build",
     "test": "npm run -s test:src",
     "test:src": "nyc mocha src/**/*.spec.ts --require ts-node/register --reporter spec",
     "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec"
