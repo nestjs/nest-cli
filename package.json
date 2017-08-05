@@ -12,11 +12,13 @@
     "build": "npm run -s build:src && npm run -s build:assets",
     "build:src": "tsc",
     "build:assets": "cp -R src/assets bin/assets",
-    "clean": "rm -rf bin/* && rm -rf coverage/*",
+    "clean": "ts-node scripts/clean-script.ts bin/* && ts-node scripts/clean-script.ts coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepare": "npm run clean:build",
-    "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec"
+    "test": "npm run -s test:src",
+    "test:src": "nyc mocha src/**/*.spec.ts --require ts-node/register --reporter spec",
+    "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec"
   },
   "repository": {
     "type": "git",
