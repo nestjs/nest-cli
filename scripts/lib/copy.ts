@@ -21,6 +21,7 @@ export class Copy {
   }
 
   private static copyFile(origin: string, destination: string): Promise<void> {
+    console.log(` copy ${ origin } \n to   ${ destination }`);
     return new Promise<void>((resolve, reject) => {
       const reader: ReadStream = fs.createReadStream(origin);
       const writer: WriteStream = fs.createWriteStream(destination);

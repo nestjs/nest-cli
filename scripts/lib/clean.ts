@@ -15,10 +15,10 @@ export class Clean {
           return FileSystemUtils.rmdir(filename);
       })
       .then(() => {
-        console.log(`${ filename } deleted`);
+        console.log(` ${ filename } deleted`);
       })
       .catch(error => {
-        console.log(`${ filename } not be deleted`);
+        console.log(` ${ filename } not be deleted`);
       });
   }
 }
