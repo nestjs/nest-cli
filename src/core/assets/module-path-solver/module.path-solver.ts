@@ -2,7 +2,7 @@ import {ModulePathSolver} from '../../../common/asset/interfaces/module.path-sol
 import * as path from 'path';
 
 export class ModulePathSolverImpl implements ModulePathSolver {
-  private ROOT_PATH: string = 'src/app';
+  private ROOT_PATH: string = path.normalize('src/app');
   private DEFAULT_MODULE_NAME: string = 'app';
 
   public resolve(modulePath: string): string {
