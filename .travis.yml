@@ -6,6 +6,7 @@ script:
       - npm run -s build
 after_success: npm run -s coverage
 deploy:
+  skip_cleanup: true
   provider: npm
   email: $NPM_USER_MAIL
   api_key: $NPM_API_TOKEN
