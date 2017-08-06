@@ -1,10 +1,11 @@
 import * as sinon from 'sinon';
-import {CaporalProgram} from '../../../core/program/caporal';
-import {expect} from 'chai';
 import {Command} from '../../../common/program/interfaces/command.interface';
 import {Program} from '../../../common/program/interfaces/program.interface';
 import {CreateCommandDescriptor} from '../create.command-descriptor';
 import {CreateCommandHandler} from '../../handlers/create-command.handler';
+import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
+import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
+import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 describe('CreateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -32,24 +33,27 @@ describe('CreateCommandDescriptor', () => {
       handlerStub = sandbox.stub(command, 'handler').callsFake(() => command);
     });
 
+    let handler: CommandHandler;
     beforeEach(() => {
-      CreateCommandDescriptor.declare(command);
+      handler = new CreateCommandHandler();
+      const descriptor: CommandDescriptor = new CreateCommandDescriptor(handler);
+      descriptor.describe(command);
     });
 
     it('should declare the mandatory name argument with the right description', () => {
-      expect(argumentStub.calledWith('<name>', 'Nest application name')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '<name>', 'Nest application name');
     });
 
     it('should declare the optional destination argument with the right description', () => {
-      expect(argumentStub.calledWith('[destination]', 'Where the Nest application will be created')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '[destination]', 'Where the Nest application will be created');
     });
 
     it('should declare the repository option with the right description', () => {
-      expect(optionStub.calledWith('-r, --repository <repository>', 'Github repository where the project template is')).to.be.true;
+      sinon.assert.calledWith(optionStub, '-r, --repository <repository>', 'Github repository where the project template is');
     });
 
     it('should call handler() with the CreateCommandHandler', () => {
-      expect(handlerStub.calledWith(new CreateCommandHandler())).to.be.true;
+      sinon.assert.calledWith(handlerStub, handler);
     });
   });
 });

@@ -1,5 +1,5 @@
-import {AssetEnum} from '../enums/asset.enum';
+import {Asset} from './asset.interface';
 
 export interface ModuleUpdater {
-  update(filename: string, className: string, asset: AssetEnum): Promise<void>
+  update(moduleFilename: string, asset: Asset): Promise<void>
 }

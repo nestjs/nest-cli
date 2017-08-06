@@ -99,7 +99,7 @@ export class FileSystemUtils {
 
   public static readFile(filename: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      fs.readFile(filename, 'utf-8', (error: NodeJS.ErrnoException, data: Buffer) => {
+      fs.readFile(filename, (error: NodeJS.ErrnoException, data: Buffer) => {
         if (!isNullOrUndefined(error))
           reject(error);
         else

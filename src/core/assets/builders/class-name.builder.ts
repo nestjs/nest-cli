@@ -1,4 +1,5 @@
 import {AssetEnum} from '../../../common/asset/enums/asset.enum';
+import {StringUtils} from '../../utils/string.utils';
 
 export class ClassNameBuilder {
   private _name: string = null;
@@ -17,7 +18,7 @@ export class ClassNameBuilder {
   }
 
   public build(): string {
-    return `${ this.capitalize(this.mapName()) }${ this.mapAsset()}`;
+    return `${ StringUtils.capitalize(this.mapName()) }${ this.mapAsset()}`;
   }
 
   private mapAsset(): string {
@@ -28,6 +29,12 @@ export class ClassNameBuilder {
         return 'Controller';
       case AssetEnum.COMPONENT:
         return 'Service';
+      case AssetEnum.PIPE:
+        return 'Pipe';
+      case AssetEnum.MIDDLEWARE:
+        return 'Middleware';
+      case AssetEnum.GATEWAY:
+        return 'Gateway';
     }
   }
 
@@ -45,9 +52,5 @@ export class ClassNameBuilder {
   private mapNameFromPath(): string {
     const elements: string[] = this._name.split('/');
     return elements[elements.length - 1];
-  }
-
-  private capitalize(name: string) {
-    return `${ name.charAt(0).toUpperCase() }${  name.slice(1, name.length )}`;
   }
 }

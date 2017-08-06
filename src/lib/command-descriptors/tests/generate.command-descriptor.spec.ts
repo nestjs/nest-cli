@@ -1,10 +1,11 @@
-import {CaporalProgram} from '../../../core/program/caporal';
 import * as sinon from 'sinon';
-import {expect} from 'chai';
 import {Command} from '../../../common/program/interfaces/command.interface';
 import {Program} from '../../../common/program/interfaces/program.interface';
 import {GenerateCommandDescriptor} from '../generate.command-descriptor';
 import {GenerateCommandHandler} from '../../handlers/generate-command.handler';
+import {CaporalProgram} from '../../../core/program/caporal/caporal.program';
+import {CommandDescriptor} from '../../../common/program/interfaces/command.descriptor.interface';
+import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 describe('GenerateCommandDescriptor', () => {
   let sandbox: sinon.SinonSandbox;
@@ -34,24 +35,31 @@ describe('GenerateCommandDescriptor', () => {
       handlerStub = sandbox.stub(command, 'handler').callsFake(() => command);
     });
 
+    let handler: CommandHandler;
     beforeEach(() => {
-      GenerateCommandDescriptor.declare(command);
+      handler = new GenerateCommandHandler();
+      const descriptor: CommandDescriptor = new GenerateCommandDescriptor(handler);
+      descriptor.describe(command);
     });
 
     it('should declare the command alias g', () => {
-      expect(aliasStub.calledWith('g')).to.be.true;
+      sinon.assert.calledWith(aliasStub, 'g');
     });
 
     it('should declare the mandatory asset argument with the right description', () => {
-      expect(argumentStub.calledWith('<asset>', 'The generated asset type')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '<assetType>', 'The generated asset type');
     });
 
     it('should declare the mandatory name argument with the right description', () => {
-      expect(argumentStub.calledWith('<name>', 'The generated asset name')).to.be.true;
+      sinon.assert.calledWith(argumentStub, '<assetName>', 'The generated asset name');
+    });
+
+    it('should declare the optional moduleName argument with the right description', () => {
+      sinon.assert.calledWith(argumentStub, '[moduleName]', 'The module name where the asset will be declared in');
     });
 
     it('should call handler() with the GenerateCommandHandler', () => {
-      expect(handlerStub.calledWith(new GenerateCommandHandler())).to.be.true;
+      sinon.assert.calledWith(handlerStub, handler);
     });
   });
 });

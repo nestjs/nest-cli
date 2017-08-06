@@ -48,9 +48,36 @@ describe('ClassNameBuilder', () => {
             .build()
         ).to.be.equal('NameService');
       });
+
+      it('should build a pipe class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.PIPE)
+            .build()
+        ).to.be.equal('NamePipe');
+      });
+
+      it('should build a middleware class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.MIDDLEWARE)
+            .build()
+        ).to.be.equal('NameMiddleware');
+      });
+
+      it('should build a gateway class name', () => {
+        expect(
+          builder
+            .addName('name')
+            .addAsset(AssetEnum.GATEWAY)
+            .build()
+        ).to.be.equal('NameGateway');
+      });
     });
 
-    context.skip('snake case names', () => {
+    context('snake case names', () => {
       it('should build a module class name', () => {
         expect(
           builder

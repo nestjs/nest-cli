@@ -2,25 +2,27 @@ import {Command} from '../../../common/program/interfaces/command.interface';
 import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 
 export class CaporalCommand implements Command {
-  constructor(private command) {}
+  constructor(
+    private _command
+  ) {}
 
   public alias(name: string): Command {
-    this.command.alias(name);
+    this._command.alias(name);
     return this;
   }
 
   public argument(name: string, description: string): Command {
-    this.command.argument(name, description);
+    this._command.argument(name, description);
     return this;
   }
 
   public option(name: string, description: string): Command {
-    this.command.option(name, description);
+    this._command.option(name, description);
     return this;
   }
 
   public handler(handler: CommandHandler): Command {
-    this.command.action(handler.execute);
+    this._command.action(handler.execute.bind(handler));
     return this;
   }
 

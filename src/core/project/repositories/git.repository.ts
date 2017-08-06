@@ -12,14 +12,14 @@ export class GitRepository implements Repository {
   constructor(private _remote: string, private _destination: string) {}
 
   public clone(): Promise<void> {
-    this.logger.debug(`${ ColorService.blue('clone') } ${ this._remote } git repository to ${ this._destination }...`);
+    this.logger.debug(`${ ColorService.blue('[DEBUG] clone') } ${ this._remote } git repository to ${ this._destination }...`);
     return GitUtils.clone(this._remote, this._destination)
-      .then(() => this.logger.debug(`${ ColorService.blue('clone') } success`))
-      .then(() => this.logger.debug(`${ ColorService.blue('delete') } ${ path.join(this._destination, '.git') } folder...`))
+      .then(() => this.logger.debug(`${ ColorService.blue('[DEBUG] clone') } success`))
+      .then(() => this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } ${ path.join(this._destination, '.git') } folder...`))
       .then(() => FileSystemUtils.rmdir(path.join(this._destination, '.git')))
-      .then(() => this.logger.debug(`${ ColorService.blue('delete') } success`))
-      .then(() => this.logger.debug(`${ ColorService.blue('delete') } ${ path.join(this._destination, '.gitignore') } file...`))
+      .then(() => this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } success`))
+      .then(() => this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } ${ path.join(this._destination, '.gitignore') } file...`))
       .then(() => FileSystemUtils.rm(path.join(this._destination, '.gitignore')))
-      .then(() => this.logger.debug(`${ ColorService.blue('delete') } success`));
+      .then(() => this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } success`));
   }
 }

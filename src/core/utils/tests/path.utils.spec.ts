@@ -12,13 +12,17 @@ describe('PathUtils', () => {
       const dirname = 'path/to/file';
       const origin: string = path.resolve(dirname, 'origin.ext');
       const destination: string = path.resolve(dirname, 'destination.ext');
-      expect(PathUtils.relative(origin, destination)).to.be.equal('./destination.ext');
+      expect(PathUtils.relative(origin, destination)).to.be.equal(
+        '.'.concat(path.join(path.sep, 'destination.ext'))
+      );
     });
 
     it('should return the relative path with origin in a parent directory', () => {
       const origin: string = path.resolve('path/to/file', 'origin.ext');
       const destination: string = path.resolve('path/to/file/sub-dir', 'destination.ext');
-      expect(PathUtils.relative(origin, destination)).to.be.equal('./sub-dir/destination.ext');
+      expect(PathUtils.relative(origin, destination)).to.be.equal(
+        '.'.concat(path.join(path.sep, '/sub-dir/destination.ext'))
+      );
     });
   });
 });
