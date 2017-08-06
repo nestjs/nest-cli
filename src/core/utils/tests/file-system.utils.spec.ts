@@ -39,7 +39,7 @@ describe('FileSystemUtils', () => {
   });
 
   describe('#mkdir()', () => {
-    const target: string = 'path/to/target';
+    const target: string = path.normalize('path/to/target');
 
     let statStub: sinon.SinonStub;
     let resolveStub: sinon.SinonStub;
@@ -54,13 +54,13 @@ describe('FileSystemUtils', () => {
       return FileSystemUtils.mkdir(target)
         .then(() => {
           sinon.assert.callCount(statStub, 3);
-          sinon.assert.calledWith(statStub, '/path');
-          sinon.assert.calledWith(statStub, '/path/to');
-          sinon.assert.calledWith(statStub, '/path/to/target');
+          sinon.assert.calledWith(statStub, path.normalize('/path'));
+          sinon.assert.calledWith(statStub, path.normalize('/path/to'));
+          sinon.assert.calledWith(statStub, path.normalize('/path/to/target'));
           sinon.assert.callCount(mkdirStub, 3);
-          sinon.assert.calledWith(mkdirStub, '/path');
-          sinon.assert.calledWith(mkdirStub, '/path/to');
-          sinon.assert.calledWith(mkdirStub, '/path/to/target');
+          sinon.assert.calledWith(mkdirStub, path.normalize('/path'));
+          sinon.assert.calledWith(mkdirStub, path.normalize('/path/to'));
+          sinon.assert.calledWith(mkdirStub, path.normalize('/path/to/target'));
         });
     });
   });

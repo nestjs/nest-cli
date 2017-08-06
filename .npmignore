@@ -4,6 +4,7 @@
 coverage/
 node_modules/
 src/
+scripts/
 
 .gitignore
 .travis.yml
