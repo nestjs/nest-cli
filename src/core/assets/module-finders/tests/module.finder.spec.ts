@@ -4,6 +4,7 @@ import {ModuleFinder} from '../../../../common/asset/interfaces/module.finder.in
 import {ModuleFinderImpl} from '../module.finder';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
 import {ModulePathSolverImpl} from '../../module-path-solver/module.path-solver';
+import * as path from 'path';
 
 describe('ModuleFinder', () => {
   let sandbox: sinon.SinonSandbox;
@@ -37,7 +38,7 @@ describe('ModuleFinder', () => {
       ]));
       return finder.find('app')
         .then(filename => {
-          expect(filename).to.be.equal('src/app/app.module.ts');
+          expect(filename).to.be.equal(path.normalize('src/app/app.module.ts'));
         });
     });
 
@@ -45,7 +46,7 @@ describe('ModuleFinder', () => {
       readdirStub.callsFake(() => Promise.resolve([ 'module1.module.ts' ]));
       return finder.find('module1')
         .then(filename => {
-          expect(filename).to.be.equal('src/app/modules/module1/module1.module.ts');
+          expect(filename).to.be.equal(path.normalize('src/app/modules/module1/module1.module.ts'));
         });
     });
   });
