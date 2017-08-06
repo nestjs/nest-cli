@@ -11,8 +11,8 @@
   "scripts": {
     "build": "npm run -s build:src && npm run -s build:assets",
     "build:src": "tsc",
-    "build:assets": "ts-node scripts/copy.script.ts src/assets bin/assets",
-    "clean": "ts-node scripts/clean.script.ts bin/* && ts-node scripts/clean.script.ts coverage/*",
+    "build:assets": "node scripts/copy.script.js src/assets bin/assets",
+    "clean": "node scripts/clean.script.js bin/* && node scripts/clean.script.js coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepublishOnly": "npm run clean:build",

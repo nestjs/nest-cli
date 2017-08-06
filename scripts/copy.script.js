@@ -1,7 +1,8 @@
-import {Copy} from './lib/copy';
+require('ts-node/register');
+const copyModule = require('./lib/copy');
 
 console.log('Start to copy...');
-Copy.execute(process.argv)
+copyModule.Copy.execute(process.argv)
   .then(() => {
     console.log('Succeed to copy');
   })
