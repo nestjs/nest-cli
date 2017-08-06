@@ -1,7 +1,8 @@
-import {Clean} from './lib/clean';
+require('ts-node/register');
+const cleanModule = require('./lib/clean');
 
 console.log('Start to clean...');
-Clean.execute(process.argv)
+cleanModule.Clean.execute(process.argv)
   .then(() => {
     console.log('Succeed to clean');
   })

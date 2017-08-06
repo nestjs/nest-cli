@@ -2,7 +2,6 @@
 
 .nyc_output/
 coverage/
-node_modules/
 src/
 scripts/
 
