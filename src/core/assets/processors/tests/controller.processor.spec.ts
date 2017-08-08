@@ -42,6 +42,7 @@ describe('ControllerProcessor', () => {
             process.cwd(),
             'src/app',
             'controllers',
+            'name',
             'name.controller.ts'
           ),
           className: 'NameController',
@@ -49,7 +50,7 @@ describe('ControllerProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/controller/controller.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameController',
-              __DIR_NAME__: '\'./controllers/name.controller\''
+              __DIR_NAME__: `'./controllers/name/name.controller'`
             }
           }
         },
@@ -59,6 +60,7 @@ describe('ControllerProcessor', () => {
             process.cwd(),
             'src/app',
             'controllers',
+            'name',
             'name.controller.spec.ts'
           ),
           className: 'NameController',

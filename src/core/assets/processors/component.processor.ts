@@ -82,6 +82,7 @@ export class ComponentProcessor implements Processor{
       process.cwd(),
       path.dirname(moduleName),
       'services',
+      filename.replace(`.service.${ this._extension}`, ''),
       filename
     );
   }
@@ -91,7 +92,7 @@ export class ComponentProcessor implements Processor{
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/component/component.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./services/${ filename.replace(`.${ this._extension }`, '') }'`
+        __DIR_NAME__: `'./services/${ filename.replace(`.service.${ this._extension}`, '') }/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }
@@ -110,6 +111,7 @@ export class ComponentProcessor implements Processor{
       process.cwd(),
       path.dirname(moduleFilename),
       'services',
+      this._name,
       new FileNameBuilder()
         .addAsset(AssetEnum.COMPONENT)
         .addName(this._name)
