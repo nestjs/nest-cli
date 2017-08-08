@@ -82,6 +82,7 @@ export class ControllerProcessor implements Processor {
       process.cwd(),
       path.dirname(moduleFilename),
       'controllers',
+      filename.replace(`.controller.${ this._extension}`, ''),
       filename
     );
   }
@@ -91,7 +92,7 @@ export class ControllerProcessor implements Processor {
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/controller/controller.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./controllers/${ filename.replace(`.${ this._extension }`, '') }'`
+        __DIR_NAME__: `'./controllers/${ filename.replace(`.controller.${ this._extension }`, '')}/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }
@@ -110,6 +111,7 @@ export class ControllerProcessor implements Processor {
       process.cwd(),
       path.dirname(moduleFilename),
       'controllers',
+      this._name,
       new FileNameBuilder()
         .addAsset(AssetEnum.CONTROLLER)
         .addName(this._name)

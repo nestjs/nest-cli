@@ -39,6 +39,7 @@ describe('PipeProcessor', () => {
             process.cwd(),
             'src/app',
             'pipes',
+            'name',
             'name.pipe.ts'
           ),
           className: 'NamePipe',
@@ -46,7 +47,7 @@ describe('PipeProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/pipe/pipe.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NamePipe',
-              __DIR_NAME__: `'./pipes/name.pipe'`
+              __DIR_NAME__: `'./pipes/name/name.pipe'`
             }
           }
         }

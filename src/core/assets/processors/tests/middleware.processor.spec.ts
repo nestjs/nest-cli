@@ -39,6 +39,7 @@ describe('MiddlewareProcessor', () => {
             process.cwd(),
             'src/app',
             'middlewares',
+            'name',
             'name.middleware.ts'
           ),
           className: 'NameMiddleware',
@@ -46,7 +47,7 @@ describe('MiddlewareProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/middleware/middleware.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameMiddleware',
-              __DIR_NAME__: `'./middlewares/name.middleware'`
+              __DIR_NAME__: `'./middlewares/name/name.middleware'`
             }
           }
         }

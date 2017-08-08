@@ -42,6 +42,7 @@ describe('GatewayProcessor', () => {
             process.cwd(),
             'src/app',
             'gateways',
+            'name',
             'name.gateway.ts'
           ),
           className: 'NameGateway',
@@ -49,7 +50,7 @@ describe('GatewayProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/gateway/gateway.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameGateway',
-              __DIR_NAME__: `'./gateways/name.gateway'`
+              __DIR_NAME__: `'./gateways/name/name.gateway'`
             }
           }
         }

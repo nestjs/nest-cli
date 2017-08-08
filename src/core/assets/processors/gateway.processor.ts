@@ -81,6 +81,7 @@ export class GatewayProcessor implements Processor {
       process.cwd(),
       path.dirname(moduleName),
       'gateways',
+      filename.replace(`.gateway.${ this._extension}`, ''),
       filename
     );
   }
@@ -90,7 +91,7 @@ export class GatewayProcessor implements Processor {
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/gateway/gateway.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./gateways/${ filename.replace(`.${ this._extension }`, '') }'`
+        __DIR_NAME__: `'./gateways/${ filename.replace(`.gateway.${ this._extension}`, '')}/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }

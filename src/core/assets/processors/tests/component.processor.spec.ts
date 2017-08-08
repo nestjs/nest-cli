@@ -42,6 +42,7 @@ describe('ComponentProcessor', () => {
             process.cwd(),
             'src/app',
             'services',
+            'name',
             'name.service.ts'
           ),
           className: 'NameService',
@@ -49,7 +50,7 @@ describe('ComponentProcessor', () => {
             filename: path.resolve(__dirname, '../../../../assets/ts/component/component.ts.template'),
             replacer: {
               __CLASS_NAME__: 'NameService',
-              __DIR_NAME__: `'./services/name.service'`
+              __DIR_NAME__: `'./services/name/name.service'`
             }
           }
         },
@@ -59,6 +60,7 @@ describe('ComponentProcessor', () => {
             process.cwd(),
             'src/app',
             'services',
+            'name',
             'name.service.spec.ts'
           ),
           className: 'NameService',
