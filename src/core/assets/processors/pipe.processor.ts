@@ -76,6 +76,7 @@ export class PipeProcessor implements Processor {
       process.cwd(),
       path.dirname(moduleName),
       'pipes',
+      filename.replace(`.pipe.${ this._extension}`, ''),
       filename
     );
   }
@@ -85,7 +86,7 @@ export class PipeProcessor implements Processor {
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/pipe/pipe.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./pipes/${ filename.replace(`.${ this._extension }`, '') }'`
+        __DIR_NAME__: `'./pipes/${ filename.replace(`.pipe.${ this._extension }`, '')}/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }
