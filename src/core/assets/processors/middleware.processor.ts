@@ -76,6 +76,7 @@ export class MiddlewareProcessor implements Processor {
       process.cwd(),
       path.dirname(moduleName),
       'middlewares',
+      filename.replace(`.middleware.${ this._extension }`, ''),
       filename
     );
   }
@@ -85,7 +86,7 @@ export class MiddlewareProcessor implements Processor {
       .addFilename(path.resolve(__dirname, `../../../assets/${ this._extension }/middleware/middleware.${ this._extension }.template`))
       .addReplacer({
         __CLASS_NAME__: className,
-        __DIR_NAME__: `'./middlewares/${ filename.replace(`.${ this._extension }`, '') }'`
+        __DIR_NAME__: `'./middlewares/${ filename.replace(`.middleware.${ this._extension }`, '')}/${ filename.replace(`.${ this._extension }`, '') }'`
       })
       .build();
   }

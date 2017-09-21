@@ -4,22 +4,22 @@ import {__CLASS_NAME__} from './__IMPORT__';
 import {expect} from 'chai';
 
 describe('__CLASS_NAME__', () => {
-  let module: TestingModule;
+  let module;
   beforeEach(() => {
     return Test.createTestingModule({
-      controllers: [
+      components: [
         __CLASS_NAME__
       ]
     }).compile()
       .then(compiledModule => module = compiledModule);
   });
 
-  let controller: __CLASS_NAME__;
+  let service;
   beforeEach(() => {
-    controller = module.get(__CLASS_NAME__);
+    service = module.get(__CLASS_NAME__);
   });
 
   it('should exist', () => {
-    expect(controller).to.exist;
+    expect(service).to.exist;
   });
 });
