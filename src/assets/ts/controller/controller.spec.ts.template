@@ -1,4 +1,5 @@
-import {Test, TestingModule} from '@nestjs/testing';
+import {Test} from '@nestjs/testing';
+import {TestingModule} from '@nestjs/testing/testing-module';
 import {__CLASS_NAME__} from './__IMPORT__';
 import {expect} from 'chai';
 
