@@ -258,3 +258,6 @@ Examples :
 Used to update project :
    * @nestjs dependencies
    * devDependencies
+   
+## Road Map
+https://trello.com/nestcli
