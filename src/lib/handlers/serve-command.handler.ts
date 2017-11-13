@@ -33,7 +33,7 @@ export class ServeCommandHandler implements CommandHandler {
                 } else {
                     nodemon({
                         'watch': ['src/**/*.ts'],
-                        'ignore': ['src/**/*.spec.ts'],
+                        'ignore': ['src/**/*.spec.js'],
                         'exec': `ts-node ${entryFile}`
                     })
                 }
