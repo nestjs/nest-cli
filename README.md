@@ -45,6 +45,7 @@ Examples :
    * `$ nest new my-app`
    * `$ nest new my-app myapp/`
    * `$ nest new my-app --repository https://github.com/ThomRick/nest-typescript-starter`
+
 Creates a new Nest application by cloning `https://github.com/ThomRick/nest-typescript-starter` Git repository.
 
 ### generate (or `g`)
@@ -70,6 +71,7 @@ Examples :
    * `$ nest generate controller <assetName>` OR `$ nest g controller <assetName>` 
    * `$ nest g controller <assetName> [moduleName]`
    * `$ nest g controller <assetName> [moduleName1/moduleName2/moduleName3]`
+
 Creates a templated controller files : 
    * `src/app/controllers/<assetName>.controller.ts`
    * `src/app/modules/[moduleName]/modules/controllers/<assetName>.controller.ts`
@@ -127,6 +129,7 @@ Examples :
    * `$ nest generate component <assetName>` OR `$ nest g component <assetName>` 
    * `$ nest g component <assetName> [moduleName]`
    * `$ nest g component <assetName> [moduleName1/moduleName2/moduleName3]`
+
 Creates a templated component files :
    * `src/app/services/<assetName>.service.ts`
    * `src/app/modules/[moduleName]/modules/services/<assetName>.service.ts`
@@ -183,6 +186,7 @@ Examples :
    * `$ nest generate pipe <assetName>` OR `$ nest g pipe <assetName>` 
    * `$ nest g pipe <assetName> [moduleName]`
    * `$ nest g pipe <assetName> [moduleName1/moduleName2/moduleName3]`
+
 Creates a templated pipe files :
    * `src/app/pipes/<assetName>.service.ts`
    * `src/app/modules/[moduleName]/modules/pipes/<assetName>.pipe.ts`
@@ -203,6 +207,7 @@ Examples :
    * `$ nest generate middleware <assetName>` OR `$ nest g middleware <assetName>` 
    * `$ nest g middleware <assetName> [moduleName]`
    * `$ nest g middleware <assetName> [moduleName1/moduleName2/moduleName3]`
+
 Creates a templated middleware files :
    * `src/app/middlewares/<assetName>.service.ts`
    * `src/app/modules/[moduleName]/modules/middlewares/<assetName>.middleware.ts`
@@ -225,6 +230,7 @@ Examples :
    * `$ nest generate gateway <assetName>` OR `$ nest g gateway <assetName>` 
    * `$ nest g gateway <assetName> [moduleName]`
    * `$ nest g gateway <assetName> [moduleName1/moduleName2/moduleName3]`
+
 Creates a templated middleware files :
    * `src/app/gateways/<assetName>.gateway.ts`
    * `src/app/modules/[moduleName]/modules/gateways/<assetName>.gateway.ts`
@@ -248,13 +254,19 @@ import {NameGateway} from './gateways/name.gateway';
 export class ModuleNameModule {}
 ```
 
-### serve (not implemented)
+### serve  
+ Example :  
+   * `$ nest serve`  
+   * `$ nest s`  
+
+Used to run a live reloading development server.
 
 ### build (not implemented)
 
 ### update 
 Examples : 
-   * `$ nest update`
+   * `$ nest update`  
+
 Used to update project :
    * @nestjs dependencies
    * devDependencies
