@@ -35,7 +35,8 @@ $ npm link
 The nestconfig.json is here to manage the CLI execution like asset generation.
 ```json
 {
-    "language": "ts | es (default: ts)"
+    "language": "ts | es (default: ts)",
+    "entryFile": "src/main.ts"
 }
 ```
 
