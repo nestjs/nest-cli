@@ -30,12 +30,14 @@
   },
   "dependencies": {
     "caporal": "^0.6.0",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.1",
+    "os-name": "^2.0.1"
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.33",
+    "@types/node": "^7.0.48",
+    "@types/os-name": "^2.0.0",
     "@types/sinon": "^2.3.2",
     "chai": "^4.0.0",
     "coveralls": "^2.13.1",
