@@ -27,14 +27,14 @@ export class ServeCommandHandler implements CommandHandler {
                 if (language == 'js') {
                     nodemon({
                         'watch': ['src/**/*.js'],
-                        'ignore': ['src/**/*.spec.ts'],
-                        'exec': `ts-node ${entryFile}`
+                        'ignore': ['src/**/*.spec.js'],
+                        'exec': `node ${entryFile}`
                     })
                 } else {
                     nodemon({
                         'watch': ['src/**/*.ts'],
-                        'ignore': ['src/**/*.spec.js'],
-                        'exec': `ts-node ${entryFile}`
+                        'ignore': ['src/**/*.spec.ts'],
+                        'exec': `./node_modules/.bin/ts-node ${entryFile}`
                     })
                 }
             });
