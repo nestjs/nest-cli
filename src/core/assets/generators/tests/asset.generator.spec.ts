@@ -1,15 +1,16 @@
 import {expect} from 'chai';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as sinon from 'sinon';
-import {FileSystemUtils} from '../../../utils/file-system.utils';
-import {Generator} from '../../../../common/asset/interfaces/generator.interface';
+import {PassThrough} from 'stream';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
+import {Generator} from '../../../../common/asset/interfaces/generator.interface';
+import {LoggerService} from '../../../logger/logger.service';
+import {FileSystemUtils} from '../../../utils/file-system.utils';
 import {AssetBuilder} from '../../builders/asset.builder';
 import {TemplateBuilder} from '../../builders/template.builder';
-import * as fs from 'fs';
-import {PassThrough} from 'stream';
-import * as path from 'path';
 import {AssetGenerator} from '../asset.generator';
-import {LoggerService} from '../../../logger/logger.service';
+
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;

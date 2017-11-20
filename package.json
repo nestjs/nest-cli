@@ -29,19 +29,22 @@
     "url": "https://github.com/nestjs/nest-cli/issues"
   },
   "dependencies": {
-    "caporal": "^0.6.0"
+    "caporal": "^0.6.0",
+    "nodemon": "^1.12.1",
+    "os-name": "^2.0.1"
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.33",
+    "@types/node": "^7.0.48",
+    "@types/os-name": "^2.0.0",
     "@types/sinon": "^2.3.2",
     "chai": "^4.0.0",
     "coveralls": "^2.13.1",
     "mocha": "^3.4.2",
     "nyc": "^10.3.2",
     "sinon": "^2.3.6",
-    "ts-node": "^3.2.0",
+    "ts-node": "^3.3.0",
     "typescript": "^2.4.1"
   },
   "nyc": {
