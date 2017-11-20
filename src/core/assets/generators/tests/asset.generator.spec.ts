@@ -93,7 +93,7 @@ describe('AssetGenerator', () => {
           throw new Error('should not be here');
         })
         .catch(error => {
-          expect(error.message).to.be.equal('Unhandled error. (error message)');
+          expect(error.message).to.be.equal('Unhandled "error" event. (error message)');
         });
     });
   });
