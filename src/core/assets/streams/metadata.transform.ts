@@ -10,7 +10,7 @@ export class MetadataTransform extends Transform {
   }
 
   _transform(chunk, encoding, done) {
-    const metadata: any = this.update(JSON.parse(this.MODULE_METADATA_REGEX.exec(chunk)[1].replace(/([a-zA-Z]+)/g, '"$1"')));
+    const metadata: any = this.update(JSON.parse(this.MODULE_METADATA_REGEX.exec(chunk)[1].replace(/([a-zA-Z-/.]+)/g, '"$1"')));
     const output: string = chunk.toString().replace(this.MODULE_METADATA_REGEX, `@Module(${ JSON.stringify(metadata, null, 2).replace(/"/g, '') })`);
     this.push(output);
     done();
