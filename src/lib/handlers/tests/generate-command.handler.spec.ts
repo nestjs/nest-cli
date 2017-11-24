@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import {ModuleProcessor} from '../../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../../core/assets/processors/component.processor';
-import {ConfigurationService} from '../../../core/configuration/configuration.service';
+import {ConfigurationLoader} from '../../../configuration/configuration.loader';
 import {PipeProcessor} from '../../../core/assets/processors/pipe.processor';
 import {MiddlewareProcessor} from '../../../core/assets/processors/middleware.processor';
 import {GatewayProcessor} from '../../../core/assets/processors/gateway.processor';
@@ -22,8 +22,8 @@ describe('GenerateCommandHandler', () => {
   let loadStub: sinon.SinonStub;
   let getPropertyStub: sinon.SinonStub;
   beforeEach(() => {
-    loadStub = sandbox.stub(ConfigurationService, 'load').callsFake(() => Promise.resolve());
-    getPropertyStub = sandbox.stub(ConfigurationService, 'getProperty').callsFake(() => 'ts')
+    loadStub = sandbox.stub(ConfigurationLoader, 'load').callsFake(() => Promise.resolve());
+    getPropertyStub = sandbox.stub(ConfigurationLoader, 'getProperty').callsFake(() => 'ts')
   });
 
   describe('#execute()', () => {

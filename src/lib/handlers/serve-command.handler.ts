@@ -4,7 +4,7 @@ import { Logger } from '../../common/logger/interfaces/logger.interface';
 import { GenerateCommandArguments } from '../../common/program/interfaces/command.aguments.interface';
 import { CommandHandler } from '../../common/program/interfaces/command.handler.interface';
 import { GenerateCommandOptions } from '../../common/program/interfaces/command.options.interface';
-import { ConfigurationService } from '../../core/configuration/configuration.service';
+import { ConfigurationLoader } from '../../configuration/configuration.loader';
 import { ColorService } from '../../core/logger/color.service';
 import { LoggerService } from '../../core/logger/logger.service';
 
@@ -17,12 +17,12 @@ export class ServeCommandHandler implements CommandHandler {
     ): Promise<void> {
         LoggerService.setLogger(logger);
         logger.debug(ColorService.blue('[DEBUG]'), 'execute serve command');
-        return ConfigurationService.load()
+        return ConfigurationLoader.load()
             .then(() => {
-                const language: string = ConfigurationService.getProperty('language');
+                const language: string = ConfigurationLoader.getProperty('language');
                 const entryFile: string =
                     path.resolve(process.cwd(),
-                        ConfigurationService.getProperty('entryFile'));
+                        ConfigurationLoader.getProperty('entryFile'));
 
                 if (language == 'js') {
                     nodemon({

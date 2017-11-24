@@ -1,10 +1,10 @@
-import {ConfigurationService} from '../configuration.service';
-import {expect} from 'chai';
+import { ConfigurationLoader } from '../configuration.loader';
+import { expect } from 'chai';
 import * as sinon from 'sinon';
-import {FileSystemUtils} from '../../utils/file-system.utils';
+import { FileSystemUtils } from '../../core/utils/file-system.utils';
 import * as path from 'path';
 
-describe('ConfigurationService', () => {
+describe('ConfigurationLoader', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
@@ -18,14 +18,14 @@ describe('ConfigurationService', () => {
     });
 
     it('should read the property file', () => {
-      return ConfigurationService.load()
+      return ConfigurationLoader.load()
         .then(() => {
           sinon.assert.calledWith(readFileStub, path.join(process.cwd(), 'nestconfig.json'));
         });
     });
 
     it('should parse the property file to fill the property Map', () => {
-      return ConfigurationService.load()
+      return ConfigurationLoader.load()
         .then(() => {
           sinon.assert.calledWith(setStub, 'key', 'value');
         });
@@ -38,13 +38,13 @@ describe('ConfigurationService', () => {
 
     it('should return the asked property', () => {
       getStub.callsFake(() => 'ts');
-      expect(ConfigurationService.getProperty('language')).to.be.equal('ts');
+      expect(ConfigurationLoader.getProperty('language')).to.be.equal('ts');
     });
 
     it('should throws an exception to indicate a missing property', () => {
       getStub.callsFake(() => undefined);
       expect(() =>
-        ConfigurationService.getProperty('language')
+        ConfigurationLoader.getProperty('language')
       ).to.throw('Missing property "language"');
     });
   });

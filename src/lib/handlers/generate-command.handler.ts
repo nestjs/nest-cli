@@ -5,7 +5,7 @@ import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {ModuleProcessor} from '../../core/assets/processors/module.processor';
 import {ControllerProcessor} from '../../core/assets/processors/controller.processor';
 import {ComponentProcessor} from '../../core/assets/processors/component.processor';
-import {ConfigurationService} from '../../core/configuration/configuration.service';
+import {ConfigurationLoader} from '../../configuration/configuration.loader';
 import {LoggerService} from '../../core/logger/logger.service';
 import {ColorService} from '../../core/logger/color.service';
 import {PipeProcessor} from '../../core/assets/processors/pipe.processor';
@@ -28,12 +28,12 @@ export class GenerateCommandHandler implements CommandHandler {
     logger.debug(ColorService.blue('[DEBUG]'), 'execute generate command');
     logger.debug(ColorService.blue('[DEBUG]'), 'arguments :', JSON.stringify(args, null, 2));
     logger.debug(ColorService.blue('[DEBUG]'), 'options   :', JSON.stringify(options, null, 2));
-    return ConfigurationService.load()
+    return ConfigurationLoader.load()
       .then(() => {
         const assetType: AssetEnum = ASSETS_MAP.get(args.assetType);
         const assetName: string = args.assetName;
         const moduleName: string = args.moduleName || 'app';
-        const language: string = ConfigurationService.getProperty('language');
+        const language: string = ConfigurationLoader.getProperty('language');
         switch (assetType) {
           case AssetEnum.MODULE:
             return new ModuleProcessor(assetName, moduleName, language).process();
