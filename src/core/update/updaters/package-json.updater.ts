@@ -3,8 +3,8 @@ import {Updater} from '../../../common/project/interfaces/updater.interface';
 import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as path from 'path';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
-import {LoggerService} from '../../logger/logger.service';
-import {ColorService} from '../../logger/color.service';
+import {LoggerService} from '../../../logger/logger.service';
+import {ColorService} from '../../../logger/color.service';
 
 interface PackageJson {
   devDependencies: { [key: string ]: string }

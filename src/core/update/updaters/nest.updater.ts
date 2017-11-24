@@ -1,8 +1,8 @@
 import {Updater} from '../../../common/project/interfaces/updater.interface';
 import {NpmUtils} from '../../utils/npm.utils';
-import {ColorService} from '../../logger/color.service';
+import {ColorService} from '../../../logger/color.service';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
-import {LoggerService} from '../../logger/logger.service';
+import {LoggerService} from '../../../logger/logger.service';
 
 export class NestUpdater implements Updater {
   private _logger: Logger = LoggerService.getLogger();

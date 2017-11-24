@@ -5,8 +5,8 @@ import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {GenerateCommandArguments} from '../../common/program/interfaces/command.aguments.interface';
 import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 import {GenerateCommandOptions} from '../../common/program/interfaces/command.options.interface';
-import {ColorService} from '../../core/logger/color.service';
-import {LoggerService} from '../../core/logger/logger.service';
+import {ColorService} from '../../logger/color.service';
+import {LoggerService} from '../../logger/logger.service';
 import {nestWords} from '../../core/utils/nest-ascii';
 import osName = require('os-name');
 

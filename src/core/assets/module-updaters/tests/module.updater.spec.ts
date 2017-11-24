@@ -1,7 +1,7 @@
 import {ModuleUpdater} from '../../../../common/asset/interfaces/module.updater.interface';
 import {ModuleUpdaterImpl} from '../module.updater';
 import * as sinon from 'sinon';
-import {LoggerService} from '../../../logger/logger.service';
+import {LoggerService} from '../../../../logger/logger.service';
 import {BufferedReadable, BufferedWritable} from '../../streams/tests/test.utils';
 import {ModuleFinderImpl} from '../../module-finders/module.finder';
 import * as fs from 'fs';

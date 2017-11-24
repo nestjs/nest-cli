@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import {Asset} from '../../../../common/asset/interfaces/asset.interface';
 import {Generator} from '../../../../common/asset/interfaces/generator.interface';
-import {LoggerService} from '../../../logger/logger.service';
+import {LoggerService} from '../../../../logger/logger.service';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
 import {AssetBuilder} from '../../builders/asset.builder';
 import {TemplateBuilder} from '../../builders/template.builder';

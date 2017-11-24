@@ -1,9 +1,9 @@
 import { InfoHandler } from './handler';
-import { LoggerService } from '../core/logger/logger.service';
+import { LoggerService } from '../logger/logger.service';
 
 module.exports = (program) => {
   program
-    .command('serve', 'Run a live-reloading development server.')
+    .command('info', 'Display Nest CLI information.')
     .action(async (args, options, logger) => {
       LoggerService.setLogger(logger);
       return await new InfoHandler().handle();

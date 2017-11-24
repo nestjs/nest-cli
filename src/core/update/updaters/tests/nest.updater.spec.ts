@@ -2,7 +2,7 @@ import {Updater} from '../../../../common/project/interfaces/updater.interface';
 import {NestUpdater} from '../nest.updater';
 import * as sinon from 'sinon';
 import {NpmUtils} from '../../../utils/npm.utils';
-import {LoggerService} from '../../../logger/logger.service';
+import {LoggerService} from '../../../../logger/logger.service';
 
 describe('NestUpdater', () => {
   let sandbox: sinon.SinonSandbox;

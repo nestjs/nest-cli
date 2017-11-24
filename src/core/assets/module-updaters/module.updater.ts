@@ -1,8 +1,8 @@
 import {ModuleUpdater} from '../../../common/asset/interfaces/module.updater.interface';
-import {LoggerService} from '../../logger/logger.service';
+import {LoggerService} from '../../../logger/logger.service';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
 import * as path from 'path';
-import {ColorService} from '../../logger/color.service';
+import {ColorService} from '../../../logger/color.service';
 import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as fs from 'fs';
 import {Asset} from '../../../common/asset/interfaces/asset.interface';

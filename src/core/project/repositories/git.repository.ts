@@ -3,8 +3,8 @@ import {GitUtils} from '../../utils/git.utils';
 import {FileSystemUtils} from '../../utils/file-system.utils';
 import * as path from 'path';
 import {Logger} from '../../../common/logger/interfaces/logger.interface';
-import {LoggerService} from '../../logger/logger.service';
-import {ColorService} from '../../logger/color.service';
+import {LoggerService} from '../../../logger/logger.service';
+import {ColorService} from '../../../logger/color.service';
 
 export class GitRepository implements Repository {
   private logger: Logger = LoggerService.getLogger();

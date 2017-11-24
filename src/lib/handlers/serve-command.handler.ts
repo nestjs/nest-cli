@@ -5,8 +5,8 @@ import { GenerateCommandArguments } from '../../common/program/interfaces/comman
 import { CommandHandler } from '../../common/program/interfaces/command.handler.interface';
 import { GenerateCommandOptions } from '../../common/program/interfaces/command.options.interface';
 import { ConfigurationLoader } from '../../configuration/configuration.loader';
-import { ColorService } from '../../core/logger/color.service';
-import { LoggerService } from '../../core/logger/logger.service';
+import { ColorService } from '../../logger/color.service';
+import { LoggerService } from '../../logger/logger.service';
 
 
 export class ServeCommandHandler implements CommandHandler {

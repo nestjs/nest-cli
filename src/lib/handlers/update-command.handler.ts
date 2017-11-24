@@ -2,8 +2,8 @@ import {CommandHandler} from '../../common/program/interfaces/command.handler.in
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {UpdateCommandArguments} from '../../common/program/interfaces/command.aguments.interface';
 import {UpdateCommandOptions} from '../../common/program/interfaces/command.options.interface';
-import {LoggerService} from '../../core/logger/logger.service';
-import {ColorService} from '../../core/logger/color.service';
+import {LoggerService} from '../../logger/logger.service';
+import {ColorService} from '../../logger/color.service';
 import {Processor} from '../../common/asset/interfaces/processor.interface';
 import {UpdateProcessor} from '../../core/update/processors/update.processor';
 

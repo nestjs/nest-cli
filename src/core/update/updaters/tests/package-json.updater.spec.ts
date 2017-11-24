@@ -4,7 +4,7 @@ import {NpmUtils} from '../../../utils/npm.utils';
 import {Updater} from '../../../../common/project/interfaces/updater.interface';
 import {FileSystemUtils} from '../../../utils/file-system.utils';
 import * as path from 'path';
-import {LoggerService} from '../../../logger/logger.service';
+import {LoggerService} from '../../../../logger/logger.service';
 
 describe('PackageJsonUpdater', () => {
   let sandbox: sinon.SinonSandbox;

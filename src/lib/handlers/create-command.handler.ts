@@ -1,10 +1,10 @@
 import {CommandHandler} from '../../common/program/interfaces/command.handler.interface';
 import {FileSystemUtils} from '../../core/utils/file-system.utils';
 import * as path from 'path';
-import {ColorService} from '../../core/logger/color.service';
+import {ColorService} from '../../logger/color.service';
 import {Logger} from '../../common/logger/interfaces/logger.interface';
 import {GitRepository} from '../../core/project/repositories/git.repository';
-import {LoggerService} from '../../core/logger/logger.service';
+import {LoggerService} from '../../logger/logger.service';
 import {CreateCommandArguments} from '../../common/program/interfaces/command.aguments.interface';
 import {CreateCommandOptions} from '../../common/program/interfaces/command.options.interface';
 

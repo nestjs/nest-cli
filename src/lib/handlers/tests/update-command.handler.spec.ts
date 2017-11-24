@@ -1,7 +1,7 @@
 import {CommandHandler} from '../../../common/program/interfaces/command.handler.interface';
 import {UpdateCommandHandler} from '../update-command.handler';
 import * as sinon from 'sinon';
-import {LoggerService} from '../../../core/logger/logger.service';
+import {LoggerService} from '../../../logger/logger.service';
 import {UpdateCommandArguments} from '../../../common/program/interfaces/command.aguments.interface';
 import {UpdateCommandOptions} from '../../../common/program/interfaces/command.options.interface';
 import {Processor} from '../../../common/asset/interfaces/processor.interface';
