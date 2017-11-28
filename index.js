@@ -5,17 +5,17 @@ async function bootstrap () {
   program
     .version(require('./package.json').version)
     .help('Nest.js CLI');
-  require('./bin/create/index')(program);
-  require('./bin/serve/index')(program);
-  require('./bin/info/index')(program);
-  require('./bin/generate/index')(program);
-  require('./bin/update/index')(program);
+  require('./bin/create/command')(program);
+  require('./bin/serve/command')(program);
+  require('./bin/info/command')(program);
+  require('./bin/generate/command')(program);
+  require('./bin/update/command')(program);
   try {
     await configurationLoader.load();
   } catch (error) {
     process.stderr.write('[ WARN ] - Can\'t execute generate and serve commands since a project is not initialized\n');
-    process.exit(1);
+  } finally {
+    program.parse(process.argv);
   }
-  program.parse(process.argv);
 }
 return bootstrap();

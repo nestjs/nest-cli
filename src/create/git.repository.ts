@@ -6,18 +6,19 @@ import { FileSystemUtils } from '../core/utils/file-system.utils';
 import * as path from 'path';
 
 export class GitRepository {
-  constructor(private remote: string, private local: string, private logger: Logger = LoggerService.getLogger()) {}
+  constructor(private logger: Logger = LoggerService.getLogger()) {}
 
-  public async clone(): Promise<void> {
-    await this.gitClone();
-    await this.removeGitFolder();
-    await this.removeGitIgnoreFile();
+  public async clone(remote: string, local: string): Promise<void> {
+    await this.gitClone(remote, local);
+    await this.removeGitFolder(local);
+    await this.removeGitIgnoreFile(local);
+    await this.listCreatedFiles(local);
   }
 
-  private async gitClone() {
-    this.logger.debug(`${ ColorService.blue('[DEBUG] clone') } ${ this.remote } git repository to ${ this.local }...`);
+  private async gitClone(remote: string, local: string) {
+    this.logger.debug(`${ ColorService.blue('[DEBUG] clone') } ${ remote } git repository to ${ local }...`);
     return new Promise<void>((resolve, reject) =>
-      exec(`git clone ${ this.remote } ${ this.local }`, (error: Error) => {
+      exec(`git clone ${ remote } ${ local }`, (error: Error) => {
         if (error !== undefined && error !== null) {
           reject();
         } else {
@@ -27,18 +28,22 @@ export class GitRepository {
       }));
   }
 
-  private async removeGitFolder() {
-    const gitFolderPath: string = path.resolve(this.local, '.git');
+  private async removeGitFolder(local: string) {
+    const gitFolderPath: string = path.resolve(local, '.git');
     this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } ${ gitFolderPath } folder...`);
     await FileSystemUtils.rmdir(gitFolderPath);
     this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } success`);
   }
 
-  private async removeGitIgnoreFile() {
-    const gitIgnorePath: string = path.resolve(this.local, '.gitignore');
+  private async removeGitIgnoreFile(local: string) {
+    const gitIgnorePath: string = path.resolve(local, '.gitignore');
     this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } ${ gitIgnorePath } file...`);
     await FileSystemUtils.rm(gitIgnorePath);
     this.logger.debug(`${ ColorService.blue('[DEBUG] delete') } success`);
   }
 
+  private async listCreatedFiles(local: string) {
+    const files: string[] = await FileSystemUtils.readdir(path.join(process.cwd(), local));
+    files.forEach((file) => this.logger.info(ColorService.green('create'), file));
+  }
 }
