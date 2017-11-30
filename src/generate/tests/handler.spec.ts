@@ -1,15 +1,7 @@
 import * as sinon from 'sinon';
 import { ConfigurationLoader } from '../../configuration/configuration.loader';
 import { TemplateLoader } from '../tamplate.loader';
-
-export class GenerateHandler {
-  constructor(private templateLoader: TemplateLoader = new TemplateLoader()) {}
-
-  public async handle(args: any) {
-    const language: string = ConfigurationLoader.getProperty('language');
-    const templates: any = this.templateLoader.load(args.type, language);
-  }
-}
+import { GenerateHandler } from '../handler';
 
 describe('GenerateHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -20,7 +12,10 @@ describe('GenerateHandler', () => {
   let loadStub: sinon.SinonStub;
   beforeEach(() => {
     getPropertyStub = sandbox.stub(ConfigurationLoader, 'getProperty').callsFake(() => 'ts');
-    loadStub = sandbox.stub(TemplateLoader.prototype, 'load').callsFake(() => Promise.resolve());
+    loadStub = sandbox.stub(TemplateLoader.prototype, 'load').callsFake(() => Promise.resolve({
+      main: 'content',
+      spec: 'content'
+    }));
   });
 
   let handler: GenerateHandler;
@@ -35,7 +30,6 @@ describe('GenerateHandler', () => {
       sinon.assert.calledWith(getPropertyStub, 'language');
     });
     it('should load the right asset template', async () => {
-
       await handler.handle(args);
       sandbox.assert.calledWith(loadStub, 'type', 'ts');
     });

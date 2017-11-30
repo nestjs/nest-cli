@@ -1,5 +1,12 @@
 import { FileSystemUtils } from '../core/utils/file-system.utils';
 import * as path from 'path';
+import { GenerateHandler } from './handler';
+import { LoggerService } from '../logger/logger.service';
+
+export interface GenerateArguments {
+  type: string;
+  name: string;
+}
 
 export class GenerateCommand {
   constructor() {}
@@ -11,8 +18,9 @@ export class GenerateCommand {
       .alias('g')
       .argument('<type>', 'The generated asset type', assets)
       .argument('<name>', 'The generated asset name / path')
-      .action((args, options, logger) => {
-        logger.info('Inside generate command handler');
+      .action(async (args, options, logger) => {
+        LoggerService.setLogger(logger);
+        return await new GenerateHandler().handle(args);
       });
   }
 }

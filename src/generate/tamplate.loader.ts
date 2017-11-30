@@ -1,10 +1,15 @@
 import { FileSystemUtils } from '../core/utils/file-system.utils';
 import * as path from 'path';
 
+export interface Templates {
+  main: string;
+  spec?: string;
+}
+
 export class TemplateLoader {
   constructor() {}
 
-  public async load(template: string, language: string): Promise<any> {
+  public async load(template: string, language: string): Promise<Templates> {
     const templateFileNames: string[] = await FileSystemUtils.readdir(path.resolve(__dirname, `templates/${template}`));
     return templateFileNames
       .filter((filename) => filename.indexOf(language))

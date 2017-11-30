@@ -1,6 +1,15 @@
 import { LoggerService } from '../logger/logger.service';
 import { CreateHandler } from './handler';
 
+export interface CreateArguments {
+  name: string;
+  destination?: string;
+}
+
+export interface CreateOptions {
+  repository: string;
+}
+
 export class CreateCommand {
   constructor() {}
 
