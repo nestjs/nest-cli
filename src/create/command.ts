@@ -4,7 +4,7 @@ import { CreateHandler } from './handler';
 export class CreateCommand {
   constructor() {}
 
-  public init(program) {
+  public async init(program) {
     program
       .command('new', 'Create a new Nest application')
       .argument('<name>', 'Nest application name')

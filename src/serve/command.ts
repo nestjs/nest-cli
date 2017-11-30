@@ -4,7 +4,7 @@ import { ServeHandler } from './handler';
 export class ServeCommand {
   constructor() {}
 
-  public init(program) {
+  public async init(program) {
     program
       .command('serve', 'Start a hot reload development server.')
       .action((args, options, logger) => {

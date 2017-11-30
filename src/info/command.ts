@@ -4,7 +4,7 @@ import { LoggerService } from '../logger/logger.service';
 export class InfoCommand {
   constructor() {}
 
-  public init(program) {
+  public async init(program) {
     program
       .command('info', 'Display Nest CLI information.')
       .action(async (args, options, logger) => {

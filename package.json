@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npm run -s build:src && npm run -s build:assets",
     "build:src": "tsc",
-    "build:assets": "node scripts/copy.script.js src/assets bin/assets",
+    "build:assets": "node scripts/copy.script.js src/generate/templates bin/generate/templates",
     "clean": "node scripts/clean.script.js bin/* && node scripts/clean.script.js coverage/*",
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
