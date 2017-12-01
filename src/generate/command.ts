@@ -1,4 +1,4 @@
-import { FileSystemUtils } from '../core/utils/file-system.utils';
+import { FileSystemUtils } from '../utils/file-system.utils';
 import * as path from 'path';
 import { GenerateHandler } from './handler';
 import { LoggerService } from '../logger/logger.service';

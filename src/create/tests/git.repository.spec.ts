@@ -1,8 +1,8 @@
 import * as sinon from 'sinon';
 import * as child_process from 'child_process';
 import { GitRepository } from '../git.repository';
-import { FileSystemUtils } from '../../core/utils/file-system.utils';
 import * as path from 'path';
+import { FileSystemUtils } from '../../utils/file-system.utils';
 
 describe('GitRepository', () => {
   let sandbox: sinon.SinonSandbox;

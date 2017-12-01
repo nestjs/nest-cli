@@ -1,7 +1,7 @@
 import { TemplateLoader, Templates } from './tamplate.loader';
 import { ConfigurationLoader } from '../configuration/configuration.loader';
 import { LoggerService } from '../logger/logger.service';
-import { Logger } from '../common/logger/interfaces/logger.interface';
+import { Logger } from '../logger/logger.interface';
 import { ColorService } from '../logger/color.service';
 import { GenerateArguments } from './command';
 

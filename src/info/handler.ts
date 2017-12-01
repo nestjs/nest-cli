@@ -1,11 +1,11 @@
 import { LoggerService } from '../logger/logger.service';
-import { Logger } from '../common/logger/interfaces/logger.interface';
 import { ColorService } from '../logger/color.service';
-import { nestWords } from '../core/utils/nest-ascii';
+import { nestWords } from '../utils/nest-ascii';
 import osName = require('os-name');
 import * as fs from 'fs';
 import { exec } from 'child_process';
 import * as path from 'path';
+import { Logger } from '../logger/logger.interface';
 
 export class InfoHandler {
   constructor(private logger: Logger = LoggerService.getLogger()) {}

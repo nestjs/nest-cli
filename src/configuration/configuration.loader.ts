@@ -1,5 +1,5 @@
-import { FileSystemUtils } from '../core/utils/file-system.utils';
 import * as path from 'path';
+import { FileSystemUtils } from '../utils/file-system.utils';
 
 export class ConfigurationLoader {
   private static PROPERTIES: Map<string, string> = new Map<string, string>();

@@ -1,5 +1,5 @@
 import { LoggerService } from '../logger/logger.service';
-import { Logger } from '../common/logger/interfaces/logger.interface';
+import { Logger } from '../logger/logger.interface';
 import { ColorService } from '../logger/color.service';
 import { GitRepository } from './git.repository';
 import { CreateArguments, CreateOptions } from './command';

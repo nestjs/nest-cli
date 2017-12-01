@@ -1,9 +1,9 @@
 import { exec } from 'child_process';
-import { Logger } from '../common/logger/interfaces/logger.interface';
 import { LoggerService } from '../logger/logger.service';
 import { ColorService } from '../logger/color.service';
-import { FileSystemUtils } from '../core/utils/file-system.utils';
+import { FileSystemUtils } from '../utils/file-system.utils';
 import * as path from 'path';
+import { Logger } from '../logger/logger.interface';
 
 export class GitRepository {
   constructor(private logger: Logger = LoggerService.getLogger()) {}

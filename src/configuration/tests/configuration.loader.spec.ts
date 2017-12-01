@@ -1,8 +1,8 @@
 import { ConfigurationLoader } from '../configuration.loader';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { FileSystemUtils } from '../../core/utils/file-system.utils';
 import * as path from 'path';
+import { FileSystemUtils } from '../../utils/file-system.utils';
 
 describe('ConfigurationLoader', () => {
   let sandbox: sinon.SinonSandbox;

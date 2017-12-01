@@ -1,5 +1,5 @@
-import { Logger } from '../common/logger/interfaces/logger.interface';
 import { ConsoleLogger } from './console.logger';
+import { Logger } from './logger.interface';
 
 export class LoggerService {
   private static logger: Logger;

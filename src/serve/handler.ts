@@ -2,8 +2,8 @@ import { ConfigurationLoader } from '../configuration/configuration.loader';
 import * as path from 'path';
 import { NodemonAdapter } from './nodemon.adapter';
 import { LoggerService } from '../logger/logger.service';
-import { Logger } from '../common/logger/interfaces/logger.interface';
 import { ColorService } from '../logger/color.service';
+import { Logger } from '../logger/logger.interface';
 
 export class ServeHandler {
   constructor(private logger: Logger = LoggerService.getLogger()) {}
