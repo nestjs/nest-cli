@@ -19,7 +19,7 @@ describe('CreateHandler', () => {
         name: 'name'
       };
       await handler.handle(args);
-      sandbox.assert.calledWith(cloneStub, 'https://github.com/ThomRick/nest-typescript-starter.git', args.name);
+      sandbox.assert.calledWith(cloneStub, 'https://github.com/nestjs/typescript-starter.git', args.name);
     });
     it('should clone the specified remote repository to name folder', async () => {
       const args = {

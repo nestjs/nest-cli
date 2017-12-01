@@ -5,7 +5,7 @@ import { GitRepository } from './git.repository';
 import { CreateArguments, CreateOptions } from './command';
 
 export class CreateHandler {
-  private DEFAULT_REMOTE = 'https://github.com/ThomRick/nest-typescript-starter.git';
+  private DEFAULT_REMOTE = 'https://github.com/nestjs/typescript-starter.git';
 
   constructor(private logger: Logger = LoggerService.getLogger()) {}
 
