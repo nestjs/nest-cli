@@ -1,27 +1,33 @@
 import { FileSystemUtils } from '../utils/file-system.utils';
 import * as path from 'path';
-import { Template } from './template.replacer';
+import { Template, TemplateId } from './template.replacer';
 
 export class TemplateLoader {
   constructor() {}
 
-  public async load(template: string, language: string): Promise<Map<string, Template>> {
-    const templateFileNames: string[] = await FileSystemUtils.readdir(path.resolve(__dirname, `templates/${template}`));
+  public async load(type: string, language: string): Promise<Template[]> {
+    const templateFileNames: string[] = await FileSystemUtils.readdir(path.resolve(__dirname, `templates/${type}`));
     return templateFileNames
       .filter((filename) => filename.indexOf(language))
-      .reduce(async (contents, filename, index) =>
-        contents.then(async (contents) => await this.addFileContent(template, filename, index, contents)),
-        Promise.resolve(new Map<string, Template>())
+      .reduce(async (templates, filename, index) =>
+        templates.then(async (templates) => await this.addFileContent(type, filename, index, templates)),
+        Promise.resolve([])
       );
   }
 
-  private async addFileContent(template: string, filename: string, index: number, temlates: Map<string, Template>): Promise<Map<string, Template>> {
-    const content: string = await FileSystemUtils.readFile(path.resolve(__dirname, `templates/${template}`, filename));
+  private async addFileContent(type: string, filename: string, index: number, templates: Template[]): Promise<Template[]> {
+    const content: string = await FileSystemUtils.readFile(path.resolve(__dirname, `templates/${type}`, filename));
     if (index === 0) {
-      temlates.set('main', { content: content });
+      templates.push({
+        id: TemplateId.MAIN,
+        content: content
+      });
     } else {
-      temlates.set('spec', { content: content });
+      templates.push({
+        id: TemplateId.SPEC,
+        content: content
+      });
     }
-    return temlates;
+    return templates;
   }
 }

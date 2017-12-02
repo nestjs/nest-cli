@@ -1,4 +1,9 @@
+export enum TemplateId {
+  MAIN, SPEC
+}
+
 export interface Template {
+  id: TemplateId;
   content: string;
 }
 
@@ -12,6 +17,7 @@ export class TemplateReplacer {
 
   public replace(template: Template, tokens: Token[]): Template {
     return {
+      id: template.id,
       content: this.replaceTokens(template.content, tokens)
     };
   }

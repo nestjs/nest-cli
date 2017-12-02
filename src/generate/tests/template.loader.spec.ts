@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { TemplateLoader } from '../tamplate.loader';
 import { FileSystemUtils } from '../../utils/file-system.utils';
 import * as path from 'path';
-import { Template } from '../template.replacer';
+import { Template, TemplateId } from '../template.replacer';
 
 describe('TemplateLoader', () => {
   let sandbox: sinon.SinonSandbox;
@@ -34,12 +34,18 @@ describe('TemplateLoader', () => {
       sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/template/filename.language.template'));
       sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/template/filename.spec.language.template'));
     });
-    it('should file contents', async () => {
+    it('should return asset type associated templates', async () => {
       const contents: any = await loader.load('template', 'language');
-      expect(contents).to.be.deep.equal(new Map<string, Template>([
-        [ 'main' , { content: 'content' } ],
-        [ 'spec' , { content: 'content' } ]
-      ]));
+      expect(contents).to.be.deep.equal([
+        {
+          id: TemplateId.MAIN,
+          content: 'content'
+        },
+        {
+          id: TemplateId.SPEC,
+          content: 'content'
+        }
+      ]);
     });
   });
 });
