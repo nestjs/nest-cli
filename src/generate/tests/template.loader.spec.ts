@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { TemplateLoader } from '../tamplate.loader';
 import { FileSystemUtils } from '../../utils/file-system.utils';
 import * as path from 'path';
+import { Template } from '../template.replacer';
 
 describe('TemplateLoader', () => {
   let sandbox: sinon.SinonSandbox;
@@ -35,10 +36,10 @@ describe('TemplateLoader', () => {
     });
     it('should file contents', async () => {
       const contents: any = await loader.load('template', 'language');
-      expect(contents).to.be.deep.equal({
-        main: 'content',
-        spec: 'content'
-      });
+      expect(contents).to.be.deep.equal(new Map<string, Template>([
+        [ 'main' , { content: 'content' } ],
+        [ 'spec' , { content: 'content' } ]
+      ]));
     });
   });
 });
