@@ -3,7 +3,7 @@ import { Template, TemplateId, TemplateReplacer, Token } from '../template.repla
 import * as sinon from 'sinon';
 import { ConfigurationLoader } from '../../configuration/configuration.loader';
 import { TokenName, TokensGenerator } from '../tokens.generator';
-import { TemplateLoader } from '../tamplate.loader';
+import { TemplateLoader } from '../template.loader';
 import { AssetGenerator } from '../asset.generator';
 
 describe('AssetGenerator', () => {

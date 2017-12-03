@@ -8,7 +8,7 @@ export class TemplateLoader {
   public async load(type: string, language: string): Promise<Template[]> {
     const templateFileNames: string[] = await FileSystemUtils.readdir(path.resolve(__dirname, `templates/${type}`));
     return templateFileNames
-      .filter((filename) => filename.indexOf(language))
+      .filter((filename) => filename.indexOf(language) !== -1)
       .reduce(async (templates, filename) =>
         templates.then(async (templates) => await this.addFileContent(type, filename, templates)),
         Promise.resolve([])

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {isNullOrUndefined} from 'util';
+import { WriteStream } from 'fs';
 
 export class FileSystemUtils {
   public static rmdir(name: string): Promise<string> {
@@ -104,6 +105,18 @@ export class FileSystemUtils {
           reject(error);
         else
           resolve(data.toString());
+      });
+    });
+  }
+
+  public static async writeFile(filename: string, content: string) {
+    return new Promise((resolve, reject) => {
+      fs.appendFile(filename, content, (error: NodeJS.ErrnoException) => {
+        if (error !== undefined && error !== null) {
+          return reject(error);
+        } else {
+        resolve();
+        }
       });
     });
   }
