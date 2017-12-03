@@ -9,15 +9,15 @@ export class TemplateLoader {
     const templateFileNames: string[] = await FileSystemUtils.readdir(path.resolve(__dirname, `templates/${type}`));
     return templateFileNames
       .filter((filename) => filename.indexOf(language))
-      .reduce(async (templates, filename, index) =>
-        templates.then(async (templates) => await this.addFileContent(type, filename, index, templates)),
+      .reduce(async (templates, filename) =>
+        templates.then(async (templates) => await this.addFileContent(type, filename, templates)),
         Promise.resolve([])
       );
   }
 
-  private async addFileContent(type: string, filename: string, index: number, templates: Template[]): Promise<Template[]> {
+  private async addFileContent(type: string, filename: string, templates: Template[]): Promise<Template[]> {
     const content: string = await FileSystemUtils.readFile(path.resolve(__dirname, `templates/${type}`, filename));
-    if (index === 0) {
+    if (filename.indexOf('spec') === -1) {
       templates.push({
         id: TemplateId.MAIN,
         content: content

@@ -12,6 +12,10 @@ describe('TokensGenerator', () => {
         {
           name: TokenName.CLASS_NAME,
           value: 'NameType'
+        },
+        {
+          name: TokenName.SPEC_IMPORT,
+          value: './name.type'
         }
       ]);
     });
