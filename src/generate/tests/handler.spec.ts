@@ -5,44 +5,31 @@ import { GenerateHandler } from '../handler';
 import { TokenName, TokensGenerator } from '../tokens.generator';
 import { GenerateArguments } from '../command';
 import { Template, TemplateId, TemplateReplacer, Token } from '../template.replacer';
+import { AssetGenerator } from '../asset.generator';
 
 describe('GenerateHandler', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
-  let getPropertyStub: sinon.SinonStub;
-  let loadStub: sinon.SinonStub;
-  let generateFromStub: sinon.SinonStub;
-  let replaceStub: sinon.SinonStub;
+  let generateStub: sinon.SinonStub;
   beforeEach(() => {
-    getPropertyStub = sandbox.stub(ConfigurationLoader, 'getProperty').callsFake(() => 'ts');
-    loadStub = sandbox.stub(TemplateLoader.prototype, 'load').callsFake(() => Promise.resolve([
+    generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve([
       {
-        id: TemplateId.MAIN,
-        content: 'content'
+        path: 'name.type.ts',
+        template: {
+          id: TemplateId.MAIN,
+          content: 'content'
+        }
       },
       {
-        id: TemplateId.SPEC,
-        content: 'content'
+        path: 'name.type.spec.ts',
+        template: {
+          id: TemplateId.SPEC,
+          content: 'content'
+        }
       }
     ]));
-    generateFromStub = sandbox.stub(TokensGenerator.prototype, 'generateFrom').callsFake(() => [
-      {
-        name: TokenName.CLASS_NAME,
-        value: 'NameType'
-      },
-      {
-        name: TokenName.SPEC_IMPORT,
-        value: './name.type'
-      }
-    ]);
-    replaceStub = sandbox.stub(TemplateReplacer.prototype, 'replace').callsFake((template) => {
-      return {
-        id: template.id,
-        content: 'content'
-      }
-    });
   });
 
   let handler: GenerateHandler;
@@ -52,42 +39,9 @@ describe('GenerateHandler', () => {
       type: 'type',
       name: 'name'
     };
-    it('should get the project language configuration property', async () => {
+    it('should generate assets according to input args', async () => {
       await handler.handle(args);
-      sinon.assert.calledWith(getPropertyStub, 'language');
-    });
-    it('should generate tokens to replace in template', async () => {
-      await handler.handle(args);
-      sandbox.assert.calledWith(generateFromStub, 'type', 'name');
-    });
-    it('should load the right asset template', async () => {
-      await handler.handle(args);
-      sandbox.assert.calledWith(loadStub, 'type', 'ts');
-    });
-    it('should replace template tokens', async () => {
-      const templates: Template[] = [
-        {
-          id: TemplateId.MAIN,
-          content: 'content'
-        },
-        {
-          id: TemplateId.SPEC,
-          content: 'content'
-        }
-      ];
-      const tokens: Token[] = [
-        {
-          name: TokenName.CLASS_NAME,
-          value: 'NameType'
-        },
-        {
-          name: TokenName.SPEC_IMPORT,
-          value: './name.type'
-        }
-      ];
-      await handler.handle(args);
-      sandbox.assert.calledWith(replaceStub, templates[0], tokens);
-      sandbox.assert.calledWith(replaceStub, templates[1], tokens);
+      sinon.assert.calledWith(generateStub, args.type, args.name);
     });
   });
 });

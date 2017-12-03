@@ -1,9 +1,9 @@
 import * as path from 'path';
 
-export class FileNameBuilder {
+export class FileNameGenerator {
   constructor() {}
 
-  public buildFrom(type: string, name: string): string {
+  public generate(type: string, name: string): string {
     return `${ this.extract(name) }.${ type }`;
   }
 

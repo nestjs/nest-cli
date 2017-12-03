@@ -4,11 +4,11 @@ import { TokenName, TokensGenerator } from '../tokens.generator';
 describe('TokensGenerator', () => {
   let generator: TokensGenerator;
   beforeEach(() => generator = new TokensGenerator());
-  describe('#generateFrom()', () => {
+  describe('#generate()', () => {
     it('should generate tokens regarding type and name', () => {
       const type = 'type';
       const name = 'name';
-      expect(generator.generateFrom(type, name)).to.be.deep.equal([
+      expect(generator.generate(type, name)).to.be.deep.equal([
         {
           name: TokenName.CLASS_NAME,
           value: 'NameType'

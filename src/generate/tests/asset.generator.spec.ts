@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import { ConfigurationLoader } from '../../configuration/configuration.loader';
 import { TokenName, TokensGenerator } from '../tokens.generator';
 import { TemplateLoader } from '../tamplate.loader';
-import { AssetGenerator } from '../asset.builder';
+import { AssetGenerator } from '../asset.generator';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -12,12 +12,12 @@ describe('AssetGenerator', () => {
   afterEach(() => sandbox.restore());
 
   let getPropertyStub: sinon.SinonStub;
-  let generateFromStub: sinon.SinonStub;
+  let generateStub: sinon.SinonStub;
   let loadStub: sinon.SinonStub;
   let replaceStub: sinon.SinonStub;
   beforeEach(() => {
     getPropertyStub = sandbox.stub(ConfigurationLoader, 'getProperty').callsFake(() => 'ts');
-    generateFromStub = sandbox.stub(TokensGenerator.prototype, 'generateFrom').callsFake(() => [
+    generateStub = sandbox.stub(TokensGenerator.prototype, 'generate').callsFake(() => [
       {
         name: TokenName.CLASS_NAME,
         value: 'NameType'
@@ -56,7 +56,7 @@ describe('AssetGenerator', () => {
     });
     it('should generate tokens to replace in template', async () => {
       await generator.generate(type, name);
-      sandbox.assert.calledWith(generateFromStub, 'type', 'name');
+      sandbox.assert.calledWith(generateStub, 'type', 'name');
     });
     it('should load the right asset template', async () => {
       await generator.generate(type, name);

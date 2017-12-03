@@ -1,10 +1,10 @@
 import { StringUtils } from './string.utils';
 import * as path from 'path';
 
-export class ClassNameBuilder {
+export class ClassNameGenerator {
   constructor() {}
 
-  public buildFrom(type: string, name: string): any {
+  public generate(type: string, name: string): any {
     return `${ StringUtils.capitalize(this.extract(name)) }${ StringUtils.capitalize(type) }`;
   }
 

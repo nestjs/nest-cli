@@ -1,20 +1,20 @@
 import { expect } from 'chai';
-import { FileNameBuilder } from '../file-name.builder';
+import { FileNameGenerator } from '../file-name.generator';
 
 describe('FileNameBuilder', () => {
-  let builder: FileNameBuilder;
-  beforeEach(() => builder = new FileNameBuilder());
+  let builder: FileNameGenerator;
+  beforeEach(() => builder = new FileNameGenerator());
 
-  describe('#buildFrom()', () => {
+  describe('#generate()', () => {
     it('should return the filename from asset type and simple name', () => {
       const type = 'type';
       const name = 'name';
-      expect(builder.buildFrom(type, name)).to.be.equal('name.type');
+      expect(builder.generate(type, name)).to.be.equal('name.type');
     });
     it('should return the filename from asset type and path name', () => {
       const type = 'type';
       const name = 'path/to/name';
-      expect(builder.buildFrom(type, name)).to.be.equal('name.type');
+      expect(builder.generate(type, name)).to.be.equal('name.type');
     });
   });
 });

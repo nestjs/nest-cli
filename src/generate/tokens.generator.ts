@@ -1,6 +1,6 @@
-import { ClassNameBuilder } from './class-name.builder';
+import { ClassNameGenerator } from './class-name.generator';
 import { Token } from './template.replacer';
-import { FileNameBuilder } from './file-name.builder';
+import { FileNameGenerator } from './file-name.generator';
 
 export enum TokenName {
   CLASS_NAME = '__CLASS_NAME__',
@@ -9,11 +9,11 @@ export enum TokenName {
 
 export class TokensGenerator {
   constructor(
-    private classNameBuilder = new ClassNameBuilder(),
-    private fileNameBuilder = new FileNameBuilder()
+    private classNameBuilder = new ClassNameGenerator(),
+    private fileNameBuilder = new FileNameGenerator()
   ) {}
 
-  public generateFrom(type: string, name: string): Token[] {
+  public generate(type: string, name: string): Token[] {
     return [
       this.generateClassNameToken(type, name),
       this.generateSpecImportToken(type, name)
@@ -23,14 +23,14 @@ export class TokensGenerator {
   private generateClassNameToken(type: string, name: string): Token {
     return {
       name: TokenName.CLASS_NAME,
-      value: this.classNameBuilder.buildFrom(type, name)
+      value: this.classNameBuilder.generate(type, name)
     };
   }
 
   private generateSpecImportToken(type: string, name: string): Token {
     return {
       name: TokenName.SPEC_IMPORT,
-      value: `./${ this.fileNameBuilder.buildFrom(type, name) }`
+      value: `./${ this.fileNameBuilder.generate(type, name) }`
     };
   }
 }

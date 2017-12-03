@@ -1,7 +1,7 @@
 import { TokensGenerator } from './tokens.generator';
 import { TemplateLoader } from './tamplate.loader';
 import { Template, TemplateId, TemplateReplacer, Token } from './template.replacer';
-import { FileNameBuilder } from './file-name.builder';
+import { FileNameGenerator } from './file-name.generator';
 import { ConfigurationLoader } from '../configuration/configuration.loader';
 
 export interface Asset {
@@ -14,7 +14,7 @@ export class AssetGenerator {
     private tokenGenerator: TokensGenerator = new TokensGenerator(),
     private templateLoader: TemplateLoader = new TemplateLoader(),
     private templateReplacer: TemplateReplacer = new TemplateReplacer(),
-    private fileNameBuilder: FileNameBuilder = new FileNameBuilder()
+    private fileNameBuilder: FileNameGenerator = new FileNameGenerator()
   ) {}
 
   public async generate(type: string, name: string): Promise<Asset[]> {
@@ -29,12 +29,12 @@ export class AssetGenerator {
   }
 
   private async generateTemplates(type: string, name: string, language: string): Promise<Template[]> {
-    const tokens: Token[] = this.tokenGenerator.generateFrom(type, name);
+    const tokens: Token[] = this.tokenGenerator.generate(type, name);
     const templates: Template[] = await this.templateLoader.load(type, language);
     return templates.map((template) => this.templateReplacer.replace(template, tokens));
   }
 
   private generatePath(type: string, name: string, language: string, template: Template): string {
-    return `${ this.fileNameBuilder.buildFrom(type, name) }${ template.id === TemplateId.SPEC ? '.spec' : '' }.${ language }`;
+    return `${ this.fileNameBuilder.generate(type, name) }${ template.id === TemplateId.SPEC ? '.spec' : '' }.${ language }`;
   }
 }
