@@ -1,4 +1,4 @@
-import { StringUtils } from './string.utils';
+import { StringUtils } from '../utils/string.utils';
 import * as path from 'path';
 
 export class ClassNameGenerator {
