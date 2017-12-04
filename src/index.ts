@@ -18,7 +18,7 @@ export class NestCliApplication {
     try {
       await ConfigurationLoader.load();
     } catch (error) {
-      process.stderr.write(`${ ColorService.yellow('[ WARN ]') } - Can\'t execute generate and serve commands since a project is not initialized\n`);
+      process.stderr.write(`${ ColorService.yellow('[ WARN ]') } - Can\'t execute generate and serve commands until the project is not initialized\n`);
     }
   }
 

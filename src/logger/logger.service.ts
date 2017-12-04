@@ -1,5 +1,12 @@
 import { ConsoleLogger } from './console.logger';
-import { Logger } from './logger.interface';
+
+export interface Logger {
+  debug(...messages: any[]): void
+  error(...messages: any[]): void
+  info(...messages: any[]): void
+  log(...messages: any[]): void
+  warn(...messages: any[]): void
+}
 
 export class LoggerService {
   private static logger: Logger;

@@ -1,4 +1,4 @@
-import { Logger } from './logger.interface';
+import { Logger } from './logger.service';
 
 export class ConsoleLogger implements Logger {
   public debug(...messages: any[]): void {
