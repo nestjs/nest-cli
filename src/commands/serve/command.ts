@@ -1,5 +1,5 @@
-import { LoggerService } from '../logger/logger.service';
 import { ServeHandler } from './handler';
+import { LoggerService } from '../../logger/logger.service';
 
 export class ServeCommand {
   constructor() {}

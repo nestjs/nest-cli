@@ -5,6 +5,7 @@ import { TokenName, TokensGenerator } from '../tokens.generator';
 import { TemplateLoader } from '../template.loader';
 import { AssetGenerator } from '../asset.generator';
 import { ConfigurationLoader } from '../../../configuration/configuration.loader';
+import { LoggerService } from '../../../logger/logger.service';
 
 describe('AssetGenerator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -42,6 +43,13 @@ describe('AssetGenerator', () => {
         id: template.id,
         content: 'content'
       }
+    });
+    LoggerService.setLogger({
+      debug: () => {},
+      error: () => {},
+      info: () => {},
+      log: () => {},
+      warn: () => {}
     });
   });
 

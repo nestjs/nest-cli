@@ -4,6 +4,7 @@ import { GenerateArguments } from '../command';
 import { TemplateId } from '../template.replacer';
 import { Asset, AssetGenerator } from '../asset.generator';
 import { AssetEmitter } from '../asset.emitter';
+import { LoggerService } from '../../../logger/logger.service';
 
 describe('GenerateHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -32,6 +33,13 @@ describe('GenerateHandler', () => {
   beforeEach(() => {
     generateStub = sandbox.stub(AssetGenerator.prototype, 'generate').callsFake(() => Promise.resolve(assets));
     emitStub = sandbox.stub(AssetEmitter.prototype, 'emit').callsFake(() => Promise.resolve());
+    LoggerService.setLogger({
+      debug: () => {},
+      error: () => {},
+      info: () => {},
+      log: () => {},
+      warn: () => {}
+    });
   });
 
   let handler: GenerateHandler;

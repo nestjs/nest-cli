@@ -1,5 +1,5 @@
 import { InfoHandler } from './handler';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerService } from '../../logger/logger.service';
 
 export class InfoCommand {
   constructor() {}

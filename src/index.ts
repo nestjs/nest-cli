@@ -1,10 +1,10 @@
 import * as program from 'caporal';
 import { ConfigurationLoader } from './configuration/configuration.loader';
-import { CreateCommand } from './create/command';
-import { InfoCommand } from './info/command';
-import { ServeCommand } from './serve/command';
 import { ColorService } from './logger/color.service';
-import { GenerateCommand } from './generate/command';
+import { CreateCommand } from './commands/create/command';
+import { InfoCommand } from './commands/info/command';
+import { ServeCommand } from './commands/serve/command';
+import { GenerateCommand } from './commands/generate/command';
 
 export class NestCliApplication {
   constructor() {}

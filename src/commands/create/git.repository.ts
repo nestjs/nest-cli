@@ -5,7 +5,9 @@ import { ColorService } from '../../logger/color.service';
 import { FileSystemUtils } from '../../utils/file-system.utils';
 
 export class GitRepository {
-  constructor(private logger: Logger = LoggerService.getLogger()) {}
+  constructor(
+    private logger: Logger = LoggerService.getLogger()
+  ) {}
 
   public async clone(remote: string, local: string): Promise<void> {
     await this.gitClone(remote, local);

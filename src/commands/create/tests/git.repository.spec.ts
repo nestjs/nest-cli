@@ -3,16 +3,13 @@ import * as child_process from 'child_process';
 import { GitRepository } from '../git.repository';
 import * as path from 'path';
 import { FileSystemUtils } from '../../../utils/file-system.utils';
+import { LoggerService } from '../../../logger/logger.service';
 
 describe('GitRepository', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
-  let repository: GitRepository;
-  beforeEach(() => {
-    repository = new GitRepository();
-  });
 
   let execStub: sinon.SinonStub;
   let rmdirStub: sinon.SinonStub;
@@ -24,6 +21,18 @@ describe('GitRepository', () => {
     rmdirStub = sandbox.stub(FileSystemUtils, 'rmdir').callsFake(() => Promise.resolve());
     rmStub = sandbox.stub(FileSystemUtils, 'rm').callsFake(() => Promise.resolve());
     readdirStub = sandbox.stub(FileSystemUtils, 'readdir').callsFake(() => Promise.resolve([]));
+    LoggerService.setLogger({
+      debug: () => {},
+      error: () => {},
+      info: () => {},
+      log: () => {},
+      warn: () => {}
+    });
+  });
+
+  let repository: GitRepository;
+  beforeEach(() => {
+    repository = new GitRepository();
   });
 
   describe('#clone()', () => {

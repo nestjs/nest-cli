@@ -2,6 +2,7 @@ import * as sinon from 'sinon';
 import { InfoHandler } from '../handler';
 import * as fs from 'fs';
 import * as path from 'path';
+import { LoggerService } from '../../../logger/logger.service';
 
 describe('InfoHandler', () => {
   let sandbox: sinon.SinonSandbox;
@@ -21,6 +22,13 @@ describe('InfoHandler', () => {
       } else {
         callback(new Error('Should not be there'));
       }
+    });
+    LoggerService.setLogger({
+      debug: () => {},
+      error: () => {},
+      info: () => {},
+      log: () => {},
+      warn: () => {}
     });
   });
 

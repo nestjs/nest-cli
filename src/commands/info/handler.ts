@@ -10,7 +10,7 @@ export class InfoHandler {
   constructor(private logger: Logger = LoggerService.getLogger()) {}
 
   public async handle() {
-    this.logger.debug(ColorService.blue('[DEBUG]'), 'execute serve command');
+    this.logger.debug(ColorService.blue('[DEBUG]'), 'execute info command');
     this.logger.info(ColorService.yellow(nestWords));
     await this.displaySystemInformation();
     await this.displayNestInformation();

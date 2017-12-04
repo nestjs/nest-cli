@@ -1,9 +1,9 @@
 import * as sinon from 'sinon';
-import { expect } from 'chai';
 import { ServeHandler } from '../handler';
 import { NodemonAdapter } from '../nodemon.adapter';
 import * as path from 'path';
 import { ConfigurationLoader } from '../../../configuration/configuration.loader';
+import { LoggerService } from '../../../logger/logger.service';
 
 describe('ServeHandler', () => {
   let handler: ServeHandler;
@@ -25,12 +25,16 @@ describe('ServeHandler', () => {
         }
       });
     startStub = sandbox.stub(NodemonAdapter, 'start');
+    LoggerService.setLogger({
+      debug: () => {},
+      error: () => {},
+      info: () => {},
+      log: () => {},
+      warn: () => {}
+    });
   });
 
   describe('#handle()', () => {
-    it('can call handle()', () => {
-      expect(handler.handle).to.exist;
-    });
     it('should get the language property from configuration', () => {
       handler.handle();
       sandbox.assert.calledWith(getPropertyStub, 'language');
