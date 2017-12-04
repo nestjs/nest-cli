@@ -2,8 +2,8 @@ import {Copy} from '../copy';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
 import {PassThrough} from 'stream';
-import {FileSystemUtils} from '../../../src/core/utils/file-system.utils';
 import * as path from 'path';
+import { FileSystemUtils } from '../../../src/utils/file-system.utils';
 
 describe('Copy', () => {
   let sandbox: sinon.SinonSandbox;
