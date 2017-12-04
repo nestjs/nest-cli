@@ -1,6 +1,6 @@
 import {Test} from '@nestjs/testing';
 import {TestingModule} from '@nestjs/testing/testing-module';
-import {__CLASS_NAME__} from './__IMPORT__';
+import {__CLASS_NAME__} from '__SPEC_IMPORT__';
 import {expect} from 'chai';
 
 describe('__CLASS_NAME__', () => {

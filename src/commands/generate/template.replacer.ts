@@ -23,6 +23,10 @@ export class TemplateReplacer {
   }
 
   private replaceTokens(content: string, tokens: Token[]): string {
-    return tokens.reduce((currentContent, token) => currentContent.replace(token.name, token.value), content);
+    return tokens
+      .reduce((currentContent, token) =>
+        currentContent.replace(new RegExp(token.name, 'g'), token.value),
+        content
+      );
   }
 }
