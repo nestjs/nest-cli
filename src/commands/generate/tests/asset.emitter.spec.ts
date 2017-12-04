@@ -10,9 +10,11 @@ describe('AssetEmitter', () => {
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
+  let statStub: sinon.SinonStub;
   let mkdirStub: sinon.SinonStub;
   let writeFileStub: sinon.SinonStub;
   beforeEach(() => {
+    statStub = sandbox.stub(fs, 'stat');
     mkdirStub = sandbox.stub(fs, 'mkdir').callsFake((filename, callback) => callback());
     writeFileStub = sandbox.stub(fs, 'writeFile').callsFake((filename, content, callback) => callback());
   });
@@ -37,14 +39,26 @@ describe('AssetEmitter', () => {
         }
       }
     ];
-    it('should create asset directory', async () => {
+    it('should check if asset directory exists', async () => {
+      statStub.callsFake((filename, callback) => callback(null, { isDirectory: () => true }));
       await emitter.emit(name, assets);
-      sandbox.assert.calledWith(mkdirStub, path.join(process.cwd(), 'src/modules', 'name'));
+      sandbox.assert.calledWith(statStub, path.join(process.cwd(), 'src/modules', name));
+    });
+    it('should create asset directory if it does not exist', async () => {
+      statStub.callsFake((filename, callback) => callback(new Error('File not exists')));
+      await emitter.emit(name, assets);
+      sandbox.assert.calledWith(mkdirStub, path.join(process.cwd(), 'src/modules', name));
+    });
+    it('should not create asset directory if it already exists', async () => {
+      statStub.callsFake((filename, callback) => callback(null, { isDirectory: () => true }));
+      await emitter.emit(name, assets);
+      sandbox.assert.notCalled(mkdirStub);
     });
     it('should write asset files in the right place', async () => {
+      statStub.callsFake((filename, callback) => callback(null, { isDirectory: () => true }));
       await emitter.emit(name, assets);
-      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), 'src/modules','name', 'name.type.ts'), assets[0].template.content);
-      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), 'src/modules', 'name', 'name.type.spec.ts'), assets[1].template.content);
+      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), 'src/modules', name, assets[0].path), assets[0].template.content);
+      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), 'src/modules', name, assets[1].path), assets[1].template.content);
     });
   });
 });
