@@ -3,7 +3,7 @@ export enum TemplateId {
 }
 
 export interface Template {
-  id: TemplateId;
+  id?: TemplateId;
   content: string;
 }
 

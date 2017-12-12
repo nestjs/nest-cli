@@ -7,8 +7,12 @@ import { ColorService } from '../../logger/color.service';
 import { ConfigurationLoader } from '../../configuration/configuration.loader';
 
 export interface Asset {
+  className?: string;
+  type?: string;
+  name?: string;
   path: string;
-  template: Template
+  template: Template;
+  module?: Asset
 }
 
 export class AssetGenerator {
