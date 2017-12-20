@@ -2,7 +2,7 @@ import { PipeTransform, Pipe, ArgumentMetadata } from '@nestjs/common';
 
 @Pipe()
 export class __CLASS_NAME__ implements PipeTransform<any> {
-    public transform(value, metadata: ArgumentMetadata) {
-        return value;
-    }
+  public transform(value, metadata: ArgumentMetadata) {
+    return value;
+  }
 }

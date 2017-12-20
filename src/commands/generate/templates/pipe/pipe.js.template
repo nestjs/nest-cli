@@ -1,4 +1,4 @@
-import {Pipe} from '@nestjs/common';
+import { Pipe } from '@nestjs/common';
 
 @Pipe()
 export class __CLASS_NAME__ {
