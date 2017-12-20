@@ -1,5 +1,7 @@
 import { expect } from 'chai';
-import { Template, TemplateId, TemplateReplacer, Token } from '../template.replacer';
+import { TemplateReplacer} from '../template.replacer';
+import { Template } from '../template';
+import { Token } from '../token';
 
 describe('TemplateReplacer', () => {
   let replacer: TemplateReplacer;
@@ -7,7 +9,7 @@ describe('TemplateReplacer', () => {
   describe('#replace()', () => {
     it('should return a copy of the template with the modified content', () => {
       const template: Template = {
-        id: TemplateId.MAIN,
+        name: '',
         content: 'import {Module} from \'@nestjs/common\';\n' +
                  '\n' +
                  '@Module({})\n' +
@@ -20,7 +22,7 @@ describe('TemplateReplacer', () => {
         }
       ];
       expect(replacer.replace(template, tokens)).to.be.deep.equal({
-        id: TemplateId.MAIN,
+        name: '',
         content: 'import {Module} from \'@nestjs/common\';\n' +
                  '\n' +
                  '@Module({})\n' +
@@ -29,7 +31,7 @@ describe('TemplateReplacer', () => {
     });
     it('should replace all tokens in a a single file', () => {
       const template: Template = {
-        id: TemplateId.MAIN,
+        name: '',
         content: 'import {Test} from \'@nestjs/testing\';\n' +
         'import {TestingModule} from \'@nestjs/testing/testing-module\';\n' +
         'import {__CLASS_NAME__} from \'./__IMPORT__\';\n' +
@@ -63,7 +65,7 @@ describe('TemplateReplacer', () => {
         }
       ];
       expect(replacer.replace(template, tokens)).to.be.deep.equal({
-        id: TemplateId.MAIN,
+        name: '',
         content: 'import {Test} from \'@nestjs/testing\';\n' +
         'import {TestingModule} from \'@nestjs/testing/testing-module\';\n' +
         'import {NameType} from \'./__IMPORT__\';\n' +

@@ -1,23 +1,20 @@
-import { Asset } from './asset.generator';
+import { Asset } from './asset';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Logger, LoggerService } from '../../logger/logger.service';
 import { ColorService } from '../../logger/color.service';
 
 export class AssetEmitter {
-  private ROOT_PATH = 'src/modules';
-
   constructor(
     private logger: Logger = LoggerService.getLogger()
   ) {}
 
-  public async emit(name: string, assets: Asset[]) {
-    this.logger.debug(ColorService.blue('[DEBUG]'), 'emit assets', name, JSON.stringify(assets, null, 2));
-    const folder: string = path.join(process.cwd(), this.ROOT_PATH, name);
-    if (!await this.isDirectory(folder)) {
-      await this.createDirectory(folder);
+  public async emit(asset: Asset) {
+    this.logger.debug(ColorService.blue('[DEBUG]'), 'emit asset', JSON.stringify(asset, null, 2));
+    if (!await this.isDirectory(asset.directory)) {
+      await this.createDirectory(asset.directory);
     }
-    await assets.forEach(async (asset) => await this.emitFile(folder, asset));
+    await this.emitFile(asset);
   }
 
   private async isDirectory(folder: string): Promise<boolean> {
@@ -40,9 +37,9 @@ export class AssetEmitter {
     });
   }
 
-  private async emitFile(folder: string, asset: Asset) {
+  private async emitFile(asset: Asset) {
     return new Promise((resolve, reject) => {
-      const filename: string = path.join(folder, asset.path);
+      const filename: string = path.join(asset.directory, asset.filename);
       fs.writeFile(filename, asset.template.content, (error: NodeJS.ErrnoException) => {
         if (error !== undefined && error !== null) {
           return reject(error);

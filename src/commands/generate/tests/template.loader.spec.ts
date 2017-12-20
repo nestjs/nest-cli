@@ -2,7 +2,6 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { TemplateLoader } from '../template.loader';
 import * as path from 'path';
-import { TemplateId } from '../template.replacer';
 import { FileSystemUtils } from '../../../utils/file-system.utils';
 
 describe('TemplateLoader', () => {
@@ -15,10 +14,10 @@ describe('TemplateLoader', () => {
   beforeEach(() => {
     readdirStub = sandbox.stub(FileSystemUtils, 'readdir')
       .callsFake(() => Promise.resolve([
-        'filename.ts.template',
-        'filename.spec.ts.template',
-        'filename.js.template',
-        'filename.spec.js.template'
+        'type.ts.template',
+        'type.spec.ts.template',
+        'type.js.template',
+        'type.spec.js.template'
       ]));
     readFileStub = sandbox.stub(FileSystemUtils, 'readFile')
       .callsFake(() => Promise.resolve('content'));
@@ -28,23 +27,23 @@ describe('TemplateLoader', () => {
   beforeEach(() => loader = new TemplateLoader());
   describe('#load()', () => {
     it('should read the asset type template dir to get asset type fileNames', async () => {
-      await loader.load('template', 'ts');
-      sinon.assert.calledWith(readdirStub, path.resolve(__dirname, '../templates/template'));
+      await loader.load('type', 'ts');
+      sinon.assert.calledWith(readdirStub, path.resolve(__dirname, '../templates/type'));
     });
     it('should load the language file content', async () => {
-      await loader.load('template', 'ts');
-      sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/template/filename.ts.template'));
-      sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/template/filename.spec.ts.template'));
+      await loader.load('type', 'ts');
+      sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/type/type.ts.template'));
+      sinon.assert.calledWith(readFileStub, path.resolve(__dirname, '../templates/type/type.spec.ts.template'));
     });
     it('should return asset type associated templates', async () => {
       const contents: any = await loader.load('template', 'ts');
       expect(contents).to.be.deep.equal([
         {
-          id: TemplateId.MAIN,
+          name: 'type.ts.template',
           content: 'content'
         },
         {
-          id: TemplateId.SPEC,
+          name: 'type.spec.ts.template',
           content: 'content'
         }
       ]);

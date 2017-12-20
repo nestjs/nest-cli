@@ -1,11 +1,12 @@
 import * as path from 'path';
 import { StringUtils } from '../../utils/string.utils';
+import { Asset } from './asset';
 
-export class ClassNameGenerator {
+export class AssetClassNameGenerator {
   constructor() {}
 
-  public generate(type: string, name: string): any {
-    return `${ StringUtils.capitalize(this.extract(name)) }${ StringUtils.capitalize(type) }`;
+  public generate(asset: Asset): string {
+    return`${ StringUtils.capitalize(this.extract(asset.name)) }${ StringUtils.capitalize(asset.type) }`;
   }
 
   private extract(name: string): string {

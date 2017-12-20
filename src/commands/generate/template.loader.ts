@@ -1,6 +1,6 @@
 import * as path from 'path';
-import { Template, TemplateId } from './template.replacer';
 import { FileSystemUtils } from '../../utils/file-system.utils';
+import { Template } from './template';
 
 export class TemplateLoader {
   constructor() {}
@@ -17,17 +17,10 @@ export class TemplateLoader {
 
   private async addFileContent(type: string, filename: string, templates: Template[]): Promise<Template[]> {
     const content: string = await FileSystemUtils.readFile(path.resolve(__dirname, `templates/${type}`, filename));
-    if (filename.indexOf('spec') === -1) {
-      templates.push({
-        id: TemplateId.MAIN,
-        content: content
-      });
-    } else {
-      templates.push({
-        id: TemplateId.SPEC,
-        content: content
-      });
-    }
+    templates.push({
+      name: filename,
+      content: content
+    });
     return templates;
   }
 }

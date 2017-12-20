@@ -1,7 +1,6 @@
 import { expect } from 'chai';
-import { Asset } from '../asset.generator';
+import { Asset } from '../asset';
 import * as path from 'path';
-import { TemplateId } from '../template.replacer';
 import { ModuleImportRegister } from '../module-import.register';
 
 describe('ModuleImportRegister', () => {
@@ -13,41 +12,38 @@ describe('ModuleImportRegister', () => {
         className: 'NameController',
         type: 'controller',
         name: 'name',
-        path: path.resolve(process.cwd(), 'src/modules/name/name.controller.ts'),
+        directory: path.join(process.cwd(), 'src/modules', 'name'),
+        filename: 'name.controller.ts',
         template: {
-          id: TemplateId.MAIN,
+          name: '',
           content: 'content'
-        },
-        module: {
-          path: path.resolve(process.cwd(), 'src/modules/name/name.module.ts'),
-          template: {
-            content:
-            'import { Module } from \'@nestjs/common\';\n' +
-            '\n' +
-            '@Module({})\n' +
-            'export class NameModule {}\n'
-          }
         }
       };
-      expect(register.register(asset)).to.be.deep.equal({
-        className: 'NameController',
-        type: 'controller',
+      const module: Asset = {
+        type: 'module',
         name: 'name',
-        path: path.resolve(process.cwd(), 'src/modules/name/name.controller.ts'),
+        directory: path.join(process.cwd(), 'src/modules', 'name'),
+        filename: 'name.module.ts',
         template: {
-          id: TemplateId.MAIN,
-          content: 'content'
-        },
-        module: {
-          path: path.resolve(process.cwd(), 'src/modules/name/name.module.ts'),
-          template: {
-            content:
-            'import { Module } from \'@nestjs/common\';\n' +
-            'import { NameController } from \'./name.controller\';\n' +
-            '\n' +
-            '@Module({})\n' +
-            'export class NameModule {}\n'
-          }
+          content:
+          'import { Module } from \'@nestjs/common\';\n' +
+          '\n' +
+          '@Module({})\n' +
+          'export class NameModule {}\n'
+        }
+      };
+      expect(register.register(asset, module)).to.be.deep.equal({
+        type: 'module',
+        name: 'name',
+        directory: path.join(process.cwd(), 'src/modules', 'name'),
+        filename: 'name.module.ts',
+        template: {
+          content:
+          'import { Module } from \'@nestjs/common\';\n' +
+          'import { NameController } from \'./name.controller\';\n' +
+          '\n' +
+          '@Module({})\n' +
+          'export class NameModule {}\n'
         }
       });
     });

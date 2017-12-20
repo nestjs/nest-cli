@@ -1,28 +1,28 @@
 import { expect } from 'chai';
 import { Asset } from '../asset';
 import * as path from "path";
-import { ModuleMetadataRegister } from '../module-metadata.register';
+import { ModuleRegister } from '../module.register';
 
-describe('ModuleMetadataRegister', () => {
-  let register: ModuleMetadataRegister;
-  beforeEach(() => register = new ModuleMetadataRegister());
+describe('ModuleRegister', () => {
+  let register: ModuleRegister;
+  beforeEach(() => register = new ModuleRegister());
   describe('#register()', () => {
-    it('should create controller metadata with the new controller', () => {
+    it('should return the asset module registered copy', () => {
       const asset: Asset = {
-        className: 'NameController',
         type: 'controller',
         name: 'name',
-        directory: path.join(process.cwd(), 'src/modules', 'name'),
-        filename: 'name.controller.ts',
         template: {
-          name: '',
+          name: 'controller.ts.template',
           content: 'content'
-        }
+        },
+        className: 'NameController',
+        directory: path.join(process.cwd(), 'src/modules', 'name'),
+        filename: 'name.controller.ts'
       };
       const module: Asset = {
-        type: 'module',
         name: 'name',
-        directory: path.join(process.cwd(), 'src/modules', 'name'),
+        type: 'module',
+        directory: path.resolve(process.cwd(), 'src/modules', 'name'),
         filename: 'name.module.ts',
         template: {
           content:
@@ -32,14 +32,17 @@ describe('ModuleMetadataRegister', () => {
           'export class NameModule {}\n'
         }
       };
-      expect(register.register(asset, module)).to.be.deep.equal({
+      const registeredModule: Asset = register.register(asset, module);
+      expect(registeredModule).to.be.deep.equal({
         type: 'module',
         name: 'name',
         directory: path.join(process.cwd(), 'src/modules', 'name'),
         filename: 'name.module.ts',
         template: {
           content:
-          'import { Module } from \'@nestjs/common\';\n\n' +
+          'import { Module } from \'@nestjs/common\';\n' +
+          'import { NameController } from \'./name.controller\';\n' +
+          '\n' +
           `@Module(${ JSON.stringify({
             controllers: [ 'NameController' ]
           }, null, 2).replace(/"/g, '')})\n` +

@@ -1,36 +1,28 @@
-import { ClassNameGenerator } from './class-name.generator';
-import { Token } from './template.replacer';
-import { FileNameGenerator } from './file-name.generator';
-
-export enum TokenName {
-  CLASS_NAME = '__CLASS_NAME__',
-  SPEC_IMPORT = '__SPEC_IMPORT__'
-}
+import { Token } from './token';
+import { Asset } from './asset';
+import { TokenName } from './tokens-name';
 
 export class TokensGenerator {
-  constructor(
-    private classNameBuilder = new ClassNameGenerator(),
-    private fileNameBuilder = new FileNameGenerator()
-  ) {}
+  constructor() {}
 
-  public generate(type: string, name: string): Token[] {
+  public generate(asset: Asset): Token[] {
     return [
-      this.generateClassNameToken(type, name),
-      this.generateSpecImportToken(type, name)
+      this.generateClassNameToken(asset),
+      this.generateSpecImportToken(asset)
     ];
   }
 
-  private generateClassNameToken(type: string, name: string): Token {
+  private generateClassNameToken(asset: Asset): Token {
     return {
       name: TokenName.CLASS_NAME,
-      value: this.classNameBuilder.generate(type, name)
+      value: asset.className
     };
   }
 
-  private generateSpecImportToken(type: string, name: string): Token {
+  private generateSpecImportToken(asset: Asset): Token {
     return {
       name: TokenName.SPEC_IMPORT,
-      value: `./${ this.fileNameBuilder.generate(type, name) }`
+      value: `./${ asset.filename.replace('.spec', '').replace(/.(ts|js)/, '') }`
     };
   }
 }

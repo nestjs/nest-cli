@@ -1,23 +1,12 @@
-export enum TemplateId {
-  MAIN, SPEC
-}
-
-export interface Template {
-  id?: TemplateId;
-  content: string;
-}
-
-export interface Token {
-  name: string;
-  value: string;
-}
+import { Template } from './template';
+import { Token } from './token';
 
 export class TemplateReplacer {
   constructor() {}
 
   public replace(template: Template, tokens: Token[]): Template {
     return {
-      id: template.id,
+      name: template.name,
       content: this.replaceTokens(template.content, tokens)
     };
   }

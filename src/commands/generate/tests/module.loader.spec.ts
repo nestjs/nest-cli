@@ -1,12 +1,11 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { Asset } from '../asset.generator';
+import { Asset } from '../asset';
 import * as path from 'path';
-import { TemplateId } from '../template.replacer';
 import * as fs from 'fs';
-import { AssetModuleLoader } from '../asset-module.loader';
+import { ModuleLoader } from '../module.loader';
 
-describe('AssetModuleLoader', () => {
+describe('ModuleLoader', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
@@ -25,46 +24,41 @@ describe('AssetModuleLoader', () => {
     )));
   });
 
-  let loader: AssetModuleLoader;
-  beforeEach(() => loader = new AssetModuleLoader());
+  let loader: ModuleLoader;
+  beforeEach(() => loader = new ModuleLoader());
   describe('#load()', () => {
     const asset: Asset = {
-      className: 'NameController',
       type: 'controller',
       name: 'name',
-      path: path.resolve(process.cwd(), 'src/modules/name/name.controller.ts'),
       template: {
-        id: TemplateId.MAIN,
+        name: 'type.ts.template',
         content: 'content'
-      }
+      },
+      className: 'NameController',
+      directory: path.join(process.cwd(), 'src/modules', 'name'),
+      filename: 'name.controller.ts'
     };
     it('should read the asset directory', async () => {
       await loader.load(asset);
-      sandbox.assert.calledWith(readdirStub, path.dirname(asset.path));
+      sandbox.assert.calledWith(readdirStub, asset.directory);
     });
     it('should read the module file in the asset directory if it exist', async () => {
       await loader.load(asset);
-      sandbox.assert.calledWith(readFileStub, path.join(path.dirname(asset.path), 'name.module.ts'));
+      sandbox.assert.calledWith(readFileStub, path.join(asset.directory, 'name.module.ts'));
     });
-    it('should return a copy of the asset with module asset', async () => {
+    it('should return module definition', async () => {
       expect(await loader.load(asset)).to.be.deep.equal({
-        className: 'NameController',
-        type: 'controller',
         name: 'name',
-        path: path.resolve(process.cwd(), 'src/modules/name/name.controller.ts'),
+        type: 'module',
+        directory: path.resolve(process.cwd(), 'src/modules', 'name'),
+        filename: 'name.module.ts',
         template: {
-          id: TemplateId.MAIN,
-          content: 'content'
-        },
-        module: {
-          path: path.resolve(process.cwd(), 'src/modules/name/name.module.ts'),
-          template: {
-            content:
-            'import { Module } from \'@nestjs/common\';\n' +
-            '\n' +
-            '@Module({})\n' +
-            'export class NameModule {}\n'
-          }
+          name: '',
+          content:
+          'import { Module } from \'@nestjs/common\';\n' +
+          '\n' +
+          '@Module({})\n' +
+          'export class NameModule {}\n'
         }
       });
     });
