@@ -1,5 +1,5 @@
 export interface ModuleMetadata {
-  imports?: string[];
+  modules?: string[];
   controllers?: string[];
   components?: string[];
   exports?: string[];
