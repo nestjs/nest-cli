@@ -1,0 +1,6 @@
+import { Controller } from '@nestjs/common';
+
+@Controller()
+export class __CLASS_NAME__ {
+  constructor() {}
+}

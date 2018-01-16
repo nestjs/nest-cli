@@ -1,0 +1,10 @@
+import { Middleware } from '@nestjs/common';
+
+@Middleware()
+export class __CLASS_NAME__ {
+  resolve(): (req, res, next) => void {
+    return (req, res, next) => {
+      next();
+    }
+  }
+}

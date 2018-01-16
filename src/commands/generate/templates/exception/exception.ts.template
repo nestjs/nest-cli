@@ -1,0 +1,7 @@
+import { HttpException } from '@nestjs/common';
+
+export class __CLASS_NAME__ extends HttpException {
+  constructor() {
+    super('message', 500);
+  }
+}

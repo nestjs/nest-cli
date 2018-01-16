@@ -1,10 +1,14 @@
 .idea/
-
 .nyc_output/
+.gitignore
+.travis.yml
+
 coverage/
 src/
 scripts/
 
-.gitignore
-.travis.yml
 tsconfig.json
+
+.vagrant/
+bootstrap.sh
+Vagrantfile

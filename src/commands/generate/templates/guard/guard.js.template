@@ -1,0 +1,8 @@
+import { Guard, CanActivate } from '@nestjs/common';
+
+@Guard()
+export class __CLASS_NAME__ implements CanActivate {
+  canActivate(dataOrRequest, context) {
+    return true;
+  }
+}

@@ -1,6 +1,6 @@
-import {FileSystemUtils} from '../../src/core/utils/file-system.utils';
 import * as os from 'os';
 import * as path from 'path';
+import { FileSystemUtils } from '../../src/utils/file-system.utils';
 
 export class Clean {
   public static execute(args: string[]): Promise<void[]> {

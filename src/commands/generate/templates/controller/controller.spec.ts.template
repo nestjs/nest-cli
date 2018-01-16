@@ -1,0 +1,25 @@
+import { Test } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing/testing-module';
+import { __CLASS_NAME__ } from '__SPEC_IMPORT__';
+import { expect } from 'chai';
+
+describe('__CLASS_NAME__', () => {
+  let module: TestingModule;
+  beforeEach(() => {
+    return Test.createTestingModule({
+      controllers: [
+        __CLASS_NAME__
+      ]
+    }).compile()
+      .then(compiledModule => module = compiledModule);
+  });
+
+  let controller: __CLASS_NAME__;
+  beforeEach(() => {
+    controller = module.get(__CLASS_NAME__);
+  });
+
+  it('should exist', () => {
+    expect(controller).to.exist;
+  });
+});

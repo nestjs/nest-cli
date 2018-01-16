@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {ReadStream, WriteStream} from 'fs';
-import {FileSystemUtils} from '../../src/core/utils/file-system.utils';
 import * as path from 'path';
+import { FileSystemUtils } from '../../src/utils/file-system.utils';
 
 export class Copy {
   public static execute(argv: string[]): Promise<void> {

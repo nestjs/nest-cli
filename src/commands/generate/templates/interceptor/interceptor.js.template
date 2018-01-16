@@ -1,0 +1,9 @@
+import { Interceptor } from '@nestjs/common';
+import 'rxjs/add/operator/do';
+
+@Interceptor()
+export class __CLASS_NAME__ {
+  intercept(dataOrRequest, context, stream$) {
+    return stream$;
+  }
+}

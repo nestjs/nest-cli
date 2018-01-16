@@ -1,0 +1,8 @@
+import { Pipe } from '@nestjs/common';
+
+@Pipe()
+export class __CLASS_NAME__ {
+  public transform(value, metadata) {
+    return value;
+  }
+}

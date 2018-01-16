@@ -1,8 +1,8 @@
 import * as sinon from 'sinon';
-import {FileSystemUtils} from '../../../src/core/utils/file-system.utils';
 import {Clean} from '../clean';
 import * as os from 'os';
 import * as path from 'path';
+import { FileSystemUtils } from '../../../src/utils/file-system.utils';
 
 describe('Clean', () => {
   let sandbox: sinon.SinonSandbox;
