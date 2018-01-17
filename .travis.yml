@@ -8,11 +8,10 @@ jobs:
       script: npm test -s
     - stage: build
       script: npm run -s build
-
-deploy:
-  skip_cleanup: true
-  provider: npm
-  email: $NPM_USER_MAIL
-  api_key: $NPM_API_TOKEN
-  on:
-    tags: true
+      deploy:
+        skip_cleanup: true
+        provider: npm
+        email: $NPM_USER_MAIL
+        api_key: $NPM_API_TOKEN
+        on:
+          tags: true
