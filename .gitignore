@@ -1,5 +1,4 @@
 .idea/
-.vagrant/
 node_modules/
 bin/
 .nyc_output/
