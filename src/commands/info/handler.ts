@@ -48,7 +48,7 @@ export class InfoHandler {
   }
 
   private async getCliVersion(): Promise<string> {
-    return await this.getVersionFrom(path.resolve('./package.json'));
+    return await this.getVersionFrom(path.join(__dirname, '../../../package.json'));
   }
 
   private getVersionFrom(file: string): Promise<string> {
