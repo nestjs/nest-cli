@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {isNullOrUndefined} from 'util';
-import { WriteStream } from 'fs';
+import { isNullOrUndefined } from 'util';
 
 export class FileSystemUtils {
   public static rmdir(name: string): Promise<string> {

@@ -1,12 +1,16 @@
 import { ModuleMetadata, ModuleMetadataParser } from './module-metadata.parser';
 import { Asset } from './asset';
+import { ColorService } from "../../logger/color.service";
+import { Logger, LoggerService } from "../../logger/logger.service";
 
 export class ModuleMetadataRegister {
   constructor(
+    private logger: Logger = LoggerService.getLogger(),
     private parser: ModuleMetadataParser = new ModuleMetadataParser()
   ) {}
 
   public register(asset: Asset, module: Asset): Asset {
+    this.logger.debug(ColorService.blue('[DEBUG]'), `- ${ ModuleMetadataRegister.name }::register() -`, `asset : ${ JSON.stringify(asset, null, 2) }`, `module : ${ JSON.stringify(module, null, 2) }`);
     const metadata: ModuleMetadata = this.parser.parse(module.template.content);
     const updatedMetadata: ModuleMetadata = this.updateMetadata(Object.assign({}, metadata), asset);
     return this.updateModule(updatedMetadata, Object.assign({}, module));

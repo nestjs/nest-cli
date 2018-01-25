@@ -13,7 +13,7 @@ export class ModuleEmitter {
     return new Promise((resolve) => {
       const filename: string = path.join(module.directory, module.filename);
       fs.writeFile(filename, module.template.content, (error: NodeJS.ErrnoException) => {
-        this.logger.info(ColorService.yellow('update'), filename);
+        this.logger.info(ColorService.yellow(' update'), filename);
         resolve();
       });
     });
