@@ -16,9 +16,9 @@ describe('InfoHandler', () => {
   beforeEach(() => {
     readFileStub = sandbox.stub(fs, 'readFile').callsFake((filename, encoding, callback) => {
       if (filename === path.join(process.cwd(), 'node_modules/@nestjs/core/package.json')) {
-        callback(null, JSON.stringify({ version: 'version' }));
-      } else if (filename === path.join(__dirname, '../../../../package.json')) {
-        callback(null, JSON.stringify({ version: 'version' }));
+        callback(undefined, JSON.stringify({ version: 'version' }));
+      } else if (filename === path.resolve('./package.json')) {
+        callback(undefined, JSON.stringify({ version: 'version' }));
       } else {
         callback(new Error('Should not be there'));
       }
