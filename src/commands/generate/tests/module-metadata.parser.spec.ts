@@ -30,5 +30,43 @@ describe('ModuleMetadataParser', () => {
         ]
       });
     });
+    it('should parse with empty metadata', () => {
+      const content = '' +
+        'import { AppController } from \'./app.controller\';\n' +
+        'import { UsersModule } from \'./users.module\';\n' +
+        '\n' +
+        '@Module({\n' +
+        '  imports: [],\n' +
+        '  controllers: [AppController],\n' +
+        '  components: []\n' +
+        '})\n' +
+        'export class ApplicationModule {}\n';
+      expect(parser.parse(content)).to.be.deep.equal({
+        imports: [],
+        controllers: [
+          'AppController'
+        ],
+        components: []
+      });
+    });
+    it('should remove the last METADATA coma if it exist', () => {
+      const content = '' +
+        'import { AppController } from \'./app.controller\';\n' +
+        'import { UsersModule } from \'./users.module\';\n' +
+        '\n' +
+        '@Module({\n' +
+        '  imports: [],\n' +
+        '  controllers: [AppController],\n' +
+        '  components: [],\n' +
+        '})\n' +
+        'export class ApplicationModule {}\n';
+      expect(parser.parse(content)).to.be.deep.equal({
+        imports: [],
+        controllers: [
+          'AppController'
+        ],
+        components: []
+      });
+    });
   });
 });

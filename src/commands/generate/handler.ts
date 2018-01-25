@@ -28,10 +28,10 @@ export class GenerateHandler {
   ) {}
 
   public async handle(args: GenerateArguments) {
-    this.logger.debug(ColorService.blue('[DEBUG]'), 'generate asset :', JSON.stringify(args, null, 2));
+    this.logger.debug(ColorService.blue('[DEBUG]'), `- ${ GenerateHandler.name }::handle() -`, 'args :', JSON.stringify(args, null, 2));
     const language: string = ConfigurationLoader.getProperty('language');
     const templates: Template[] = await this.templateLoader.load(args.type, language);
-    const asset: Asset = templates
+    const assets: Asset[] = templates
       .map((template) => this.assetGenerator.generate(
         {
           type: args.type,
@@ -42,10 +42,12 @@ export class GenerateHandler {
       .map((asset) => {
         const tokens: Token[] = this.tokensGenerator.generate(asset);
         asset.template = Object.assign({}, this.templateReplacer.replace(asset.template, tokens));
-        (async () => await this.assetEmitter.emit(asset))();
         return asset;
-      })
-      .find((asset) => asset.filename.indexOf('spec') === -1);
+      });
+    for (const asset of assets) {
+      await this.assetEmitter.emit(asset);
+    }
+    const asset: Asset = assets.find((asset) => asset.filename.indexOf('spec') === -1);
     const module: Asset = await this.moduleLoader.load(asset);
     const registeredModule: Asset = this.moduleRegister.register(asset, module);
     await this.moduleEmitter.emit(registeredModule);

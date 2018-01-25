@@ -14,7 +14,7 @@ export class AssetGenerator {
   ) {}
 
   public generate(asset: Asset): Asset {
-    this.logger.debug(ColorService.blue('[DEBUG]'), 'generate', asset.type, 'asset', asset.name);
+    this.logger.debug(ColorService.blue('[DEBUG]'), `- ${ AssetGenerator.name }::generate() -`, `asset : ${ JSON.stringify(asset, null, 2) }`);
     return Object.assign({
       className: this.className.generate(asset),
       directory: this.directory.generate(asset),
