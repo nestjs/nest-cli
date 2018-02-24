@@ -5,6 +5,7 @@ import { CreateCommand } from './commands/create/command';
 import { InfoCommand } from './commands/info/command';
 import { ServeCommand } from './commands/serve/command';
 import { GenerateCommand } from './commands/generate/command';
+import { NewCommand } from './commands/new/new.command';
 
 export class NestCliApplication {
   constructor() {}
@@ -27,6 +28,7 @@ export class NestCliApplication {
       .version(version)
       .help('Nest.js CLI');
     await new CreateCommand().init(program);
+    new NewCommand().init(program);
     await new InfoCommand().init(program);
     await new ServeCommand().init(program);
     await new GenerateCommand().init(program);

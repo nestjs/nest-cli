@@ -17,8 +17,9 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run -s test:src && npm run -s test:scripts",
     "test:watch": "nodemon --watch src -e ts --exec \"npm run -s test:src\"",
-    "test:src": "nyc mocha src/**/*.spec.ts --require ts-node/register --reporter spec",
-    "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec"
+    "test:src": "nyc mocha test/**/*.ts --require ts-node/register --reporter spec",
+    "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec",
+    "schematics": "schematics"
   },
   "repository": {
     "type": "git",
@@ -30,8 +31,8 @@
   },
   "dependencies": {
     "@angular-devkit/schematics-cli": "^0.2.0",
+    "@nestjs/schematics": "0.0.0",
     "caporal": "^0.6.0",
-    "nestjs-cli-schematics": "file:../schematics",
     "nodemon": "^1.12.1",
     "os-name": "^2.0.1"
   },
@@ -49,14 +50,14 @@
     "ts-node": "^3.3.0",
     "typescript": "^2.4.1"
   },
+  "schematics": "./node_modules/@nestjs/schematics/collection.json",
   "nyc": {
     "include": [
       "src/**/*.ts"
     ],
     "exclude": [
       "node_modules/",
-      "src/**/*.spec.ts",
-      "src/**/test.utils.ts"
+      "test/"
     ],
     "extension": [
       ".ts"
