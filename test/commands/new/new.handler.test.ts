@@ -3,7 +3,7 @@ import * as child_process from 'child_process';
 import { NewArguments, NewHandler } from '../../../src/commands/new/new.handler';
 import * as path from 'path';
 
-describe('NewHandler', () => {
+describe('New Handler', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
