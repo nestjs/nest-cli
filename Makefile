@@ -8,19 +8,19 @@ prepare:
 		/bin/sh -c "npm install"
 
 test:
-	@docker run \
+	@docker run -t \
 		-v $$(pwd):/usr/local/app \
 		nestjs/cli \
 		/bin/sh -c "npm run -s test"
 
 build:
-	@docker run \
+	@docker run -t \
 		-v $$(pwd):/usr/local/app \
 		nestjs/cli \
 		/bin/sh -c "npm run -s build"
 
 publish:
-	@docker run \
+	@docker run -t \
 		-v $$(pwd)/schematics:/usr/local/app \
 		nestjs/cli \
 		/bin/sh -c "\
