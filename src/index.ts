@@ -1,7 +1,6 @@
 import * as program from 'caporal';
 import { ConfigurationLoader } from './configuration/configuration.loader';
 import { ColorService } from './logger/color.service';
-import { CreateCommand } from './commands/create/command';
 import { InfoCommand } from './commands/info/command';
 import { ServeCommand } from './commands/serve/command';
 import { GenerateCommand } from './commands/generate/generate.command';
@@ -30,7 +29,6 @@ export class NestCliApplication {
     new NewCommand().declare(program);
     new GenerateCommand().declare(program);
 
-    await new CreateCommand().init(program);
     await new InfoCommand().init(program);
     await new ServeCommand().init(program);
     program.parse(process.argv);

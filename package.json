@@ -9,16 +9,10 @@
     "nest": "index.js"
   },
   "scripts": {
-    "build": "npm run -s build:src && npm run -s build:assets",
-    "build:src": "tsc",
-    "build:assets": "node scripts/copy.script.js src/commands/generate-old/templates bin/commands/generate-old/templates",
-    "clean": "node scripts/clean.script.js bin/* && node scripts/clean.script.js coverage/*",
-    "clean:build": "npm run -s clean && npm run -s build",
+    "build": "tsc",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "test": "npm run -s test:src && npm run -s test:scripts",
+    "test": "nyc mocha test/**/*.ts --require ts-node/register --reporter spec",
     "test:watch": "nodemon --watch src --watch test -e ts --exec \"npm run -s test:src\"",
-    "test:src": "nyc mocha test/**/*.ts --require ts-node/register --reporter spec",
-    "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec",
     "schematics": "schematics"
   },
   "repository": {
