@@ -1,11 +1,11 @@
 import * as sinon from 'sinon';
-import { ServeHandler } from '../handler';
-import { NodemonAdapter } from '../nodemon.adapter';
+import { ServeHandler } from '../../../src/commands/serve/serve.handler';
+import { NodemonAdapter } from '../../../src/commands/serve/nodemon.adapter';
 import * as path from 'path';
-import { ConfigurationLoader } from '../../../configuration/configuration.loader';
-import { LoggerService } from '../../../logger/logger.service';
+import { ConfigurationLoader } from '../../../src/configuration/configuration.loader';
+import { LoggerService } from '../../../src/logger/logger.service';
 
-describe('ServeHandler', () => {
+describe('Serve Handler', () => {
   let handler: ServeHandler;
   beforeEach(() => handler = new ServeHandler());
 

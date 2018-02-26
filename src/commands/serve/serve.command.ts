@@ -1,15 +1,15 @@
-import { ServeHandler } from './handler';
+import { ServeHandler } from './serve.handler';
 import { LoggerService } from '../../logger/logger.service';
 
 export class ServeCommand {
-  constructor() {}
+  constructor(private handler: ServeHandler = new ServeHandler()) {}
 
-  public async init(program) {
+  public declare(program) {
     program
       .command('serve', 'Start a hot reload development server.')
       .action((args, options, logger) => {
         LoggerService.setLogger(logger);
-        return new ServeHandler().handle();
+        return this.handler.handle();
       });
   }
-};
+}

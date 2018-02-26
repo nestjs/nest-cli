@@ -2,7 +2,7 @@ import * as program from 'caporal';
 import { ConfigurationLoader } from './configuration/configuration.loader';
 import { ColorService } from './logger/color.service';
 import { InfoCommand } from './commands/info/info.command';
-import { ServeCommand } from './commands/serve/command';
+import { ServeCommand } from './commands/serve/serve.command';
 import { GenerateCommand } from './commands/generate/generate.command';
 import { NewCommand } from './commands/new/new.command';
 
@@ -29,8 +29,7 @@ export class NestCliApplication {
     new NewCommand().declare(program);
     new GenerateCommand().declare(program);
     new InfoCommand().declare(program);
-
-    await new ServeCommand().init(program);
+    new ServeCommand().declare(program);
     program.parse(process.argv);
   }
 }

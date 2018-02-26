@@ -2,7 +2,7 @@ import { InfoHandler } from './info.handler';
 import { LoggerService } from '../../logger/logger.service';
 
 export class InfoCommand {
-  constructor(private handler: InfoHandler) {}
+  constructor(private handler: InfoHandler = new InfoHandler()) {}
 
   public declare(program) {
     program
