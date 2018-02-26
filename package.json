@@ -12,7 +12,7 @@
     "build": "tsc",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "test": "nyc mocha test/**/*.ts --require ts-node/register --reporter spec",
-    "test:watch": "nodemon --watch src --watch test -e ts --exec \"npm run -s test:src\"",
+    "test:watch": "nodemon --watch src --watch test -e ts --exec \"npm run -s test\"",
     "schematics": "schematics"
   },
   "repository": {

@@ -1,10 +1,10 @@
 import * as sinon from 'sinon';
-import { InfoHandler } from '../handler';
+import { InfoHandler } from '../../../src/commands/info/info.handler';
 import * as fs from 'fs';
 import * as path from 'path';
-import { LoggerService } from '../../../logger/logger.service';
+import { LoggerService } from '../../../src/logger/logger.service';
 
-describe('InfoHandler', () => {
+describe('Info Handler', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
