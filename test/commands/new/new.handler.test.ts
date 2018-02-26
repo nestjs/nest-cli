@@ -14,7 +14,7 @@ describe('New Handler', () => {
   );
 
   describe('#handle()', () => {
-    it('should execute the right command', async () => {
+    it('should execute the right schematics command', async () => {
       const args: NewArguments = {
         name: 'name'
       };
@@ -23,7 +23,7 @@ describe('New Handler', () => {
       sandbox.assert.calledOnce(execStub);
       sandbox.assert.calledWith(
         execStub,
-        `${ path.join(__dirname, '../../..', 'node_modules/.bin/schematics') } ${ path.join(__dirname, '../../..') }:application --dry-run=false --path=${ args.name } --extension=ts`,
+        `${ path.join(__dirname, '../../..', 'node_modules/.bin/schematics') } ${ path.join(__dirname, '../../..') }:application --dry-run=false --path=${ args.name } --extension=ts`
       );
     });
   });

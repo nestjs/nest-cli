@@ -1,19 +1,12 @@
-import { expect } from 'chai';
-
-export class GenerateCommand {
-  constructor() {}
-
-  public init() {
-
-  }
-}
+import * as program from 'caporal';
+import { GenerateCommand } from '../../../src/commands/generate/generate.command';
 
 describe('Generate Command', () => {
   let command: GenerateCommand;
   beforeEach(() => command = new GenerateCommand());
-  describe('#init()', () => {
-    it('can call init()', () => {
-      expect(command.init).to.exist;
+  describe('#declare()', () => {
+    it('can call declare()', () => {
+      command.declare(program);
     });
   });
 });

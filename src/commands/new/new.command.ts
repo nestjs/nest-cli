@@ -3,7 +3,7 @@ import { NewHandler } from './new.handler';
 export class NewCommand {
   constructor(private handler: NewHandler = new NewHandler()) {}
 
-  public init(program: any) {
+  public declare(program: any) {
     program
       .command('new', 'Create a new Nest application')
       .argument('<name>', 'Nest application name')
