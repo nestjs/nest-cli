@@ -13,9 +13,11 @@ describe('Serve Handler', () => {
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
+  let loadStub: sinon.SinonStub;
   let getPropertyStub: sinon.SinonStub;
   let startStub: sinon.SinonStub;
   beforeEach(() => {
+    loadStub = sandbox.stub(ConfigurationLoader, 'load').callsFake(() => Promise.resolve());
     getPropertyStub = sandbox.stub(ConfigurationLoader, 'getProperty')
       .callsFake((propertyName) => {
         if (propertyName === 'language') {
@@ -35,15 +37,19 @@ describe('Serve Handler', () => {
   });
 
   describe('#handle()', () => {
-    it('should get the language property from configuration', () => {
-      handler.handle();
+    it('should load the properties', async () => {
+      await handler.handle();
+      sandbox.assert.calledOnce(loadStub);
+    });
+    it('should get the language property from configuration', async () => {
+      await handler.handle();
       sandbox.assert.calledWith(getPropertyStub, 'language');
     });
-    it('should get the entryFile property from configuration', () => {
-      handler.handle();
+    it('should get the entryFile property from configuration', async () => {
+      await handler.handle();
       sandbox.assert.calledWith(getPropertyStub, 'entryFile');
     });
-    it('should call nodemon with the right parameters for js language', () => {
+    it('should call nodemon with the right parameters for js language', async () => {
       getPropertyStub.callsFake((propertyName) => {
         if (propertyName === 'language') {
           return 'js';
@@ -51,15 +57,15 @@ describe('Serve Handler', () => {
           return 'src/server.js'
         }
       });
-      handler.handle();
+      await handler.handle();
       sandbox.assert.calledWith(startStub, {
         'watch': [ 'src/**/*.js' ],
         'ignore': [ 'src/**/*.spec.js' ],
         'exec': `node ${ path.resolve(process.cwd(), 'src/server.js') }`
       });
     });
-    it('should call nodemon with the right parameters for ts language', () => {
-      handler.handle();
+    it('should call nodemon with the right parameters for ts language', async () => {
+      await handler.handle();
       sandbox.assert.calledWith(startStub, {
         'watch': [ 'src/**/*.ts' ],
         'ignore': [ 'src/**/*.spec.ts' ],

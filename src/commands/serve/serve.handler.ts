@@ -7,8 +7,9 @@ import { ConfigurationLoader } from '../../configuration/configuration.loader';
 export class ServeHandler {
   constructor(private logger: Logger = LoggerService.getLogger()) {}
 
-  public handle() {
+  public async handle() {
     this.logger.debug(ColorService.blue('[DEBUG]'), 'execute serve command');
+    await ConfigurationLoader.load();
     const language: string = ConfigurationLoader.getProperty('language');
     const entryFile: string = path.resolve(process.cwd(), ConfigurationLoader.getProperty('entryFile'));
     NodemonAdapter.start(this.buildExecCommand(language, entryFile));

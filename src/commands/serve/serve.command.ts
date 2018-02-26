@@ -7,9 +7,9 @@ export class ServeCommand {
   public declare(program) {
     program
       .command('serve', 'Start a hot reload development server.')
-      .action((args, options, logger) => {
+      .action(async (args, options, logger) => {
         LoggerService.setLogger(logger);
-        return this.handler.handle();
+        await this.handler.handle();
       });
   }
 }
