@@ -16,7 +16,7 @@
     "clean:build": "npm run -s clean && npm run -s build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "test": "npm run -s test:src && npm run -s test:scripts",
-    "test:watch": "nodemon --watch src -e ts --exec \"npm run -s test:src\"",
+    "test:watch": "nodemon --watch src --watch test -e ts --exec \"npm run -s test:src\"",
     "test:src": "nyc mocha test/**/*.ts --require ts-node/register --reporter spec",
     "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec",
     "schematics": "schematics"

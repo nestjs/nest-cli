@@ -1,21 +1,15 @@
-import { exec } from 'child_process';
+import { NewHandler } from './new.handler';
 
 export class NewCommand {
-  constructor() {}
+  constructor(private handler: NewHandler = new NewHandler()) {}
 
   public init(program: any) {
     program
       .command('new', 'Create a new Nest application')
       .argument('<name>', 'Nest application name')
       .argument('[destination]', 'Where the Nest application will be created')
-      .action((args, options, logger) => {
-        exec('npm run -s schematics -- .:application --extension=ts --path=app', (error: Error, stdout: string, stderr: string) => {
-          if (error) {
-            console.error(error);
-          } else {
-            console.log(stdout);
-          }
-        });
+      .action(async (args) => {
+        await this.handler.handle(args);
       });
   }
 }
