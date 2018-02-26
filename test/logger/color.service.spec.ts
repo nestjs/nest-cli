@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {ColorService} from '../color.service';
+import {ColorService} from '../../src/logger/color.service';
 
-describe('ColorService', () => {
+describe('Color Service', () => {
   it('should return a white string', () => {
     expect(ColorService.white('message')).to.be.equal(`\x1b[37m${ 'message' }\x1b[0m`);
   });

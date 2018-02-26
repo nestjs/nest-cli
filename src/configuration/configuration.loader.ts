@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { FileSystemUtils } from '../utils/file-system.utils';
 import * as fs from 'fs';
 
 export class ConfigurationLoader {

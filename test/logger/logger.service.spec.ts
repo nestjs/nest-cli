@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {LoggerService} from '../logger.service';
+import {LoggerService} from '../../src/logger/logger.service';
 
-describe('LoggerService', () => {
+describe('Logger Service', () => {
   describe('#setLogger()', () => {
     it('should return the set logger after setLogger() called', () => {
       LoggerService.setLogger(console);
