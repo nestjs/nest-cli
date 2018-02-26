@@ -4,7 +4,7 @@ import { ColorService } from './logger/color.service';
 import { CreateCommand } from './commands/create/command';
 import { InfoCommand } from './commands/info/command';
 import { ServeCommand } from './commands/serve/command';
-import { GenerateCommand } from './commands/generate/command';
+import { GenerateCommand } from './commands/generate-old/command';
 import { NewCommand } from './commands/new/new.command';
 
 export class NestCliApplication {
