@@ -38,7 +38,7 @@ describe('ConfigurationEmitter', () => {
       statStub.callsFake((filename, callback) => callback(new Error('error message')));
       const name = 'name';
       await emitter.emit(name);
-      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), name, 'nestconfig.json'), JSON.stringify({ language: 'ts', entryFile: 'src/server.ts' }, null, 2));
+      sandbox.assert.calledWith(writeFileStub, path.join(process.cwd(), name, 'nestconfig.json'), JSON.stringify({ language: 'ts', entryFile: 'src/main.ts' }, null, 2));
     });
   });
 });

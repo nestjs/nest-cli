@@ -21,7 +21,7 @@ describe('ServeHandler', () => {
         if (propertyName === 'language') {
           return 'ts';
         } else if (propertyName === 'entryFile') {
-          return 'src/server.ts'
+          return 'src/main.ts'
         }
       });
     startStub = sandbox.stub(NodemonAdapter, 'start');
@@ -48,14 +48,14 @@ describe('ServeHandler', () => {
         if (propertyName === 'language') {
           return 'js';
         } else if (propertyName === 'entryFile') {
-          return 'src/server.js'
+          return 'src/main.js'
         }
       });
       handler.handle();
       sandbox.assert.calledWith(startStub, {
         'watch': [ 'src/**/*.js' ],
         'ignore': [ 'src/**/*.spec.js' ],
-        'exec': `node ${ path.resolve(process.cwd(), 'src/server.js') }`
+        'exec': `node ${ path.resolve(process.cwd(), 'src/main.js') }`
       });
     });
     it('should call nodemon with the right parameters for ts language', () => {
@@ -63,7 +63,7 @@ describe('ServeHandler', () => {
       sandbox.assert.calledWith(startStub, {
         'watch': [ 'src/**/*.ts' ],
         'ignore': [ 'src/**/*.spec.ts' ],
-        'exec': `./node_modules/.bin/ts-node ${ path.resolve(process.cwd(), 'src/server.ts') }`
+        'exec': `./node_modules/.bin/ts-node ${ path.resolve(process.cwd(), 'src/main.ts') }`
       });
     });
   });
