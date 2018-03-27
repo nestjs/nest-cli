@@ -39,7 +39,7 @@ export class ConfigurationEmitter {
     return new Promise((resolve, reject) => {
       fs.writeFile(
         filename,
-        JSON.stringify({ language: 'ts', entryFile: 'src/server.ts' }, null, 2),
+        JSON.stringify({ language: 'ts', entryFile: 'src/main.ts' }, null, 2),
         (error: NodeJS.ErrnoException) => {
           if (error !== undefined && error !== null) {
             return reject(error);
