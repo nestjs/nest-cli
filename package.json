@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@angular-devkit/schematics-cli": "^0.2.0",
-    "@nestjs/schematics": "^1.0.0-rc.1",
+    "@nestjs/schematics": "^1.0.0",
     "caporal": "^0.6.0",
     "nodemon": "^1.12.1",
     "os-name": "^2.0.1"
