@@ -1,13 +1,15 @@
+const path = require('path');
 const exec = require('child_process').exec;
 
 class SchematicRunner {
   constructor(logger) {
     this.logger = logger;
+    this.schematicsBinary = path.join(__dirname, '..', 'node_modules/.bin/schematics')
   }
 
   run(schematic) {
     return new Promise((resolve, reject) => {
-      exec(schematic.command(), (error, stdout, stderr) => {
+      exec(`${ this.schematicsBinary } ${ schematic.command() }`, (error, stdout, stderr) => {
         if (error !== undefined && error !== null) {
           this.logger.error(stderr);
           reject(error);

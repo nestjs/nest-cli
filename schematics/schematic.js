@@ -51,8 +51,6 @@ class Schematic {
 
   command() {
     return this.collectionName
-      .concat(' ')
-      .concat(path.join(__dirname, '..'))
       .concat(':')
       .concat(this.schematicName)
       .concat(' ')

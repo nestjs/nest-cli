@@ -6,7 +6,7 @@ module.exports = (args, options, logger) => {
   const runner = new SchematicRunner(logger);
   const builder = Schematic
     .Builder()
-    .withCollectionName(path.join(__dirname, '..', 'node_modules/.bin/schematics'))
+    .withCollectionName(path.join(__dirname, '..'))
     .withSchematicName(args.schematic)
     .withArgs(parse(args))
     .withOptions(options);
