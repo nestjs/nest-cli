@@ -18,6 +18,7 @@ program
   .argument('<schematic>', 'Nestjs framework asset type', [ 'controller', 'module', 'service', ])
   .argument('<name>', 'Asset name or path')
   .argument('[path]', 'Path to generate the asset')
+  .option('--dry-run', 'allow to test changes before execute command')
   .action(require('../actions/generate'));
 
 program
