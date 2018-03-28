@@ -1,5 +1,6 @@
+const spawn = require('child_process').spawn;
 const path = require('path');
-const exec = require('child_process').exec;
+const chalk = require('chalk');
 
 class SchematicRunner {
   constructor(logger) {
@@ -8,15 +9,21 @@ class SchematicRunner {
   }
 
   run(command) {
+    const args = [ command ];
+    const options = {
+      stdio: 'inherit',
+      shell: true
+    };
     return new Promise((resolve, reject) => {
-      exec(`${ this.schematicsBinary } ${ command }`, (error, stdout, stderr) => {
-        if (error !== undefined && error !== null) {
-          this.logger.error(stderr);
-          reject(error);
-        } else {
-          this.logger.info(stdout);
-          resolve();
-        }
+      spawn(this.schematicsBinary, args, options)
+        .on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            const message = `Fail to execute schematics command : ${ command }, see above.`;
+            this.logger.error(chalk.red(message));
+            reject(message);
+          }
       });
     });
   }

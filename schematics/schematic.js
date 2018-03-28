@@ -1,5 +1,3 @@
-const path = require('path');
-
 class SchematicBuilder {
   constructor() {
     this.options = [];
@@ -30,7 +28,6 @@ class SchematicBuilder {
       this.options[ 'dry-run' ] = false;
     } else {
       this.options['dry-run'] = this.options['dryRun'];
-      delete(this.options['dryRun']);
     }
     return new Schematic(
       this.collectionName,
@@ -70,7 +67,11 @@ class Schematic {
     return Object
       .keys(this.options)
       .reduce((line, key) => {
-        return line.concat(`--${ key }=${ this.options[key] } `)
+        if (key !== 'dryRun') {
+          return line.concat(`--${ key }=${ this.options[key] } `)
+        } else {
+          return line;
+        }
       }, '');
   }
 
