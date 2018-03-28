@@ -1,12 +1,13 @@
 {
   "name": "@nestjs/cli",
   "version": "3.0.0-rc.1",
+  "description": "Nest CLI",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
   "bin": {
-    "nest": "index.js"
+    "nest": "bin/nest.js"
   },
   "scripts": {
     "build": "tsc",
