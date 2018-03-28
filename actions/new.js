@@ -10,5 +10,5 @@ module.exports = (args, options, logger) => {
     .withSchematicName('application')
     .withArgs(args)
     .withOptions(options);
-  runner.run(builder.build());
+  return runner.run(builder.build().command());
 };

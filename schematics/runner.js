@@ -7,9 +7,9 @@ class SchematicRunner {
     this.schematicsBinary = path.join(__dirname, '..', 'node_modules/.bin/schematics')
   }
 
-  run(schematic) {
+  run(command) {
     return new Promise((resolve, reject) => {
-      exec(`${ this.schematicsBinary } ${ schematic.command() }`, (error, stdout, stderr) => {
+      exec(`${ this.schematicsBinary } ${ command }`, (error, stdout, stderr) => {
         if (error !== undefined && error !== null) {
           this.logger.error(stderr);
           reject(error);

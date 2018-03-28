@@ -10,13 +10,13 @@ module.exports = (args, options, logger) => {
     .withSchematicName(args.schematic)
     .withArgs(parse(args))
     .withOptions(options);
-  runner.run(builder.build());
+  return runner.run(builder.build().command());
 };
 
 function parse(args) {
   return Object.keys(args).reduce((parsed, key) => {
     if (key !== 'schematic') {
-      parsed[key] = args[key];
+      parsed[ key ] = args[ key ];
     }
     return parsed;
   }, {})
