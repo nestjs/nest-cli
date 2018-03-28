@@ -20,7 +20,8 @@ export class ModuleImportRegister {
   }
 
   private buildLineToInsert(asset: Asset, module: Asset): string {
-    return `import { ${ asset.className } } from './${ this.removeExtension(asset.filename) }';`;
+    const filePath = asset.directory.substring(module.directory.length);
+    return `import { ${ asset.className } } from '.${filePath}/${ this.removeExtension(asset.filename) }';`;
   }
 
   private removeExtension(filename: string) {
