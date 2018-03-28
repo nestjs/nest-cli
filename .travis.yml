@@ -7,13 +7,9 @@ jobs:
     - stage: continuous_integration
       if: NOT tag IS present
       script:
-        - make prepare
-        - make test
-        - make build
+        - make install
     - stage: deployment
       if: tag IS present
       script:
-        - make prepare
-        - make test
-        - make build
+        - make install
         - make publish

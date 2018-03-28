@@ -1,10 +1,6 @@
 .idea/
-.nyc_output/
+.git/
 .gitignore
 .travis.yml
 
-coverage/
-src/
-scripts/
-
-tsconfig.json
+Makefile

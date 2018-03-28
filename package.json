@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "3.0.0-rc.1",
+  "version": "4.0.0",
   "description": "Nest CLI",
   "license": "MIT",
   "publishConfig": {
@@ -10,10 +10,7 @@
     "nest": "bin/nest.js"
   },
   "scripts": {
-    "build": "tsc",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "test": "nyc mocha test/commands/**/*.ts test/configuration/**/*.ts test/logger/**/*.ts --require ts-node/register --reporter spec",
-    "test:watch": "nodemon --watch src --watch test -e ts --exec \"npm run -s test\"",
+    "start": "node bin/nest.js",
     "schematics": "schematics"
   },
   "repository": {
@@ -27,44 +24,8 @@
   "dependencies": {
     "@angular-devkit/schematics-cli": "^0.2.0",
     "@nestjs/schematics": "^1.0.0",
-    "caporal": "^0.6.0",
-    "nodemon": "^1.12.1",
-    "os-name": "^2.0.1"
+    "caporal": "^0.6.0"
   },
-  "devDependencies": {
-    "@types/chai": "^3.5.2",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.48",
-    "@types/os-name": "^2.0.0",
-    "@types/sinon": "^2.3.2",
-    "chai": "^4.0.0",
-    "coveralls": "^2.13.1",
-    "mocha": "^3.4.2",
-    "nyc": "^10.3.2",
-    "sinon": "^2.3.6",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.4.1"
-  },
+  "devDependencies": {},
   "schematics": "./node_modules/@nestjs/schematics/collection.json",
-  "nyc": {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": [
-      "node_modules/",
-      "test/"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "html"
-    ],
-    "sourceMap": true,
-    "instrument": true
-  }
 }

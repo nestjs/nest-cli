@@ -1,25 +1,11 @@
 .PHONY: test
 
-prepare:
+install:
 	@docker run \
 		-w /home/cli
 		-v $$(pwd):/home/cli \
 		node:carbon-alpine \
 		/bin/sh -c "npm install"
-
-test:
-	@docker run -t \
-		-w /home/cli \
-		-v $$(pwd):/home/cli \
-		node:carbon-alpine \
-		/bin/sh -c "npm run -s test"
-
-build:
-	@docker run -t \
-		-w /home/cli \
-		-v $$(pwd):/home/cli \
-		node:carbon-alpine \
-		/bin/sh -c "npm run -s build"
 
 publish:
 	@docker run -t \
