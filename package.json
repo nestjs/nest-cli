@@ -27,5 +27,5 @@
     "caporal": "^0.6.0"
   },
   "devDependencies": {},
-  "schematics": "./node_modules/@nestjs/schematics/collection.json",
+  "schematics": "./node_modules/@nestjs/schematics/schematics/collection.json"
 }

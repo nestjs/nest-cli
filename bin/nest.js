@@ -8,13 +8,14 @@ program
 program
   .command('new')
   .alias('n')
-  .argument('<name>', 'Nestjs application name')
+  .argument('<directory>', 'directory where Nestjs application will be created')
+  .option('--dry-run', 'allow to test changes before execute command')
   .action(require('../actions/new'));
 
 program
   .command('generate')
   .alias('g')
-  .argument('<asset>', 'Nestjs framework asset type', [ 'controller', 'module', 'service', ])
+  .argument('<schematic>', 'Nestjs framework asset type', [ 'controller', 'module', 'service', ])
   .argument('<name>', 'Asset name or path')
   .argument('[path]', 'Path to generate the asset')
   .action((args, options, logger) => {
