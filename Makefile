@@ -5,7 +5,7 @@ install:
 		-w /home/cli
 		-v $$(pwd):/home/cli \
 		node:carbon-alpine \
-		/bin/sh -c "npm install"
+		/bin/sh -c "npm install --production"
 
 publish:
 	@docker run -t \

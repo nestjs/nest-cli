@@ -50,7 +50,7 @@ class Schematic {
   }
 
   command() {
-    return path.join(__dirname, '..', 'node_modules/.bin/schematics')
+    return this.collectionName
       .concat(' ')
       .concat(path.join(__dirname, '..'))
       .concat(':')

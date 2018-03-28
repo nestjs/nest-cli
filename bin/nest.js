@@ -18,10 +18,7 @@ program
   .argument('<schematic>', 'Nestjs framework asset type', [ 'controller', 'module', 'service', ])
   .argument('<name>', 'Asset name or path')
   .argument('[path]', 'Path to generate the asset')
-  .action((args, options, logger) => {
-    logger.info(args);
-    logger.info(options);
-  });
+  .action(require('../actions/generate'));
 
 program
   .command('info', 'Display Nest CLI information.')
