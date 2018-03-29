@@ -1,7 +1,7 @@
 const path = require('path');
 const Schematic = require('../schematics/schematic');
 const SchematicRunner = require('../schematics/runner');
-const NpmInstaller = require('../tasks/npm-install');
+const NpmInstaller = require('../tasks/npm.installer');
 
 module.exports = (args, options, logger) => {
   const runner = new SchematicRunner(logger);
