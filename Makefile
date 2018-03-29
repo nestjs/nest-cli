@@ -2,7 +2,7 @@
 
 install:
 	@docker run \
-		-w /home/cli
+		-w /home/cli \
 		-v $$(pwd):/home/cli \
 		node:carbon-alpine \
 		/bin/sh -c "npm install --production"
