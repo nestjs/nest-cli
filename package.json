@@ -23,8 +23,8 @@
     "url": "https://github.com/nestjs/nest-cli/issues"
   },
   "dependencies": {
-    "@angular-devkit/schematics-cli": "^0.2.0",
-    "@nestjs/schematics": "^1.0.0",
+    "@angular-devkit/schematics-cli": "^0.4.8",
+    "@nestjs/schematics": "^1.0.0-rc.1",
     "caporal": "^0.6.0",
     "chalk": "^2.3.2",
     "inquirer": "^5.2.0",
