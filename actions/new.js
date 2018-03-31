@@ -21,7 +21,7 @@ module.exports = (args, options, logger) => {
     })
     .then((packageManagerName) => {
       if (packageManagerName !== undefined && packageManagerName !== null && packageManagerName !== '') {
-        return PackageManager.from(packageManagerName, logger).install(args.directory);
+        return PackageManager.from(packageManagerName, logger).install(args.name);
       } else {
         logger.info(chalk.green('Command run in dry mode, nothing to change !'));
       }
