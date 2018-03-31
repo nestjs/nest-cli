@@ -1,4 +1,3 @@
-const path = require('path');
 const SchematicRunner = require('../schematics/runner');
 const Schematic = require('../schematics/schematic');
 
@@ -6,7 +5,7 @@ module.exports = (args, options, logger) => {
   const runner = new SchematicRunner(logger);
   const builder = Schematic
     .Builder()
-    .withCollectionName(path.join(__dirname, '..'))
+    .withCollectionName('@nestjs/schematics')
     .withSchematicName(args.schematic)
     .withArgs(parse(args))
     .withOptions(options);

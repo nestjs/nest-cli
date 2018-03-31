@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@angular-devkit/schematics-cli": "^0.4.8",
-    "@nestjs/schematics": "^1.0.0-rc.1",
+    "@nestjs/schematics": "^4.0.0-rc1",
     "caporal": "^0.6.0",
     "chalk": "^2.3.2",
     "inquirer": "^5.2.0",
@@ -33,5 +33,5 @@
   "devDependencies": {
     "jest": "^22.4.3"
   },
-  "schematics": "./node_modules/@nestjs/schematics/schematics/collection.json"
+  "schematics": "./node_modules/@nestjs/schematics/collection.json"
 }

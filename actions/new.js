@@ -1,4 +1,3 @@
-const path = require('path');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const Schematic = require('../schematics/schematic');
@@ -10,7 +9,7 @@ module.exports = (args, options, logger) => {
   const runner = new SchematicRunner(logger);
   const builder = Schematic
     .Builder()
-    .withCollectionName(path.join(__dirname, '..'))
+    .withCollectionName('@nestjs/schematics')
     .withSchematicName('application')
     .withArgs(args)
     .withOptions(options);
