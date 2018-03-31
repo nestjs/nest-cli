@@ -11,8 +11,7 @@
   },
   "scripts": {
     "start": "node bin/nest.js",
-    "test": "jest test",
-    "schematics": "schematics"
+    "test": "jest test"
   },
   "repository": {
     "type": "git",
