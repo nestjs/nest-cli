@@ -1,5 +1,4 @@
 .idea/
 .gitignore
 .travis.yml
-
-test/
+Makefile

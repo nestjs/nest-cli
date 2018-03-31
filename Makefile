@@ -13,5 +13,5 @@ publish:
 		/bin/sh -c "\
 			echo //registry.npmjs.org/:_authToken=$$NPM_TOKEN >> .npmrc && \
 			npm publish && \
-			echo 'PUBLISH DONE \'
+			echo 'PUBLISH DONE ' \
 		"

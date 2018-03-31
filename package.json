@@ -2,7 +2,6 @@
   "name": "@nestjs/cli",
   "version": "4.0.0-rc.1",
   "description": "Nest CLI",
-  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
@@ -10,17 +9,18 @@
     "nest": "bin/nest.js"
   },
   "scripts": {
-    "start": "node bin/nest.js",
-    "test": "jest test"
+    "start": "node bin/nest.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nestjs/nest-cli.git"
   },
   "author": "ThomRick",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/nestjs/nest-cli/issues"
   },
+  "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
     "@angular-devkit/schematics-cli": "^0.4.8",
     "@nestjs/schematics": "^4.0.0-rc1",
