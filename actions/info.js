@@ -3,7 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const { PackageManager } = require('../utils/package-manager');
+const { PackageManager } = require('../utils/package-managers');
 
 module.exports = (args, options, logger) => {
   return displayNestjs(logger)
@@ -29,7 +29,6 @@ function displaySystemInformation(logger) {
   logger.info('OS Version     :', chalk.blue(osName(os.platform(), os.release())));
   logger.info('NodeJS Version :', chalk.blue(process.version));
   return getNpmVersion(logger);
-
 }
 
 function getNpmVersion(logger) {
@@ -37,8 +36,8 @@ function getNpmVersion(logger) {
     .find(logger)
     .then((packageManager) =>
       packageManager.version()
-        .then((version) => logger.info(`${ packageManager.name.toUpperCase() } Version    :`, chalk.blue(version)))
-        .catch(() => logger.error(`${ packageManager.name.toUpperCase() } Version    :`, chalk.red('Unknown')))
+        .then((version) => logger.info(`${ packageManager.getName() } Version    :`, chalk.blue(version)))
+        .catch(() => logger.error(`${ packageManager.getName() } Version    :`, chalk.red('Unknown')))
     );
 }
 
