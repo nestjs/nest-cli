@@ -1,9 +1,12 @@
-language: node_js
-node_js:
-  - "8"
-deploy:
-  provider: npm
-  email: $NPM_EMAIL
-  api_key: $NPM_TOKEN
-  on:
-    tags: true
+sudo: required
+services:
+  - docker
+install: false
+jobs:
+  include:
+    - stage: continuous_integration
+      if: NOT tag IS present
+      script: make install
+    - stage: deployment
+      if: tag IS present
+      script: make install && make publish

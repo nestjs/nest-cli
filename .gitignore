@@ -1,7 +1,3 @@
 .idea/
-
 .envrc
-
-.nyc_output/
-coverage/
 node_modules/

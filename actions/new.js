@@ -2,8 +2,7 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const Schematic = require('../schematics/schematic');
 const SchematicRunner = require('../schematics/runner');
-const NpmInstaller = require('../tasks/npm.installer');
-const YarnInstaller = require('../tasks/yarn.installer');
+const { PackageManager } = require('../utils/package-manager');
 
 module.exports = (args, options, logger) => {
   const runner = new SchematicRunner(logger);
@@ -20,16 +19,13 @@ module.exports = (args, options, logger) => {
         return selectPackageManager();
       }
     })
-    .then((packageManager) => {
-      switch (packageManager) {
-        case 'npm':
-          return new NpmInstaller(logger).install(args.directory);
-        case 'yarn':
-          return new YarnInstaller(logger).install(args.directory);
-        default:
-          logger.info(chalk.green('Command run in dry mode, nothing to change !'));
+    .then((packageManagerName) => {
+      if (packageManagerName !== undefined && packageManagerName !== null && packageManagerName !== '') {
+        return PackageManager.from(packageManagerName, logger).install(args.directory);
+      } else {
+        logger.info(chalk.green('Command run in dry mode, nothing to change !'));
       }
-    })
+    });
 };
 
 function selectPackageManager() {
