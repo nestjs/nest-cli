@@ -1,4 +1,5 @@
 const { spawn, exec } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 
@@ -48,6 +49,23 @@ class PackageManager {
       default:
         throw new Error(`Package manager "${ name }" is not managed`);
     }
+  }
+
+  static find(logger) {
+    return new Promise((resolve) => {
+      fs.readdir(process.cwd(), (error, files) => {
+        if (error) {
+          resolve(this.from('npm', logger));
+        } else {
+          if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
+            resolve(this.from('yarn', logger))
+          } else {
+            resolve(this.from('npm', logger));
+          }
+        }
+      });
+
+    });
   }
 }
 

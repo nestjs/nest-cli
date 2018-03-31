@@ -33,14 +33,13 @@ function displaySystemInformation(logger) {
 }
 
 function getNpmVersion(logger) {
-  const packageManager = PackageManager.from('npm', logger);
-  return packageManager.version()
-    .then((version) => {
-      logger.info(`${packageManager.name.toUpperCase() } Version    :`, chalk.blue(version));
-    })
-    .catch(() => {
-      logger.error(`${ packageManager.name.toUpperCase() } Version    :`, chalk.red('Unknown'));
-    });
+  return PackageManager
+    .find(logger)
+    .then((packageManager) =>
+      packageManager.version()
+        .then((version) => logger.info(`${ packageManager.name.toUpperCase() } Version    :`, chalk.blue(version)))
+        .catch(() => logger.error(`${ packageManager.name.toUpperCase() } Version    :`, chalk.red('Unknown')))
+    );
 }
 
 function displayNestInformation(logger) {
@@ -87,7 +86,7 @@ function collectNestDependencies(dependencies) {
 
 function format(dependencies) {
   const sorted = dependencies.sort((dependencyA, dependencyB) => dependencyA.name.length - dependencyB.name.length < 0);
-  const length = sorted[0].name.length;
+  const length = sorted[ 0 ].name.length;
   sorted.forEach((dependency) => {
     if (dependency.name.length < length) {
       dependency.name = rightPad(dependency.name, length);
