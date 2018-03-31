@@ -31,6 +31,5 @@
   },
   "devDependencies": {
     "jest": "^22.4.3"
-  },
-  "schematics": "./node_modules/@nestjs/schematics/collection.json"
+  }
 }
