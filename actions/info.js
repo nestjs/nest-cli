@@ -3,7 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const exec = require('child_process').exec;
+const { PackageManager } = require('../utils/package-manager');
 
 module.exports = (args, options, logger) => {
   return displayNestjs(logger)
@@ -28,28 +28,26 @@ function displaySystemInformation(logger) {
   logger.info(chalk.green('[System Information]'));
   logger.info('OS Version     :', chalk.blue(osName(os.platform(), os.release())));
   logger.info('NodeJS Version :', chalk.blue(process.version));
-  return getNpmVersion()
-    .then((npmVersion) => {
-      logger.info('NPM Version    :', chalk.blue(npmVersion));
-    })
-    .catch(() => {
-      logger.error('NPM Version    :', chalk.red('Unknown'));
-    });
+  return getNpmVersion(logger);
+
 }
 
-function getNpmVersion() {
-  return new Promise((resolve, reject) => {
-    const child = exec('npm -v');
-    child.stdout.on('data', (data) => resolve(data.toString()));
-    child.stderr.on('error', (error) => reject(error));
-  });
+function getNpmVersion(logger) {
+  const packageManager = PackageManager.from('npm', logger);
+  return packageManager.version()
+    .then((version) => {
+      logger.info(`${packageManager.name.toUpperCase() } Version    :`, chalk.blue(version));
+    })
+    .catch(() => {
+      logger.error(`${ packageManager.name.toUpperCase() } Version    :`, chalk.red('Unknown'));
+    });
 }
 
 function displayNestInformation(logger) {
   logger.info(chalk.green('[Nest Information]'));
   return readProjectPackageJsonDependencies()
     .then((dependencies) => displayNestVersions(logger, dependencies))
-    .catch(() => logger.error('Can not read your project package.json file, are you on your project folder ?'));
+    .catch(() => logger.error(chalk.red('Can not read your project package.json file, are you on your project folder ?')));
 }
 
 function readProjectPackageJsonDependencies() {
