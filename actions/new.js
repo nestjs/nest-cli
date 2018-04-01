@@ -5,7 +5,8 @@ const { COLLECTIONS, Schematic, SchematicOption } = require('../utils/schematics
 const { PackageManager } = require('../utils/package-managers');
 
 module.exports = (args, options, logger) => {
-  return executeSchematic(args, options, logger)
+  return askForMissingInformation(args)
+    .then(() => executeSchematic(args, options, logger))
     .then(() => {
       if (!options[ 'dry-run' ]) {
         return selectPackageManager();
@@ -13,6 +14,49 @@ module.exports = (args, options, logger) => {
     })
     .then((packageManager) => installPackages(packageManager, strings.dasherize(args.name), logger));
 };
+
+function askForMissingInformation(args) {
+  const prompt = inquirer.createPromptModule();
+  const questions = [];
+  if (args.name === undefined) {
+    questions.push({
+      type: 'input',
+      name: 'name',
+      message: 'name :',
+      default: 'nestjs-app-name'
+    });
+  }
+  if (args.description === undefined) {
+    questions.push({
+      type: 'input',
+      name: 'description',
+      message: 'description :',
+      default: 'description'
+    });
+  }
+  if (args.version === undefined) {
+    questions.push({
+      type: 'input',
+      name: 'version',
+      message: 'version :',
+      default: '1.0.0'
+    });
+  }
+  if (args.author === undefined) {
+    questions.push({
+      type: 'input',
+      name: 'author',
+      message: 'author :',
+      default: ''
+    });
+  }
+  return prompt(questions).then((answers) => {
+    args.name = args.name !== undefined ? args.name : answers.name;
+    args.description = args.description !== undefined ? args.description : answers.description;
+    args.version = args.version !== undefined ? args.version : answers.version;
+    args.author = args.author !== undefined ? args.author : answers.author;
+  });
+}
 
 function executeSchematic(args, options, logger) {
   const schematic = Schematic.create(COLLECTIONS.NESTJS, logger);
@@ -34,13 +78,14 @@ class Parser {
 }
 
 function selectPackageManager() {
-  const question = {
+  const prompt = inquirer.createPromptModule();
+  const questions = [{
     type: 'list',
     name: 'package-manager',
     message: 'Which package manager to use ?',
     choices: [ 'npm', 'yarn' ]
-  };
-  return inquirer.prompt(question).then((answer) => answer[ question.name ]);
+  }];
+  return prompt(questions).then((answers) => answers[ 'package-manager' ]);
 }
 
 function installPackages(packageManager, directory, logger) {
