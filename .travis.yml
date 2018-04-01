@@ -1,12 +1,15 @@
 sudo: required
 services:
   - docker
-install: false
+install: true
 jobs:
   include:
     - stage: continuous_integration
       if: NOT tag IS present
-      script: make install
-    - stage: deployment
-      if: tag IS present
-      script: make install && make publish
+      script:
+        - make
+      env:
+        - VERSION=$TRAVIS_COMMIT
+#    - stage: deployment
+#      if: tag IS present
+#      script: make install && make publish
