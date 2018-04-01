@@ -7,9 +7,9 @@ jobs:
     - stage: continuous_integration
       if: NOT tag IS present
       script:
-        - make
-      env:
-        - VERSION=$TRAVIS_COMMIT
+        - docker build -t nestjs/cli:$TRAVIS_COMMIT
+        - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        - docker push nestjs/cli:$TRAVIS_COMMIT
 #    - stage: deployment
 #      if: tag IS present
 #      script: make install && make publish
