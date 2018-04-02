@@ -22,8 +22,8 @@ publish-docker-release:
 	@docker push nestjs/cli:latest
 
 publish-npm-release:
-	@docker pull nestjs/schematics:$$ARTIFACT_ID
-	@docker run -w /nestjs/schematics nestjs/schematics:$$ARTIFACT_ID \
+	@docker pull nestjs/cli:$$ARTIFACT_ID
+	@docker run -w /nestjs/cli nestjs/cli:$$ARTIFACT_ID \
 		/bin/sh -c "\
 			echo //registry.npmjs.org/:_authToken=$$NPM_TOKEN >> .npmrc && \
 			npm publish \
