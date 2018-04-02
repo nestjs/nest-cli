@@ -14,17 +14,14 @@ jobs:
     - stage: continuous_integration
       if: NOT tag IS present AND type IN (push)
       env:
-        - ARTIFACT_ID=$TRAVID_COMMIT
+        - ARTIFACT_ID=$TRAVIS_COMMIT
       script:
-        - make build-docker-artifact
-        - make publish-docker-artifact
-        - make publish-docker-edge
+        - make build-docker-artifact && make publish-docker-artifact && make publish-docker-edge
 
     - stage: release
       if: tag IS present
       env:
-        - ARTIFACT_ID=$TRAVID_COMMIT
+        - ARTIFACT_ID=$TRAVIS_COMMIT
         - RELEASE_VERSION=$TRAVIS_TAG
       script:
-        - make publish-npm-release
-        - make publish-docker-release
+        - make publish-npm-release && make publish-docker-release
