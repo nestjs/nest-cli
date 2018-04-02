@@ -1,72 +1,34 @@
 {
   "name": "@nestjs/cli",
-  "version": "2.0.0-rc.3",
-  "license": "MIT",
+  "version": "4.0.0-rc1",
+  "description": "Nest CLI",
   "publishConfig": {
     "access": "public"
   },
   "bin": {
-    "nest": "index.js"
+    "nest": "bin/nest.js"
   },
   "scripts": {
-    "build": "npm run -s build:src && npm run -s build:assets",
-    "build:src": "tsc",
-    "build:assets": "node scripts/copy.script.js src/commands/generate/templates bin/commands/generate/templates",
-    "clean": "node scripts/clean.script.js bin/* && node scripts/clean.script.js coverage/*",
-    "clean:build": "npm run -s clean && npm run -s build",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "test": "npm run -s test:src && npm run -s test:scripts",
-    "test:watch": "nodemon --watch src -e ts --exec \"npm run -s test:src\"",
-    "test:src": "nyc mocha src/**/*.spec.ts --require ts-node/register --reporter spec",
-    "test:scripts": "mocha scripts/**/*.spec.ts --require ts-node/register --reporter spec"
+    "start": "node bin/nest.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nestjs/nest-cli.git"
   },
   "author": "ThomRick",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/nestjs/nest-cli/issues"
   },
+  "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
+    "@angular-devkit/core": "^0.4.8",
+    "@angular-devkit/schematics-cli": "^0.4.8",
+    "@nestjs/schematics": "^4.0.0-rc3",
     "caporal": "^0.6.0",
-    "nodemon": "^1.12.1",
+    "chalk": "^2.3.2",
+    "inquirer": "^5.2.0",
     "os-name": "^2.0.1"
   },
-  "devDependencies": {
-    "@types/chai": "^3.5.2",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.48",
-    "@types/os-name": "^2.0.0",
-    "@types/sinon": "^2.3.2",
-    "chai": "^4.0.0",
-    "coveralls": "^2.13.1",
-    "mocha": "^3.4.2",
-    "nyc": "^10.3.2",
-    "sinon": "^2.3.6",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.4.1"
-  },
-  "nyc": {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": [
-      "node_modules/",
-      "src/**/*.spec.ts",
-      "src/**/test.utils.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "html"
-    ],
-    "sourceMap": true,
-    "instrument": true
-  }
+  "devDependencies": {}
 }

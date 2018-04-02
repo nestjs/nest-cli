@@ -1,19 +1,12 @@
 sudo: required
-dist: trusty
-group: deprecated-2017Q4
 services:
   - docker
-
-before_install:
-  - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-
-script: docker build -t nestjs/cli-publisher --build-arg NPM_TOKEN=$NPM_TOKEN .
-
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: docker run nestjs/cli-publisher
-  on:
-    branch: master
-    tags: true
+install: false
+jobs:
+  include:
+    - stage: continuous_integration
+      if: NOT tag IS present
+      script: make install
+    - stage: deployment
+      if: tag IS present
+      script: make install && make publish
