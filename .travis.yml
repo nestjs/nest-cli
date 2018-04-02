@@ -6,23 +6,25 @@ jobs:
   include:
     - stage: pull_request
       if: type IN (pull_request)
-      script: docker build .
+      env:
+        - ARTIFACT_ID=$TRAVIS_PULL_REQUEST
+      script:
+        - make build-docker-artifact
+
     - stage: continuous_integration
       if: NOT tag IS present AND type IN (push)
+      env:
+        - ARTIFACT_ID=$TRAVID_COMMIT
       script:
-        - docker build -t nestjs/cli:$TRAVIS_COMMIT .
-        - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        - docker push nestjs/cli:$TRAVIS_COMMIT
-        - docker tag nestjs/cli:$TRAVIS_COMMIT nestjs/cli:4-edge
-        - docker push nestjs/cli:4-edge
-    - stage: deployment
+        - make build-docker-artifact
+        - make publish-docker-artifact
+        - make publish-docker-edge
+
+    - stage: release
       if: tag IS present
+      env:
+        - ARTIFACT_ID=$TRAVID_COMMIT
+        - RELEASE_VERSION=$TRAVIS_TAG
       script:
-        - docker pull nestjs/cli:$TRAVIS_COMMIT
-        - docker run -v $(pwd):/workspace nestjs/cli:$TRAVIS_COMMIT /bin/sh -c "cp -R /nestjs/cli/* ."
-        - make publish
-        - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        - docker tag nestjs/cli:$TRAVIS_COMMIT nestjs/cli:$TRAVIS_TAG
-        - docker push nestjs/cli:$TRAVIS_TAG
-        - docker tag nestjs/cli:$TRAVIS_COMMIT nestjs/cli:4
-        - docker push nestjs/cli:4
+        - make publish-npm-release
+        - make publish-docker-release
