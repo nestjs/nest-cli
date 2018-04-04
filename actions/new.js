@@ -5,17 +5,19 @@ const { COLLECTIONS, Schematic, SchematicOption } = require('../utils/schematics
 const { PackageManager } = require('../utils/package-managers');
 
 module.exports = (args, options, logger) => {
-  return askForMissingInformation(args)
+  logger.debug(chalk.blue('[DEBUG] - new command -'), args, options);
+  return askForMissingInformation(args, logger)
     .then(() => executeSchematic(args, options, logger))
     .then(() => {
-      if (!options[ 'dry-run' ]) {
+      if (!options[ 'dryRun' ]) {
         return selectPackageManager();
       }
     })
     .then((packageManager) => installPackages(packageManager, strings.dasherize(args.name), logger));
 };
 
-function askForMissingInformation(args) {
+function askForMissingInformation(args, logger) {
+  logger.info(chalk.green('Ask for missing information to create the project'));
   const prompt = inquirer.createPromptModule();
   const questions = [];
   if (args.name === undefined) {
@@ -55,6 +57,7 @@ function askForMissingInformation(args) {
     args.description = args.description !== undefined ? args.description : answers.description;
     args.version = args.version !== undefined ? args.version : answers.version;
     args.author = args.author !== undefined ? args.author : answers.author;
+    logger.info(chalk.green('Missing information collected'));
   });
 }
 
