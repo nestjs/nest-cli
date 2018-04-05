@@ -3,25 +3,16 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
+const banner = require('../utils/banner').banner;
 const { PackageManager } = require('../utils/package-managers');
 
 module.exports = (args, options, logger) => {
-  return displayNestjs(logger)
-    .then(() => displaySystemInformation(logger))
-    .then(() => displayNestInformation(logger));
+  displayBanner(logger);
+  return displaySystemInformation(logger).then(() => displayNestInformation(logger));
 };
 
-function displayNestjs(logger) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path.join(__dirname, '../nest-ascii.txt'), (error, buffer) => {
-      if (error !== undefined && error !== null) {
-        reject(error);
-      } else {
-        logger.info(chalk.red(buffer.toString()));
-        resolve();
-      }
-    });
-  });
+function displayBanner(logger) {
+  logger.info(chalk.red(banner));
 }
 
 function displaySystemInformation(logger) {
