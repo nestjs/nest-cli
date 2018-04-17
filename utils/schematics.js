@@ -45,6 +45,8 @@ class Schematic {
     switch (collection) {
       case COLLECTIONS.NESTJS:
         return new NestSchematics(Runner.create(RUNNERS.SCHEMATIC, logger));
+      default:
+        return new CustomSchematics(collection, Runner.create(RUNNERS.SCHEMATIC, logger)); 
     }
   }
 }
@@ -52,6 +54,12 @@ class Schematic {
 class NestSchematics extends Schematic {
   constructor(runner) {
     super('@nestjs/schematics', runner);
+  }
+}
+
+class CustomSchematics extends Schematic {
+  constructor(collection, runner) {
+    super(collection, runner);
   }
 }
 

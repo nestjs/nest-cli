@@ -5,9 +5,7 @@ Tool to manage NestJS projects: Modern, powerful web application framework for [
 # NestJS CLI
 
 [![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/ThomRick/nest-cli.svg?branch=master)](https://travis-ci.org/ThomRick/nest-cli)
-[![Known Vulnerabilities](https://snyk.io/test/github/thomrick/nest-cli/badge.svg)](https://snyk.io/test/github/thomrick/nest-cli)
-[![Coverage Status](https://coveralls.io/repos/github/ThomRick/nest-cli/badge.svg?branch=master)](https://coveralls.io/github/ThomRick/nest-cli?branch=master)
+[![Build Status](https://travis-ci.org/nestjs/nest-cli.svg?branch=nest-v4)](https://travis-ci.org/nestjs/nest-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Description
@@ -18,17 +16,26 @@ The CLI tool helps to create, manage application architecture entities, build an
 ## Installation
 ### NPM :
 
-```
-$ npm install -g @nestjs/cli
-```
+```$ npm install -g @nestjs/cli```
+
+### Docker:
+```$ docker pull nestjs/cli[:version]```
+
+```$ docker run -it -rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]```
 
 ### Git :
-```
-$ git clone https://github.com/nestjs/nest-cli.git <project>
-$ cd <project>
-$ npm install
-$ npm link
-```
+```$ git clone https://github.com/nestjs/nest-cli.git <project>```
+
+```$ cd <project>```
+
+With your Node runtime :
+```$ npm install```
+
+```$ npm link```
+
+With Docker :
+
+```$ docker build -t nestjs/cli .```
 
 ## Usage
 See the [NestJS documentation](https://docs.nestjs.com/)
