@@ -25,9 +25,9 @@ const SCHEMATICS = [
 ];
 
 function validate(arg) {
-  const schematic = SCHEMATICS.findIndex((schematic) => schematic.value === arg || schematic.alias === arg);
+  const schematic = SCHEMATICS.find((schematic) => schematic.value === arg || schematic.alias === arg);
   if (schematic === undefined || schematic === null) {
     throw new Error();
   }
-  return schematic;
+  return schematic.value;
 }
