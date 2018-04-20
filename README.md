@@ -29,7 +29,7 @@ $ docker run -it -rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]
 
 ### GIT:
 ```
-$ git clone https://github.com/nestjs/nest-cli.git <project>```
+$ git clone https://github.com/nestjs/nest-cli.git <project>
 $ cd <project>
 ```
 
