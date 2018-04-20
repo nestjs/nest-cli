@@ -47,7 +47,7 @@ $ docker build -t nestjs/cli .
 
 ## Usage
 
-Learn more in the [official documentation](https://docs.nestjs.com/)
+Learn more in the [official documentation](https://docs.nestjs.com/).
 
 ## Stay in touch
 
