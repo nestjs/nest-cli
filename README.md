@@ -1,41 +1,56 @@
-Tool to manage NestJS projects: Modern, powerful web application framework for [Node.js](http://nodejs.org).
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
+</p>
 
-[![Nest Logo](http://kamilmysliwiec.com/public/nest-logo.png)](http://kamilmysliwiec.com/)
-
-# NestJS CLI
-
-[![Join the chat at https://gitter.im/nestjs/nest-cli](https://badges.gitter.im/nestjs/nest-cli.svg)](https://gitter.im/nestjs/nest-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/nestjs/nest-cli.svg?branch=nest-v4)](https://travis-ci.org/nestjs/nest-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  <p align="center">A progressive <a href="http://nodejs.org" target="blank">Node.js</a> framework for building efficient and scalable server-side applications, heavily inspired by <a href="https://angular.io" target="blank">Angular</a>.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/v/@nestjs/cli.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/l/@nestjs/cli.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/dm/@nestjs/cli.svg" alt="NPM Downloads" /></a>
+<a href="https://gitter.im/nestjs/nestjs-cli?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge"><img src="https://badges.gitter.im/nestjs/nestjs.svg" alt="Gitter" /></a>
 
 ## Description
-NestJS is a powerful web framework for [Node.js](http://nodejs.org), which helps you effortlessly build efficient, scalable applications. It uses modern JavaScript, is built with [TypeScript](http://www.typescriptlang.org) and combines best concepts of both OOP (Object Oriented Progamming) and FP (Functional Programming).
-It is not just another framework. You do not have to wait for a large community, because NestJS is built with awesome, popular well-known libraries - [Express](https://github.com/expressjs/express) and [socket.io](https://github.com/socketio/socket.io)! It means, that you could quickly start using framework without worrying about a third party plugins.
-The CLI tool helps to create, manage application architecture entities, build and run your project. 
+
+In order to help people manage their projects, the CLI tool has been created. It helps on many grounds at once, from scaffolding the project to build well-structured applications. The Nest CLI is based on the [@angular-devkit](https://github.com/angular/devkit) package. Also, there're special schematics that are dedicated to the Nest development [@nestjs/schematics](https://github.com/nestjs/schematics).
+
 
 ## Installation
-### NPM :
+### NPM:
 
-```$ npm install -g @nestjs/cli```
+```
+$ npm install -g @nestjs/cli
+```
 
 ### Docker:
-```$ docker pull nestjs/cli[:version]```
+```
+$ docker pull nestjs/cli[:version]
+$ docker run -it -rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]
+```
 
-```$ docker run -it -rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]```
+### GIT:
+```
+$ git clone https://github.com/nestjs/nest-cli.git <project>
+$ cd <project>
+```
 
-### Git :
-```$ git clone https://github.com/nestjs/nest-cli.git <project>```
+With your Node runtime:
+```
+$ npm install
+$ npm link
+```
 
-```$ cd <project>```
+With Docker:
 
-With your Node runtime :
-```$ npm install```
-
-```$ npm link```
-
-With Docker :
-
-```$ docker build -t nestjs/cli .```
+```
+$ docker build -t nestjs/cli .
+```
 
 ## Usage
-See the [NestJS documentation](https://docs.nestjs.com/)
+
+Learn more in the [official documentation](https://docs.nestjs.com/).
+
+## Stay in touch
+
+* CLI Author - [Thomas Ricart](https://github.com/ThomRick)
+* Website - [https://nestjs.com](https://nestjs.com/)
+* Twitter - [@nestframework](https://twitter.com/nestframework)
