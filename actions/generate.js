@@ -1,13 +1,13 @@
-const { COLLECTIONS, Schematic, SchematicOption } = require('../utils/schematics');
+const { Collection, CollectionFactory, SchematicOption } = require('../lib/schematics');
 
 module.exports = (args, options, logger) => {
   return executeSchematic(args, options, logger);
 };
 
 function executeSchematic(args, options, logger) {
-  const schematic = Schematic.create(COLLECTIONS.NESTJS, logger);
+  const collection = CollectionFactory.create(Collection.NESTJS, logger);
   const schematicOptions = Parser.parse(args, options);
-  return schematic.execute(args.schematic, schematicOptions);
+  return collection.execute(args.schematic, schematicOptions);
 }
 
 class Parser {
