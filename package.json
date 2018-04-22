@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "description": "Nest CLI",
   "publishConfig": {
     "access": "public"
