@@ -7,12 +7,12 @@ require('../commands/new')(program);
 require('../commands/generate')(program);
 require('../commands/info')(program);
 
-const { Runner, RunnerFactory } = require('../lib/runners');
+const { PackageManager, PackageManagerFactory } = require('../lib/package-managers');
 program
   .command('test')
   .action((args, options, logger) => {
-    const runner = RunnerFactory.create(Runner.SCHEMATIC, logger);
-    logger.info(runner);
+    const manager = PackageManagerFactory.create(PackageManager.YARN, logger);
+    logger.info(manager);
   });
 
 program.parse(process.argv);
