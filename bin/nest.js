@@ -6,4 +6,13 @@ program
 require('../commands/new')(program);
 require('../commands/generate')(program);
 require('../commands/info')(program);
+
+const { Runner, RunnerFactory } = require('../lib/runners');
+program
+  .command('test')
+  .action((args, options, logger) => {
+    const runner = RunnerFactory.create(Runner.SCHEMATIC, logger);
+    logger.info(runner);
+  });
+
 program.parse(process.argv);
