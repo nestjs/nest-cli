@@ -3,7 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const { banner } = require('../lib/banner');
+const { BANNER } = require('../lib/ui');
 const { PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
@@ -12,7 +12,7 @@ module.exports = (args, options, logger) => {
 };
 
 function displayBanner(logger) {
-  logger.info(chalk.red(banner));
+  logger.info(chalk.red(BANNER));
 }
 
 function displaySystemInformation(logger) {
