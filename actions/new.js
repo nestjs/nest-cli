@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const { strings } = require('@angular-devkit/core');
 const { Collection, CollectionFactory, SchematicOption } = require('../lib/schematics')
 const { PackageManager, PackageManagerFactory } = require('../lib/package-managers');
+const { messages } = require('../lib/ui');
 
 module.exports = (args, options, logger) => {
   logger.debug(chalk.blue('[DEBUG] - new command -'), args, options);
@@ -17,7 +18,7 @@ module.exports = (args, options, logger) => {
 };
 
 function askForMissingInformation(args, logger) {
-  logger.info(chalk.green('Ask for missing information to create the project'));
+  logger.info(chalk.green(messages.PROJECT_INFORMATION_START));
   const prompt = inquirer.createPromptModule();
   const questions = [];
   if (args.name === undefined) {
@@ -57,7 +58,7 @@ function askForMissingInformation(args, logger) {
     args.description = args.description !== undefined ? args.description : answers.description;
     args.version = args.version !== undefined ? args.version : answers.version;
     args.author = args.author !== undefined ? args.author : answers.author;
-    logger.info(chalk.green('Missing information collected'));
+    logger.info(chalk.green(messages.PROJECT_INFORMATION_COLLECTED));
   });
 }
 
@@ -85,7 +86,7 @@ function selectPackageManager() {
   const questions = [{
     type: 'list',
     name: 'package-manager',
-    message: 'Which package manager to use ?',
+    message: messages.PACKAGE_MANAGER_QUESTION,
     choices: [ PackageManager.NPM, PackageManager.YARN ]
   }];
   return prompt(questions).then((answers) => answers[ 'package-manager' ]);
@@ -95,6 +96,6 @@ function installPackages(packageManager, directory, logger) {
   if (packageManager !== undefined && packageManager !== null && packageManager !== '') {
     return PackageManagerFactory.create(packageManager, logger).install(directory);
   } else {
-    logger.info(chalk.green('Command run in dry mode, nothing to change !'));
+    logger.info(chalk.green(messages.DRY_RUN_MODE));
   }
 }

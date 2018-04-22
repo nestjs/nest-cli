@@ -28,6 +28,7 @@
     "caporal": "^0.6.0",
     "chalk": "^2.3.2",
     "inquirer": "^5.2.0",
+    "node-emoji": "^1.8.1",
     "os-name": "^2.0.1"
   },
   "devDependencies": {}

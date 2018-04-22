@@ -3,7 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const { BANNER } = require('../lib/ui');
+const { BANNER, messages } = require('../lib/ui');
 const { PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
@@ -36,7 +36,7 @@ function displayNestInformation(logger) {
   logger.info(chalk.green('[Nest Information]'));
   return readProjectPackageJsonDependencies()
     .then((dependencies) => displayNestVersions(logger, dependencies))
-    .catch(() => logger.error(chalk.red('Can not read your project package.json file, are you on your project folder ?')));
+    .catch(() => logger.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED)));
 }
 
 function readProjectPackageJsonDependencies() {
