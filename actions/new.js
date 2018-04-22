@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { strings } = require('@angular-devkit/core');
-const { COLLECTIONS, Schematic, SchematicOption } = require('../utils/schematics');
+const { Collection, CollectionFactory, SchematicOption } = require('../lib/schematics')
 const { PackageManager } = require('../utils/package-managers');
 
 module.exports = (args, options, logger) => {
@@ -62,9 +62,9 @@ function askForMissingInformation(args, logger) {
 }
 
 function executeSchematic(args, options, logger) {
-  const schematic = Schematic.create(COLLECTIONS.NESTJS, logger);
+  const collection = CollectionFactory.create(Collection.NESTJS, logger);
   const schematicOptions = Parser.parse(args, options);
-  return schematic.execute('application', schematicOptions);
+  return collection.execute('application', schematicOptions);
 }
 
 class Parser {
