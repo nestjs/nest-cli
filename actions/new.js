@@ -2,7 +2,7 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { strings } = require('@angular-devkit/core');
 const { Collection, CollectionFactory, SchematicOption } = require('../lib/schematics')
-const { PackageManager } = require('../utils/package-managers');
+const { PackageManager, PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
   logger.debug(chalk.blue('[DEBUG] - new command -'), args, options);
@@ -86,14 +86,14 @@ function selectPackageManager() {
     type: 'list',
     name: 'package-manager',
     message: 'Which package manager to use ?',
-    choices: [ 'npm', 'yarn' ]
+    choices: [ PackageManager.NPM, PackageManager.YARN ]
   }];
   return prompt(questions).then((answers) => answers[ 'package-manager' ]);
 }
 
 function installPackages(packageManager, directory, logger) {
   if (packageManager !== undefined && packageManager !== null && packageManager !== '') {
-    return PackageManager.create(packageManager, logger).install(directory);
+    return PackageManagerFactory.create(packageManager, logger).install(directory);
   } else {
     logger.info(chalk.green('Command run in dry mode, nothing to change !'));
   }
