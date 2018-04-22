@@ -3,7 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const banner = require('../utils/banner').banner;
+const { banner } = require('../lib/banner');
 const { PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
