@@ -13,8 +13,7 @@
 .dockerignore
 Dockerfile
 
-node_modules
-CHANGELOG.md
-FAQ.md
 Makefile
-README.md
+
+node_modules
+CONTRIBUTE.md
