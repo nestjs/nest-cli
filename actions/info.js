@@ -3,8 +3,8 @@ const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
-const banner = require('../utils/banner').banner;
-const { PackageManager } = require('../utils/package-managers');
+const { BANNER, messages } = require('../lib/ui');
+const { PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
   displayBanner(logger);
@@ -12,7 +12,7 @@ module.exports = (args, options, logger) => {
 };
 
 function displayBanner(logger) {
-  logger.info(chalk.red(banner));
+  logger.info(chalk.red(BANNER));
 }
 
 function displaySystemInformation(logger) {
@@ -23,12 +23,12 @@ function displaySystemInformation(logger) {
 }
 
 function getNpmVersion(logger) {
-  return PackageManager
+  return PackageManagerFactory
     .find(logger)
     .then((packageManager) =>
       packageManager.version()
-        .then((version) => logger.info(`${ packageManager.getName() } Version    :`, chalk.blue(version)))
-        .catch(() => logger.error(`${ packageManager.getName() } Version    :`, chalk.red('Unknown')))
+        .then((version) => logger.info(`${ packageManager.name } Version    :`, chalk.blue(version)))
+        .catch(() => logger.error(`${ packageManager.name() } Version    :`, chalk.red('Unknown')))
     );
 }
 
@@ -36,7 +36,7 @@ function displayNestInformation(logger) {
   logger.info(chalk.green('[Nest Information]'));
   return readProjectPackageJsonDependencies()
     .then((dependencies) => displayNestVersions(logger, dependencies))
-    .catch(() => logger.error(chalk.red('Can not read your project package.json file, are you on your project folder ?')));
+    .catch(() => logger.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED)));
 }
 
 function readProjectPackageJsonDependencies() {
