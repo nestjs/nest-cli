@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const os = require('os');
 const osName = require('os-name');
 const banner = require('../utils/banner').banner;
-const { PackageManager } = require('../utils/package-managers');
+const { PackageManagerFactory } = require('../lib/package-managers');
 
 module.exports = (args, options, logger) => {
   displayBanner(logger);
@@ -23,12 +23,12 @@ function displaySystemInformation(logger) {
 }
 
 function getNpmVersion(logger) {
-  return PackageManager
+  return PackageManagerFactory
     .find(logger)
     .then((packageManager) =>
       packageManager.version()
-        .then((version) => logger.info(`${ packageManager.getName() } Version    :`, chalk.blue(version)))
-        .catch(() => logger.error(`${ packageManager.getName() } Version    :`, chalk.red('Unknown')))
+        .then((version) => logger.info(`${ packageManager.name } Version    :`, chalk.blue(version)))
+        .catch(() => logger.error(`${ packageManager.name() } Version    :`, chalk.red('Unknown')))
     );
 }
 
