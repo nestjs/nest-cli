@@ -11,6 +11,7 @@ module.exports = (args, options, logger) => {
     .then(() => executeSchematic(args, options, logger))
     .then(() => {
       if (!options[ 'dryRun' ]) {
+        logger.info();
         return selectPackageManager();
       }
     })
@@ -18,7 +19,11 @@ module.exports = (args, options, logger) => {
 };
 
 function askForMissingInformation(args, logger) {
-  logger.info(chalk.green(messages.PROJECT_INFORMATION_START));
+  logger.info();
+  logger.info(messages.PROJECT_INFORMATION_START);
+  logger.info(messages.ADDITIONAL_INFORMATION);
+  logger.info();
+
   const prompt = inquirer.createPromptModule();
   const questions = [];
   if (args.name === undefined) {
@@ -58,7 +63,10 @@ function askForMissingInformation(args, logger) {
     args.description = args.description !== undefined ? args.description : answers.description;
     args.version = args.version !== undefined ? args.version : answers.version;
     args.author = args.author !== undefined ? args.author : answers.author;
-    logger.info(chalk.green(messages.PROJECT_INFORMATION_COLLECTED));
+
+    logger.info();
+    logger.info(messages.PROJECT_INFORMATION_COLLECTED);
+    logger.info();
   });
 }
 
