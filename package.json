@@ -24,7 +24,7 @@
   "dependencies": {
     "@angular-devkit/core": "^0.4.8",
     "@angular-devkit/schematics-cli": "^0.4.8",
-    "@nestjs/schematics": "^5.1.0",
+    "@nestjs/schematics": "^5.2.0",
     "caporal": "^0.6.0",
     "chalk": "^2.3.2",
     "inquirer": "^5.2.0",
