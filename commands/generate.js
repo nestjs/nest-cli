@@ -20,7 +20,8 @@ const SCHEMATICS = [
   { value: 'interceptor', alias: 'i' },
   { value: 'middleware', alias: 'mi' },
   { value: 'module', alias: 'mo' },
-  { value: 'pipe', alias: 'p' },
+  { value: 'pipe', alias: 'pi' },
+  { value: 'provider', alias: 'pr' },
   { value: 'service', alias: 's' }
 ];
 
