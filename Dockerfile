@@ -15,7 +15,9 @@ COPY --from=builder /nestjs/cli/actions actions
 COPY --from=builder /nestjs/cli/bin bin
 COPY --from=builder /nestjs/cli/commands commands
 COPY --from=builder /nestjs/cli/lib lib
-RUN npm install --production && npm link
+RUN find -name *.ts -delete && \
+    npm install --production && \
+    npm link
 WORKDIR /workspace
 EXPOSE 3000
 VOLUME [ "/workspace" ]
