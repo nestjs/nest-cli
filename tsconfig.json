@@ -8,7 +8,8 @@
   },
   "include": [
     "lib/runners",
-    "lib/package-managers"
+    "lib/package-managers",
+    "lib/schematics"
   ],
   "exclude": [
     "node_modules"

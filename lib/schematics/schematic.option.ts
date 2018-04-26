@@ -1,12 +1,9 @@
-const { strings } = require('@angular-devkit/core');
+import { strings }from '@angular-devkit/core';
 
-class SchematicOption {
-  constructor(name, value) {
-    this.name = name;
-    this.value = value;
-  }
+export class SchematicOption {
+  constructor(private name, private value) {}
 
-  toCommandString() {
+  public toCommandString() {
     if (typeof this.value === 'string') {
       return `--${ strings.dasherize(this.name) }=${ strings.dasherize(this.value) }`;
     } else {
@@ -14,5 +11,3 @@ class SchematicOption {
     }
   }
 }
-
-module.exports = { SchematicOption };
