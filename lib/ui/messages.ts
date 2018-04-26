@@ -1,7 +1,7 @@
-const emojis = require('./emojis');
-const chalk = require('chalk');
+import { emojis } from './emojis';
+import chalk from 'chalk';
 
-module.exports = {
+export const messages = {
   PROJECT_INFORMATION_START: `${ emojis.ZAP }  Creating your Nest project...`,
   ADDITIONAL_INFORMATION: `${ emojis.RAISED_HANDS }  We have to collect additional information:`,
   PROJECT_INFORMATION_COLLECTED: `${ emojis.BOOM }  Thank you for your time!`,
