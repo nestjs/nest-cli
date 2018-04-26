@@ -1,16 +1,16 @@
-const chalk = require('chalk');
-const { AbstractPackageManager } = require('./abstract.package-manager');
-const { PackageManager } = require('./package-manager');
-const { Runner, RunnerFactory } = require('../runners');
-const { messages } = require('../ui');
-const ora = require('ora');
+import * as ora from 'ora';
+import chalk from 'chalk';
+import { AbstractPackageManager } from './abstract.package-manager';
+import { RunnerFactory, Runner } from '../runners';
+import { PackageManager } from './package-manager';
+import { messages } from '../ui';
 
-class NpmPackageManager extends AbstractPackageManager {
+export class NpmPackageManager extends AbstractPackageManager {
   constructor(logger) {
     super(RunnerFactory.create(Runner.NPM, logger), logger);
   }
 
-  install(directory) {
+  public install(directory) {
     const spinner = ora({
       spinner: {
         "interval": 120,
@@ -43,9 +43,7 @@ class NpmPackageManager extends AbstractPackageManager {
       });
   }
 
-  get name() {
+  public get name() {
     return PackageManager.NPM.toUpperCase();
   }
 }
-
-module.exports = { NpmPackageManager };
