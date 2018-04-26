@@ -3,9 +3,10 @@ import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';
 import { NpmRunner } from './npm.runner';
 import { YarnRunner } from './yarn.runner';
+import { RunnerLogger } from './runner.logger';
 
 export class RunnerFactory {
-  public static create(runner, logger) {
+  public static create(runner: Runner, logger: RunnerLogger) {
     switch (runner) {
       case Runner.SCHEMATIC:
         return new SchematicRunner(logger);

@@ -1,27 +1,28 @@
-import { spawn } from 'child_process';
+import { spawn, SpawnOptions, ChildProcess } from 'child_process';
 import chalk from 'chalk';
+import { RunnerLogger } from './runner.logger';
 import { messages } from '../ui';
 
 export class AbstractRunner {
-  constructor(protected logger, protected binary) {}
+  constructor(protected logger: RunnerLogger, protected binary: string) {}
 
-  public run(command, collect = false, cwd = process.cwd()) {
-    const args = [ command ];
-    const options = {
+  public async run(command: string, collect: boolean = false, cwd: string = process.cwd()): Promise<null | string> {
+    const args: string[] = [ command ];
+    const options: SpawnOptions = {
       stdio: collect ? 'pipe' : 'inherit',
       shell: true,
       cwd: cwd
     };
-    return new Promise((resolve, reject) => {
-      const child = spawn(this.binary, args, options);
+    return new Promise<null | string>((resolve, reject) => {
+      const child: ChildProcess = spawn(this.binary, args, options);
       if (collect) {
         child.stdout.on('data', (data) => resolve(data.toString().replace(/\r\n|\n/, '')));
       }
       child.on('close', (code) => {
         if (code === 0) {
-          resolve();
+          resolve(null);
         } else {
-          this.logger.error(chalk.red(messages.RUNNER_EXECUTION_ERROR(command)));
+          this.logger.error(chalk.red(messages.RUNNER_EXECUTION_ERROR(`${ this.binary } ${ command }`)));
           reject();
         }
       });
