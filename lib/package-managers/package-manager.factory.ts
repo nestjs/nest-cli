@@ -1,10 +1,10 @@
-const readdir = require('fs').readdir;
-const { PackageManager } = require('./package-manager');
-const { NpmPackageManager } = require('./npm.package-manager');
-const { YarnPackageManager } = require('./yarn.package-manager');
+import { readdir } from "fs";
+import { PackageManager } from "./package-manager";
+import { NpmPackageManager } from "./npm.package-manager";
+import { YarnPackageManager } from "./yarn.package-manager";
 
-class PackageManagerFactory {
-  static create(name, logger) {
+export class PackageManagerFactory {
+  public static create(name, logger) {
     switch (name) {
       case PackageManager.NPM:
         return new NpmPackageManager(logger);
@@ -13,7 +13,7 @@ class PackageManagerFactory {
     }
   }
 
-  static find(logger) {
+  public static find(logger) {
     return new Promise((resolve) => {
       readdir(process.cwd(), (error, files) => {
         if (error) {
@@ -29,5 +29,3 @@ class PackageManagerFactory {
     });
   }
 }
-
-module.exports = { PackageManagerFactory };

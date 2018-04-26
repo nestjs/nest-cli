@@ -1,26 +1,21 @@
-const join = require('path').join;
+import { join } from "path";
 
-class AbstractPackageManager {
-  constructor(runner, logger) {
-    this.runner = runner;
-    this.logger = logger;
-  }
+export class AbstractPackageManager {
+  constructor(protected runner, protected logger) {}
 
-  install(directory) {
+  public install(directory) {
     const command = 'install --silent';
     const collect = true;
     return this.runner.run(command, collect, join(process.cwd(), directory));
   }
 
-  version() {
+  public version() {
     const command = '--version';
     const collect = true;
     return this.runner.run(command, collect);
   }
 
-  get name() {
+  public get name() {
     return '';
   }
 }
-
-module.exports = { AbstractPackageManager };
