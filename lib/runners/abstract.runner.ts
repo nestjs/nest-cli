@@ -1,15 +1,11 @@
-const spawn = require('child_process').spawn;
-const chalk = require('chalk');
-const { Runner } = require('./runner');
-const { messages } = require('../ui');
+import { spawn } from 'child_process';
+import chalk from 'chalk';
+import { messages } from '../ui';
 
-class AbstractRunner {
-  constructor(logger, binary) {
-    this.logger = logger;
-    this.binary = binary;
-  }
+export class AbstractRunner {
+  constructor(protected logger, protected binary) {}
 
-  run(command, collect = false, cwd = process.cwd()) {
+  public run(command, collect = false, cwd = process.cwd()) {
     const args = [ command ];
     const options = {
       stdio: collect ? 'pipe' : 'inherit',
@@ -32,5 +28,3 @@ class AbstractRunner {
     });
   }
 }
-
-module.exports = { AbstractRunner };

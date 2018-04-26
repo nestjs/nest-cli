@@ -1,11 +1,11 @@
-const chalk = require('chalk');
-const { Runner } = require('./runner');
-const { SchematicRunner } = require('./schematic.runner');
-const { NpmRunner } = require('./npm.runner');
-const { YarnRunner } = require('./yarn.runner');
+import chalk from 'chalk';
+import { Runner } from './runner';
+import { SchematicRunner } from './schematic.runner';
+import { NpmRunner } from './npm.runner';
+import { YarnRunner } from './yarn.runner';
 
-class RunnerFactory {
-  static create(runner, logger) {
+export class RunnerFactory {
+  public static create(runner, logger) {
     switch (runner) {
       case Runner.SCHEMATIC:
         return new SchematicRunner(logger);
@@ -18,5 +18,3 @@ class RunnerFactory {
     }
   }
 }
-
-module.exports = { RunnerFactory };

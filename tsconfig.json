@@ -7,7 +7,7 @@
     "declaration": false
   },
   "include": [
-    "lib"
+    "lib/runners"
   ],
   "exclude": [
     "node_modules"

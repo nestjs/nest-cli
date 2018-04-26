@@ -1,7 +1,7 @@
 FROM node:carbon-alpine as builder
 WORKDIR /nestjs/cli
 COPY . .
-RUN npm install && npm run -s build && ls
+RUN npm install && npm run -s build
 
 FROM node:carbon-alpine
 RUN npm install -g yarn && \
@@ -15,7 +15,7 @@ COPY --from=builder /nestjs/cli/actions actions
 COPY --from=builder /nestjs/cli/bin bin
 COPY --from=builder /nestjs/cli/commands commands
 COPY --from=builder /nestjs/cli/lib lib
-RUN ls && npm install --production && npm link
+RUN ls lib/runners && npm install --production && npm link
 WORKDIR /workspace
 EXPOSE 3000
 VOLUME [ "/workspace" ]
