@@ -1,3 +1,3 @@
 export abstract class AbstractAction {
-  public abstract async handle(args, options, logger);
+  public abstract async handle(args: any, options: any, logger: any);
 }

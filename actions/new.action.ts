@@ -1,9 +1,11 @@
 import { AbstractAction } from './abstract.action';
 import { messages } from '../lib/ui';
 import * as inquirer from 'inquirer';
-import { CollectionFactory, Collection, SchematicOption } from '../lib/schematics';
+import { CollectionFactory, Collection, SchematicOption, AbstractCollection } from '../lib/schematics';
 import { PackageManager, PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import chalk from 'chalk';
+import { PromptModule, Answers } from 'inquirer';
+import { ActionLogger } from './action.logger';
 
 interface Inputs {
   name?: string;
@@ -17,19 +19,19 @@ interface Options {
 }
 
 export class NewAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options, logger: any) {
+  public async handle(args: Inputs, options: Options, logger: ActionLogger) {
     const inputs: Inputs = await askForMissingInformation(args, logger);
     await generateApplication(inputs, options, logger);
     await installPackages(inputs, options, logger);
   }
 }
 
-const askForMissingInformation = async (inputs: Inputs, logger: any): Promise<Inputs> => {
+const askForMissingInformation = async (inputs: Inputs, logger: ActionLogger): Promise<Inputs> => {
   logger.info();
   logger.info(messages.PROJECT_INFORMATION_START);
   logger.info(messages.ADDITIONAL_INFORMATION);
   logger.info();
-  const prompt = inquirer.createPromptModule();
+  const prompt: PromptModule = inquirer.createPromptModule();
   const questions = [];
   if (inputs.name === undefined) {
     questions.push({
@@ -63,7 +65,7 @@ const askForMissingInformation = async (inputs: Inputs, logger: any): Promise<In
       default: ''
     });
   }
-  const answers: any = await prompt(questions);
+  const answers: Answers = await prompt(questions);
   inputs.name = inputs.name !== undefined ? inputs.name : answers.name;
   inputs.description = inputs.description !== undefined ? inputs.description : answers.description;
   inputs.version = inputs.version !== undefined ? inputs.version : answers.version;
@@ -74,10 +76,10 @@ const askForMissingInformation = async (inputs: Inputs, logger: any): Promise<In
   return inputs;
 }
 
-const generateApplication = async (args: Inputs, options: Options, logger: any) => {
-  const collection = CollectionFactory.create(Collection.NESTJS, logger);
-  const schematicOptions = parse(args, options);
-  return collection.execute('application', schematicOptions);
+const generateApplication = async (args: Inputs, options: Options, logger: ActionLogger) => {
+  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS, logger);
+  const schematicOptions: SchematicOption[] = parse(args, options);
+  await collection.execute('application', schematicOptions);
 }
 
 const parse = (args: Inputs, options: Options): SchematicOption[] => {
@@ -91,7 +93,7 @@ const parse = (args: Inputs, options: Options): SchematicOption[] => {
   return schematicOptions;
 }
 
-const installPackages = async (inputs: Inputs, options: Options, logger: any) => {
+const installPackages = async (inputs: Inputs, options: Options, logger: ActionLogger) => {
   if (!options.dryRun) {
     const packageManager: AbstractPackageManager = await selectPackageManager(logger);
     await packageManager.install(inputs.name);
@@ -102,7 +104,7 @@ const installPackages = async (inputs: Inputs, options: Options, logger: any) =>
   }
 }
 
-const selectPackageManager = async (logger: any): Promise<AbstractPackageManager> => {
+const selectPackageManager = async (logger: ActionLogger): Promise<AbstractPackageManager> => {
   const prompt = inquirer.createPromptModule();
   const questions = [{
     type: 'list',
@@ -110,6 +112,6 @@ const selectPackageManager = async (logger: any): Promise<AbstractPackageManager
     message: messages.PACKAGE_MANAGER_QUESTION,
     choices: [ PackageManager.NPM, PackageManager.YARN ]
   }];
-  const answers: any = await prompt(questions);
+  const answers: Answers = await prompt(questions);
   return PackageManagerFactory.create(answers[ 'package-manager' ], logger);
 }
