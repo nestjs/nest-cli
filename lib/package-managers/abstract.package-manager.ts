@@ -1,21 +1,22 @@
-import { join } from "path";
+import { join } from 'path';
+import { AbstractRunner } from '../runners/abstract.runner';
+import { PackageManagerLogger } from './package-manager.logger';
 
-export class AbstractPackageManager {
-  constructor(protected runner, protected logger) {}
+export abstract class AbstractPackageManager {
+  constructor(protected runner: AbstractRunner, protected logger: PackageManagerLogger) {}
 
-  public install(directory) {
+  public async install(directory: string) {
     const command = 'install --silent';
     const collect = true;
-    return this.runner.run(command, collect, join(process.cwd(), directory));
+    await this.runner.run(command, collect, join(process.cwd(), directory));
   }
 
-  public version() {
+  public async version(): Promise<string> {
     const command = '--version';
     const collect = true;
-    return this.runner.run(command, collect);
+    const version: string = await this.runner.run(command, collect);
+    return version;
   }
 
-  public get name() {
-    return '';
-  }
+  public abstract get name(): string;
 }
