@@ -3,5 +3,5 @@ import { AbstractAction } from '../actions/abstract.action';
 export abstract class AbstractCommand {
   constructor(protected action: AbstractAction) {}
   
-  public abstract load(program: any);
+  public abstract async load(program: any);
 }
