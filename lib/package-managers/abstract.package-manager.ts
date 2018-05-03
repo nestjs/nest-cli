@@ -3,20 +3,51 @@ import { AbstractRunner } from '../runners/abstract.runner';
 import { PackageManagerLogger } from './package-manager.logger';
 import { ProjectDependency } from './project.dependency';
 import { readFile } from 'fs';
+import * as ora from 'ora';
+import { messages } from '../ui';
+import chalk from 'chalk';
 
 export abstract class AbstractPackageManager {
   constructor(protected runner: AbstractRunner, protected logger: PackageManagerLogger) {}
 
   public async install(directory: string) {
-    const command = 'install --silent';
-    const collect = true;
-    await this.runner.run(command, collect, join(process.cwd(), directory));
+    const spinner = ora({
+      spinner: {
+        "interval": 120,
+        "frames": [
+          "▹▹▹▹▹",
+          "▸▹▹▹▹",
+          "▹▸▹▹▹",
+          "▹▹▸▹▹",
+          "▹▹▹▸▹",
+          "▹▹▹▹▸"
+        ]
+      },
+      text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS
+    });
+    spinner.start();
+    try {
+      const commandArguments = 'install --silent';
+      const collect = true;
+      await this.runner.run(commandArguments, collect, join(process.cwd(), directory));
+      spinner.succeed();
+      this.logger.info();
+      this.logger.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
+      this.logger.info(messages.GET_STARTED_INFORMATION);
+      this.logger.info();
+      this.logger.info(chalk.gray(messages.CHANGE_DIR_COMMAND(directory)));
+      this.logger.info(chalk.gray(messages.START_COMMAND));
+      this.logger.info();
+    } catch {
+      spinner.fail();
+      this.logger.error(chalk.red(messages.PACKAGE_MANAGER_INSTALLATION_FAILED));
+    }
   }
 
   public async version(): Promise<string> {
-    const command = '--version';
+    const commandArguments = '--version';
     const collect = true;
-    const version: string = await this.runner.run(command, collect);
+    const version: string = await this.runner.run(commandArguments, collect);
     return version;
   }
 
