@@ -9,6 +9,8 @@ export const messages = {
   RUNNER_EXECUTION_ERROR: (command) => `${ emojis.SCREAM }  Failed to execute command: ${ command }`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${ emojis.HEART }  to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Take ${ emojis.COFFEE }  or ${ emojis.BEER }  during the packages installation process and enjoy your time`,
+  PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Take ${ emojis.COFFEE }  or ${ emojis.BEER }  during the packages update process and enjoy your time`,
+  PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Take ${ emojis.COFFEE }  or ${ emojis.BEER }  during the packages upgrade process and enjoy your time`,
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name) => `${ emojis.ROCKET }  Successfully created project ${chalk.green(name)}`,
   GET_STARTED_INFORMATION: `${ emojis.POINT_RIGHT }  Get started with the following commands:`,
   CHANGE_DIR_COMMAND: (name) => `$ cd ${name}`,
