@@ -5,8 +5,8 @@ export class UpdateCommand extends AbstractCommand {
     program
       .command('update')
       .alias('u')
-      .option('--force', 'Call for upgrading instead of updating.')
-      .option('--tag [tag]', 'Call for upgrading to latest | beta | rc | next tag.')
+      .option('--force -f', 'Call for upgrading instead of updating.')
+      .option('--tag -t [tag]', 'Call for upgrading to latest | beta | rc | next tag.')
       .action(this.action.handle);
   }
 }
