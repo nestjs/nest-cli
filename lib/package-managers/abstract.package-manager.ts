@@ -52,12 +52,12 @@ export abstract class AbstractPackageManager {
   }
 
   public async addProduction(dependencies: string[], tag: string) {
-    const commandArguments: string = `install --save ${ dependencies.join(`@${ tag } `) }`;
+    const commandArguments: string = `install --save ${ dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ') }`;
     await this.add(commandArguments);
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
-    const commandArguments: string = `install --save-dev ${ dependencies.join(`@${ tag } `) }`;
+    const commandArguments: string = `install --save-dev ${ dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ') }`;
     await this.add(commandArguments);
   }
 
