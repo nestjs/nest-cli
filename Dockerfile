@@ -10,6 +10,12 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 RUN npm install
 
+FROM node:carbon-alpine as tester
+WORKDIR /nestjs/cli
+COPY --from=build-dependencies /nestjs/cli/node_modules node_modules
+COPY . .
+RUN npm run -s test
+
 FROM node:carbon-alpine as builder
 WORKDIR /nestjs/cli
 COPY --from=build-dependencies /nestjs/cli/node_modules node_modules
