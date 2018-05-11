@@ -16,7 +16,7 @@ export class SchematicOption {
       .dasherize(this.value as string)
       .split('')
       .reduce((content, char) => {
-        if (char === '(' || char === ')') {
+        if (char === '(' || char === ')' || char === '[' || char === ']') {
           return `${ content }\\${ char }`;
         } else {
           return `${ content }${ char }`;

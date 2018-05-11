@@ -35,6 +35,11 @@ describe('Schematic Option', () => {
       description: 'should manage parenthesis string option value',
       input: 'my-(app)',
       expected: 'my-\\(app\\)'
+    },
+    {
+      description: 'should manage brackets string option value',
+      input: 'my-[app]',
+      expected: 'my-\\[app\\]'
     }
   ].forEach((test) => {
     it(test.description, () => {
