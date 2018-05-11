@@ -1,8 +1,6 @@
 import { strings }from '@angular-devkit/core';
 
 export class SchematicOption {
-  private OPENED_PARENTHESIS = '(';
-  private CLOSED_PARENTHESIS = ')';
   constructor(private name: string, private value: boolean | string) {}
 
   public toCommandString(): string {
