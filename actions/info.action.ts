@@ -22,31 +22,31 @@ interface NestDependency {
 }
 
 export class InfoAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options, logger: ActionLogger) {
-    displayBanner(logger);
-    await displaySystemInformation(logger);
+  public async handle() {
+    displayBanner();
+    await displaySystemInformation();
     await displayNestInformation(logger);
   }
 }
 
-const displayBanner = (logger: ActionLogger) => {
-  logger.info(chalk.red(BANNER));
+const displayBanner = () => {
+  console.info(chalk.red(BANNER));
 }
 
-const displaySystemInformation = async (logger: ActionLogger) => {
-  logger.info(chalk.green('[System Information]'));
-  logger.info('OS Version     :', chalk.blue(osName(platform(), release())));
-  logger.info('NodeJS Version :', chalk.blue(process.version));
-  await displayPackageManagerVersion(logger);
+const displaySystemInformation = async () => {
+  console.info(chalk.green('[System Information]'));
+  console.info('OS Version     :', chalk.blue(osName(platform(), release())));
+  console.info('NodeJS Version :', chalk.blue(process.version));
+  await displayPackageManagerVersion();
 }
 
-const displayPackageManagerVersion = async (logger: ActionLogger) => {
+const displayPackageManagerVersion = async () => {
   const manager: AbstractPackageManager = await PackageManagerFactory.find(logger)
   try {
     const version: string = await manager.version();
-    logger.info(`${ manager.name } Version    :`, chalk.blue(version));
+    console.info(`${ manager.name } Version    :`, chalk.blue(version));
   } catch {
-    logger.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
+    console.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
   }
 }
 
