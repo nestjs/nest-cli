@@ -3,19 +3,18 @@ import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';
 import { NpmRunner } from './npm.runner';
 import { YarnRunner } from './yarn.runner';
-import { RunnerLogger } from './runner.logger';
 
 export class RunnerFactory {
-  public static create(runner: Runner, logger: RunnerLogger) {
+  public static create(runner: Runner) {
     switch (runner) {
       case Runner.SCHEMATIC:
-        return new SchematicRunner(logger);
+        return new SchematicRunner();
       case Runner.NPM:
-        return new NpmRunner(logger);
+        return new NpmRunner();
       case Runner.YARN:
-        return new YarnRunner(logger);
+        return new YarnRunner();
       default:
-        logger.info(chalk.yellow(`[WARN] Unsupported runner: ${ runner }`));
+        console.info(chalk.yellow(`[WARN] Unsupported runner: ${ runner }`));
     }
   }
 }
