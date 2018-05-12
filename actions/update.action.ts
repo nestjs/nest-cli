@@ -8,8 +8,8 @@ interface UpdateOptions {
 }
 
 export class UpdateAction extends AbstractAction {
-  public async handle(args: any, options: UpdateOptions, logger: any) {
-    const manager = new NestDependencyManager(await PackageManagerFactory.find(logger));
+  public async handle(args: any, options: UpdateOptions) {
+    const manager = new NestDependencyManager(await PackageManagerFactory.find());
     await manager.update(options.force, options.tag);
   }
 }

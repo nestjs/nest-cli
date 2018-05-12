@@ -1,6 +1,5 @@
 import { AbstractAction } from './abstract.action';
 import { CollectionFactory, Collection, SchematicOption, AbstractCollection } from '../lib/schematics';
-import { ActionLogger } from './action.logger';
 
 interface Inputs {
   schematic: string;
@@ -13,13 +12,13 @@ interface Options {
 }
 
 export class GenerateAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options, logger: ActionLogger) {
-    await generate(args, options, logger);
+  public async handle(args: Inputs, options: Options) {
+    await generate(args, options);
   }
 }
 
-const generate = async (args: Inputs, options: Options, logger: ActionLogger) => {
-  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS, logger);
+const generate = async (args: Inputs, options: Options) => {
+  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
   const schematicOptions: SchematicOption[] = parse(args, options);
   await collection.execute(args.schematic, schematicOptions);
 }
