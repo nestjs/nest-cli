@@ -1,10 +1,9 @@
 import { spawn, SpawnOptions, ChildProcess } from 'child_process';
 import chalk from 'chalk';
-import { RunnerLogger } from './runner.logger';
 import { messages } from '../ui';
 
 export class AbstractRunner {
-  constructor(protected logger: RunnerLogger, protected binary: string) {}
+  constructor(protected binary: string) {}
 
   public async run(command: string, collect: boolean = false, cwd: string = process.cwd()): Promise<null | string> {
     const args: string[] = [ command ];
@@ -22,7 +21,7 @@ export class AbstractRunner {
         if (code === 0) {
           resolve(null);
         } else {
-          this.logger.error(chalk.red(messages.RUNNER_EXECUTION_ERROR(`${ this.binary } ${ command }`)));
+          console.error(chalk.red(messages.RUNNER_EXECUTION_ERROR(`${ this.binary } ${ command }`)));
           reject();
         }
       });
