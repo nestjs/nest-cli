@@ -32,7 +32,6 @@
     "@angular-devkit/schematics-cli": "^0.4.9",
     "@nestjs/schematics": "^5.3.1",
     "@types/jest": "^22.2.3",
-    "caporal": "^0.6.0",
     "chalk": "^2.4.0",
     "commander": "^2.15.1",
     "inquirer": "^5.2.0",
