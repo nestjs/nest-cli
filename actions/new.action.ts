@@ -5,7 +5,6 @@ import { CollectionFactory, Collection, SchematicOption, AbstractCollection } fr
 import { PackageManager, PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import chalk from 'chalk';
 import { PromptModule, Answers } from 'inquirer';
-import { ActionLogger } from './action.logger';
 
 interface Inputs {
   name?: string;
@@ -19,18 +18,18 @@ interface Options {
 }
 
 export class NewAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options, logger: ActionLogger) {
-    const inputs: Inputs = await askForMissingInformation(args, logger);
-    await generateApplication(inputs, options, logger);
-    await installPackages(inputs, options, logger);
+  public async handle(args: Inputs, options: Options) {
+    const inputs: Inputs = await askForMissingInformation(args);
+    await generateApplication(inputs, options);
+    await installPackages(inputs, options);
   }
 }
 
-const askForMissingInformation = async (inputs: Inputs, logger: ActionLogger): Promise<Inputs> => {
-  logger.info();
-  logger.info(messages.PROJECT_INFORMATION_START);
-  logger.info(messages.ADDITIONAL_INFORMATION);
-  logger.info();
+const askForMissingInformation = async (inputs: Inputs): Promise<Inputs> => {
+  console.info();
+  console.info(messages.PROJECT_INFORMATION_START);
+  console.info(messages.ADDITIONAL_INFORMATION);
+  console.info();
   const prompt: PromptModule = inquirer.createPromptModule();
   const questions = [];
   if (inputs.name === undefined) {
@@ -70,14 +69,14 @@ const askForMissingInformation = async (inputs: Inputs, logger: ActionLogger): P
   inputs.description = inputs.description !== undefined ? inputs.description : answers.description;
   inputs.version = inputs.version !== undefined ? inputs.version : answers.version;
   inputs.author = inputs.author !== undefined ? inputs.author : answers.author;
-  logger.info();
-  logger.info(messages.PROJECT_INFORMATION_COLLECTED);
-  logger.info();
+  console.info();
+  console.info(messages.PROJECT_INFORMATION_COLLECTED);
+  console.info();
   return inputs;
 }
 
-const generateApplication = async (args: Inputs, options: Options, logger: ActionLogger) => {
-  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS, logger);
+const generateApplication = async (args: Inputs, options: Options) => {
+  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
   const schematicOptions: SchematicOption[] = parse(args, options);
   await collection.execute('application', schematicOptions);
 }
@@ -93,18 +92,18 @@ const parse = (args: Inputs, options: Options): SchematicOption[] => {
   return schematicOptions;
 }
 
-const installPackages = async (inputs: Inputs, options: Options, logger: ActionLogger) => {
+const installPackages = async (inputs: Inputs, options: Options) => {
   if (!options.dryRun) {
-    const packageManager: AbstractPackageManager = await selectPackageManager(logger);
+    const packageManager: AbstractPackageManager = await selectPackageManager();
     await packageManager.install(inputs.name);
   } else {
-    logger.info();
-    logger.info(chalk.green(messages.DRY_RUN_MODE));
-    logger.info();
+    console.info();
+    console.info(chalk.green(messages.DRY_RUN_MODE));
+    console.info();
   }
 }
 
-const selectPackageManager = async (logger: ActionLogger): Promise<AbstractPackageManager> => {
+const selectPackageManager = async (): Promise<AbstractPackageManager> => {
   const prompt = inquirer.createPromptModule();
   const questions = [{
     type: 'list',
@@ -113,5 +112,5 @@ const selectPackageManager = async (logger: ActionLogger): Promise<AbstractPacka
     choices: [ PackageManager.NPM, PackageManager.YARN ]
   }];
   const answers: Answers = await prompt(questions);
-  return PackageManagerFactory.create(answers[ 'package-manager' ], logger);
+  return PackageManagerFactory.create(answers[ 'package-manager' ]);
 }

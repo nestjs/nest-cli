@@ -6,11 +6,6 @@ import osName = require('os-name');
 import { PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import { readFile } from 'fs';
 import { join } from 'path';
-import { ActionLogger } from './action.logger';
-
-interface Inputs {}
-
-interface Options {}
 
 interface PacakgeJsonDependencies {
   [key: string]: string;
@@ -25,7 +20,7 @@ export class InfoAction extends AbstractAction {
   public async handle() {
     displayBanner();
     await displaySystemInformation();
-    await displayNestInformation(logger);
+    await displayNestInformation();
   }
 }
 
@@ -41,7 +36,7 @@ const displaySystemInformation = async () => {
 }
 
 const displayPackageManagerVersion = async () => {
-  const manager: AbstractPackageManager = await PackageManagerFactory.find(logger)
+  const manager: AbstractPackageManager = await PackageManagerFactory.find();
   try {
     const version: string = await manager.version();
     console.info(`${ manager.name } Version    :`, chalk.blue(version));
@@ -50,13 +45,13 @@ const displayPackageManagerVersion = async () => {
   }
 }
 
-const displayNestInformation = async (logger: ActionLogger) => {
-  logger.info(chalk.green('[Nest Information]'));
+const displayNestInformation = async () => {
+  console.info(chalk.green('[Nest Information]'));
   try {
     const dependencies: PacakgeJsonDependencies = await readProjectPackageJsonDependencies();
-    displayNestVersions(logger, dependencies);
+    displayNestVersions(dependencies);
   } catch {
-    logger.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
+    console.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
 }
 
@@ -72,9 +67,9 @@ const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependen
   });
 }
 
-const displayNestVersions = (logger: ActionLogger, dependencies: PacakgeJsonDependencies) => {
+const displayNestVersions = (dependencies: PacakgeJsonDependencies) => {
   buildNestVersionsMessage(dependencies)
-    .forEach((dependency) => logger.info(dependency.name, chalk.blue(dependency.value)));
+    .forEach((dependency) => console.info(dependency.name, chalk.blue(dependency.value)));
 }
 
 const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
