@@ -1,6 +1,5 @@
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
-import { PackageManagerLogger } from './package-manager.logger';
 import { ProjectDependency } from './project.dependency';
 import { readFile } from 'fs';
 import * as ora from 'ora';
@@ -8,7 +7,7 @@ import { messages } from '../ui';
 import chalk from 'chalk';
 
 export abstract class AbstractPackageManager {
-  constructor(protected runner: AbstractRunner, protected logger: PackageManagerLogger) {}
+  constructor(protected runner: AbstractRunner) {}
 
   public async install(directory: string) {
     const spinner = ora({
@@ -31,16 +30,16 @@ export abstract class AbstractPackageManager {
       const collect = true;
       await this.runner.run(commandArguments, collect, join(process.cwd(), directory));
       spinner.succeed();
-      this.logger.info();
-      this.logger.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
-      this.logger.info(messages.GET_STARTED_INFORMATION);
-      this.logger.info();
-      this.logger.info(chalk.gray(messages.CHANGE_DIR_COMMAND(directory)));
-      this.logger.info(chalk.gray(messages.START_COMMAND));
-      this.logger.info();
+      console.info();
+      console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
+      console.info(messages.GET_STARTED_INFORMATION);
+      console.info();
+      console.info(chalk.gray(messages.CHANGE_DIR_COMMAND(directory)));
+      console.info(chalk.gray(messages.START_COMMAND));
+      console.info();
     } catch {
       spinner.fail();
-      this.logger.error(chalk.red(messages.PACKAGE_MANAGER_INSTALLATION_FAILED));
+      console.error(chalk.red(messages.PACKAGE_MANAGER_INSTALLATION_FAILED));
     }
   }
 
