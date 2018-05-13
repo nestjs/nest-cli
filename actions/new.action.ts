@@ -4,109 +4,88 @@ import * as inquirer from 'inquirer';
 import { CollectionFactory, Collection, SchematicOption, AbstractCollection } from '../lib/schematics';
 import { PackageManager, PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import chalk from 'chalk';
-import { PromptModule, Answers } from 'inquirer';
+import { PromptModule, Answers, Question } from 'inquirer';
 import { Command } from 'commander';
 import { Input } from '../commands';
+import { generateInput, generateSelect } from '../lib/questions/questions';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    console.log('inputs');
-    console.log(inputs);
-    console.log('options');
-    console.log(options);
-    // const inputs: string[] = args.concat(await askForMissingInformation(args));
-    // const inputs: Inputs = await askForMissingInformation(args);
-    // await generateApplication(inputs, options);
-    // await installPackages(inputs, options);
+    const questions: Question[] = generateQuestionsForMissingInputs(inputs);
+    const answers: Answers = await askForMissingInformation(questions);
+    const args: Input[] = replaceInputMissingInformation(inputs, answers);
+    await generateApplicationFiles(inputs, options);
+    await installPackages(inputs, options);
   }
 }
 
-// const askForMissingInformation = async (args: string[]): Promise<string[]> => {
-//   console.info();
-//   console.info(messages.PROJECT_INFORMATION_START);
-//   console.info(messages.ADDITIONAL_INFORMATION);
-//   console.info();
-//   const prompt: PromptModule = inquirer.createPromptModule();
-//   const questions = [];
-//   if (inputs.name === undefined) {
-//     questions.push({
-//       type: 'input',
-//       name: 'name',
-//       message: 'name :',
-//       default: 'nestjs-app-name'
-//     });
-//   }
-//   if (inputs.description === undefined) {
-//     questions.push({
-//       type: 'input',
-//       name: 'description',
-//       message: 'description :',
-//       default: 'description'
-//     });
-//   }
-//   if (inputs.version === undefined) {
-//     questions.push({
-//       type: 'input',
-//       name: 'version',
-//       message: 'version :',
-//       default: '1.0.0'
-//     });
-//   }
-//   if (inputs.author === undefined) {
-//     questions.push({
-//       type: 'input',
-//       name: 'author',
-//       message: 'author :',
-//       default: ''
-//     });
-//   }
-//   const answers: Answers = await prompt(questions);
-//   inputs.name = inputs.name !== undefined ? inputs.name : answers.name;
-//   inputs.description = inputs.description !== undefined ? inputs.description : answers.description;
-//   inputs.version = inputs.version !== undefined ? inputs.version : answers.version;
-//   inputs.author = inputs.author !== undefined ? inputs.author : answers.author;
-//   console.info();
-//   console.info(messages.PROJECT_INFORMATION_COLLECTED);
-//   console.info();
-//   return inputs;
-// }
+const generateQuestionsForMissingInputs = (inputs: Input[]): Question[] => {
+  return inputs
+    .map((input) => generateInput(input.name)(input.value)(generateDefaultAnswer(input.name)))
+    .filter((question) => question !== undefined);
+};
 
-// const generateApplication = async (args: Inputs, options: Options) => {
-//   const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
-//   const schematicOptions: SchematicOption[] = parse(args, options);
-//   await collection.execute('application', schematicOptions);
-// }
+const generateDefaultAnswer = (name: string): string => {
+  if (name === 'name') {
+    return 'nestjs-app-name';
+  } else if (name === 'description') {
+    return 'description';
+  } else if (name === 'version') {
+    return '1.0.0';
+  } else if (name === 'author') {
+    return '';
+  }
+};
 
-// const parse = (args: Inputs, options: Options): SchematicOption[] => {
-//   const schematicOptions: SchematicOption[] = [];
-//   Object.keys(args).forEach((key) => {
-//     schematicOptions.push(new SchematicOption(key, args[ key ]));
-//   });
-//   Object.keys(options).forEach((key) => {
-//     schematicOptions.push(new SchematicOption(key, options[ key ] !== undefined));
-//   });
-//   return schematicOptions;
-// }
+const askForMissingInformation = async (questions: Question[]): Promise<Answers> => {
+  console.info();
+  console.info(messages.PROJECT_INFORMATION_START);
+  console.info(messages.ADDITIONAL_INFORMATION);
+  console.info();
+  const prompt: PromptModule = inquirer.createPromptModule();
+  const answers: Answers = await prompt(questions);
+  console.info();
+  console.info(messages.PROJECT_INFORMATION_COLLECTED);
+  console.info();
+  return answers;
+};
 
-// const installPackages = async (inputs: Inputs, options: Options) => {
-//   if (!options.dryRun) {
-//     const packageManager: AbstractPackageManager = await selectPackageManager();
-//     await packageManager.install(inputs.name);
-//   } else {
-//     console.info();
-//     console.info(chalk.green(messages.DRY_RUN_MODE));
-//     console.info();
-//   }
-// }
+const replaceInputMissingInformation = (inputs: Input[], answers: Answers): Input[] => {
+  return inputs.map((input) => input.value = input.value !== undefined ? input.value : answers[ input.name ]);
+};
 
-// const selectPackageManager = async (): Promise<AbstractPackageManager> => {
-//   const prompt = inquirer.createPromptModule();
-//   const questions = [{
-//     type: 'list',
-//     name: 'package-manager',
-//     message: messages.PACKAGE_MANAGER_QUESTION,
-//     choices: [ PackageManager.NPM, PackageManager.YARN ]
-//   }];
-//   const answers: Answers = await prompt(questions);
-//   return PackageManagerFactory.create(answers[ 'package-manager' ]);
-// }
+const generateApplicationFiles = async (args: Input[], options: Input[]) => {
+  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(args.concat(options));
+  await collection.execute('application', schematicOptions);
+};
+
+const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
+  return options.map((option) => new SchematicOption(option.name, option.value));
+}
+
+const installPackages = async (inputs: Input[], options: Input[]) => {
+  const installDirectory: string = inputs.find((input) => input.name === 'name').value as string;
+  const dryRunMode: boolean = options.find((option) => option.name === 'dry-run').value as boolean;
+  if (!dryRunMode) {
+    const packageManager: AbstractPackageManager = await selectPackageManager();
+    await packageManager.install(installDirectory);
+  } else {
+    console.info();
+    console.info(chalk.green(messages.DRY_RUN_MODE));
+    console.info();
+  }
+};
+
+const selectPackageManager = async (): Promise<AbstractPackageManager> => {
+  const answers: Answers = await askForPackageManager();
+  return PackageManagerFactory.create(answers[ 'package-manager' ]);
+};
+
+const askForPackageManager = async (): Promise<Answers> => {
+  const questions: Question[] = [
+    generateSelect('package-manager')(messages.PACKAGE_MANAGER_QUESTION)([ PackageManager.NPM, PackageManager.YARN ])
+  ];
+  const prompt = inquirer.createPromptModule();
+  return await prompt(questions);
+};

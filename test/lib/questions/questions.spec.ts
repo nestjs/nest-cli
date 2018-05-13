@@ -22,7 +22,7 @@ describe('Questions', () => {
         name: 'name',
         value: 'name'
       };
-      const question = generateInput(input.name)(input.value);
+      const question = generateInput(input.name)(input.value)('default');
       expect(question).toBeUndefined();
     });
   });
