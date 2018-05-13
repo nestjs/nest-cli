@@ -1,38 +1,23 @@
 import { AbstractCommand } from './abstract.command';
-
-const SCHEMATICS = [
-  { value: 'class', alias: 'cl' },
-  { value: 'controller', alias: 'co' },
-  { value: 'decorator', alias: 'd' },
-  { value: 'exception', alias: 'e' },
-  { value: 'filter', alias: 'f' },
-  { value: 'gateway', alias: 'ga' },
-  { value: 'guard', alias: 'gu' },
-  { value: 'interceptor', alias: 'i' },
-  { value: 'middleware', alias: 'mi' },
-  { value: 'module', alias: 'mo' },
-  { value: 'pipe', alias: 'pi' },
-  { value: 'provider', alias: 'pr' },
-  { value: 'service', alias: 's' }
-];
+import { CommanderStatic, Command } from 'commander';
+import { Input } from './command.input';
+import { parse } from '../lib/inputs/parse';
 
 export class GenerateCommand extends AbstractCommand {
-  public load(program: any) {
+  public load(program: CommanderStatic) {
     program
-      .command('generate')
+      .command('generate <schematic> <name> [path]')
       .alias('g')
-      .argument('<schematic>', 'Nest framework asset type', this.validate)
-      .argument('<name>', 'Asset name or path')
-      .argument('[path]', 'Path to generate the asset')
-      .option('--dry-run', 'allow to test changes before execute command')
-      .action(this.action.handle);
-  }
-
-  private validate(arg) {
-    const schematic = SCHEMATICS.find((schematic) => schematic.value === arg || schematic.alias === arg);
-    if (schematic === undefined || schematic === null) {
-      throw new Error();
-    }
-    return schematic.value;
+      .description('Generate a Nest element.')
+      .option('--dry-run', 'Allow to test changes before execute command')
+      .action(async (schematic: string, name: string, path: string, command: Command) => {
+        const options: Input[] = [];
+        options.push(parse('dry-run')(command[ 'dryRun' ] !== undefined ? command[ 'dryRun' ] : false));
+        const inputs: Input[] = [];
+        inputs.push(parse('schematic')(schematic));
+        inputs.push(parse('name')(name));
+        inputs.push(parse('path')(path));
+        await this.action.handle(inputs, options);
+      });
   }
 }

@@ -6,11 +6,6 @@ import osName = require('os-name');
 import { PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import { readFile } from 'fs';
 import { join } from 'path';
-import { ActionLogger } from './action.logger';
-
-interface Inputs {}
-
-interface Options {}
 
 interface PacakgeJsonDependencies {
   [key: string]: string;
@@ -22,41 +17,41 @@ interface NestDependency {
 }
 
 export class InfoAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options, logger: ActionLogger) {
-    displayBanner(logger);
-    await displaySystemInformation(logger);
-    await displayNestInformation(logger);
+  public async handle() {
+    displayBanner();
+    await displaySystemInformation();
+    await displayNestInformation();
   }
 }
 
-const displayBanner = (logger: ActionLogger) => {
-  logger.info(chalk.red(BANNER));
+const displayBanner = () => {
+  console.info(chalk.red(BANNER));
 }
 
-const displaySystemInformation = async (logger: ActionLogger) => {
-  logger.info(chalk.green('[System Information]'));
-  logger.info('OS Version     :', chalk.blue(osName(platform(), release())));
-  logger.info('NodeJS Version :', chalk.blue(process.version));
-  await displayPackageManagerVersion(logger);
+const displaySystemInformation = async () => {
+  console.info(chalk.green('[System Information]'));
+  console.info('OS Version     :', chalk.blue(osName(platform(), release())));
+  console.info('NodeJS Version :', chalk.blue(process.version));
+  await displayPackageManagerVersion();
 }
 
-const displayPackageManagerVersion = async (logger: ActionLogger) => {
-  const manager: AbstractPackageManager = await PackageManagerFactory.find(logger)
+const displayPackageManagerVersion = async () => {
+  const manager: AbstractPackageManager = await PackageManagerFactory.find();
   try {
     const version: string = await manager.version();
-    logger.info(`${ manager.name } Version    :`, chalk.blue(version));
+    console.info(`${ manager.name } Version    :`, chalk.blue(version));
   } catch {
-    logger.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
+    console.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
   }
 }
 
-const displayNestInformation = async (logger: ActionLogger) => {
-  logger.info(chalk.green('[Nest Information]'));
+const displayNestInformation = async () => {
+  console.info(chalk.green('[Nest Information]'));
   try {
     const dependencies: PacakgeJsonDependencies = await readProjectPackageJsonDependencies();
-    displayNestVersions(logger, dependencies);
+    displayNestVersions(dependencies);
   } catch {
-    logger.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
+    console.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
 }
 
@@ -72,9 +67,9 @@ const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependen
   });
 }
 
-const displayNestVersions = (logger: ActionLogger, dependencies: PacakgeJsonDependencies) => {
+const displayNestVersions = (dependencies: PacakgeJsonDependencies) => {
   buildNestVersionsMessage(dependencies)
-    .forEach((dependency) => logger.info(dependency.name, chalk.blue(dependency.value)));
+    .forEach((dependency) => console.info(dependency.name, chalk.blue(dependency.value)));
 }
 
 const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
