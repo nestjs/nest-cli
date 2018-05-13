@@ -1,38 +1,31 @@
 import { AbstractAction } from './abstract.action';
 import { CollectionFactory, Collection, SchematicOption, AbstractCollection } from '../lib/schematics';
 import { Input } from '../commands';
-
-interface Inputs {
-  schematic: string;
-  name: string;
-  path?: string;
-}
-
-interface Options {
-  dryRun?: boolean
-}
+import chalk from 'chalk';
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    // await generate(args, options);
+    await generateFiles(inputs.concat(options));
   }
 }
 
-const generate = async (args: Inputs, options: Options) => {
+const generateFiles = async (inputs: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
-  const schematicOptions: SchematicOption[] = parse(args, options);
-  await collection.execute(args.schematic, schematicOptions);
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
+  const schematic: string = inputs.find((input) => input.name === 'schematic').value as string;
+  try {
+    await collection.execute(schematic, schematicOptions);
+  } catch (error) {
+    console.error(chalk.red(error.message));
+  }
 }
 
-const parse = (args: Inputs, options: Options) => {
-  const schematicOptions: SchematicOption[] = [];
-  Object.keys(args).forEach((key) => {
-    if (key !== 'schematic') {
-      schematicOptions.push(new SchematicOption(key, args[ key ]));
+const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+  const options: SchematicOption[] = [];
+  inputs.forEach((input) => {
+    if (input.name !== 'schematic' && input.value !== undefined) {
+      options.push(new SchematicOption(input.name, input.value));
     }
   });
-  Object.keys(options).forEach((key) => {
-    schematicOptions.push(new SchematicOption(key, options[ key ] !== undefined));
-  });
-  return schematicOptions;
-}
+  return options;
+};
