@@ -29,7 +29,7 @@ describe('Questions', () => {
   describe('generateSelect', () => {
     it('should return a select question', () => {
       const choices: string[] = [ 'choiceA', 'choiceB', 'choiceC' ];
-      const question: Question = generateSelect('name', 'message', choices);
+      const question: Question = generateSelect('name')('message')(choices);
       expect(question).toEqual({
         type: 'list',
         name: 'name',
