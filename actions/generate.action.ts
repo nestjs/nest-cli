@@ -1,5 +1,6 @@
 import { AbstractAction } from './abstract.action';
 import { CollectionFactory, Collection, SchematicOption, AbstractCollection } from '../lib/schematics';
+import { Input } from '../commands';
 
 interface Inputs {
   schematic: string;
@@ -12,8 +13,8 @@ interface Options {
 }
 
 export class GenerateAction extends AbstractAction {
-  public async handle(args: Inputs, options: Options) {
-    await generate(args, options);
+  public async handle(inputs: Input[], options: Input[]) {
+    // await generate(args, options);
   }
 }
 

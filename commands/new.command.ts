@@ -18,7 +18,7 @@ export class NewCommand extends AbstractCommand {
         inputs.push(parse('description')(description));
         inputs.push(parse('version')(version));
         inputs.push(parse('author')(author));
-        // this.action.handle();
+        this.action.handle(inputs, options);
       });
   }
 }

@@ -1,6 +1,7 @@
 import { AbstractAction } from './abstract.action';
 import { NestDependencyManager } from '../lib/dependency-managers';
 import { PackageManagerFactory } from '../lib/package-managers';
+import { Input } from '../commands';
 
 interface UpdateOptions {
   force: boolean;
@@ -8,8 +9,8 @@ interface UpdateOptions {
 }
 
 export class UpdateAction extends AbstractAction {
-  public async handle(args: any, options: UpdateOptions) {
-    const manager = new NestDependencyManager(await PackageManagerFactory.find());
-    await manager.update(options.force, options.tag);
+  public async handle(inputs: Input[], options: Input[]) {
+    // const manager = new NestDependencyManager(await PackageManagerFactory.find());
+    // await manager.update(options.force, options.tag);
   }
 }
