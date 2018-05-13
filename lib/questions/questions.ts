@@ -14,11 +14,15 @@ export const generateInput = (name: string, defaultAnswer: string): (value: any)
   };
 }
 
-export const generateSelect = (name: string, message: string, choices: string[]): Question => {
-  return {
-    type: 'list',
-    name: name,
-    message: message,
-    choices: choices
+export const generateSelect = (name: string): (message: string) => (choices: string[]) => Question => {
+  return (message: string) => {
+    return (choices: string[]) => {
+      return {
+        type: 'list',
+        name: name,
+        message: message,
+        choices: choices
+      };
+    };
   };
 }
