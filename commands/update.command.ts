@@ -1,12 +1,21 @@
 import { AbstractCommand } from './abstract.command';
+import { Command, CommanderStatic } from 'commander';
+import { Input } from './command.input';
+import { parse } from '../lib/inputs/parse';
 
 export class UpdateCommand extends AbstractCommand {
-  public load(program: any) {
+  public load(program: CommanderStatic) {
     program
       .command('update')
       .alias('u')
-      .option('--force -f', 'Call for upgrading instead of updating.')
-      .option('--tag -t [tag]', 'Call for upgrading to latest | beta | rc | next tag.')
-      .action(this.action.handle);
+      .description('Update @nestjs dependencies.')
+      .option('-f, --force', 'Call for upgrading instead of updating.')
+      .option('-t, --tag <tag>', 'Call for upgrading to latest | beta | rc | next tag.')
+      .action(async (command: Command) => {
+        const options: Input[] = [];
+        options.push(parse('force')(command[ 'force' ] !== undefined ? command[ 'force' ] : false));
+        options.push(parse('tag')(command[ 'tag' ]));
+        await this.action.handle([], options);
+      });
   }
 }
