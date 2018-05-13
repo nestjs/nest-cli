@@ -9,7 +9,7 @@ describe('Questions', () => {
         name: 'name',
         value: undefined
       };
-      const question: Question = generateInput(input.name, 'name')(input.value);
+      const question: Question = generateInput(input.name)(input.value)('name');
       expect(question).toEqual({
         type: 'input',
         name: 'name',
@@ -22,7 +22,7 @@ describe('Questions', () => {
         name: 'name',
         value: 'name'
       };
-      const question = generateInput(input.name, 'name')(input.value);
+      const question = generateInput(input.name)(input.value);
       expect(question).toBeUndefined();
     });
   });
