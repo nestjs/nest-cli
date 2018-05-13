@@ -1,15 +1,21 @@
 {
   "name": "@nestjs/cli",
-  "version": "4.0.3",
+  "version": "5.1.2",
   "description": "Nest CLI",
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">= 8.9.0",
+    "npm": ">= 5.5.1"
   },
   "bin": {
     "nest": "bin/nest.js"
   },
   "scripts": {
-    "start": "node bin/nest.js"
+    "build": "tsc -p tsconfig.json",
+    "start": "node bin/nest.js",
+    "test": "jest --config test/jest-config.json"
   },
   "repository": {
     "type": "git",
@@ -22,13 +28,26 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
-    "@angular-devkit/core": "^0.4.8",
-    "@angular-devkit/schematics-cli": "^0.4.8",
-    "@nestjs/schematics": "^4.0.1",
-    "caporal": "^0.6.0",
-    "chalk": "^2.3.2",
+    "@angular-devkit/core": "^0.4.9",
+    "@angular-devkit/schematics-cli": "^0.4.9",
+    "@nestjs/schematics": "^5.3.1",
+    "@types/jest": "^22.2.3",
+    "chalk": "^2.4.0",
+    "commander": "^2.15.1",
     "inquirer": "^5.2.0",
-    "os-name": "^2.0.1"
+    "node-emoji": "^1.8.1",
+    "ora": "^2.0.0",
+    "os-name": "^2.0.1",
+    "ts-node": "^6.0.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/inquirer": "0.0.41",
+    "@types/node": "^9.6.6",
+    "@types/node-emoji": "^1.8.0",
+    "@types/ora": "^1.3.4",
+    "@types/os-name": "^2.0.0",
+    "jest": "^22.4.3",
+    "ts-jest": "^22.4.5",
+    "typescript": "^2.8.3"
+  }
 }
