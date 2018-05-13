@@ -1,13 +1,15 @@
 import { Question } from 'inquirer';
 
-export const generateInput = (name: string, defaultAnswer: string): (value: any) => Question | undefined => {
+export const generateInput = (name: string): (value: any) => (defaultAnwser: string) => Question | undefined => {
   return (value: string) => {
     if (value === undefined) {
-      return {
-        type: 'input',
-        name: name,
-        message: `${ name } :`,
-        default: defaultAnswer
+      return (defaultAnswer: string) => {
+        return {
+          type: 'input',
+          name: name,
+          message: `${ name } :`,
+          default: defaultAnswer
+        };
       };
     }
     return undefined;
