@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "allowJs": false,
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": [
+    "actions",
+    "bin",
+    "commands",
+    "lib"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
