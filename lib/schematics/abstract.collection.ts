@@ -6,7 +6,7 @@ export class AbstractCollection {
 
   public async execute(name: string, options: SchematicOption[]) {
     const command = this.buildCommandLine(name, options);
-    return this.runner.run(command);
+    await this.runner.run(command);
   }
 
   private buildCommandLine(name: string, options: SchematicOption[]): string {
