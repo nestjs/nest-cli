@@ -1,10 +1,14 @@
 import { AbstractCommand } from './abstract.command';
+import { CommanderStatic } from 'commander';
 
 export class InfoCommand extends AbstractCommand {
-  public load(program: any) {
+  public load(program: CommanderStatic) {
     program
-      .command('info', 'Display Nest CLI details')
+      .command('info')
       .alias('i')
-      .action(this.action.handle);
+      .description('Display Nest CLI details')
+      .action(async () => {
+        await this.action.handle();
+      });
   }
 }

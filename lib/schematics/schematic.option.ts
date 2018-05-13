@@ -1,4 +1,4 @@
-import { strings }from '@angular-devkit/core';
+import { strings } from '@angular-devkit/core';
 
 export class SchematicOption {
   constructor(private name: string, private value: boolean | string) {}
