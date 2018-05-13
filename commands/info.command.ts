@@ -7,8 +7,8 @@ export class InfoCommand extends AbstractCommand {
       .command('info')
       .alias('i')
       .description('Display Nest CLI details')
-      .action(() => {
-        this.action.handle();
+      .action(async () => {
+        await this.action.handle();
       });
   }
 }
