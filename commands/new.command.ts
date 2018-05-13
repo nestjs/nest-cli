@@ -10,7 +10,7 @@ export class NewCommand extends AbstractCommand {
       .alias('n')
       .description('Generate a new Nest application.')
       .option('--dry-run', 'Allow to test changes before execute command.')
-      .action((name: string, description: string, version: string, author: string, command: Command) => {
+      .action(async (name: string, description: string, version: string, author: string, command: Command) => {
         const options: Input[] = [];
         options.push(parse('dry-run')(command[ 'dryRun' ] !== undefined ? command[ 'dryRun' ] : false));
         const inputs: Input[] = [];
@@ -18,7 +18,7 @@ export class NewCommand extends AbstractCommand {
         inputs.push(parse('description')(description));
         inputs.push(parse('version')(version));
         inputs.push(parse('author')(author));
-        this.action.handle(inputs, options);
+        await this.action.handle(inputs, options);
       });
   }
 }

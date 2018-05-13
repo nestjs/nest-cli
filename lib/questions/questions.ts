@@ -3,7 +3,7 @@ import { Question } from 'inquirer';
 export const generateInput = (name: string): (value: any) => (defaultAnwser: string) => Question | undefined => {
   return (value: string) => {
     if (value === undefined) {
-      return (defaultAnswer: string) => {
+      return (defaultAnswer: string): Question => {
         return {
           type: 'input',
           name: name,
@@ -12,7 +12,7 @@ export const generateInput = (name: string): (value: any) => (defaultAnwser: str
         };
       };
     }
-    return undefined;
+    return (defaultAnswer: string) => undefined;
   };
 }
 
