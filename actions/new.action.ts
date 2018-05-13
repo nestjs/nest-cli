@@ -10,6 +10,10 @@ import { Input } from '../commands';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
+    console.log('inputs');
+    console.log(inputs);
+    console.log('options');
+    console.log(options);
     // const inputs: string[] = args.concat(await askForMissingInformation(args));
     // const inputs: Inputs = await askForMissingInformation(args);
     // await generateApplication(inputs, options);
