@@ -9,9 +9,6 @@ export class GenerateCommand extends AbstractCommand {
       .command('generate <schematic> <name> [path]')
       .alias('g')
       .description('Generate a Nest element.')
-      // .argument('<schematic>', 'Nest framework asset type')
-      // .argument('<name>', 'Asset name or path')
-      // .argument('[path]', 'Path to generate the asset')
       .option('--dry-run', 'Allow to test changes before execute command')
       .action(async (schematic: string, name: string, path: string, command: Command) => {
         const options: Input[] = [];
