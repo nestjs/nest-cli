@@ -61,6 +61,12 @@ describe('Schematic Option', () => {
       option: 'version',
       input: '1.0.0',
       expected: '1.0.0'
+    },
+    {
+      description: 'should manage version',
+      option: 'path',
+      input: 'path/to/generate',
+      expected: 'path/to/generate'
     }
   ].forEach((test) => {
     it(test.description, () => {

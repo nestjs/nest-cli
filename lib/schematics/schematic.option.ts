@@ -7,7 +7,7 @@ export class SchematicOption {
     if (typeof this.value === 'string') {
       if (this.name === 'name') {
         return `--${ this.name }=${ this.format() }`;
-      } else if (this.name === 'version') {
+      } else if (this.name === 'version' || this.name === 'path') {
         return `--${ this.name }=${ this.value }`
       } else {
         return `--${ this.name }="${ this.value }"`
