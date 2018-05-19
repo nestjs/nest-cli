@@ -5,7 +5,13 @@ export class SchematicOption {
 
   public toCommandString(): string {
     if (typeof this.value === 'string') {
-      return `--${ strings.dasherize(this.name) }=${ this.format() }`;
+      if (this.name === 'name') {
+        return `--${ this.name }=${ this.format() }`;
+      } else if (this.name === 'version') {
+        return `--${ this.name }=${ this.value }`
+      } else {
+        return `--${ this.name }="${ this.value }"`
+      }
     } else {
       return `--${ strings.dasherize(this.name) }=${ this.value }`;
     }
