@@ -9,12 +9,10 @@ export class PackageManagerFactory {
     switch (name) {
       case PackageManager.NPM:
         return new NpmPackageManager();
-
       case PackageManager.YARN:
         return new YarnPackageManager();
-
       default:
-        throw new Error('Package manager type not handled');
+        throw new Error(`Package manager ${ name } is not managed.`);
     }
   }
 
