@@ -15,7 +15,9 @@ export class NewAction extends AbstractAction {
     const answers: Answers = await askForMissingInformation(questions);
     const args: Input[] = replaceInputMissingInformation(inputs, answers);
     await generateApplicationFiles(inputs, options);
-    await installPackages(inputs, options);
+    if (!options.find((option) => option.name === 'skip-install')) {
+      await installPackages(inputs, options);
+    }
   }
 }
 
@@ -61,7 +63,12 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
 };
 
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
-  return options.map((option) => new SchematicOption(option.name, option.value));
+  return options.reduce((schematicOptions: SchematicOption[], option: Input) => {
+    if (option.name !== 'skip-install') {
+      schematicOptions.push(new SchematicOption(option.name, option.value));
+    }
+    return schematicOptions;
+  }, []);
 }
 
 const installPackages = async (inputs: Input[], options: Input[]) => {
