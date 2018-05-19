@@ -13,7 +13,7 @@ export class AbstractRunner {
       cwd: cwd
     };
     return new Promise<null | string>((resolve, reject) => {
-      const child: ChildProcess = spawn(this.binary, args, options);
+      const child: ChildProcess = spawn(`"${ this.binary }"`, args, options);
       if (collect) {
         child.stdout.on('data', (data) => resolve(data.toString().replace(/\r\n|\n/, '')));
       }
