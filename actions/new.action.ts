@@ -64,11 +64,12 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
   const schematicOptions: SchematicOption[] = mapSchematicOptions(args.concat(options));
   await collection.execute('application', schematicOptions);
+  console.info();
 };
 
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce((schematicOptions: SchematicOption[], option: Input) => {
-    if (option.name !== 'skip-install') {
+    if (option.name !== 'skip-install' && option.value !== 'package-manager') {
       schematicOptions.push(new SchematicOption(option.name, option.value));
     }
     return schematicOptions;
@@ -78,12 +79,22 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
 const installPackages = async (inputs: Input[], options: Input[]) => {
   const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
   const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
-
+  const inputPackageManager = options.find((option) => option.name === 'package-manager')!.value as string;
   if (dryRunMode) {
     console.info();
     console.info(chalk.green(messages.DRY_RUN_MODE));
     console.info();
     return;
+  } else if (inputPackageManager !== undefined) {
+    try {
+      const packageManager = PackageManagerFactory.create(inputPackageManager);
+      await packageManager.install(installDirectory);
+    } catch (error) {
+      console.error(chalk.red(error.message));
+    }
+  } else {
+    const packageManager: AbstractPackageManager = await selectPackageManager();
+    await packageManager.install(installDirectory);
   }
 
   const packageManager: AbstractPackageManager = await selectPackageManager();
