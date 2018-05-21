@@ -11,16 +11,16 @@ export class SchematicOption {
     }
   }
 
-  private format(): string {
+  private format() {
     return strings
       .dasherize(this.value as string)
       .split('')
       .reduce((content, char) => {
         if (char === '(' || char === ')' || char === '[' || char === ']') {
           return `${ content }\\${ char }`;
-        } else {
-          return `${ content }${ char }`;
         }
+
+        return `${ content }${ char }`;
       }, '');
   }
 }

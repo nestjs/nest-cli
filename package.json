@@ -13,7 +13,8 @@
     "nest": "bin/nest.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
+    "lint": "./node_modules/tslint/bin/tslint -p .",
     "start": "node bin/nest.js",
     "test": "jest --config test/jest-config.json"
   },
@@ -48,6 +49,7 @@
     "@types/os-name": "^2.0.0",
     "jest": "^22.4.3",
     "ts-jest": "^22.4.5",
+    "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   }
 }

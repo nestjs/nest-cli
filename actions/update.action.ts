@@ -1,13 +1,14 @@
-import { AbstractAction } from './abstract.action';
+import chalk from 'chalk';
+import { Input } from '../commands';
 import { NestDependencyManager } from '../lib/dependency-managers';
 import { PackageManagerFactory } from '../lib/package-managers';
-import { Input } from '../commands';
-import chalk from 'chalk';
+import { AbstractAction } from './abstract.action';
 
 export class UpdateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    const force: Input = options.find((option) => option.name === 'force');
-    const tag: Input = options.find((option) => option.name === 'tag');
+    const force = options.find((option) => option.name === 'force') as Input;
+    const tag = options.find((option) => option.name === 'tag') as Input;
+
     if (force.value && tag.value === undefined) {
       console.error(chalk.red('You should specify a tag when force update.'));
     } else {
