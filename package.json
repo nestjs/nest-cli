@@ -30,7 +30,7 @@
   "dependencies": {
     "@angular-devkit/core": "^0.4.9",
     "@angular-devkit/schematics-cli": "^0.4.9",
-    "@nestjs/schematics": "^5.3.1",
+    "@nestjs/schematics": "^5.4.0",
     "@types/jest": "^22.2.3",
     "chalk": "^2.4.0",
     "commander": "^2.15.1",
