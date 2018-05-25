@@ -14,7 +14,7 @@ export class NewAction extends AbstractAction {
     const answers: Answers = await askForMissingInformation(questions);
     const args: Input[] = replaceInputMissingInformation(inputs, answers);
     await generateApplicationFiles(inputs, options);
-    if (!options.find((option) => option.name === 'skip-install')) {
+    if (!options.find((option) => option.name === 'skip-install')!.value) {
       await installPackages(inputs, options);
     }
   }
@@ -30,13 +30,10 @@ const generateDefaultAnswer = (name: string) => {
   switch (name) {
     case 'name':
       return 'nestjs-app-name';
-
     case 'description':
       return 'description';
-
     case 'version':
       return '1.0.0';
-
     case 'author':
     default:
       return '';
