@@ -15,7 +15,7 @@ export class NewCommand extends AbstractCommand {
       .action(async (name: string, description: string, version: string, author: string, command: Command) => {
         const options: Input[] = [];
         options.push(parse('dry-run')(command[ 'dryRun' ] !== undefined ? command[ 'dryRun' ] : false));
-        options.push(parse('skip-install')(command[ 'skip-install' ] !== undefined ? command[ 'skip-install' ] : false));
+        options.push(parse('skip-install')(command[ 'skipInstall' ] !== undefined ? command[ 'skipInstall' ] : false));
         options.push(parse('package-manager')(command[ 'packageManager' ]));
         const inputs: Input[] = [];
         inputs.push(parse('name')(name));
