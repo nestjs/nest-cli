@@ -1,11 +1,11 @@
+import { Runner, RunnerFactory } from '../runners';
+import { YarnRunner } from '../runners/yarn.runner';
 import { AbstractPackageManager } from './abstract.package-manager';
-import { RunnerFactory, Runner } from '../runners';
 import { PackageManager } from './package-manager';
-import { messages } from '../ui';
 
 export class YarnPackageManager extends AbstractPackageManager {
   constructor() {
-    super(RunnerFactory.create(Runner.YARN));
+    super(RunnerFactory.create(Runner.YARN) as YarnRunner);
   }
 
   public get name() {

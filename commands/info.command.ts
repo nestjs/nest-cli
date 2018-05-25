@@ -1,5 +1,5 @@
-import { AbstractCommand } from './abstract.command';
 import { CommanderStatic } from 'commander';
+import { AbstractCommand } from './abstract.command';
 
 export class InfoCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
