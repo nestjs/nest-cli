@@ -1,3 +1,4 @@
 .idea/
 .envrc
+*.js
 node_modules/

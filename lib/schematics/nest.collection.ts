@@ -1,5 +1,5 @@
-import { AbstractCollection } from './abstract.collection';
 import { AbstractRunner } from '../runners';
+import { AbstractCollection } from './abstract.collection';
 import { SchematicOption } from './schematic.option';
 
 interface Schematic {
@@ -22,7 +22,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
-    { name: 'service', alias: 's' }
+    { name: 'service', alias: 's' },
   ];
 
   constructor(runner: AbstractRunner) {
@@ -35,10 +35,12 @@ export class NestCollection extends AbstractCollection {
   }
 
   private validate(name: string) {
-    const schematic = this.schematics.find((schematic) => schematic.name === name || schematic.alias === name);
+    const schematic = this.schematics.find((s) => s.name === name || s.alias === name);
+
     if (schematic === undefined || schematic === null) {
       throw new Error(`Invalid schematic ${ name }`);
     }
+
     return schematic.name;
   }
 }

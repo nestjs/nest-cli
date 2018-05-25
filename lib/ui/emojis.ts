@@ -1,4 +1,4 @@
-import { get } from "node-emoji";
+import { get } from 'node-emoji';
 
 export const emojis = {
   HEART: get('heart'),
@@ -15,5 +15,5 @@ export const emojis = {
   RAISED_HANDS: get('raised_hands'),
   POINT_RIGHT: get('point_right'),
   ZAP: get('zap'),
-  BOOM: get('boom')
+  BOOM: get('boom'),
 };
