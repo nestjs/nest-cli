@@ -33,7 +33,7 @@ const generateDefaultAnswer = (name: string) => {
     case 'description':
       return 'description';
     case 'version':
-      return '1.0.0';
+      return '0.0.0';
     case 'author':
     default:
       return '';
