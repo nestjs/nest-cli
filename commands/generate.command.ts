@@ -1,5 +1,4 @@
 import { Command, CommanderStatic } from 'commander';
-import { parse } from '../lib/inputs/parse';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
@@ -12,11 +11,11 @@ export class GenerateCommand extends AbstractCommand {
       .option('--dry-run', 'Allow to test changes before execute command')
       .action(async (schematic: string, name: string, path: string, command: Command) => {
         const options: Input[] = [];
-        options.push(parse('dry-run')(command.dryRun !== undefined ? command.dryRun : false));
+        options.push({ name: 'dry-run', value: !!command.dryRun });
         const inputs: Input[] = [];
-        inputs.push(parse('schematic')(schematic));
-        inputs.push(parse('name')(name));
-        inputs.push(parse('path')(path));
+        inputs.push({ name: 'schematic', value: schematic });
+        inputs.push({ name: 'name', value: name });
+        inputs.push({ name: 'path', value: path });
         await this.action.handle(inputs, options);
       });
   }
