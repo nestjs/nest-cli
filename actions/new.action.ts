@@ -93,9 +93,6 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
     const packageManager: AbstractPackageManager = await selectPackageManager();
     await packageManager.install(installDirectory);
   }
-
-  const packageManager: AbstractPackageManager = await selectPackageManager();
-  await packageManager.install(installDirectory);
 };
 
 const selectPackageManager = async (): Promise<AbstractPackageManager> => {
