@@ -14,7 +14,8 @@ export class NewAction extends AbstractAction {
     const answers: Answers = await askForMissingInformation(questions);
     const args: Input[] = replaceInputMissingInformation(inputs, answers);
     await generateApplicationFiles(inputs, options);
-    if (!options.find((option) => option.name === 'skip-install')!.value) {
+    const shouldSkipInstall = options.some((option) => option.name === 'skip-install' && option.value === true);
+    if (!shouldSkipInstall) {
       await installPackages(inputs, options);
     }
   }
@@ -77,25 +78,26 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
   const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
   const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
   const inputPackageManager = options.find((option) => option.name === 'package-manager')!.value as string;
+  let packageManager: AbstractPackageManager;
+
   if (dryRunMode) {
     console.info();
     console.info(chalk.green(messages.DRY_RUN_MODE));
     console.info();
     return;
-  } else if (inputPackageManager !== undefined) {
+  }
+
+  if (inputPackageManager !== undefined) {
     try {
-      const packageManager = PackageManagerFactory.create(inputPackageManager);
+      packageManager = PackageManagerFactory.create(inputPackageManager);
       await packageManager.install(installDirectory);
     } catch (error) {
       console.error(chalk.red(error.message));
     }
   } else {
-    const packageManager: AbstractPackageManager = await selectPackageManager();
+    packageManager = await selectPackageManager();
     await packageManager.install(installDirectory);
   }
-
-  const packageManager: AbstractPackageManager = await selectPackageManager();
-  await packageManager.install(installDirectory);
 };
 
 const selectPackageManager = async (): Promise<AbstractPackageManager> => {
