@@ -14,6 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "watch": "npm run build -- --watch",
     "lint": "./node_modules/tslint/bin/tslint -p .",
     "start": "node bin/nest.js",
     "test": "jest --config test/jest-config.json"

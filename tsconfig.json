@@ -6,8 +6,8 @@
     "module": "commonjs",
     "target": "es6",
     "skipLibCheck": true,
-    "sourceMap": false,
-    "strict": true,
+    "sourceMap": true,
+    "strict": true
   },
   "include": [
     "actions",

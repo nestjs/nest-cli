@@ -1,4 +1,11 @@
 .idea/
+.vscode/
+!.vscode/launch.json
 .envrc
 *.js
 node_modules/
+
+actions/**/*.js*
+bin/**/*.js*
+commands/**/*.js*
+lib/**/*.js*
