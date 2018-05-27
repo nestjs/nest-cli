@@ -10,12 +10,10 @@ export class AbstractCollection {
   }
 
   private buildCommandLine(name: string, options: SchematicOption[]): string {
-    return `${ this.collection }:${ name }${ this.buildOptions(options) }`;
+    return `${this.collection}:${name}${this.buildOptions(options)}`;
   }
 
   private buildOptions(options: SchematicOption[]): string {
-    return options.reduce((line, option) => {
-      return line.concat(` ${ option.toCommandString() }`);
-    }, '');
+    return options.reduce((line, option) => line.concat(` ${option.toCommandString()}`), '');
   }
 }

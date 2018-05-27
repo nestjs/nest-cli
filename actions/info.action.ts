@@ -39,9 +39,9 @@ const displayPackageManagerVersion = async () => {
   const manager: AbstractPackageManager = await PackageManagerFactory.find();
   try {
     const version: string = await manager.version();
-    console.info(`${ manager.name } Version    :`, chalk.blue(version));
+    console.info(`${manager.name} Version    :`, chalk.blue(version));
   } catch {
-    console.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
+    console.error(`${manager.name} Version    :`, chalk.red('Unknown'));
   }
 };
 
@@ -68,8 +68,9 @@ const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependen
 };
 
 const displayNestVersions = (dependencies: PacakgeJsonDependencies) => {
-  buildNestVersionsMessage(dependencies)
-    .forEach((dependency) => console.info(dependency.name, chalk.blue(dependency.value)));
+  buildNestVersionsMessage(dependencies).forEach(dependency =>
+    console.info(dependency.name, chalk.blue(dependency.value)),
+  );
 };
 
 const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
@@ -79,11 +80,11 @@ const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDe
 
 const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
   const nestDependencies: NestDependency[] = [];
-  Object.keys(dependencies).forEach((key) => {
+  Object.keys(dependencies).forEach(key => {
     if (key.indexOf('@nestjs') > -1) {
       nestDependencies.push({
-        name: `${ key.replace(/@nestjs\//, '') } version`,
-        value: dependencies[ key ],
+        name: `${key.replace(/@nestjs\//, '')} version`,
+        value: dependencies[key],
       });
     }
   });
@@ -92,8 +93,8 @@ const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDep
 
 const format = (dependencies: NestDependency[]): NestDependency[] => {
   const sorted = dependencies.sort((dependencyA, dependencyB) => dependencyB.name.length - dependencyA.name.length);
-  const length = sorted[ 0 ].name.length;
-  sorted.forEach((dependency) => {
+  const length = sorted[0].name.length;
+  sorted.forEach(dependency => {
     if (dependency.name.length < length) {
       dependency.name = rightPad(dependency.name, length);
     }

@@ -1,15 +1,17 @@
 {
     "defaultSeverity": "error",
     "extends": [
-        "tslint:recommended"
-    ],
+        "tslint:recommended",
+        "tslint-config-prettier"
+      ],
     "jsRules": {},
     "rules": {
         "interface-name": false,
         "member-ordering": false,
         "no-console": false,
         "object-literal-sort-keys": false,
+        "prettier": true,
         "quotemark": [true, "single", "avoid-escape", "avoid-template"]
     },
-    "rulesDirectory": []
+    "rulesDirectory": ["tslint-plugin-prettier"]
 }

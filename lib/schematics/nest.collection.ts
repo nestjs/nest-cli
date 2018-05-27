@@ -35,10 +35,10 @@ export class NestCollection extends AbstractCollection {
   }
 
   private validate(name: string) {
-    const schematic = this.schematics.find((s) => s.name === name || s.alias === name);
+    const schematic = this.schematics.find(s => s.name === name || s.alias === name);
 
     if (schematic === undefined || schematic === null) {
-      throw new Error(`Invalid schematic ${ name }`);
+      throw new Error(`Invalid schematic ${name}`);
     }
 
     return schematic.name;

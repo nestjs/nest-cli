@@ -14,7 +14,7 @@ export class NewAction extends AbstractAction {
     const answers: Answers = await askForMissingInformation(questions);
     const args: Input[] = replaceInputMissingInformation(inputs, answers);
     await generateApplicationFiles(inputs, options);
-    if (!options.find((option) => option.name === 'skip-install')!.value) {
+    if (!options.find(option => option.name === 'skip-install')!.value) {
       await installPackages(inputs, options);
     }
   }
@@ -22,8 +22,8 @@ export class NewAction extends AbstractAction {
 
 const generateQuestionsForMissingInputs = (inputs: Input[]): Question[] => {
   return inputs
-    .map((input) => generateInput(input.name)(input.value)(generateDefaultAnswer(input.name)))
-    .filter((question) => question !== undefined) as Array<Question<Answers>>;
+    .map(input => generateInput(input.name)(input.value)(generateDefaultAnswer(input.name)))
+    .filter(question => question !== undefined) as Array<Question<Answers>>;
 };
 
 const generateDefaultAnswer = (name: string) => {
@@ -54,7 +54,7 @@ const askForMissingInformation = async (questions: Question[]): Promise<Answers>
 };
 
 const replaceInputMissingInformation = (inputs: Input[], answers: Answers): Input[] => {
-  return inputs.map((input) => input.value = input.value !== undefined ? input.value : answers[ input.name ]);
+  return inputs.map(input => (input.value = input.value !== undefined ? input.value : answers[input.name]));
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
@@ -74,9 +74,9 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
 };
 
 const installPackages = async (inputs: Input[], options: Input[]) => {
-  const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
-  const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
-  const inputPackageManager = options.find((option) => option.name === 'package-manager')!.value as string;
+  const installDirectory = inputs.find(input => input.name === 'name')!.value as string;
+  const dryRunMode = options.find(option => option.name === 'dry-run')!.value as boolean;
+  const inputPackageManager = options.find(option => option.name === 'package-manager')!.value as string;
   if (dryRunMode) {
     console.info();
     console.info(chalk.green(messages.DRY_RUN_MODE));
@@ -100,12 +100,12 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
 
 const selectPackageManager = async (): Promise<AbstractPackageManager> => {
   const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers[ 'package-manager' ]);
+  return PackageManagerFactory.create(answers['package-manager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
   const questions: Question[] = [
-    generateSelect('package-manager')(messages.PACKAGE_MANAGER_QUESTION)([ PackageManager.NPM, PackageManager.YARN ]),
+    generateSelect('package-manager')(messages.PACKAGE_MANAGER_QUESTION)([PackageManager.NPM, PackageManager.YARN]),
   ];
   const prompt = inquirer.createPromptModule();
   return await prompt(questions);

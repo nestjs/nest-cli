@@ -11,7 +11,10 @@ export class NewCommand extends AbstractCommand {
       .description('Generate a new Nest application.')
       .option('-d, --dry-run', 'Allow to test changes before execute command.')
       .option('-s, --skip-install', 'Allow to skip package installation.')
-      .option('-p, --package-manager [package-manager]', 'Allow to specify package manager to skip package-manager selection.')
+      .option(
+        '-p, --package-manager [package-manager]',
+        'Allow to specify package manager to skip package-manager selection.',
+      )
       .action(async (name: string, description: string, version: string, author: string, command: Command) => {
         const options: Input[] = [];
         options.push(parse('dry-run')(command.dryRun !== undefined ? command.dryRun : false));

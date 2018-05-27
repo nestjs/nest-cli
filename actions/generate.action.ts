@@ -14,7 +14,7 @@ const generateFiles = async (inputs: Input[]) => {
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
 
   try {
-    const schematicInput = inputs.find((input) => input.name === 'schematic');
+    const schematicInput = inputs.find(input => input.name === 'schematic');
 
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
@@ -28,7 +28,7 @@ const generateFiles = async (inputs: Input[]) => {
 
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
-  inputs.forEach((input) => {
+  inputs.forEach(input => {
     if (input.name !== 'schematic' && input.value !== undefined) {
       options.push(new SchematicOption(input.name, input.value));
     }

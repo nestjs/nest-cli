@@ -13,14 +13,7 @@ export abstract class AbstractPackageManager {
     const spinner = ora({
       spinner: {
         interval: 120,
-        frames: [
-          '▹▹▹▹▹',
-          '▸▹▹▹▹',
-          '▹▸▹▹▹',
-          '▹▹▸▹▹',
-          '▹▹▹▸▹',
-          '▹▹▹▹▸',
-        ],
+        frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
       text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
     });
@@ -50,14 +43,14 @@ export abstract class AbstractPackageManager {
   }
 
   public async addProduction(dependencies: string[], tag: string) {
-    const taggedDependencies = dependencies.map((dependency) => `${ dependency }@${ tag }`);
-    const commandArguments = `install --save ${ taggedDependencies.join(' ') }`;
+    const taggedDependencies = dependencies.map(dependency => `${dependency}@${tag}`);
+    const commandArguments = `install --save ${taggedDependencies.join(' ')}`;
     await this.add(commandArguments);
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
-    const taggedDependencies = dependencies.map((dependency) => `${ dependency }@${ tag }`);
-    const commandArguments = `install --save-dev ${ taggedDependencies.join(' ') }`;
+    const taggedDependencies = dependencies.map(dependency => `${dependency}@${tag}`);
+    const commandArguments = `install --save-dev ${taggedDependencies.join(' ')}`;
     await this.add(commandArguments);
   }
 
@@ -103,12 +96,12 @@ export abstract class AbstractPackageManager {
   }
 
   public async updateProduction(dependencies: string[]) {
-    const commandArguments: string = `update ${ dependencies.join(' ')}`;
+    const commandArguments: string = `update ${dependencies.join(' ')}`;
     await this.update(commandArguments);
   }
 
   public async updateDevelopement(dependencies: string[]) {
-    const commandArguments: string = `update ${ dependencies.join(' ')}`;
+    const commandArguments: string = `update ${dependencies.join(' ')}`;
     await this.update(commandArguments);
   }
 
@@ -128,12 +121,12 @@ export abstract class AbstractPackageManager {
   }
 
   public async deleteProduction(dependencies: string[]) {
-    const commandArguments: string = `uninstall --save ${ dependencies.join(' ') }`;
+    const commandArguments: string = `uninstall --save ${dependencies.join(' ')}`;
     await this.delete(commandArguments);
   }
 
   public async deleteDevelopment(dependencies: string[]) {
-    const commandArguments: string = `uninstall --save-dev ${ dependencies.join(' ') }`;
+    const commandArguments: string = `uninstall --save-dev ${dependencies.join(' ')}`;
     await this.delete(commandArguments);
   }
 
