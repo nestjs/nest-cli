@@ -77,16 +77,14 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
 const installPackages = async (inputs: Input[], options: Input[]) => {
   const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
   const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
-  const inputPackageManager = options.find((option) => option.name === 'package-manager')!.value as string;
+  const inputPackageManager: string = options.find((option) => option.name === 'package-manager')!.value as string;
   let packageManager: AbstractPackageManager;
-
   if (dryRunMode) {
     console.info();
     console.info(chalk.green(messages.DRY_RUN_MODE));
     console.info();
     return;
   }
-
   if (inputPackageManager !== undefined) {
     try {
       packageManager = PackageManagerFactory.create(inputPackageManager);

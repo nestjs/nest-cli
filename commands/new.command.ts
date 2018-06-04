@@ -18,6 +18,7 @@ export class NewCommand extends AbstractCommand {
         const options: Input[] = [];
         options.push({ name: 'dry-run', value: !!command.dryRun });
         options.push({ name: 'skip-install', value: !!command.skipInstall });
+        options.push({ name: 'package-manager', value: command.packageManager });
         const inputs: Input[] = [];
         inputs.push({ name: 'name', value: name });
         inputs.push({ name: 'description', value: description });

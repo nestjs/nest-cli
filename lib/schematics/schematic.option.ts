@@ -8,9 +8,9 @@ export class SchematicOption {
       if (this.name === 'name') {
         return `--${ this.name }=${ this.format() }`;
       } else if (this.name === 'version' || this.name === 'path') {
-        return `--${ this.name }=${ this.value }`
+        return `--${ this.name }=${ this.value }`;
       } else {
-        return `--${ this.name }="${ this.value }"`
+        return `--${ this.name }="${ this.value }"`;
       }
     } else {
       return `--${ strings.dasherize(this.name) }=${ this.value }`;
@@ -25,7 +25,6 @@ export class SchematicOption {
         if (char === '(' || char === ')' || char === '[' || char === ']') {
           return `${ content }\\${ char }`;
         }
-
         return `${ content }${ char }`;
       }, '');
   }

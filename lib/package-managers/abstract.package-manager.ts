@@ -4,7 +4,7 @@ import * as ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
 import { messages } from '../ui';
-import {PackageManagerCommands} from './package-manager-commands';
+import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
 
 export abstract class AbstractPackageManager {
@@ -51,13 +51,15 @@ export abstract class AbstractPackageManager {
   }
 
   public async addProduction(dependencies: string[], tag: string) {
-    const commandArguments: string = `${[this.cli.add, this.cli.saveFlag].filter(i => i).join(' ')} ${ dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ') }`;
-    await this.add(commandArguments);
+    const command: string = [this.cli.add, this.cli.saveFlag].filter((i) => i).join(' ');
+    const args: string = dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ');
+    await this.add(`${ command } ${ args }`);
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
-    const commandArguments: string = `${this.cli.add} ${this.cli.saveDevFlag} ${ dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ') }`;
-    await this.add(commandArguments);
+    const command: string = `${ this.cli.add } ${ this.cli.saveDevFlag }`;
+    const args: string = dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ');
+    await this.add(`${ command } ${ args }`);
   }
 
   private async add(commandArguments: string) {
@@ -127,8 +129,9 @@ export abstract class AbstractPackageManager {
   }
 
   public async deleteProduction(dependencies: string[]) {
-    const commandArguments: string = `${[this.cli.remove, this.cli.saveFlag].filter(i => i).join(' ')} ${ dependencies.join(` `) }`;
-    await this.delete(commandArguments);
+    const command: string = [ this.cli.remove, this.cli.saveFlag ].filter((i) => i).join(' ');
+    const args: string = dependencies.join(' ');
+    await this.delete(`${ command } ${ args }`);
   }
 
   public async deleteDevelopment(dependencies: string[]) {

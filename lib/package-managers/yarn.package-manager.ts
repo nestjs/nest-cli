@@ -3,7 +3,7 @@ import { YarnRunner } from '../runners/yarn.runner';
 import { messages } from '../ui';
 import { AbstractPackageManager } from './abstract.package-manager';
 import { PackageManager } from './package-manager';
-import {PackageManagerCommands} from './package-manager-commands';
+import { PackageManagerCommands } from './package-manager-commands';
 
 export class YarnPackageManager extends AbstractPackageManager {
 
