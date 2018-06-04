@@ -1,7 +1,7 @@
 import chalk from 'chalk';
+import { NpmRunner } from './npm.runner';
 import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';
-import { NpmRunner } from './npm.runner';
 import { YarnRunner } from './yarn.runner';
 
 export class RunnerFactory {
@@ -9,10 +9,13 @@ export class RunnerFactory {
     switch (runner) {
       case Runner.SCHEMATIC:
         return new SchematicRunner();
+
       case Runner.NPM:
         return new NpmRunner();
+
       case Runner.YARN:
         return new YarnRunner();
+
       default:
         console.info(chalk.yellow(`[WARN] Unsupported runner: ${ runner }`));
     }

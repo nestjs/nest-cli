@@ -1,10 +1,10 @@
-import { NewCommand } from './new.command';
-import { NewAction, GenerateAction, InfoAction } from '../actions';
+import { CommanderStatic } from 'commander';
+import { GenerateAction, InfoAction, NewAction } from '../actions';
+import { UpdateAction } from '../actions/update.action';
 import { GenerateCommand } from './generate.command';
 import { InfoCommand } from './info.command';
+import { NewCommand } from './new.command';
 import { UpdateCommand } from './update.command';
-import { UpdateAction } from '../actions/update.action';
-import { CommanderStatic } from 'commander';
 
 export class CommandLoader {
   public static load(program: CommanderStatic): void {

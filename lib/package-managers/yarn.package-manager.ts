@@ -1,14 +1,29 @@
-import { AbstractPackageManager } from './abstract.package-manager';
-import { RunnerFactory, Runner } from '../runners';
-import { PackageManager } from './package-manager';
+import { Runner, RunnerFactory } from '../runners';
+import { YarnRunner } from '../runners/yarn.runner';
 import { messages } from '../ui';
+import { AbstractPackageManager } from './abstract.package-manager';
+import { PackageManager } from './package-manager';
+import { PackageManagerCommands } from './package-manager-commands';
 
 export class YarnPackageManager extends AbstractPackageManager {
+
   constructor() {
-    super(RunnerFactory.create(Runner.YARN));
+    super(RunnerFactory.create(Runner.YARN) as YarnRunner);
   }
 
   public get name() {
     return PackageManager.YARN.toUpperCase();
   }
+
+  get cli(): PackageManagerCommands {
+    return {
+      install: 'install',
+      add: 'add',
+      update: 'upgrade',
+      remove: 'remove',
+      saveFlag: '',
+      saveDevFlag: '-D',
+    };
+  }
+
 }

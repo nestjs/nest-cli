@@ -1,12 +1,10 @@
-import { readFile } from 'fs';
-import { join } from 'path';
-import { AbstractPackageManager, ProjectDependency } from '../package-managers';
 import * as ora from 'ora';
+import { AbstractPackageManager, ProjectDependency } from '../package-managers';
 import { messages } from '../ui';
 
 export class NestDependencyManager {
   constructor(private packageManager: AbstractPackageManager) {}
-  
+
   public async read(): Promise<string[]> {
     const dependencies: string[] = [];
     const production: ProjectDependency[] = await this.packageManager.getProduction();
@@ -18,17 +16,17 @@ export class NestDependencyManager {
   public async update(force: boolean, tag: string) {
     const spinner = ora({
       spinner: {
-        "interval": 120,
-        "frames": [
-          "▹▹▹▹▹",
-          "▸▹▹▹▹",
-          "▹▸▹▹▹",
-          "▹▹▸▹▹",
-          "▹▹▹▸▹",
-          "▹▹▹▹▸"
-        ]
+        interval: 120,
+        frames: [
+          '▹▹▹▹▹',
+          '▸▹▹▹▹',
+          '▹▸▹▹▹',
+          '▹▹▸▹▹',
+          '▹▹▹▸▹',
+          '▹▹▹▹▸',
+        ],
       },
-      text: messages.PACKAGE_MANAGER_UPDATE_IN_PROGRESS
+      text: messages.PACKAGE_MANAGER_UPDATE_IN_PROGRESS,
     });
     spinner.start();
     const dependencies: string[] = await this.read();

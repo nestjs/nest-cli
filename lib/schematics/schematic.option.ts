@@ -5,22 +5,27 @@ export class SchematicOption {
 
   public toCommandString(): string {
     if (typeof this.value === 'string') {
-      return `--${ strings.dasherize(this.name) }=${ this.format() }`;
+      if (this.name === 'name') {
+        return `--${ this.name }=${ this.format() }`;
+      } else if (this.name === 'version' || this.name === 'path') {
+        return `--${ this.name }=${ this.value }`;
+      } else {
+        return `--${ this.name }="${ this.value }"`;
+      }
     } else {
       return `--${ strings.dasherize(this.name) }=${ this.value }`;
     }
   }
 
-  private format(): string {
+  private format() {
     return strings
       .dasherize(this.value as string)
       .split('')
       .reduce((content, char) => {
         if (char === '(' || char === ')' || char === '[' || char === ']') {
           return `${ content }\\${ char }`;
-        } else {
-          return `${ content }${ char }`;
         }
+        return `${ content }${ char }`;
       }, '');
   }
 }
