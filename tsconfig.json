@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
+    "allowJs": false,
+    "declaration": false,
+    "lib": ["es2017"],
     "module": "commonjs",
     "target": "es6",
-    "allowJs": false,
+    "skipLibCheck": true,
     "sourceMap": false,
-    "declaration": false
+    "strict": true,
   },
   "include": [
     "actions",

@@ -1,11 +1,11 @@
-import { AbstractAction } from './abstract.action';
-import { platform, release } from 'os';
 import chalk from 'chalk';
-import { BANNER, messages } from '../lib/ui';
-import osName = require('os-name');
-import { PackageManagerFactory, AbstractPackageManager } from '../lib/package-managers';
 import { readFile } from 'fs';
+import { platform, release } from 'os';
+import osName = require('os-name');
 import { join } from 'path';
+import { AbstractPackageManager, PackageManagerFactory } from '../lib/package-managers';
+import { BANNER, messages } from '../lib/ui';
+import { AbstractAction } from './abstract.action';
 
 interface PacakgeJsonDependencies {
   [key: string]: string;
@@ -26,14 +26,14 @@ export class InfoAction extends AbstractAction {
 
 const displayBanner = () => {
   console.info(chalk.red(BANNER));
-}
+};
 
 const displaySystemInformation = async () => {
   console.info(chalk.green('[System Information]'));
   console.info('OS Version     :', chalk.blue(osName(platform(), release())));
   console.info('NodeJS Version :', chalk.blue(process.version));
   await displayPackageManagerVersion();
-}
+};
 
 const displayPackageManagerVersion = async () => {
   const manager: AbstractPackageManager = await PackageManagerFactory.find();
@@ -43,7 +43,7 @@ const displayPackageManagerVersion = async () => {
   } catch {
     console.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
   }
-}
+};
 
 const displayNestInformation = async () => {
   console.info(chalk.green('[Nest Information]'));
@@ -53,7 +53,7 @@ const displayNestInformation = async () => {
   } catch {
     console.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
-}
+};
 
 const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependencies> => {
   return new Promise<PacakgeJsonDependencies>((resolve, reject) => {
@@ -65,17 +65,17 @@ const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependen
       }
     });
   });
-}
+};
 
 const displayNestVersions = (dependencies: PacakgeJsonDependencies) => {
   buildNestVersionsMessage(dependencies)
     .forEach((dependency) => console.info(dependency.name, chalk.blue(dependency.value)));
-}
+};
 
 const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
   const nestDependencies = collectNestDependencies(dependencies);
   return format(nestDependencies);
-}
+};
 
 const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
   const nestDependencies: NestDependency[] = [];
@@ -83,12 +83,12 @@ const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDep
     if (key.indexOf('@nestjs') > -1) {
       nestDependencies.push({
         name: `${ key.replace(/@nestjs\//, '') } version`,
-        value: dependencies[ key ]
+        value: dependencies[ key ],
       });
     }
   });
   return nestDependencies;
-}
+};
 
 const format = (dependencies: NestDependency[]): NestDependency[] => {
   const sorted = dependencies.sort((dependencyA, dependencyB) => dependencyB.name.length - dependencyA.name.length);
@@ -101,11 +101,11 @@ const format = (dependencies: NestDependency[]): NestDependency[] => {
     dependency.value = dependency.value.replace(/(\^|\~)/, '');
   });
   return sorted;
-}
+};
 
 const rightPad = (name: string, length: number): string => {
   while (name.length < length) {
     name = name.concat(' ');
   }
   return name;
-}
+};

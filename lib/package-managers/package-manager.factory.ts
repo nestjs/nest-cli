@@ -1,7 +1,7 @@
 import { readdir } from 'fs';
-import { PackageManager } from './package-manager';
 import { AbstractPackageManager } from './abstract.package-manager';
 import { NpmPackageManager } from './npm.package-manager';
+import { PackageManager } from './package-manager';
 import { YarnPackageManager } from './yarn.package-manager';
 
 export class PackageManagerFactory {
@@ -11,6 +11,8 @@ export class PackageManagerFactory {
         return new NpmPackageManager();
       case PackageManager.YARN:
         return new YarnPackageManager();
+      default:
+        throw new Error(`Package manager ${ name } is not managed.`);
     }
   }
 
@@ -21,7 +23,7 @@ export class PackageManagerFactory {
           resolve(this.create(PackageManager.NPM));
         } else {
           if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
-            resolve(this.create(PackageManager.YARN))
+            resolve(this.create(PackageManager.YARN));
           } else {
             resolve(this.create(PackageManager.NPM));
           }

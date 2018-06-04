@@ -1,7 +1,6 @@
-import { AbstractCommand } from './abstract.command';
 import { Command, CommanderStatic } from 'commander';
+import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
-import { parse } from '../lib/inputs/parse';
 
 export class UpdateCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -13,8 +12,8 @@ export class UpdateCommand extends AbstractCommand {
       .option('-t, --tag <tag>', 'Call for upgrading to latest | beta | rc | next tag.')
       .action(async (command: Command) => {
         const options: Input[] = [];
-        options.push(parse('force')(command[ 'force' ] !== undefined ? command[ 'force' ] : false));
-        options.push(parse('tag')(command[ 'tag' ]));
+        options.push({ name: 'force', value: !!command.force });
+        options.push({ name: 'tag', value: command.tag });
         await this.action.handle([], options);
       });
   }

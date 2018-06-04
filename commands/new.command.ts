@@ -1,7 +1,6 @@
+import { Command, CommanderStatic } from 'commander';
 import { AbstractCommand } from './abstract.command';
-import { CommanderStatic, Command } from 'commander';
 import { Input } from './command.input';
-import { parse } from '../lib/inputs/parse';
 
 export class NewCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -9,15 +8,21 @@ export class NewCommand extends AbstractCommand {
       .command('new [name] [description] [version] [author]')
       .alias('n')
       .description('Generate a new Nest application.')
-      .option('--dry-run', 'Allow to test changes before execute command.')
+      .option('-d, --dry-run', 'Allow to test changes before execute command.')
+      .option('-s, --skip-install', 'Allow to skip package installation.')
+      .option(
+        '-p, --package-manager [package-manager]',
+        'Allow to specify package manager to skip package-manager selection.',
+      )
       .action(async (name: string, description: string, version: string, author: string, command: Command) => {
         const options: Input[] = [];
-        options.push(parse('dry-run')(command[ 'dryRun' ] !== undefined ? command[ 'dryRun' ] : false));
+        options.push({ name: 'dry-run', value: !!command.dryRun });
+        options.push({ name: 'skip-install', value: !!command.skipInstall });
         const inputs: Input[] = [];
-        inputs.push(parse('name')(name));
-        inputs.push(parse('description')(description));
-        inputs.push(parse('version')(version));
-        inputs.push(parse('author')(author));
+        inputs.push({ name: 'name', value: name });
+        inputs.push({ name: 'description', value: description });
+        inputs.push({ name: 'version', value: version });
+        inputs.push({ name: 'author', value: author });
         await this.action.handle(inputs, options);
       });
   }
