@@ -1,6 +1,5 @@
 import { join } from 'path';
-import { NpmPackageManager } from '../../../lib/package-managers/npm.package-manager';
-import { PackageManagerCommands } from '../../../lib/package-managers/package-manager-commands';
+import { NpmPackageManager, PackageManagerCommands } from '../../../lib/package-managers';
 import { NpmRunner } from '../../../lib/runners/npm.runner';
 
 jest.mock('../../../lib/runners/npm.runner');
@@ -87,13 +86,16 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `uninstall --save ${ dependencies.join(' ') }`;
-      const installCommand = `install --save ${ dependencies.map((dependency) =>
-        `${ dependency }@${ tag }`).join(' ') }`;
+
+      const installCommand = `install --save ${
+        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
+      }`;
+
       return packageManager.upgradeProduction(dependencies, tag)
         .then(() => {
           expect(spy.mock.calls).toEqual([
-            [ uninstallCommand, true ],
-            [ installCommand, true ],
+            [uninstallCommand, true],
+            [installCommand, true],
           ]);
         });
     });
@@ -104,13 +106,16 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `uninstall --save-dev ${ dependencies.join(' ') }`;
-      const installCommand = `install --save-dev ${ dependencies.map((dependency) =>
-        `${ dependency }@${ tag }`).join(' ') }`;
+
+      const installCommand = `install --save-dev ${
+        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
+      }`;
+
       return packageManager.upgradeDevelopement(dependencies, tag)
         .then(() => {
           expect(spy.mock.calls).toEqual([
-            [ uninstallCommand, true ],
-            [ installCommand, true ],
+            [uninstallCommand, true],
+            [installCommand, true],
           ]);
         });
     });

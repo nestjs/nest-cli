@@ -1,6 +1,5 @@
 import { join } from 'path';
-import { PackageManagerCommands } from '../../../lib/package-managers/package-manager-commands';
-import { YarnPackageManager } from '../../../lib/package-managers/yarn.package-manager';
+import { PackageManagerCommands, YarnPackageManager } from '../../../lib/package-managers';
 import { YarnRunner } from '../../../lib/runners/yarn.runner';
 
 jest.mock('../../../lib/runners/yarn.runner');
@@ -89,12 +88,16 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `remove ${ dependencies.join(' ') }`;
-      const installCommand = `add ${ dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ') }`;
+
+      const installCommand = `add ${
+        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
+      }`;
+
       return packageManager.upgradeProduction(dependencies, tag)
         .then(() => {
           expect(spy.mock.calls).toEqual([
-            [ uninstallCommand, true ],
-            [ installCommand, true ],
+            [uninstallCommand, true],
+            [installCommand, true],
           ]);
         });
     });
@@ -105,13 +108,16 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `remove -D ${ dependencies.join(' ') }`;
-      const installCommand = `add -D ${ dependencies.map((dependency) =>
-        `${ dependency }@${ tag }`).join(' ') }`;
+
+      const installCommand = `add -D ${
+        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
+      }`;
+
       return packageManager.upgradeDevelopement(dependencies, tag)
         .then(() => {
           expect(spy.mock.calls).toEqual([
-            [ uninstallCommand, true ],
-            [ installCommand, true ],
+            [uninstallCommand, true],
+            [installCommand, true],
           ]);
         });
     });
