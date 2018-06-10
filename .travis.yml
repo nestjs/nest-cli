@@ -7,28 +7,28 @@ jobs:
     - stage: pull_request
       if: type IN (pull_request)
       env:
-        - ARTIFACT_ID=$TRAVIS_PULL_REQUEST
+        - ARTEFACT_ID=$TRAVIS_PULL_REQUEST
       script:
         - make artefact
 
     - stage: build_branch
       if: NOT tag IS present AND type IN (push) AND NOT branch =~ ^sprint-*
       env:
-        - ARTIFACT_ID=$TRAVIS_COMMIT
+        - ARTEFACT_ID=$TRAVIS_COMMIT
       script:
         - make artefact && make publish-artefact
 
     - stage: continuous_integration
       if: NOT tag IS present AND type IN (push) AND branch =~ ^sprint-*
       env:
-        - ARTIFACT_ID=$TRAVIS_COMMIT
+        - ARTEFACT_ID=$TRAVIS_COMMIT
       script:
         - make artefact && make publish-artefact && make publish-edge
 
     - stage: release
       if: tag IS present
       env:
-        - ARTIFACT_ID=$TRAVIS_COMMIT
+        - ARTEFACT_ID=$TRAVIS_COMMIT
         - RELEASE_VERSION=$TRAVIS_TAG
       script:
         - make publish-release && make publish-npm-package
