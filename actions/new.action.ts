@@ -1,3 +1,4 @@
+import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
@@ -7,7 +8,6 @@ import { generateInput, generateSelect } from '../lib/questions/questions';
 import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
-import { dasherize } from "@angular-devkit/core/src/utils/strings";
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
