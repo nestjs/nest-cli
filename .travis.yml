@@ -9,14 +9,21 @@ jobs:
       env:
         - ARTIFACT_ID=$TRAVIS_PULL_REQUEST
       script:
-        - make build-docker-artifact
+        - make artefact
 
-    - stage: continuous_integration
-      if: NOT tag IS present AND type IN (push)
+    - stage: build_branch
+      if: NOT tag IS present AND type IN (push) AND NOT branch =~ ^sprint-*
       env:
         - ARTIFACT_ID=$TRAVIS_COMMIT
       script:
-        - make build-docker-artifact && make publish-docker-artifact && make publish-docker-edge
+        - make artefact && make publish-artefact
+
+    - stage: continuous_integration
+      if: NOT tag IS present AND type IN (push) AND branch =~ ^sprint-*
+      env:
+        - ARTIFACT_ID=$TRAVIS_COMMIT
+      script:
+        - make artefact && make publish-artefact && make publish-edge
 
     - stage: release
       if: tag IS present
@@ -24,4 +31,4 @@ jobs:
         - ARTIFACT_ID=$TRAVIS_COMMIT
         - RELEASE_VERSION=$TRAVIS_TAG
       script:
-        - make publish-npm-release && make publish-docker-release
+        - make publish-release && make publish-npm-package
