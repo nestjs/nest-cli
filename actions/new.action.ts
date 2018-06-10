@@ -7,6 +7,7 @@ import { generateInput, generateSelect } from '../lib/questions/questions';
 import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
+import { dasherize } from "@angular-devkit/core/src/utils/strings";
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -75,7 +76,7 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
 };
 
 const installPackages = async (inputs: Input[], options: Input[]) => {
-  const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
+  const installDirectory = dasherize(inputs.find((input) => input.name === 'name')!.value as string);
   const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
   const inputPackageManager: string = options.find((option) => option.name === 'package-manager')!.value as string;
   let packageManager: AbstractPackageManager;
