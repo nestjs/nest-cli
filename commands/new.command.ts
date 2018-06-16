@@ -14,7 +14,7 @@ export class NewCommand extends AbstractCommand {
         '-p, --package-manager [package-manager]',
         'Allow to specify package manager to skip package-manager selection.',
       )
-      .option('-l, --language', 'Specify ts or js language to use')
+      .option('-l, --language [language]', 'Specify ts or js language to use')
       .action(async (name: string, description: string, version: string, author: string, command: Command) => {
         const options: Input[] = [];
         options.push({ name: 'dry-run', value: !!command.dryRun });
