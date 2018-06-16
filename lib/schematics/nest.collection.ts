@@ -11,6 +11,7 @@ export class NestCollection extends AbstractCollection {
   private schematics: Schematic[] = [
     { name: 'application', alias: 'app' },
     { name: 'class', alias: 'cl' },
+    { name: 'configuration', alias: 'config' },
     { name: 'controller', alias: 'co' },
     { name: 'decorator', alias: 'd' },
     { name: 'exception', alias: 'e' },
