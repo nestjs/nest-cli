@@ -1,5 +1,6 @@
 import { Reader } from '../readers';
-import { Configuration, ConfigurationLoader } from './configuration.loader';
+import { Configuration } from './configuration';
+import { ConfigurationLoader } from './configuration.loader';
 
 export class NestConfigurationLoader implements ConfigurationLoader {
   constructor(private readonly reader: Reader) {}

@@ -1,3 +1,3 @@
 export enum Collection {
-  NESTJS,
+  NESTJS = '@nestjs/schematics',
 }
