@@ -1,16 +1,28 @@
 import { Configuration, ConfigurationLoader } from '../../../lib/configuration';
-
-export class NestConfigurationLoader implements ConfigurationLoader {
-  public load(): Configuration {
-    return undefined;
-  }
-}
+import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader';
+import { Reader } from '../../../lib/readers';
 
 describe('Nest Configuration Loader', () => {
-  it('can be created', () => {
-    const loader: ConfigurationLoader = new NestConfigurationLoader();
+  let reader: Reader;
+  beforeAll(() => {
+    const mock = jest.fn();
+    mock.mockImplementation(() => {
+      return {
+        read: jest.fn(() => Promise.resolve(JSON.stringify({
+          language: 'ts',
+          collection: '@nestjs/schematics',
+        }))),
+      };
+    });
+    reader = mock();
   });
-  it('can call load()', () => {
-    const loader: ConfigurationLoader = new NestConfigurationLoader();
+  it('should call reader.read when load', async () => {
+    const loader: ConfigurationLoader = new NestConfigurationLoader(reader);
+    const configuration: Configuration = await loader.load();
+    expect(reader.read).toHaveBeenCalledWith('.nestcli.json');
+    expect(configuration).toEqual({
+      language: 'ts',
+      collection: '@nestjs/schematics',
+    });
   });
 });

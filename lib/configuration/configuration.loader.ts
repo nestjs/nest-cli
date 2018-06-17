@@ -3,5 +3,5 @@ export interface Configuration {
 }
 
 export interface ConfigurationLoader {
-  load(): Configuration;
+  load(): Configuration | Promise<Configuration>;
 }
