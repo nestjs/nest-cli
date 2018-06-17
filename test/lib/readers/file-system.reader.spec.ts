@@ -1,25 +1,27 @@
-import { readdir } from 'fs';
-import { Reader } from '../../../lib/readers';
+import * as fs from 'fs';
+import { FileSystemReader, Reader } from '../../../lib/readers';
 
-export class FileSystemReader implements Reader {
-  constructor(private readonly directory: string) {}
-  public async list(): Promise<string[]> {
-    return undefined;
-  }
-  public async read(name: string): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-}
+jest.mock('fs', () => {
+  return {
+    readdir: jest.fn((dir, callback) => callback(null, [])),
+    readFile: jest.fn((filename, callback) => callback(null, 'content')),
+  };
+});
 
 describe('File System Reader', () => {
-  it('can be created', () => {
-    const dir: string = process.cwd();
-    const reader: Reader = new FileSystemReader(dir);
+  afterAll(() => {
+    jest.clearAllMocks();
   });
-  it('should use fs.readdir when list()', async () => {
+  it('should use fs.readdir when list', async () => {
     const dir: string = process.cwd();
     const reader: Reader = new FileSystemReader(dir);
     const filenames: string[] = await reader.list();
-    expect(readdir).toHaveBeenCalled();
+    expect(fs.readdir).toHaveBeenCalled();
+  });
+  it('should use fs.readFile when read', async () => {
+    const dir: string = process.cwd();
+    const reader: Reader = new FileSystemReader(dir);
+    const content: string = await reader.read('filename');
+    expect(fs.readFile).toHaveBeenCalled();
   });
 });
