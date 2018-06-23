@@ -1,5 +1,8 @@
 import chalk from 'chalk';
 import { Input } from '../commands';
+import { Configuration, ConfigurationLoader } from '../lib/configuration';
+import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
+import { FileSystemReader } from '../lib/readers';
 import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { AbstractAction } from './abstract.action';
 
@@ -10,20 +13,24 @@ export class GenerateAction extends AbstractAction {
 }
 
 const generateFiles = async (inputs: Input[]) => {
-  const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
+  const configuration: Configuration = await loadConfiguration();
+  const collection: AbstractCollection = CollectionFactory.create(configuration.collection);
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
-
+  schematicOptions.push(new SchematicOption('language', configuration.language));
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
-
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }
-
     await collection.execute(schematicInput.value as string, schematicOptions);
   } catch (error) {
     console.error(chalk.red(error.message));
   }
+};
+
+const loadConfiguration = async (): Promise<Configuration> => {
+  const loader: ConfigurationLoader = new NestConfigurationLoader(new FileSystemReader(process.cwd()));
+  return loader.load();
 };
 
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {

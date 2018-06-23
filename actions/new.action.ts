@@ -1,3 +1,4 @@
+import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
@@ -62,6 +63,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
   const schematicOptions: SchematicOption[] = mapSchematicOptions(args.concat(options));
   await collection.execute('application', schematicOptions);
+  await generateConfigurationFile(args, options, collection);
   console.info();
 };
 
@@ -74,8 +76,26 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   }, []);
 };
 
+const generateConfigurationFile = async (args: Input[], options: Input[], collection: AbstractCollection) => {
+  const schematicOptions: SchematicOption[] = mapConfigurationSchematicOptions(args.concat(options));
+  schematicOptions.push(new SchematicOption('collection', '@nestjs/schematics'));
+  await collection.execute('configuration', schematicOptions);
+};
+
+const mapConfigurationSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+  return inputs.reduce((schematicsOptions: SchematicOption[], option: Input) => {
+    if (option.name === 'name') {
+      schematicsOptions.push(new SchematicOption('project', dasherize(option.value as string)));
+    }
+    if (option.name === 'language') {
+      schematicsOptions.push(new SchematicOption(option.name, option.value));
+    }
+    return schematicsOptions;
+  }, []);
+};
+
 const installPackages = async (inputs: Input[], options: Input[]) => {
-  const installDirectory = inputs.find((input) => input.name === 'name')!.value as string;
+  const installDirectory = dasherize(inputs.find((input) => input.name === 'name')!.value as string);
   const dryRunMode = options.find((option) => option.name === 'dry-run')!.value as boolean;
   const inputPackageManager: string = options.find((option) => option.name === 'package-manager')!.value as string;
   let packageManager: AbstractPackageManager;
