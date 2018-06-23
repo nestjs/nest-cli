@@ -1,3 +1,4 @@
+import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
@@ -7,7 +8,6 @@ import { generateInput, generateSelect } from '../lib/questions/questions';
 import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
-import { dasherize } from "@angular-devkit/core/src/utils/strings";
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -63,6 +63,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(Collection.NESTJS);
   const schematicOptions: SchematicOption[] = mapSchematicOptions(args.concat(options));
   await collection.execute('application', schematicOptions);
+  await generateConfigurationFile(args, options, collection);
   console.info();
 };
 
@@ -72,6 +73,24 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
       schematicOptions.push(new SchematicOption(option.name, option.value));
     }
     return schematicOptions;
+  }, []);
+};
+
+const generateConfigurationFile = async (args: Input[], options: Input[], collection: AbstractCollection) => {
+  const schematicOptions: SchematicOption[] = mapConfigurationSchematicOptions(args.concat(options));
+  schematicOptions.push(new SchematicOption('collection', '@nestjs/schematics'));
+  await collection.execute('configuration', schematicOptions);
+};
+
+const mapConfigurationSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+  return inputs.reduce((schematicsOptions: SchematicOption[], option: Input) => {
+    if (option.name === 'name') {
+      schematicsOptions.push(new SchematicOption('project', option.value));
+    }
+    if (option.name === 'language') {
+      schematicsOptions.push(new SchematicOption(option.name, option.value));
+    }
+    return schematicsOptions;
   }, []);
 };
 

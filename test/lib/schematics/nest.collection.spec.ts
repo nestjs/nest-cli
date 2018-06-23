@@ -1,5 +1,5 @@
-import { NestCollection } from '../../../lib/schematics/nest.collection';
 import { AbstractRunner } from '../../../lib/runners';
+import { NestCollection } from '../../../lib/schematics/nest.collection';
 
 describe('Nest Collection', () => {
   [
@@ -16,14 +16,14 @@ describe('Nest Collection', () => {
     'module',
     'pipe',
     'provider',
-    'service'
+    'service',
   ].forEach((schematic) => {
     it(`should call runner with ${ schematic } schematic name`, async () => {
       const mock = jest.fn();
       mock.mockImplementation(() => {
         return {
           logger: {},
-          run: jest.fn().mockImplementation(() => Promise.resolve())
+          run: jest.fn().mockImplementation(() => Promise.resolve()),
         };
       });
       const mockedRunner = mock();
@@ -46,14 +46,14 @@ describe('Nest Collection', () => {
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
-    { name: 'service', alias: 's' }
+    { name: 'service', alias: 's' },
   ].forEach((schematic) => {
     it(`should call runner with schematic ${ schematic.name } name when use ${ schematic.alias } alias`, async () => {
       const mock = jest.fn();
       mock.mockImplementation(() => {
         return {
           logger: {},
-          run: jest.fn().mockImplementation(() => Promise.resolve())
+          run: jest.fn().mockImplementation(() => Promise.resolve()),
         };
       });
       const mockedRunner = mock();
@@ -67,7 +67,7 @@ describe('Nest Collection', () => {
     mock.mockImplementation(() => {
       return {
         logger: {},
-        run: jest.fn().mockImplementation(() => Promise.resolve())
+        run: jest.fn().mockImplementation(() => Promise.resolve()),
       };
     });
     const mockedRunner = mock();
