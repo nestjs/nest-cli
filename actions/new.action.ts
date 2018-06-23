@@ -85,7 +85,7 @@ const generateConfigurationFile = async (args: Input[], options: Input[], collec
 const mapConfigurationSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   return inputs.reduce((schematicsOptions: SchematicOption[], option: Input) => {
     if (option.name === 'name') {
-      schematicsOptions.push(new SchematicOption('project', option.value));
+      schematicsOptions.push(new SchematicOption('project', dasherize(option.value as string)));
     }
     if (option.name === 'language') {
       schematicsOptions.push(new SchematicOption(option.name, option.value));
