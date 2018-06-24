@@ -1,6 +1,8 @@
 import { CommanderStatic } from 'commander';
 import { GenerateAction, InfoAction, NewAction } from '../actions';
+import { AddAction } from '../actions/add.action';
 import { UpdateAction } from '../actions/update.action';
+import { AddCommand } from './add.command';
 import { GenerateCommand } from './generate.command';
 import { InfoCommand } from './info.command';
 import { NewCommand } from './new.command';
@@ -12,5 +14,6 @@ export class CommandLoader {
     new GenerateCommand(new GenerateAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
     new UpdateCommand(new UpdateAction()).load(program);
+    new AddCommand(new AddAction()).load(program);
   }
 }
