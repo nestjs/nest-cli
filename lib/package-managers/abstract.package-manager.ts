@@ -1,3 +1,4 @@
+import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import { readFile } from 'fs';
 import * as ora from 'ora';
@@ -6,7 +7,6 @@ import { AbstractRunner } from '../runners/abstract.runner';
 import { messages } from '../ui';
 import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
-import { strings } from '@angular-devkit/core';
 
 export abstract class AbstractPackageManager {
   constructor(protected runner: AbstractRunner) {}
@@ -30,7 +30,7 @@ export abstract class AbstractPackageManager {
     try {
       const commandArguments = `${this.cli.install} --silent`;
       const collect = true;
-      const dasherizedDirectory: string = strings.dasherize(directory);
+      const dasherizedDirectory: string = dasherize(directory);
       await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDirectory));
       spinner.succeed();
       console.info();
