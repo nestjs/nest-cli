@@ -6,6 +6,7 @@ import { AbstractRunner } from '../runners/abstract.runner';
 import { messages } from '../ui';
 import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
+import { strings } from '@angular-devkit/core';
 
 export abstract class AbstractPackageManager {
   constructor(protected runner: AbstractRunner) {}
@@ -29,7 +30,8 @@ export abstract class AbstractPackageManager {
     try {
       const commandArguments = `${this.cli.install} --silent`;
       const collect = true;
-      await this.runner.run(commandArguments, collect, join(process.cwd(), directory));
+      const dasherizedDirectory: string = strings.dasherize(directory);
+      await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDirectory));
       spinner.succeed();
       console.info();
       console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
