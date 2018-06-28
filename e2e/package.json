@@ -1,0 +1,17 @@
+{
+  "name": "@nestjs/cli-e2e",
+  "version": "0.0.0",
+  "description": "Nest-CLI e2e testing project",
+  "main": "index.js",
+  "scripts": {
+    "start": "jest --config jestconfig.json"
+  },
+  "author": "ThomRick",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^10.5.0",
+    "jest": "^23.2.0",
+    "ts-jest": "^22.4.6",
+    "typescript": "^2.9.2"
+  }
+}
