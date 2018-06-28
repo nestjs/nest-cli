@@ -1,4 +1,5 @@
 import { AbstractRunner } from './abstract.runner';
+import { CleanRunner } from './clean.runner';
 import { NestRunner } from './nest.runner';
 import { NpmRunner } from './npm.runner';
 import { Runner } from './runner';
@@ -7,6 +8,8 @@ import { YarnRunner } from './yarn.runner';
 export class RunnerFactory {
   public static create(runner: Runner): undefined | AbstractRunner {
     switch (runner) {
+      case Runner.CLEAN:
+        return new CleanRunner();
       case Runner.NEST:
         return new NestRunner();
       case Runner.NPM:
