@@ -27,7 +27,7 @@ export abstract class AbstractPackageManager {
     });
     spinner.start();
     try {
-      const commandArguments = `${this.cli.install} --silent`;
+      const commandArguments = `${ this.cli.install } --silent`;
       const collect = true;
       await this.runner.run(commandArguments, collect, join(process.cwd(), directory));
       spinner.succeed();
@@ -51,9 +51,29 @@ export abstract class AbstractPackageManager {
   }
 
   public async addProduction(dependencies: string[], tag: string) {
-    const command: string = [this.cli.add, this.cli.saveFlag].filter((i) => i).join(' ');
+    const command: string = [ this.cli.add, this.cli.saveFlag ].filter((i) => i).join(' ');
     const args: string = dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ');
-    await this.add(`${ command } ${ args }`);
+    const spinner = ora({
+      spinner: {
+        interval: 120,
+        frames: [
+          '▹▹▹▹▹',
+          '▸▹▹▹▹',
+          '▹▸▹▹▹',
+          '▹▹▸▹▹',
+          '▹▹▹▸▹',
+          '▹▹▹▹▸',
+        ],
+      },
+      text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
+    });
+    spinner.start();
+    try {
+      await this.add(`${ command } ${ args }`);
+      spinner.succeed();
+    } catch {
+      spinner.fail();
+    }
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
