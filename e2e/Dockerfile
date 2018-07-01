@@ -1,11 +1,6 @@
-FROM node:carbon-alpine as dependencies
-WORKDIR /workspace
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm install --production
-
-FROM nestjs/cli:develop
+ARG ARTEFACT_ID
+FROM nestjs/cli:${ARTEFACT_ID}
 WORKDIR /tests
-COPY --from=dependencies /workspace .
 COPY . .
+RUN npm install --production 
 CMD npm start -s
