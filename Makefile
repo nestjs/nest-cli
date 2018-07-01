@@ -5,7 +5,7 @@ artefact:
 
 e2e:
 	@docker build -t nestjs/cli-e2e:$$ARTEFACT_ID --build-arg ARTEFACT_ID=$$ARTEFACT_ID ./e2e
-	@docker run -it nestjs/cli-e2e:$$ARTEFACT_ID
+	-@docker run -it nestjs/cli-e2e:$$ARTEFACT_ID
 
 publish-artefact:
 	@docker login -u $$DOCKER_USER -p $$DOCKER_PASSWORD
