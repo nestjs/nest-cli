@@ -30,8 +30,8 @@ export abstract class AbstractPackageManager {
     try {
       const commandArguments = `${this.cli.install} --silent`;
       const collect = true;
-      const dasherizedDir: string = dasherize(directory);
-      await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDir));
+      const dasherizedDirectory: string = dasherize(directory);
+      await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDirectory));
       spinner.succeed();
       console.info();
       console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
