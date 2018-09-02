@@ -4,7 +4,7 @@
   "description": "Nest-CLI e2e testing project",
   "main": "index.js",
   "scripts": {
-    "start": "jest --config jestconfig.json"
+    "start": "jest --config jest.config.json --maxWorkers=1"
   },
   "author": "ThomRick",
   "license": "MIT",
