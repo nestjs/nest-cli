@@ -9,21 +9,21 @@ jobs:
       env:
         - ARTEFACT_ID=$TRAVIS_PULL_REQUEST
       script:
-        - make artefact
+        - make artefact && make e2e
 
     - stage: build_branch
       if: NOT tag IS present AND type IN (push) AND NOT branch =~ ^sprint-*
       env:
         - ARTEFACT_ID=$TRAVIS_COMMIT
       script:
-        - make artefact && make publish-artefact
+        - make artefact && make publish-artefact && make e2e
 
     - stage: continuous_integration
       if: NOT tag IS present AND type IN (push) AND branch =~ ^sprint-*
       env:
         - ARTEFACT_ID=$TRAVIS_COMMIT
       script:
-        - make artefact && make publish-artefact && make publish-edge
+        - make artefact && make publish-artefact && make publish-edge && make e2e
 
     - stage: release
       if: tag IS present

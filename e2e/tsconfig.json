@@ -2,21 +2,18 @@
   "compilerOptions": {
     "allowJs": false,
     "declaration": false,
-    "lib": ["es2017"],
+    "lib": [ "es2017" ],
     "module": "commonjs",
     "target": "es6",
     "skipLibCheck": true,
     "sourceMap": false,
     "strict": true,
+    "outDir": "build"
   },
   "include": [
-    "actions",
-    "bin",
-    "commands",
-    "lib"
+    "src"
   ],
   "exclude": [
-    "node_modules",
-    "e2e"
+    "node_modules"
   ]
 }
