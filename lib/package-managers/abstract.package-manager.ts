@@ -1,3 +1,4 @@
+import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import { readFile } from 'fs';
 import * as ora from 'ora';
@@ -29,7 +30,8 @@ export abstract class AbstractPackageManager {
     try {
       const commandArguments = `${ this.cli.install } --silent`;
       const collect = true;
-      await this.runner.run(commandArguments, collect, join(process.cwd(), directory));
+      const dasherizedDirectory: string = dasherize(directory);
+      await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDirectory));
       spinner.succeed();
       console.info();
       console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
