@@ -8,18 +8,25 @@ describe('Nest Configuration Loader', () => {
     const mock = jest.fn();
     mock.mockImplementation(() => {
       return {
-        read: jest.fn(() => Promise.resolve(JSON.stringify({
-          language: 'ts',
-          collection: '@nestjs/schematics',
-        }))),
+        readAnyOf: jest.fn(() =>
+          Promise.resolve(
+            JSON.stringify({
+              language: 'ts',
+              collection: '@nestjs/schematics',
+            }),
+          ),
+        ),
       };
     });
     reader = mock();
   });
-  it('should call reader.read when load', async () => {
+  it('should call reader.readAnyOf when load', async () => {
     const loader: ConfigurationLoader = new NestConfigurationLoader(reader);
     const configuration: Configuration = await loader.load();
-    expect(reader.read).toHaveBeenCalledWith('.nestcli.json');
+    expect(reader.readAnyOf).toHaveBeenCalledWith([
+      '.nestcli.json',
+      '.nest-cli.json',
+    ]);
     expect(configuration).toEqual({
       language: 'ts',
       collection: '@nestjs/schematics',
