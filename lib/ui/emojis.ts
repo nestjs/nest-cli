@@ -16,4 +16,6 @@ export const emojis = {
   POINT_RIGHT: get('point_right'),
   ZAP: get('zap'),
   BOOM: get('boom'),
+  PRAY: get('pray'),
+  WINE: get('wine_glass'),
 };

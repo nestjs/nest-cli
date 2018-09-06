@@ -17,7 +17,8 @@
     "lint": "./node_modules/tslint/bin/tslint -p .",
     "start": "node bin/nest.js",
     "test": "jest --config test/jest-config.json",
-    "test:dev": "jest --config test/jest-config.json --watchAll"
+    "test:dev": "jest --config test/jest-config.json --watchAll",
+    "postinstall": "opencollective"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "@angular-devkit/core": "^0.4.9",
     "@angular-devkit/schematics-cli": "^0.4.9",
     "@nestjs/schematics": "^5.6.1",
+    "@nuxtjs/opencollective": "^0.1.0",
     "@types/jest": "^22.2.3",
     "chalk": "^2.4.1",
     "commander": "^2.15.1",
@@ -52,5 +54,12 @@
     "ts-jest": "^22.4.6",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/nest",
+    "donation": {
+      "text": "Become a partner:"
+    }
   }
 }
