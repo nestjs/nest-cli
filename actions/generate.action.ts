@@ -3,7 +3,11 @@ import { Input } from '../commands';
 import { Configuration, ConfigurationLoader } from '../lib/configuration';
 import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
 import { FileSystemReader } from '../lib/readers';
-import { AbstractCollection, CollectionFactory, SchematicOption } from '../lib/schematics';
+import {
+  AbstractCollection,
+  CollectionFactory,
+  SchematicOption,
+} from '../lib/schematics';
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
@@ -14,11 +18,19 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration: Configuration = await loadConfiguration();
-  const collection: AbstractCollection = CollectionFactory.create(configuration.collection);
+  const collection: AbstractCollection = CollectionFactory.create(
+    configuration.collection,
+  );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
-  schematicOptions.push(new SchematicOption('language', configuration.language));
+
+  schematicOptions.push(
+    new SchematicOption('language', configuration.language),
+  );
+  schematicOptions.push(
+    new SchematicOption('sourceRoot', configuration.sourceRoot),
+  );
   try {
-    const schematicInput = inputs.find((input) => input.name === 'schematic');
+    const schematicInput = inputs.find(input => input.name === 'schematic');
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }
@@ -31,13 +43,15 @@ const generateFiles = async (inputs: Input[]) => {
 };
 
 const loadConfiguration = async (): Promise<Configuration> => {
-  const loader: ConfigurationLoader = new NestConfigurationLoader(new FileSystemReader(process.cwd()));
+  const loader: ConfigurationLoader = new NestConfigurationLoader(
+    new FileSystemReader(process.cwd()),
+  );
   return loader.load();
 };
 
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
-  inputs.forEach((input) => {
+  inputs.forEach(input => {
     if (input.name !== 'schematic' && input.value !== undefined) {
       options.push(new SchematicOption(input.name, input.value));
     }
