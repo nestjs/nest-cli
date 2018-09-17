@@ -4,18 +4,9 @@ import { execSync } from 'child_process';
 import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
 import { Input } from '../commands';
-import {
-  AbstractPackageManager,
-  PackageManager,
-  PackageManagerFactory,
-} from '../lib/package-managers';
+import { AbstractPackageManager, PackageManager, PackageManagerFactory } from '../lib/package-managers';
 import { generateInput, generateSelect } from '../lib/questions/questions';
-import {
-  AbstractCollection,
-  Collection,
-  CollectionFactory,
-  SchematicOption,
-} from '../lib/schematics';
+import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { emojis, messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
@@ -164,7 +155,9 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
       packageManager = PackageManagerFactory.create(inputPackageManager);
       await packageManager.install(installDirectory);
     } catch (error) {
-      console.error(chalk.red(error.message));
+      if (error && error.message) {
+        console.error(chalk.red(error.message));
+      }
     }
   } else {
     packageManager = await selectPackageManager();
