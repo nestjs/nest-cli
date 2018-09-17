@@ -169,4 +169,6 @@ export abstract class AbstractPackageManager {
   public abstract get name(): string;
 
   public abstract get cli(): PackageManagerCommands;
+
+  public async abstract getInstalledDependencies(): Promise<ProjectDependency[]>;
 }
