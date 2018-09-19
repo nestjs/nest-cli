@@ -26,6 +26,8 @@ describe('Nest Configuration Loader', () => {
     expect(reader.readAnyOf).toHaveBeenCalledWith([
       '.nestcli.json',
       '.nest-cli.json',
+      'nest-cli.json',
+      'nest.json',
     ]);
     expect(configuration).toEqual({
       language: 'ts',
