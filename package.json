@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "5.4.1",
+  "version": "5.5.0",
   "description": "Nest CLI",
   "publishConfig": {
     "access": "public"
@@ -33,7 +33,7 @@
   "dependencies": {
     "@angular-devkit/core": "^0.8.1",
     "@angular-devkit/schematics-cli": "^0.8.1",
-    "@nestjs/schematics": "^5.7.1",
+    "@nestjs/schematics": "^5.8.0",
     "@nuxtjs/opencollective": "^0.1.0",
     "@types/jest": "^22.2.3",
     "chalk": "^2.4.1",
