@@ -27,7 +27,7 @@ $ npm install -g @nestjs/cli
 ### Docker:
 ```
 $ docker pull nestjs/cli[:version]
-$ docker run -it -rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]
+$ docker run -it --rm -p 3000:3000 -v $(pwd)/workspace nestjs/cli[:version]
 ```
 
 ### GIT:
