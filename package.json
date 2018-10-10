@@ -33,6 +33,8 @@
   "dependencies": {
     "@angular-devkit/core": "^0.8.1",
     "@angular-devkit/schematics-cli": "^0.8.1",
+    "@nestjs/common": "^5.3.11",
+    "@nestjs/core": "^5.3.11",
     "@nestjs/schematics": "^5.8.0",
     "@nuxtjs/opencollective": "^0.1.0",
     "@types/jest": "^22.2.3",
@@ -42,6 +44,8 @@
     "node-emoji": "^1.8.1",
     "ora": "^2.1.0",
     "os-name": "^2.0.1",
+    "reflect-metadata": "^0.1.12",
+    "rxjs": "^6.3.3",
     "ts-node": "^6.0.5"
   },
   "devDependencies": {
