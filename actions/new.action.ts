@@ -116,19 +116,23 @@ const generateConfigurationFile = async (
 };
 
 const mapConfigurationSchematicOptions = (
-  inputs: Input[],
+  options: Input[],
 ): SchematicOption[] => {
-  return inputs.reduce(
-    (schematicsOptions: SchematicOption[], option: Input) => {
+  return options.reduce(
+    (schematicOptions: SchematicOption[], option: Input) => {
       if (option.name === 'name') {
-        schematicsOptions.push(
+        schematicOptions.push(
           new SchematicOption('project', dasherize(option.value as string)),
         );
       }
-      if (option.name === 'language') {
-        schematicsOptions.push(new SchematicOption(option.name, option.value));
+      if (
+        option.name !== 'skip-install' &&
+        option.value !== 'package-manager' &&
+        option.name !== 'name'
+      ) {
+        schematicOptions.push(new SchematicOption(option.name, option.value));
       }
-      return schematicsOptions;
+      return schematicOptions;
     },
     [],
   );
