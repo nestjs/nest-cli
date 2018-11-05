@@ -28,7 +28,7 @@ export const messages = {
     emojis.POINT_RIGHT
   }  Get started with the following commands:`,
   CHANGE_DIR_COMMAND: (name: string) => `$ cd ${name}`,
-  START_COMMAND: '$ npm run start',
+  START_COMMAND: (name: string) => `$ ${name} run start`,
   PACKAGE_MANAGER_INSTALLATION_FAILED: `${
     emojis.SCREAM
   }  Packages installation failed, see above`,
