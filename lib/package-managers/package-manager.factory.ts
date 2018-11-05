@@ -17,15 +17,19 @@ export class PackageManagerFactory {
   }
 
   public static async find(): Promise<AbstractPackageManager> {
-    return new Promise<AbstractPackageManager>((resolve) => {
+    return this.findType().then(this.create);
+  }
+
+  public static async findType(): Promise<PackageManager> {
+    return new Promise<PackageManager>((resolve) => {
       readdir(process.cwd(), (error, files) => {
         if (error) {
-          resolve(this.create(PackageManager.NPM));
+          resolve(PackageManager.NPM);
         } else {
           if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
-            resolve(this.create(PackageManager.YARN));
+            resolve(PackageManager.YARN);
           } else {
-            resolve(this.create(PackageManager.NPM));
+            resolve(PackageManager.NPM);
           }
         }
       });
