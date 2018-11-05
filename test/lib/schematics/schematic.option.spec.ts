@@ -3,12 +3,6 @@ import { SchematicOption } from '../../../lib/schematics';
 describe('Schematic Option', () => {
   [
     {
-      description: 'should manage boolean option',
-      option: 'dry-run',
-      input: false,
-      expected: false,
-    },
-    {
       description: 'should manage string option name',
       option: 'name',
       input: 'my-app',
@@ -71,7 +65,14 @@ describe('Schematic Option', () => {
   ].forEach((test) => {
     it(test.description, () => {
       const option = new SchematicOption(test.option, test.input);
-      expect(option.toCommandString()).toEqual(`--${ test.option }=${ test.expected }`);
+      expect(option.toCommandString()).toEqual(
+        `--${test.option}=${test.expected}`,
+      );
     });
+  });
+
+  it('should should manage boolean option', () => {
+    const option = new SchematicOption('dry-run', false);
+    expect(option.toCommandString()).toEqual('--no-dry-run');
   });
 });
