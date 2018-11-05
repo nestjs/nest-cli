@@ -14,7 +14,6 @@ export class NestCollection extends AbstractCollection {
     { name: 'configuration', alias: 'config' },
     { name: 'controller', alias: 'co' },
     { name: 'decorator', alias: 'd' },
-    { name: 'exception', alias: 'e' },
     { name: 'filter', alias: 'f' },
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
@@ -24,6 +23,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
     { name: 'service', alias: 's' },
+    { name: 'library', alias: 'lib' },
   ];
 
   constructor(runner: AbstractRunner) {
@@ -36,12 +36,13 @@ export class NestCollection extends AbstractCollection {
   }
 
   private validate(name: string) {
-    const schematic = this.schematics.find((s) => s.name === name || s.alias === name);
+    const schematic = this.schematics.find(
+      s => s.name === name || s.alias === name,
+    );
 
     if (schematic === undefined || schematic === null) {
-      throw new Error(`Invalid schematic ${ name }`);
+      throw new Error(`Invalid schematic ${name}`);
     }
-
     return schematic.name;
   }
 }

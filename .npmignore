@@ -2,3 +2,11 @@
 .gitignore
 .travis.yml
 Makefile
+
+# source
+**/*.ts
+*.ts
+
+# definitions
+!**/*.d.ts
+!*.d.ts
