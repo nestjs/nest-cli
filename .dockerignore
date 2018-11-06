@@ -4,9 +4,7 @@
 .gitignore
 
 .envrc
-
 .npmrc
-.npmignore
 
 .travis.yml
 
