@@ -1,12 +1,12 @@
-import { Question } from 'inquirer';
-
-export const generateInput = (name: string): (value: any) => (defaultAnwser: string) => Question | undefined => {
+export const generateInput = (
+  name: string,
+): ((value: any) => (defaultAnwser: string) => any) => {
   return (value: string) => {
     if (value === undefined) {
-      return (defaultAnswer: string): Question => ({
+      return (defaultAnswer: string): any => ({
         type: 'input',
         name,
-        message: `${ name } :`,
+        message: `${name} :`,
         default: defaultAnswer,
       });
     }
@@ -15,13 +15,15 @@ export const generateInput = (name: string): (value: any) => (defaultAnwser: str
   };
 };
 
-export const generateSelect = (name: string): (message: string) => (choices: string[]) => Question => {
+export const generateSelect = (
+  name: string,
+): ((message: string) => (choices: string[]) => any) => {
   return (message: string) => {
     return (choices: string[]) => ({
-        type: 'list',
-        name,
-        message,
-        choices,
+      type: 'list',
+      name,
+      message,
+      choices,
     });
   };
 };

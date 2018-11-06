@@ -24,11 +24,12 @@ RUN npm run -s build
 
 FROM node:carbon-alpine
 RUN npm install -g yarn && \
-    chmod 774 /usr/local/bin/yarnpkg /usr/local/bin/yarn
+  chmod 774 /usr/local/bin/yarnpkg /usr/local/bin/yarn
 WORKDIR /nestjs/cli
 COPY --from=production-dependencies /nestjs/cli .
 COPY --from=builder /nestjs/cli/LICENSE LICENSE
 COPY --from=builder /nestjs/cli/README.md README.md
+COPY --from=builder /nestjs/cli/.npmignore .npmignore
 COPY --from=builder /nestjs/cli/actions actions
 COPY --from=builder /nestjs/cli/bin bin
 COPY --from=builder /nestjs/cli/commands commands
