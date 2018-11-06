@@ -81,7 +81,9 @@ describe('Nest Collection', () => {
     try {
       await collection.execute('name', []);
     } catch (error) {
-      expect(error.message).toEqual('Invalid schematic name');
+      expect(error.message).toEqual(
+        'Invalid schematic "name". Please, ensure that "name" really exists in this collection.',
+      );
     }
   });
 });
