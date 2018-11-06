@@ -153,7 +153,7 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
   if (inputPackageManager !== undefined) {
     try {
       packageManager = PackageManagerFactory.create(inputPackageManager);
-      await packageManager.install(installDirectory);
+      await packageManager.install(installDirectory, inputPackageManager);
     } catch (error) {
       if (error && error.message) {
         console.error(chalk.red(error.message));
@@ -161,7 +161,7 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
     }
   } else {
     packageManager = await selectPackageManager();
-    await packageManager.install(installDirectory);
+    await packageManager.install(installDirectory, packageManager.name.toLowerCase());
   }
 };
 

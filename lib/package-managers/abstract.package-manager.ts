@@ -11,7 +11,7 @@ import { ProjectDependency } from './project.dependency';
 export abstract class AbstractPackageManager {
   constructor(protected runner: AbstractRunner) {}
 
-  public async install(directory: string) {
+  public async install(directory: string, packageManager: string) {
     const spinner = ora({
       spinner: {
         interval: 120,
@@ -38,7 +38,7 @@ export abstract class AbstractPackageManager {
       console.info(messages.GET_STARTED_INFORMATION);
       console.info();
       console.info(chalk.gray(messages.CHANGE_DIR_COMMAND(directory)));
-      console.info(chalk.gray(messages.START_COMMAND));
+      console.info(chalk.gray(messages.START_COMMAND(packageManager)));
       console.info();
     } catch {
       spinner.fail();
