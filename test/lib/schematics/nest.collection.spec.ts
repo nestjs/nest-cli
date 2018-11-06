@@ -7,7 +7,7 @@ describe('Nest Collection', () => {
     'class',
     'controller',
     'decorator',
-    'exception',
+    'library',
     'filter',
     'gateway',
     'guard',
@@ -18,7 +18,7 @@ describe('Nest Collection', () => {
     'provider',
     'service',
   ].forEach((schematic) => {
-    it(`should call runner with ${ schematic } schematic name`, async () => {
+    it(`should call runner with ${schematic} schematic name`, async () => {
       const mock = jest.fn();
       mock.mockImplementation(() => {
         return {
@@ -29,7 +29,9 @@ describe('Nest Collection', () => {
       const mockedRunner = mock();
       const collection = new NestCollection(mockedRunner as AbstractRunner);
       await collection.execute(schematic, []);
-      expect(mockedRunner.run).toHaveBeenCalledWith(`@nestjs/schematics:${ schematic }`);
+      expect(mockedRunner.run).toHaveBeenCalledWith(
+        `@nestjs/schematics:${schematic}`,
+      );
     });
   });
   [
@@ -37,7 +39,7 @@ describe('Nest Collection', () => {
     { name: 'class', alias: 'cl' },
     { name: 'controller', alias: 'co' },
     { name: 'decorator', alias: 'd' },
-    { name: 'exception', alias: 'e' },
+    { name: 'library', alias: 'lib' },
     { name: 'filter', alias: 'f' },
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
@@ -48,7 +50,9 @@ describe('Nest Collection', () => {
     { name: 'provider', alias: 'pr' },
     { name: 'service', alias: 's' },
   ].forEach((schematic) => {
-    it(`should call runner with schematic ${ schematic.name } name when use ${ schematic.alias } alias`, async () => {
+    it(`should call runner with schematic ${schematic.name} name when use ${
+      schematic.alias
+    } alias`, async () => {
       const mock = jest.fn();
       mock.mockImplementation(() => {
         return {
@@ -59,7 +63,9 @@ describe('Nest Collection', () => {
       const mockedRunner = mock();
       const collection = new NestCollection(mockedRunner as AbstractRunner);
       await collection.execute(schematic.alias, []);
-      expect(mockedRunner.run).toHaveBeenCalledWith(`@nestjs/schematics:${ schematic.name }`);
+      expect(mockedRunner.run).toHaveBeenCalledWith(
+        `@nestjs/schematics:${schematic.name}`,
+      );
     });
   });
   it('should throw an error when schematic name is not in nest collection', async () => {
