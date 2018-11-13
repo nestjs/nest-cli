@@ -13,9 +13,9 @@ export const messages = {
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${
     emojis.HEART
   }  to use?`,
-  PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Take ${emojis.COFFEE}  or ${
-    emojis.BEER
-  }  during the packages installation process and enjoy your time`,
+  PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${
+    emojis.COFFEE
+  }`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${
     emojis.COFFEE
   }`,
