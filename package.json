@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "5.6.2",
+  "version": "5.6.3",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -17,8 +17,7 @@
     "lint": "./node_modules/tslint/bin/tslint -p .",
     "start": "node bin/nest.js",
     "test": "jest --config test/jest-config.json",
-    "test:dev": "jest --config test/jest-config.json --watchAll",
-    "postinstall": "opencollective"
+    "test:dev": "jest --config test/jest-config.json --watchAll"
   },
   "repository": {
     "type": "git",
@@ -31,8 +30,8 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
-    "@angular-devkit/core": "^0.8.1",
-    "@angular-devkit/schematics-cli": "^0.8.1",
+    "@angular-devkit/core": "^7.0.5",
+    "@angular-devkit/schematics-cli": "^0.10.5",
     "@nestjs/schematics": "^5.9.7",
     "@nuxtjs/opencollective": "^0.1.0",
     "@types/jest": "^22.2.3",

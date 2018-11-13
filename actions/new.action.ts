@@ -4,9 +4,18 @@ import { execSync } from 'child_process';
 import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
 import { Input } from '../commands';
-import { AbstractPackageManager, PackageManager, PackageManagerFactory } from '../lib/package-managers';
+import {
+  AbstractPackageManager,
+  PackageManager,
+  PackageManagerFactory,
+} from '../lib/package-managers';
 import { generateInput, generateSelect } from '../lib/questions/questions';
-import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
+import {
+  AbstractCollection,
+  Collection,
+  CollectionFactory,
+  SchematicOption,
+} from '../lib/schematics';
 import { emojis, messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
@@ -82,7 +91,12 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
     args.concat(options),
   );
   await collection.execute('application', schematicOptions);
-  await generateConfigurationFile(args, options, collection);
+
+  const dryRunOption = options.find((option) => option.name === 'dry-run');
+  const isDryRunEnabled = dryRunOption && dryRunOption.value;
+  if (isDryRunEnabled) {
+    await generateConfigurationFile(args, options, collection);
+  }
   console.info();
 };
 
@@ -161,7 +175,10 @@ const installPackages = async (inputs: Input[], options: Input[]) => {
     }
   } else {
     packageManager = await selectPackageManager();
-    await packageManager.install(installDirectory, packageManager.name.toLowerCase());
+    await packageManager.install(
+      installDirectory,
+      packageManager.name.toLowerCase(),
+    );
   }
 };
 
