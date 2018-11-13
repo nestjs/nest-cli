@@ -16,12 +16,12 @@ export const messages = {
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Take ${emojis.COFFEE}  or ${
     emojis.BEER
   }  during the packages installation process and enjoy your time`,
-  PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Take ${emojis.COFFEE}  or ${
-    emojis.BEER
-  }  during the packages update process and enjoy your time`,
-  PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Take ${emojis.COFFEE}  or ${
-    emojis.BEER
-  }  during the packages upgrade process and enjoy your time`,
+  PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${
+    emojis.COFFEE
+  }`,
+  PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${
+    emojis.COFFEE
+  }`,
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name: string) =>
     `${emojis.ROCKET}  Successfully created project ${chalk.green(name)}`,
   GET_STARTED_INFORMATION: `${
