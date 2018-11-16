@@ -36,6 +36,7 @@
     "@nuxtjs/opencollective": "^0.1.0",
     "@types/jest": "^22.2.3",
     "chalk": "^2.4.1",
+    "cli-table2": "^0.2.0",
     "commander": "^2.15.1",
     "inquirer": "^5.2.0",
     "node-emoji": "^1.8.1",
@@ -44,6 +45,7 @@
     "ts-node": "^6.0.5"
   },
   "devDependencies": {
+    "@types/cli-table2": "^0.2.2",
     "@types/inquirer": "0.0.41",
     "@types/node": "^9.6.19",
     "@types/node-emoji": "^1.8.0",

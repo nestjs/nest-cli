@@ -2,13 +2,13 @@ import { AbstractRunner } from '../runners';
 import { AbstractCollection } from './abstract.collection';
 import { SchematicOption } from './schematic.option';
 
-interface Schematic {
+export interface Schematic {
   name: string;
   alias: string;
 }
 
 export class NestCollection extends AbstractCollection {
-  private schematics: Schematic[] = [
+  private static schematics: Schematic[] = [
     { name: 'application', alias: 'app' },
     { name: 'class', alias: 'cl' },
     { name: 'configuration', alias: 'config' },
@@ -35,8 +35,12 @@ export class NestCollection extends AbstractCollection {
     await super.execute(schematic, options);
   }
 
+  public static getSchematics(): Array<Schematic> {
+    return NestCollection.schematics;
+  }
+
   private validate(name: string) {
-    const schematic = this.schematics.find(
+    const schematic = NestCollection.schematics.find(
       (s) => s.name === name || s.alias === name,
     );
 
