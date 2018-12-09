@@ -1,7 +1,7 @@
 import { AbstractRunner } from './abstract.runner';
 
-export class NestRunner extends AbstractRunner {
+export class GitRunner extends AbstractRunner {
   constructor() {
-    super('nest');
+    super('git');
   }
 }

@@ -3,11 +3,14 @@ import { readFile } from 'fs';
 import { platform, release } from 'os';
 import osName = require('os-name');
 import { join } from 'path';
-import { AbstractPackageManager, PackageManagerFactory } from '../lib/package-managers';
+import {
+  AbstractPackageManager,
+  PackageManagerFactory,
+} from '../lib/package-managers';
 import { BANNER, messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
-interface PacakgeJsonDependencies {
+interface PackageJsonDependencies {
   [key: string]: string;
 }
 
@@ -39,51 +42,61 @@ const displayPackageManagerVersion = async () => {
   const manager: AbstractPackageManager = await PackageManagerFactory.find();
   try {
     const version: string = await manager.version();
-    console.info(`${ manager.name } Version    :`, chalk.blue(version));
+    console.info(`${manager.name} Version    :`, chalk.blue(version));
   } catch {
-    console.error(`${ manager.name } Version    :`, chalk.red('Unknown'));
+    console.error(`${manager.name} Version    :`, chalk.red('Unknown'));
   }
 };
 
 const displayNestInformation = async () => {
   console.info(chalk.green('[Nest Information]'));
   try {
-    const dependencies: PacakgeJsonDependencies = await readProjectPackageJsonDependencies();
+    const dependencies: PackageJsonDependencies = await readProjectPackageJsonDependencies();
     displayNestVersions(dependencies);
   } catch {
     console.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
 };
 
-const readProjectPackageJsonDependencies = async (): Promise<PacakgeJsonDependencies> => {
-  return new Promise<PacakgeJsonDependencies>((resolve, reject) => {
-    readFile(join(process.cwd(), 'package.json'), (error: NodeJS.ErrnoException, buffer: Buffer) => {
-      if (error !== undefined && error !== null) {
-        reject(error);
-      } else {
-        resolve(JSON.parse(buffer.toString()).dependencies);
-      }
-    });
+const readProjectPackageJsonDependencies = async (): Promise<
+  PackageJsonDependencies
+> => {
+  return new Promise<PackageJsonDependencies>((resolve, reject) => {
+    readFile(
+      join(process.cwd(), 'package.json'),
+      (error: NodeJS.ErrnoException, buffer: Buffer) => {
+        if (error !== undefined && error !== null) {
+          reject(error);
+        } else {
+          resolve(JSON.parse(buffer.toString()).dependencies);
+        }
+      },
+    );
   });
 };
 
-const displayNestVersions = (dependencies: PacakgeJsonDependencies) => {
-  buildNestVersionsMessage(dependencies)
-    .forEach((dependency) => console.info(dependency.name, chalk.blue(dependency.value)));
+const displayNestVersions = (dependencies: PackageJsonDependencies) => {
+  buildNestVersionsMessage(dependencies).forEach(dependency =>
+    console.info(dependency.name, chalk.blue(dependency.value)),
+  );
 };
 
-const buildNestVersionsMessage = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
+const buildNestVersionsMessage = (
+  dependencies: PackageJsonDependencies,
+): NestDependency[] => {
   const nestDependencies = collectNestDependencies(dependencies);
   return format(nestDependencies);
 };
 
-const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDependency[] => {
+const collectNestDependencies = (
+  dependencies: PackageJsonDependencies,
+): NestDependency[] => {
   const nestDependencies: NestDependency[] = [];
-  Object.keys(dependencies).forEach((key) => {
+  Object.keys(dependencies).forEach(key => {
     if (key.indexOf('@nestjs') > -1) {
       nestDependencies.push({
-        name: `${ key.replace(/@nestjs\//, '') } version`,
-        value: dependencies[ key ],
+        name: `${key.replace(/@nestjs\//, '')} version`,
+        value: dependencies[key],
       });
     }
   });
@@ -91,9 +104,12 @@ const collectNestDependencies = (dependencies: PacakgeJsonDependencies): NestDep
 };
 
 const format = (dependencies: NestDependency[]): NestDependency[] => {
-  const sorted = dependencies.sort((dependencyA, dependencyB) => dependencyB.name.length - dependencyA.name.length);
-  const length = sorted[ 0 ].name.length;
-  sorted.forEach((dependency) => {
+  const sorted = dependencies.sort(
+    (dependencyA, dependencyB) =>
+      dependencyB.name.length - dependencyA.name.length,
+  );
+  const length = sorted[0].name.length;
+  sorted.forEach(dependency => {
     if (dependency.name.length < length) {
       dependency.name = rightPad(dependency.name, length);
     }

@@ -1,5 +1,6 @@
 .idea/
 .gitignore
+.prettierrc
 .travis.yml
 Makefile
 

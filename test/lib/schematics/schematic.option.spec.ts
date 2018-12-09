@@ -62,7 +62,7 @@ describe('Schematic Option', () => {
       input: 'path/to/generate',
       expected: 'path/to/generate',
     },
-  ].forEach((test) => {
+  ].forEach(test => {
     it(test.description, () => {
       const option = new SchematicOption(test.option, test.input);
       expect(option.toCommandString()).toEqual(

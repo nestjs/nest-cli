@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { CommanderStatic } from 'commander';
 import { GenerateAction, InfoAction, NewAction } from '../actions';
 import { AddAction } from '../actions/add.action';
@@ -15,5 +16,15 @@ export class CommandLoader {
     new InfoCommand(new InfoAction()).load(program);
     new UpdateCommand(new UpdateAction()).load(program);
     new AddCommand(new AddAction()).load(program);
+
+    this.handleInvalidCommand(program);
+  }
+
+  private static handleInvalidCommand(program: CommanderStatic) {
+    program.on('command:*', () => {
+      console.error(chalk.red('Invalid command: %s'), program.args.join(' '));
+      console.log('See --help for a list of available commands.');
+      process.exit(1);
+    });
   }
 }
