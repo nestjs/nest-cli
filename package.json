@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "5.7.0",
+  "version": "5.7.1",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -37,7 +37,7 @@
     "@angular-devkit/core": "7.1.2",
     "@angular-devkit/schematics": "7.1.2",
     "@angular-devkit/schematics-cli": "0.11.2",
-    "@nestjs/schematics": "^5.11.0",
+    "@nestjs/schematics": "^5.11.2",
     "chalk": "^2.4.1",
     "cli-table2": "^0.2.0",
     "commander": "^2.15.1",
