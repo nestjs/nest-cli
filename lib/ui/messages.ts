@@ -22,6 +22,7 @@ export const messages = {
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${
     emojis.COFFEE
   }`,
+  GIT_INITIALIZATION_ERROR: 'Git repository has not been initialized',
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name: string) =>
     `${emojis.ROCKET}  Successfully created project ${chalk.green(name)}`,
   GET_STARTED_INFORMATION: `${

@@ -6,7 +6,6 @@ import { PackageManager } from './package-manager';
 import { PackageManagerCommands } from './package-manager-commands';
 
 export class YarnPackageManager extends AbstractPackageManager {
-
   constructor() {
     super(RunnerFactory.create(Runner.YARN) as YarnRunner);
   }
@@ -25,5 +24,4 @@ export class YarnPackageManager extends AbstractPackageManager {
       saveDevFlag: '-D',
     };
   }
-
 }

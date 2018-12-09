@@ -2,13 +2,13 @@ import { AbstractRunner } from '../runners';
 import { AbstractCollection } from './abstract.collection';
 import { SchematicOption } from './schematic.option';
 
-interface Schematic {
+export interface Schematic {
   name: string;
   alias: string;
 }
 
 export class NestCollection extends AbstractCollection {
-  private schematics: Schematic[] = [
+  private static schematics: Schematic[] = [
     { name: 'application', alias: 'app' },
     { name: 'class', alias: 'cl' },
     { name: 'configuration', alias: 'config' },
@@ -18,10 +18,12 @@ export class NestCollection extends AbstractCollection {
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
     { name: 'interceptor', alias: 'i' },
+    { name: 'interface', alias: 'interface' },
     { name: 'middleware', alias: 'mi' },
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
+    { name: 'resolver', alias: 'r' },
     { name: 'service', alias: 's' },
     { name: 'library', alias: 'lib' },
   ];
@@ -35,9 +37,13 @@ export class NestCollection extends AbstractCollection {
     await super.execute(schematic, options);
   }
 
+  public static getSchematics(): Schematic[] {
+    return NestCollection.schematics;
+  }
+
   private validate(name: string) {
-    const schematic = this.schematics.find(
-      (s) => s.name === name || s.alias === name,
+    const schematic = NestCollection.schematics.find(
+      s => s.name === name || s.alias === name,
     );
 
     if (schematic === undefined || schematic === null) {

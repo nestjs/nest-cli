@@ -17,7 +17,7 @@ export class RunnerFactory {
         return new YarnRunner();
 
       default:
-        console.info(chalk.yellow(`[WARN] Unsupported runner: ${ runner }`));
+        console.info(chalk.yellow(`[WARN] Unsupported runner: ${runner}`));
     }
   }
 }

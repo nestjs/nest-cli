@@ -15,23 +15,20 @@ export abstract class AbstractPackageManager {
     const spinner = ora({
       spinner: {
         interval: 120,
-        frames: [
-          '▹▹▹▹▹',
-          '▸▹▹▹▹',
-          '▹▸▹▹▹',
-          '▹▹▸▹▹',
-          '▹▹▹▸▹',
-          '▹▹▹▹▸',
-        ],
+        frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
       text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
     });
     spinner.start();
     try {
-      const commandArguments = `${ this.cli.install } --silent`;
+      const commandArguments = `${this.cli.install} --silent`;
       const collect = true;
       const dasherizedDirectory: string = dasherize(directory);
-      await this.runner.run(commandArguments, collect, join(process.cwd(), dasherizedDirectory));
+      await this.runner.run(
+        commandArguments,
+        collect,
+        join(process.cwd(), dasherizedDirectory),
+      );
       spinner.succeed();
       console.info();
       console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
@@ -53,25 +50,22 @@ export abstract class AbstractPackageManager {
   }
 
   public async addProduction(dependencies: string[], tag: string) {
-    const command: string = [ this.cli.add, this.cli.saveFlag ].filter((i) => i).join(' ');
-    const args: string = dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ');
+    const command: string = [this.cli.add, this.cli.saveFlag]
+      .filter(i => i)
+      .join(' ');
+    const args: string = dependencies
+      .map(dependency => `${dependency}@${tag}`)
+      .join(' ');
     const spinner = ora({
       spinner: {
         interval: 120,
-        frames: [
-          '▹▹▹▹▹',
-          '▸▹▹▹▹',
-          '▹▸▹▹▹',
-          '▹▹▸▹▹',
-          '▹▹▹▸▹',
-          '▹▹▹▹▸',
-        ],
+        frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
       text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
     });
     spinner.start();
     try {
-      await this.add(`${ command } ${ args }`);
+      await this.add(`${command} ${args}`);
       spinner.succeed();
     } catch {
       spinner.fail();
@@ -79,9 +73,11 @@ export abstract class AbstractPackageManager {
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
-    const command: string = `${ this.cli.add } ${ this.cli.saveDevFlag }`;
-    const args: string = dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ');
-    await this.add(`${ command } ${ args }`);
+    const command: string = `${this.cli.add} ${this.cli.saveDevFlag}`;
+    const args: string = dependencies
+      .map(dependency => `${dependency}@${tag}`)
+      .join(' ');
+    await this.add(`${command} ${args}`);
   }
 
   private async add(commandArguments: string) {
@@ -91,7 +87,8 @@ export abstract class AbstractPackageManager {
 
   public async getProduction(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDependencies: { [key: string]: string } = packageJsonContent.dependencies;
+    const packageJsonDependencies: { [key: string]: string } =
+      packageJsonContent.dependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDependencies)) {
@@ -103,7 +100,8 @@ export abstract class AbstractPackageManager {
 
   public async getDevelopement(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDevDependencies: { [key: string]: string } = packageJsonContent.devDependencies;
+    const packageJsonDevDependencies: { [key: string]: string } =
+      packageJsonContent.devDependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDevDependencies)) {
@@ -115,23 +113,30 @@ export abstract class AbstractPackageManager {
 
   private async readPackageJson(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      readFile(join(process.cwd(), 'package.json'), (error: NodeJS.ErrnoException, buffer: Buffer) => {
-        if (error !== undefined && error !== null) {
-          reject(error);
-        } else {
-          resolve(JSON.parse(buffer.toString()));
-        }
-      });
+      readFile(
+        join(process.cwd(), 'package.json'),
+        (error: NodeJS.ErrnoException, buffer: Buffer) => {
+          if (error !== undefined && error !== null) {
+            reject(error);
+          } else {
+            resolve(JSON.parse(buffer.toString()));
+          }
+        },
+      );
     });
   }
 
   public async updateProduction(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.update} ${ dependencies.join(' ')}`;
+    const commandArguments: string = `${this.cli.update} ${dependencies.join(
+      ' ',
+    )}`;
     await this.update(commandArguments);
   }
 
   public async updateDevelopement(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.update} ${ dependencies.join(' ')}`;
+    const commandArguments: string = `${this.cli.update} ${dependencies.join(
+      ' ',
+    )}`;
     await this.update(commandArguments);
   }
 
@@ -151,13 +156,17 @@ export abstract class AbstractPackageManager {
   }
 
   public async deleteProduction(dependencies: string[]) {
-    const command: string = [ this.cli.remove, this.cli.saveFlag ].filter((i) => i).join(' ');
+    const command: string = [this.cli.remove, this.cli.saveFlag]
+      .filter(i => i)
+      .join(' ');
     const args: string = dependencies.join(' ');
-    await this.delete(`${ command } ${ args }`);
+    await this.delete(`${command} ${args}`);
   }
 
   public async deleteDevelopment(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.remove} ${this.cli.saveDevFlag} ${ dependencies.join(' ') }`;
+    const commandArguments: string = `${this.cli.remove} ${
+      this.cli.saveDevFlag
+    } ${dependencies.join(' ')}`;
     await this.delete(commandArguments);
   }
 

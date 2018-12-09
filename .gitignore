@@ -1,6 +1,7 @@
 .idea/
 .envrc
 node_modules/
+.DS_Store
 
 # output
 lib/**/*.js
