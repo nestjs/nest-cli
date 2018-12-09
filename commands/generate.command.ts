@@ -1,8 +1,8 @@
+import * as Table from 'cli-table2';
 import { Command, CommanderStatic } from 'commander';
+import { NestCollection } from '../lib/schematics/nest.collection';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
-import { NestCollection } from '../lib/schematics/nest.collection';
-const Table = require('cli-table2');
 
 export class GenerateCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -39,37 +39,33 @@ export class GenerateCommand extends AbstractCommand {
   }
 
   private buildDescription(): string {
-    let description = ''
-      .concat('Generate a Nest element.\n\n')
-      .concat('  Available schematics:\n')
-      .concat(
-        this.buildSchematicsListAsTable()
-      );
-
-    return description;
+    return (
+      'Generate a Nest element.\n' +
+      '  Available schematics:\n' +
+      this.buildSchematicsListAsTable()
+    );
   }
 
   private buildSchematicsListAsTable(): string {
-    // See https://github.com/jamestalmage/cli-table2 for documentation
-    const leftMargin = ' '.repeat(4);
+    const leftMargin = '    ';
     const tableConfig = {
       head: ['name', 'alias'],
       chars: {
-        'left': leftMargin.concat('│'),
+        // tslint:disable-next-line:quotemark
+        "left": leftMargin.concat('│'),
         'top-left': leftMargin.concat('┌'),
         'bottom-left': leftMargin.concat('└'),
-        'mid': '',
+        // tslint:disable-next-line:quotemark
+        "mid": '',
         'left-mid': '',
         'mid-mid': '',
-        'right-mid': ''
-      }
+        'right-mid': '',
+      },
     };
-    let table = new Table(tableConfig);
-
-    for (let schematic of NestCollection.getSchematics()) {
+    const table: any = new Table(tableConfig);
+    for (const schematic of NestCollection.getSchematics()) {
       table.push([schematic.name, schematic.alias]);
     }
-
     return table.toString();
   }
 }
