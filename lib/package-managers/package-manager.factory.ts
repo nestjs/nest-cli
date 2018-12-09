@@ -12,17 +12,17 @@ export class PackageManagerFactory {
       case PackageManager.YARN:
         return new YarnPackageManager();
       default:
-        throw new Error(`Package manager ${ name } is not managed.`);
+        throw new Error(`Package manager ${name} is not managed.`);
     }
   }
 
   public static async find(): Promise<AbstractPackageManager> {
-    return new Promise<AbstractPackageManager>((resolve) => {
+    return new Promise<AbstractPackageManager>(resolve => {
       readdir(process.cwd(), (error, files) => {
         if (error) {
           resolve(this.create(PackageManager.NPM));
         } else {
-          if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
+          if (files.findIndex(filename => filename === 'yarn.lock') > -1) {
             resolve(this.create(PackageManager.YARN));
           } else {
             resolve(this.create(PackageManager.NPM));

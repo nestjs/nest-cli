@@ -6,7 +6,7 @@ export const generateInput = (
       return (defaultAnswer: string): any => ({
         type: 'input',
         name,
-        message: `${name} :`,
+        message: `${name}:`,
         default: defaultAnswer,
       });
     }

@@ -18,10 +18,12 @@ export class NestCollection extends AbstractCollection {
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
     { name: 'interceptor', alias: 'i' },
+    { name: 'interface', alias: 'interface' },
     { name: 'middleware', alias: 'mi' },
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
+    { name: 'resolver', alias: 'r' },
     { name: 'service', alias: 's' },
     { name: 'library', alias: 'lib' },
   ];
@@ -40,8 +42,8 @@ export class NestCollection extends AbstractCollection {
   }
 
   private validate(name: string) {
-    const schematic = NestCollection.schematics.find(
-      (s) => s.name === name || s.alias === name,
+    const schematic = this.schematics.find(
+      s => s.name === name || s.alias === name,
     );
 
     if (schematic === undefined || schematic === null) {
