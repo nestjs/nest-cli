@@ -37,13 +37,13 @@ export class NestCollection extends AbstractCollection {
     await super.execute(schematic, options);
   }
 
-  public static getSchematics(): Array<Schematic> {
+  public static getSchematics(): Schematic[] {
     return NestCollection.schematics;
   }
 
   private validate(name: string) {
-    const schematic = this.schematics.find(
-      s => s.name === name || s.alias === name,
+    const schematic = NestCollection.schematics.find(
+      (s: Schematic) => s.name === name || s.alias === name,
     );
 
     if (schematic === undefined || schematic === null) {
