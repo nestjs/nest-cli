@@ -43,7 +43,7 @@ describe('Nest Collection', () => {
     { name: 'filter', alias: 'f' },
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
-    { name: 'interceptor', alias: 'i' },
+    { name: 'interceptor', alias: 'in' },
     { name: 'middleware', alias: 'mi' },
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
