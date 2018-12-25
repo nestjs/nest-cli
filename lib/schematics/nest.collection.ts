@@ -17,7 +17,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'filter', alias: 'f' },
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
-    { name: 'interceptor', alias: 'i' },
+    { name: 'interceptor', alias: 'in' },
     { name: 'interface', alias: 'interface' },
     { name: 'middleware', alias: 'mi' },
     { name: 'module', alias: 'mo' },

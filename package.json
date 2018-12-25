@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "5.7.1",
+  "version": "5.7.2",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -37,14 +37,15 @@
     "@angular-devkit/core": "7.1.2",
     "@angular-devkit/schematics": "7.1.2",
     "@angular-devkit/schematics-cli": "0.11.2",
-    "@nestjs/schematics": "^5.11.2",
+    "@nestjs/schematics": "^5.11.3",
     "chalk": "^2.4.1",
     "cli-table2": "^0.2.0",
-    "commander": "^2.15.1",
+    "commander": "^2.19.0",
     "inquirer": "^5.2.0",
     "node-emoji": "^1.8.1",
     "ora": "^2.1.0",
-    "os-name": "^2.0.1"
+    "os-name": "^2.0.1",
+    "typescript": "^3.2.2"
   },
   "devDependencies": {
     "@types/cli-table2": "^0.2.2",
@@ -58,7 +59,6 @@
     "prettier": "^1.15.3",
     "ts-jest": "^22.4.6",
     "ts-node": "^6.0.5",
-    "tslint": "^5.11.0",
-    "typescript": "^3.2.2"
+    "tslint": "^5.11.0"
   }
 }
