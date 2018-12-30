@@ -26,6 +26,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'resolver', alias: 'r' },
     { name: 'service', alias: 's' },
     { name: 'library', alias: 'lib' },
+    { name: 'graphql-schemes', alias: 'gqls' },
   ];
 
   constructor(runner: AbstractRunner) {
