@@ -8,6 +8,10 @@ const bootstrap = () => {
   program.version(require('../package.json').version);
   CommandLoader.load(program);
   commander.parse(process.argv);
+
+  if (!program.args.length) {
+  	program.outputHelp();
+  }
 };
 
 bootstrap();
