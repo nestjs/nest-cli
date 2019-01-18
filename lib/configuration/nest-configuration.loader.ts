@@ -13,6 +13,12 @@ export class NestConfigurationLoader implements ConfigurationLoader {
       'nest-cli.json',
       'nest.json',
     ]);
-    return content ? JSON.parse(content) : defaultConfiguration;
+    if (!content) {
+      return defaultConfiguration;
+    }
+    return {
+      ...defaultConfiguration,
+      ...JSON.parse(content),
+    };
   }
 }

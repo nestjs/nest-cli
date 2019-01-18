@@ -7,7 +7,7 @@ import { Input } from './command.input';
 export class GenerateCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
     program
-      .command('generate <schematic> <name> [path]')
+      .command('generate <schematic> [name] [path]')
       .alias('g')
       .description(this.buildDescription())
       .option('--dry-run', 'Allow to test changes before command execution')
