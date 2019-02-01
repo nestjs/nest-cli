@@ -1,4 +1,5 @@
 import { Command, CommanderStatic } from 'commander';
+import { isBoolean } from 'util';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
@@ -15,6 +16,7 @@ export class NewCommand extends AbstractCommand {
         'Allow to specify package manager to skip package-manager selection.',
       )
       .option('-l, --language [language]', 'Specify ts or js language to use')
+      .option('-c, --collection [collectionName]', 'Specify the Collection that shall be used.')
       .action(
         async (
           name: string,
@@ -34,6 +36,11 @@ export class NewCommand extends AbstractCommand {
             name: 'language',
             value: !!command.language ? command.language : 'ts',
           });
+
+          options.push(({
+            name: 'collection',
+            value: command.collection != null && !isBoolean(command.collection) ? command.collection : false,
+          }));
 
           const inputs: Input[] = [];
           inputs.push({ name: 'name', value: name });

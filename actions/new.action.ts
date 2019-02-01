@@ -5,19 +5,10 @@ import * as inquirer from 'inquirer';
 import { Answers, PromptModule, Question } from 'inquirer';
 import { join } from 'path';
 import { Input } from '../commands';
-import {
-  AbstractPackageManager,
-  PackageManager,
-  PackageManagerFactory,
-} from '../lib/package-managers';
+import { AbstractPackageManager, PackageManager, PackageManagerFactory } from '../lib/package-managers';
 import { generateInput, generateSelect } from '../lib/questions/questions';
 import { GitRunner } from '../lib/runners/git.runner';
-import {
-  AbstractCollection,
-  Collection,
-  CollectionFactory,
-  SchematicOption,
-} from '../lib/schematics';
+import { AbstractCollection, Collection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { emojis, messages } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
@@ -29,10 +20,17 @@ export class NewAction extends AbstractAction {
 
     const dryRunOption = options.find(option => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
+
+    const collectionOption = options.find(option => option.name === 'collection' && option.value != null);
+
+    // @ts-ignore
+    const collectionName: any = collectionOption.value;
+
     await generateApplicationFiles(
       inputs,
       options,
       isDryRunEnabled as boolean,
+      collectionName,
     ).catch(exit);
 
     const shouldSkipInstall = options.some(
@@ -110,9 +108,10 @@ const generateApplicationFiles = async (
   args: Input[],
   options: Input[],
   isDryRunEnabled: boolean,
+  collectionName: any,
 ) => {
   const collection: AbstractCollection = CollectionFactory.create(
-    Collection.NESTJS,
+    collectionName || Collection.NESTJS,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(
     args.concat(options),
@@ -120,7 +119,7 @@ const generateApplicationFiles = async (
   await collection.execute('application', schematicOptions);
 
   if (!isDryRunEnabled) {
-    await generateConfigurationFile(args, options, collection);
+    await generateConfigurationFile(args, options, collection, collectionName);
   }
   console.info();
 };
@@ -144,12 +143,13 @@ const generateConfigurationFile = async (
   args: Input[],
   options: Input[],
   collection: AbstractCollection,
+  collectionName: any,
 ) => {
   const schematicOptions: SchematicOption[] = mapConfigurationSchematicOptions(
     args.concat(options),
   );
   schematicOptions.push(
-    new SchematicOption('collection', '@nestjs/schematics'),
+    new SchematicOption('collection', collectionName),
   );
   await collection.execute('configuration', schematicOptions);
 };

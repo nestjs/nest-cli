@@ -3,11 +3,7 @@ import { Input } from '../commands';
 import { Configuration, ConfigurationLoader } from '../lib/configuration';
 import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
 import { FileSystemReader } from '../lib/readers';
-import {
-  AbstractCollection,
-  CollectionFactory,
-  SchematicOption,
-} from '../lib/schematics';
+import { AbstractCollection, CollectionFactory, SchematicOption } from '../lib/schematics';
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
@@ -18,8 +14,11 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration: Configuration = await loadConfiguration();
+  // @ts-ignore
+  const collectionOption = inputs.find(option => option.name === 'collection').value;
+
   const collection: AbstractCollection = CollectionFactory.create(
-    configuration.collection,
+    collectionOption || configuration.collection,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
 
