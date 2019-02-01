@@ -6,7 +6,7 @@ export class AddCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
       .command('add <library>')
-      .description('Allow user to add a library')
+      .description('Add a library')
       .action(async (library: string) => {
         const inputs: Input[] = [];
         inputs.push({ name: 'library', value: library });
