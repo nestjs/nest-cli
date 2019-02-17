@@ -34,6 +34,7 @@ COPY --from=builder /nestjs/cli/actions actions
 COPY --from=builder /nestjs/cli/bin bin
 COPY --from=builder /nestjs/cli/commands commands
 COPY --from=builder /nestjs/cli/lib lib
+RUN npm run build
 RUN npm link
 WORKDIR /workspace
 EXPOSE 3000

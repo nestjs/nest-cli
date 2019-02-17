@@ -39,6 +39,7 @@ $ cd <project>
 With your Node runtime:
 ```
 $ npm install
+$ npm run build
 $ npm link
 ```
 
