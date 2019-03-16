@@ -37,7 +37,7 @@
     "@angular-devkit/core": "7.2.2",
     "@angular-devkit/schematics": "7.2.2",
     "@angular-devkit/schematics-cli": "^0.12.2",
-    "@nestjs/schematics": "^5.12.0",
+    "@nestjs/schematics": "^6.0.0",
     "chalk": "^2.4.1",
     "cli-table2": "^0.2.0",
     "commander": "^2.19.0",
