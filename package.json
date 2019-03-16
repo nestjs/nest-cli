@@ -45,7 +45,7 @@
     "node-emoji": "1.8.1",
     "ora": "2.1.0",
     "os-name": "2.0.1",
-    "typescript": "3.2.2"
+    "typescript": "3.3.3333"
   },
   "devDependencies": {
     "@types/cli-table2": "0.2.2",
