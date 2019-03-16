@@ -87,7 +87,7 @@ export abstract class AbstractPackageManager {
 
   public async getProduction(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDependencies: { [key: string]: string } =
+    const packageJsonDependencies: { []: string } =
       packageJsonContent.dependencies;
     const dependencies = [];
 
@@ -100,7 +100,7 @@ export abstract class AbstractPackageManager {
 
   public async getDevelopement(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDevDependencies: { [key: string]: string } =
+    const packageJsonDevDependencies: { []: string } =
       packageJsonContent.devDependencies;
     const dependencies = [];
 
