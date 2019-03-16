@@ -2,12 +2,10 @@ import chalk from 'chalk';
 import { emojis } from './emojis';
 
 export const messages = {
-  PROJECT_INFORMATION_START: `${emojis.ZAP}  Creating your Nest project...`,
-  ADDITIONAL_INFORMATION: `${
-    emojis.RAISED_HANDS
-  }  We have to collect additional information:`,
-  PROJECT_INFORMATION_COLLECTED: `${emojis.BOOM}  Thank you for your time!`,
   DRY_RUN_MODE: 'Command has been executed in the dry mode, nothing changed!',
+  PROJECT_INFORMATION_START: `${
+    emojis.ZAP
+  }  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `Failed to execute command: ${command}`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${
