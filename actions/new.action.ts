@@ -10,7 +10,7 @@ import {
   PackageManager,
   PackageManagerFactory,
 } from '../lib/package-managers';
-import { generateSelect } from '../lib/questions/questions';
+import { generateInput, generateSelect } from '../lib/questions/questions';
 import { GitRunner } from '../lib/runners/git.runner';
 import {
   AbstractCollection,
@@ -25,16 +25,15 @@ export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
     const dryRunOption = options.find(option => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
-    printHeader();
 
+    await askForMissingInformation(inputs);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
       option => option.name === 'skip-install' && option.value === true,
     );
-    const projectDirectory = dasherize(inputs.find(
-      input => input.name === 'name',
-    )!.value as string);
+    const projectDirectory = dasherize(getApplicationNameInput(inputs)!
+      .value as string);
 
     if (!shouldSkipInstall) {
       await installPackages(
@@ -50,9 +49,32 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const printHeader = () => {
+const getApplicationNameInput = (inputs: Input[]) =>
+  inputs.find(input => input.name === 'name');
+
+const askForMissingInformation = async (inputs: Input[]) => {
   console.info(messages.PROJECT_INFORMATION_START);
   console.info();
+
+  const prompt: inquirer.PromptModule = inquirer.createPromptModule();
+  const nameInput = getApplicationNameInput(inputs);
+  if (!nameInput!.value) {
+    const message = 'What name would you like to use for the new project?';
+    const questions = [generateInput('name', message)('nest-app')];
+    const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
+    replaceInputMissingInformation(inputs, answers);
+  }
+};
+
+const replaceInputMissingInformation = (
+  inputs: Input[],
+  answers: Answers,
+): Input[] => {
+  return inputs.map(
+    input =>
+      (input.value =
+        input.value !== undefined ? input.value : answers[input.name]),
+  );
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {

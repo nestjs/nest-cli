@@ -29,9 +29,8 @@ export class NewCommand extends AbstractCommand {
         });
 
         const inputs: Input[] = [];
-        if (name) {
-          inputs.push({ name: 'name', value: name });
-        }
+        inputs.push({ name: 'name', value: name });
+
         await this.action.handle(inputs, options);
       });
   }

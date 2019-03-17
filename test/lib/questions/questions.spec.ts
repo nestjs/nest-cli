@@ -7,26 +7,19 @@ import {
 
 describe('Questions', () => {
   describe('generateInput', () => {
-    it('should return an input question when Input value is undefined', () => {
+    it('should return an input question', () => {
       const input: Input = {
         name: 'name',
-        value: undefined,
+        value: 'test',
       };
-      const question: Question = generateInput(input.name)(input.value)('name');
+      const message = 'name:';
+      const question: Question = generateInput(input.name, message)('name');
       expect(question).toEqual({
         type: 'input',
         name: 'name',
-        message: 'name:',
+        message,
         default: 'name',
       });
-    });
-    it('should return undefined when Input value is defined', () => {
-      const input: Input = {
-        name: 'name',
-        value: 'name',
-      };
-      const question = generateInput(input.name)(input.value)('default');
-      expect(question).toBeUndefined();
     });
   });
   describe('generateSelect', () => {
