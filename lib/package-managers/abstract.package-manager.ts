@@ -87,28 +87,26 @@ export abstract class AbstractPackageManager {
 
   public async getProduction(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDependencies: { [key: string]: string } =
-      packageJsonContent.dependencies;
+    const packageJsonDependencies: any = packageJsonContent.dependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDependencies)) {
       dependencies.push({ name, version });
     }
 
-    return dependencies;
+    return dependencies as ProjectDependency[];
   }
 
   public async getDevelopement(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDevDependencies: { [key: string]: string } =
-      packageJsonContent.devDependencies;
+    const packageJsonDevDependencies: any = packageJsonContent.devDependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDevDependencies)) {
       dependencies.push({ name, version });
     }
 
-    return dependencies;
+    return dependencies as ProjectDependency[];
   }
 
   private async readPackageJson(): Promise<any> {

@@ -46,7 +46,7 @@ export class GenerateCommand extends AbstractCommand {
 
   private buildDescription(): string {
     return (
-      'Generate a Nest element.\n' +
+      'Generate a Nest element\n' +
       '  Available schematics:\n' +
       this.buildSchematicsListAsTable()
     );

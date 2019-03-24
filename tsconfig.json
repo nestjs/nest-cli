@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "allowJs": false,
     "declaration": true,
     "lib": ["es2017"],
     "module": "commonjs",

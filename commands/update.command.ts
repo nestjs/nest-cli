@@ -7,7 +7,7 @@ export class UpdateCommand extends AbstractCommand {
     program
       .command('update')
       .alias('u')
-      .description('Update Nest dependencies.')
+      .description('Update Nest dependencies')
       .option('-f, --force', 'Call for upgrading instead of updating.')
       .option(
         '-t, --tag <tag>',

@@ -37,7 +37,7 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
-      packageManager.install(dirName);
+      packageManager.install(dirName, 'yarn');
       expect(spy).toBeCalledWith('install --silent', true, testDir);
     });
   });

@@ -1,18 +1,10 @@
-export const generateInput = (
-  name: string,
-): ((value: any) => (defaultAnwser: string) => any) => {
-  return (value: string) => {
-    if (value === undefined) {
-      return (defaultAnswer: string): any => ({
-        type: 'input',
-        name,
-        message: `${name}:`,
-        default: defaultAnswer,
-      });
-    }
-
-    return (defaultAnswer: string) => undefined;
-  };
+export const generateInput = (name: string, message: string) => {
+  return (defaultAnswer: string): any => ({
+    type: 'input',
+    name,
+    message,
+    default: defaultAnswer,
+  });
 };
 
 export const generateSelect = (

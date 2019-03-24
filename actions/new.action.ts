@@ -2,7 +2,7 @@ import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as inquirer from 'inquirer';
-import { Answers, PromptModule, Question } from 'inquirer';
+import { Answers, Question } from 'inquirer';
 import { join } from 'path';
 import { Input } from '../commands';
 import { AbstractPackageManager, PackageManager, PackageManagerFactory } from '../lib/package-managers';
@@ -14,31 +14,17 @@ import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    const questions: Question[] = generateQuestionsForMissingInputs(inputs);
-    const answers: Answers = await askForMissingInformation(questions);
-    const args: Input[] = replaceInputMissingInformation(inputs, answers);
-
     const dryRunOption = options.find(option => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
-    const collectionOption = options.find(option => option.name === 'collection' && option.value != null);
-
-    // @ts-ignore
-    const collectionName: any = collectionOption.value;
-
-    await generateApplicationFiles(
-      inputs,
-      options,
-      isDryRunEnabled as boolean,
-      collectionName,
-    ).catch(exit);
+    await askForMissingInformation(inputs);
+    await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
       option => option.name === 'skip-install' && option.value === true,
     );
-    const projectDirectory = dasherize(inputs.find(
-      input => input.name === 'name',
-    )!.value as string);
+    const projectDirectory = dasherize(getApplicationNameInput(inputs)!
+      .value as string);
 
     if (!shouldSkipInstall) {
       await installPackages(
@@ -54,43 +40,21 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const generateQuestionsForMissingInputs = (inputs: Input[]): Question[] => {
-  return inputs
-    .map(input =>
-      generateInput(input.name)(input.value)(generateDefaultAnswer(input.name)),
-    )
-    .filter(question => question !== undefined) as Array<Question<Answers>>;
-};
+const getApplicationNameInput = (inputs: Input[]) =>
+  inputs.find(input => input.name === 'name');
 
-const generateDefaultAnswer = (name: string) => {
-  switch (name) {
-    case 'name':
-      return 'nestjs-app-name';
-    case 'description':
-      return 'description';
-    case 'version':
-      return '0.0.0';
-    case 'author':
-    default:
-      return '';
-  }
-};
-
-const askForMissingInformation = async (
-  questions: Question[],
-): Promise<Answers> => {
-  console.info();
+const askForMissingInformation = async (inputs: Input[]) => {
   console.info(messages.PROJECT_INFORMATION_START);
-  console.info(messages.ADDITIONAL_INFORMATION);
   console.info();
 
-  const prompt: PromptModule = inquirer.createPromptModule();
-  const answers: Answers = await prompt(questions);
-
-  console.info();
-  console.info(messages.PROJECT_INFORMATION_COLLECTED);
-  console.info();
-  return answers;
+  const prompt: inquirer.PromptModule = inquirer.createPromptModule();
+  const nameInput = getApplicationNameInput(inputs);
+  if (!nameInput!.value) {
+    const message = 'What name would you like to use for the new project?';
+    const questions = [generateInput('name', message)('nest-app')];
+    const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
+    replaceInputMissingInformation(inputs, answers);
+  }
 };
 
 const replaceInputMissingInformation = (
@@ -104,12 +68,8 @@ const replaceInputMissingInformation = (
   );
 };
 
-const generateApplicationFiles = async (
-  args: Input[],
-  options: Input[],
-  isDryRunEnabled: boolean,
-  collectionName: any,
-) => {
+const generateApplicationFiles = async (args: Input[], options: Input[]) => {
+  const collectionName = (options.find(option => option.name === 'collection' && option.value != null)).value;
   const collection: AbstractCollection = CollectionFactory.create(
     collectionName || Collection.NESTJS,
   );
@@ -117,10 +77,6 @@ const generateApplicationFiles = async (
     args.concat(options),
   );
   await collection.execute('application', schematicOptions);
-
-  if (!isDryRunEnabled) {
-    await generateConfigurationFile(args, options, collection, collectionName);
-  }
   console.info();
 };
 
@@ -134,40 +90,6 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
-    },
-    [],
-  );
-};
-
-const generateConfigurationFile = async (
-  args: Input[],
-  options: Input[],
-  collection: AbstractCollection,
-  collectionName: any,
-) => {
-  const schematicOptions: SchematicOption[] = mapConfigurationSchematicOptions(
-    args.concat(options),
-  );
-  schematicOptions.push(
-    new SchematicOption('collection', collectionName),
-  );
-  await collection.execute('configuration', schematicOptions);
-};
-
-const mapConfigurationSchematicOptions = (
-  inputs: Input[],
-): SchematicOption[] => {
-  return inputs.reduce(
-    (schematicsOptions: SchematicOption[], option: Input) => {
-      if (option.name === 'name') {
-        schematicsOptions.push(
-          new SchematicOption('project', dasherize(option.value as string)),
-        );
-      }
-      if (option.name === 'language') {
-        schematicsOptions.push(new SchematicOption(option.name, option.value));
-      }
-      return schematicsOptions;
     },
     [],
   );
