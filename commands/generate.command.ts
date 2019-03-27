@@ -1,4 +1,4 @@
-import * as Table from 'cli-table2';
+import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
 import { NestCollection } from '../lib/schematics/nest.collection';
 import { AbstractCommand } from './abstract.command';

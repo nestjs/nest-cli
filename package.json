@@ -39,7 +39,7 @@
     "@angular-devkit/schematics-cli": "0.13.6",
     "@nestjs/schematics": "6.1.4-next",
     "chalk": "2.4.2",
-    "cli-table2": "0.2.0",
+    "cli-table3": "0.5.1",
     "commander": "2.19.0",
     "inquirer": "6.2.2",
     "node-emoji": "1.10.0",
