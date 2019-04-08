@@ -83,8 +83,11 @@ const replaceInputMissingInformation = (
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
+  const collectionName = options.find(
+    option => option.name === 'collection' && option.value != null,
+  )!.value;
   const collection: AbstractCollection = CollectionFactory.create(
-    Collection.NESTJS,
+    (collectionName as Collection) || Collection.NESTJS,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(
     args.concat(options),

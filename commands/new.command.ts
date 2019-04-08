@@ -1,4 +1,5 @@
 import { Command, CommanderStatic } from 'commander';
+import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
@@ -16,6 +17,10 @@ export class NewCommand extends AbstractCommand {
         'Allow to specify package manager to skip package-manager selection.',
       )
       .option('-l, --language [language]', 'Specify ts or js language to use')
+      .option(
+        '-c, --collection [collectionName]',
+        'Specify the Collection that shall be used.',
+      )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
         options.push({ name: 'dry-run', value: !!command.dryRun });
@@ -28,6 +33,10 @@ export class NewCommand extends AbstractCommand {
         options.push({
           name: 'language',
           value: !!command.language ? command.language : 'ts',
+        });
+        options.push({
+          name: 'collection',
+          value: command.collection || Collection.NESTJS,
         });
 
         const inputs: Input[] = [];
