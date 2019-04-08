@@ -1,5 +1,6 @@
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
+import { Collection } from '../lib/schematics';
 import { NestCollection } from '../lib/schematics/nest.collection';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
@@ -13,6 +14,10 @@ export class GenerateCommand extends AbstractCommand {
       .option('--dry-run', 'Allow to test changes before command execution')
       .option('--flat', 'Enforce flat structure of generated element')
       .option('--no-spec', 'Disable spec files generation')
+      .option(
+        '-c, --collection [collectionName]',
+        'Specify the Collection that shall be used.',
+      )
       .action(
         async (
           schematic: string,
@@ -26,6 +31,10 @@ export class GenerateCommand extends AbstractCommand {
           options.push({
             name: 'spec',
             value: command.spec,
+          });
+          options.push({
+            name: 'collection',
+            value: command.collection || Collection.NESTJS,
           });
 
           const inputs: Input[] = [];
