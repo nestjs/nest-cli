@@ -32,6 +32,9 @@ export class NewAction extends AbstractAction {
     const shouldSkipInstall = options.some(
       option => option.name === 'skip-install' && option.value === true,
     );
+    const shouldSkipGit = options.some(
+      option => option.name === 'skip-git' && option.value === true,
+    );
     const projectDirectory = dasherize(getApplicationNameInput(inputs)!
       .value as string);
 
@@ -43,7 +46,9 @@ export class NewAction extends AbstractAction {
       );
     }
     if (!isDryRunEnabled) {
-      await initializeGitRepository(projectDirectory);
+      if (!shouldSkipGit) {
+        await initializeGitRepository(projectDirectory);
+      }
       printCollective();
     }
   }
