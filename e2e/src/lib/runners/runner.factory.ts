@@ -11,7 +11,7 @@ export class RunnerFactory {
       case Runner.NEST:
         return new NestRunner();
       default:
-        console.info(`[WARN] Unsupported runner: ${ runner }`);
+        console.info(`[WARN] Unsupported runner: ${runner}`);
     }
   }
 }

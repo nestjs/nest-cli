@@ -7,9 +7,12 @@ export class UpdateCommand extends AbstractCommand {
     program
       .command('update')
       .alias('u')
-      .description('Update @nestjs dependencies.')
+      .description('Update Nest dependencies')
       .option('-f, --force', 'Call for upgrading instead of updating.')
-      .option('-t, --tag <tag>', 'Call for upgrading to latest | beta | rc | next tag.')
+      .option(
+        '-t, --tag <tag>',
+        'Call for upgrading to latest | beta | rc | next tag.',
+      )
       .action(async (command: Command) => {
         const options: Input[] = [];
         options.push({ name: 'force', value: !!command.force });

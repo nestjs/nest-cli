@@ -1,5 +1,8 @@
 import { join } from 'path';
-import { PackageManagerCommands, YarnPackageManager } from '../../../lib/package-managers';
+import {
+  PackageManagerCommands,
+  YarnPackageManager,
+} from '../../../lib/package-managers';
 import { YarnRunner } from '../../../lib/runners/yarn.runner';
 
 jest.mock('../../../lib/runners/yarn.runner');
@@ -34,12 +37,8 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
-      packageManager.install(dirName);
-      expect(spy).toBeCalledWith(
-        'install --silent',
-        true,
-        testDir,
-      );
+      packageManager.install(dirName, 'yarn');
+      expect(spy).toBeCalledWith('install --silent', true, testDir);
     });
   });
   describe('addProduction', () => {
@@ -47,8 +46,9 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
-      const command = `add ${ dependencies.map((dependency) =>
-        `${ dependency }@${ tag }`).join(' ') }`;
+      const command = `add ${dependencies
+        .map(dependency => `${dependency}@${tag}`)
+        .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -58,8 +58,9 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
-      const command = `add -D ${ dependencies.map((dependency) =>
-        `${ dependency }@${ tag }`).join(' ') }`;
+      const command = `add -D ${dependencies
+        .map(dependency => `${dependency}@${tag}`)
+        .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -68,7 +69,7 @@ describe('YarnPackageManager', () => {
     it('should use the proper command for updating production dependencies', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
-      const command = `upgrade ${ dependencies.join(' ') }`;
+      const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateProduction(dependencies);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -77,7 +78,7 @@ describe('YarnPackageManager', () => {
     it('should use the proper command for updating development dependencies', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
-      const command = `upgrade ${ dependencies.join(' ') }`;
+      const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateDevelopement(dependencies);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -87,19 +88,18 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
-      const uninstallCommand = `remove ${ dependencies.join(' ') }`;
+      const uninstallCommand = `remove ${dependencies.join(' ')}`;
 
-      const installCommand = `add ${
-        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
-      }`;
+      const installCommand = `add ${dependencies
+        .map(dependency => `${dependency}@${tag}`)
+        .join(' ')}`;
 
-      return packageManager.upgradeProduction(dependencies, tag)
-        .then(() => {
-          expect(spy.mock.calls).toEqual([
-            [uninstallCommand, true],
-            [installCommand, true],
-          ]);
-        });
+      return packageManager.upgradeProduction(dependencies, tag).then(() => {
+        expect(spy.mock.calls).toEqual([
+          [uninstallCommand, true],
+          [installCommand, true],
+        ]);
+      });
     });
   });
   describe('upgradeDevelopment', () => {
@@ -107,19 +107,18 @@ describe('YarnPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
-      const uninstallCommand = `remove -D ${ dependencies.join(' ') }`;
+      const uninstallCommand = `remove -D ${dependencies.join(' ')}`;
 
-      const installCommand = `add -D ${
-        dependencies.map((dependency) => `${ dependency }@${ tag }`).join(' ')
-      }`;
+      const installCommand = `add -D ${dependencies
+        .map(dependency => `${dependency}@${tag}`)
+        .join(' ')}`;
 
-      return packageManager.upgradeDevelopement(dependencies, tag)
-        .then(() => {
-          expect(spy.mock.calls).toEqual([
-            [uninstallCommand, true],
-            [installCommand, true],
-          ]);
-        });
+      return packageManager.upgradeDevelopement(dependencies, tag).then(() => {
+        expect(spy.mock.calls).toEqual([
+          [uninstallCommand, true],
+          [installCommand, true],
+        ]);
+      });
     });
   });
 });

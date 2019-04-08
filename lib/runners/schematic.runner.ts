@@ -1,5 +1,5 @@
-import { join, sep } from 'path';
 import { existsSync } from 'fs';
+import { join, sep } from 'path';
 import { AbstractRunner } from './abstract.runner';
 
 export class SchematicRunner extends AbstractRunner {
@@ -7,7 +7,7 @@ export class SchematicRunner extends AbstractRunner {
     super(`"${SchematicRunner.findClosestSchematicsBinary(__dirname)}"`);
   }
 
-  static findClosestSchematicsBinary(path: string): string {
+  private static findClosestSchematicsBinary(path: string): string {
     const segments = path.split(sep);
     const binaryPath = ['node_modules', '.bin', 'schematics'];
 

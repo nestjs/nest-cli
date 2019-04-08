@@ -18,8 +18,11 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration: Configuration = await loadConfiguration();
+  const collectionOption = inputs.find(option => option.name === 'collection')!
+    .value;
+
   const collection: AbstractCollection = CollectionFactory.create(
-    configuration.collection,
+    collectionOption || configuration.collection,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
 

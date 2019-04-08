@@ -1,22 +1,13 @@
 {
   "compilerOptions": {
-    "allowJs": false,
-    "declaration": false,
+    "declaration": true,
     "lib": ["es2017"],
     "module": "commonjs",
     "target": "es6",
     "skipLibCheck": true,
     "sourceMap": false,
-    "strict": true,
+    "strict": true
   },
-  "include": [
-    "actions",
-    "bin",
-    "commands",
-    "lib"
-  ],
-  "exclude": [
-    "node_modules",
-    "e2e"
-  ]
+  "include": ["actions", "bin", "commands", "lib"],
+  "exclude": ["node_modules", "e2e"]
 }

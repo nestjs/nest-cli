@@ -32,6 +32,7 @@ describe('Nest Configuration Loader', () => {
     expect(configuration).toEqual({
       language: 'ts',
       collection: '@nestjs/schematics',
+      sourceRoot: 'src',
     });
   });
 });

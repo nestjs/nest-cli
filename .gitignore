@@ -1,3 +1,14 @@
 .idea/
 .envrc
 node_modules/
+.DS_Store
+
+# output
+lib/**/*.js
+commands/**/*.js
+actions/**/*.js
+bin/**/*.js
+lib/**/*.d.ts
+commands/**/*.d.ts
+actions/**/*.d.ts
+bin/**/*.d.ts
