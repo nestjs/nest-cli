@@ -7,7 +7,7 @@ export class SchematicRunner extends AbstractRunner {
     super(`"${SchematicRunner.findClosestSchematicsBinary(__dirname)}"`);
   }
 
-  private static findClosestSchematicsBinary(path: string): string {
+  public static findClosestSchematicsBinary(path: string): string {
     const segments = path.split(sep);
     const binaryPath = ['node_modules', '.bin', 'schematics'];
 
