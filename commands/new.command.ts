@@ -9,6 +9,7 @@ export class NewCommand extends AbstractCommand {
       .alias('n')
       .description('Generate Nest application')
       .option('-d, --dry-run', 'Allow to test changes before execute command.')
+      .option('-g, --skip-git', 'Allow to skip git repository initialization.')
       .option('-s, --skip-install', 'Allow to skip package installation.')
       .option(
         '-p, --package-manager [package-manager]',
@@ -18,6 +19,7 @@ export class NewCommand extends AbstractCommand {
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
         options.push({ name: 'dry-run', value: !!command.dryRun });
+        options.push({ name: 'skip-git', value: !!command.skipGit });
         options.push({ name: 'skip-install', value: !!command.skipInstall });
         options.push({
           name: 'package-manager',
