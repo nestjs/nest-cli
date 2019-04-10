@@ -1,10 +1,13 @@
 import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import chalk from 'chalk';
 import { execSync } from 'child_process';
+import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { join } from 'path';
+import { promisify } from 'util';
 import { Input } from '../commands';
+import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
   PackageManager,
@@ -48,7 +51,9 @@ export class NewAction extends AbstractAction {
     if (!isDryRunEnabled) {
       if (!shouldSkipGit) {
         await initializeGitRepository(projectDirectory);
+        await createGitIgnoreFile(projectDirectory);
       }
+
       printCollective();
     }
   }
@@ -166,6 +171,22 @@ const initializeGitRepository = async (dir: string) => {
   await runner.run('init', true, join(process.cwd(), dir)).catch(() => {
     console.error(chalk.red(messages.GIT_INITIALIZATION_ERROR));
   });
+};
+
+/**
+ * Write a file `.gitignore` in the root of the newly created project.
+ * `.gitignore` available in `@nestjs/schematics` cannot be published to
+ * NPM (needs to be investigated).
+ *
+ * @param dir Relative path to the project.
+ * @param content (optional) Content written in the `.gitignore`.
+ *
+ * @return Resolves when succeeds, or rejects with any error from `fn.writeFile`.
+ */
+const createGitIgnoreFile = (dir: string, content?: string) => {
+  const fileContent = content || defaultGitIgnore;
+  const filePath = join(process.cwd(), dir, '.gitignore');
+  return promisify(fs.writeFile)(filePath, fileContent);
 };
 
 const printCollective = () => {
