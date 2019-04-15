@@ -41,7 +41,7 @@
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "2.20.0",
-    "inquirer": "6.2.2",
+    "inquirer": "6.3.1",
     "node-emoji": "1.10.0",
     "ora": "2.1.0",
     "os-name": "3.1.0",
