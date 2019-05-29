@@ -48,7 +48,7 @@
     "typescript": "3.4.5"
   },
   "devDependencies": {
-    "@types/inquirer": "6.0.2",
+    "@types/inquirer": "6.0.3",
     "@types/jest": "24.0.12",
     "@types/node": "11.13.4",
     "@types/node-emoji": "1.8.1",
