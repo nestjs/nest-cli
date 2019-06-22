@@ -10,7 +10,7 @@ export const messages = {
     `Failed to execute command: ${command}`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${
     emojis.HEART
-  }  to use?`,
+  } to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${
     emojis.COFFEE
   }`,
