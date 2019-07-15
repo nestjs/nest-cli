@@ -37,7 +37,7 @@
     "@angular-devkit/core": "8.1.1",
     "@angular-devkit/schematics": "8.1.1",
     "@angular-devkit/schematics-cli": "0.13.8",
-    "@nestjs/schematics": "^6.3.0",
+    "@nestjs/schematics": "6.3.0",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "2.20.0",
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@types/inquirer": "6.0.3",
     "@types/jest": "24.0.15",
-    "@types/node": "^12.6.2",
+    "@types/node": "12.6.2",
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.1.0",
     "@types/os-name": "2.0.0",
