@@ -8,8 +8,8 @@ export class FileSystemReader implements Reader {
     return new Promise<string[]>((resolve, reject) => {
       fs.readdir(
         this.directory,
-        (error: NodeJS.ErrnoException, filenames: string[]) => {
-          if (!!error) {
+        (error: NodeJS.ErrnoException | null, filenames: string[]) => {
+          if (error) {
             reject(error);
           } else {
             resolve(filenames);
@@ -23,8 +23,8 @@ export class FileSystemReader implements Reader {
     return new Promise<string>((resolve, reject) => {
       fs.readFile(
         `${this.directory}/${name}`,
-        (error: NodeJS.ErrnoException, data: Buffer) => {
-          if (!!error) {
+        (error: NodeJS.ErrnoException | null, data: Buffer) => {
+          if (error) {
             reject(error);
           } else {
             resolve(data.toString());

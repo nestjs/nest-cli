@@ -64,7 +64,7 @@ const readProjectPackageJsonDependencies = async (): Promise<
   return new Promise<PackageJsonDependencies>((resolve, reject) => {
     readFile(
       join(process.cwd(), 'package.json'),
-      (error: NodeJS.ErrnoException, buffer: Buffer) => {
+      (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
         if (error !== undefined && error !== null) {
           reject(error);
         } else {

@@ -113,7 +113,7 @@ export abstract class AbstractPackageManager {
     return new Promise<any>((resolve, reject) => {
       readFile(
         join(process.cwd(), 'package.json'),
-        (error: NodeJS.ErrnoException, buffer: Buffer) => {
+        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
           if (error !== undefined && error !== null) {
             reject(error);
           } else {

@@ -10,7 +10,7 @@ export class UpdateAction extends AbstractAction {
     const tag = options.find(option => option.name === 'tag') as Input;
 
     if (force.value && tag.value === undefined) {
-      console.error(chalk.red('You should specify a tag when force update.'));
+      console.error(chalk.red('You should specify a tag (e.g. latest) on force update.'));
     } else {
       const manager = new NestDependencyManager(
         await PackageManagerFactory.find(),
