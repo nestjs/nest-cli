@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { Input } from '../commands';
 import { NestDependencyManager } from '../lib/dependency-managers';
 import { PackageManagerFactory } from '../lib/package-managers';
@@ -9,13 +8,9 @@ export class UpdateAction extends AbstractAction {
     const force = options.find(option => option.name === 'force') as Input;
     const tag = options.find(option => option.name === 'tag') as Input;
 
-    if (force.value && tag.value === undefined) {
-      console.error(chalk.red('You should specify a tag (e.g. latest) on force update.'));
-    } else {
-      const manager = new NestDependencyManager(
-        await PackageManagerFactory.find(),
-      );
-      await manager.update(force.value as boolean, tag.value as string);
-    }
+    const manager = new NestDependencyManager(
+      await PackageManagerFactory.find(),
+    );
+    await manager.update(force.value as boolean, tag.value as string);
   }
 }
