@@ -11,23 +11,23 @@ export class SchematicRunner extends AbstractRunner {
     const segments = path.split(sep);
     const binaryPath = ['node_modules', '.bin', 'schematics'];
 
-    const schematicsWhenGlobal = [
+    const combineSegments = (pkgLastIndex: number) => [
       sep,
-      ...segments.slice(0, segments.lastIndexOf('cli') + 1),
+      ...segments.slice(0, pkgLastIndex),
       ...binaryPath,
     ];
-    const schematicsGlobalPath = join(...schematicsWhenGlobal);
-
-    const schematicsWhenLocal = [
-      sep,
-      ...segments.slice(0, segments.lastIndexOf('node_modules')),
-      ...binaryPath,
-    ];
-    const schematicsLocalPath = join(...schematicsWhenLocal);
-
+    const globalBinPathSegments = combineSegments(
+      segments.lastIndexOf('cli') + 1,
+    );
+    const schematicsGlobalPath = join(...globalBinPathSegments);
     if (existsSync(schematicsGlobalPath)) {
       return schematicsGlobalPath;
     }
+
+    const localBinPathSegments = combineSegments(
+      segments.lastIndexOf('node_modules'),
+    );
+    const schematicsLocalPath = join(...localBinPathSegments);
     if (existsSync(schematicsLocalPath)) {
       return schematicsLocalPath;
     }
