@@ -11,7 +11,7 @@ import {
 import { AbstractAction } from './abstract.action';
 
 export class AddAction extends AbstractAction {
-  public async handle(inputs: Input[]) {
+  public async handle(inputs: Input[], outputs: any[], extraFlags: string[]) {
     const manager: AbstractPackageManager = await PackageManagerFactory.find();
     const libraryInput: Input = inputs.find(
       input => input.name === 'library',
@@ -21,8 +21,6 @@ export class AddAction extends AbstractAction {
       return;
     }
     const library: string = libraryInput.value as string;
-    await manager.addProduction([library], 'latest');
-
     const packageName = library.startsWith('@')
       ? library.split('/', 2).join('/')
       : library.split('/', 1)[0];
@@ -34,13 +32,25 @@ export class AddAction extends AbstractAction {
         : packageName.split('@', 1).join('@')) +
       library.slice(packageName.length);
 
+    let tagName = packageName.startsWith('@')
+      ? packageName.split('@', 3)[2]
+      : packageName.split('@', 2)[1];
+
+    tagName = tagName || 'latest';
+    await manager.addProduction([library], tagName);
+
     const schematicName = 'nest-add';
     try {
       const collection: AbstractCollection = CollectionFactory.create(
         collectionName,
       );
       const schematicOptions: SchematicOption[] = [];
-      await collection.execute(schematicName, schematicOptions);
+      const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
+      await collection.execute(
+        schematicName,
+        schematicOptions,
+        extraFlagsString,
+      );
     } catch (e) {
       return;
     }
