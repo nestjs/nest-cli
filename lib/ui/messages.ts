@@ -17,5 +17,6 @@ export const messages = {
   CHANGE_DIR_COMMAND: (name: string) => `$ cd ${name}`,
   START_COMMAND: (name: string) => `$ ${name} run start`,
   PACKAGE_MANAGER_INSTALLATION_FAILED: `${emojis.SCREAM}  Packages installation failed, see above`,
+  // tslint:disable-next-line:max-line-length
   NEST_INFORMATION_PACKAGE_MANAGER_FAILED: `${emojis.SMIRK}  cannot read your project package.json file, are you inside your project directory?`,
 };

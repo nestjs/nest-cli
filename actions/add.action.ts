@@ -37,7 +37,7 @@ export class AddAction extends AbstractAction {
       : packageName.split('@', 2)[1];
 
     tagName = tagName || 'latest';
-    await manager.addProduction([library], tagName);
+    await manager.addProduction([collectionName], tagName);
 
     const schematicName = 'nest-add';
     try {
