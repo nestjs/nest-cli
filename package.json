@@ -40,7 +40,7 @@
     "@nestjs/schematics": "^6.3.0",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
-    "commander": "2.20.0",
+    "commander": "3.0.0",
     "inquirer": "6.5.0",
     "node-emoji": "1.10.0",
     "ora": "3.4.0",
