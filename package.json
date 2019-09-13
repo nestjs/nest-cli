@@ -56,7 +56,7 @@
     "@types/os-name": "2.0.0",
     "jest": "24.9.0",
     "prettier": "1.18.2",
-    "ts-jest": "24.0.2",
+    "ts-jest": "24.1.0",
     "ts-node": "8.3.0",
     "tslint": "5.20.0"
   }
