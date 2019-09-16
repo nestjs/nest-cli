@@ -14,6 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "clean": "gulp clean:bundle",
     "format": "prettier --write \"**/*.ts\"",
     "lint": "./node_modules/tslint/bin/tslint -p .",
     "start": "node bin/nest.js",
@@ -54,6 +55,9 @@
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.1.0",
     "@types/os-name": "2.0.0",
+    "delete-empty": "^3.0.0",
+    "gulp": "^4.0.2",
+    "gulp-clean": "^0.4.0",
     "jest": "24.8.0",
     "prettier": "1.18.2",
     "ts-jest": "24.0.2",
