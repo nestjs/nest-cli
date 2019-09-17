@@ -16,7 +16,7 @@ export class GenerateCommand extends AbstractCommand {
       .option('--no-spec', 'Disable spec files generation')
       .option(
         '-c, --collection [collectionName]',
-        'Specify the Collection that shall be used.',
+        'Collection that shall be used',
       )
       .action(
         async (

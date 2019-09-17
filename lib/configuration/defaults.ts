@@ -1,11 +1,18 @@
-export const defaultConfiguration = {
+import { Configuration } from './configuration';
+
+export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
   sourceRoot: 'src',
   collection: '@nestjs/schematics',
+  compilerOptions: {
+    tsConfigPath: 'tsconfig.build.json',
+    webpack: false,
+    webpackConfigPath: 'webpack.config.js',
+    plugins: [],
+  },
 };
 
-export const defaultGitIgnore =
-`# compiled output
+export const defaultGitIgnore = `# compiled output
 /dist
 /node_modules
 

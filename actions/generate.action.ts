@@ -17,9 +17,9 @@ export class GenerateAction extends AbstractAction {
 }
 
 const generateFiles = async (inputs: Input[]) => {
-  const configuration: Configuration = await loadConfiguration();
+  const configuration = await loadConfiguration();
   const collectionOption = inputs.find(option => option.name === 'collection')!
-    .value;
+    .value as string;
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection,
@@ -45,7 +45,7 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const loadConfiguration = async (): Promise<Configuration> => {
+const loadConfiguration = async (): Promise<Required<Configuration>> => {
   const loader: ConfigurationLoader = new NestConfigurationLoader(
     new FileSystemReader(process.cwd()),
   );

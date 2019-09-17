@@ -9,17 +9,23 @@ export class NewCommand extends AbstractCommand {
       .command('new [name]')
       .alias('n')
       .description('Generate Nest application')
-      .option('-d, --dry-run', 'Allow to test changes before execute command.')
-      .option('-g, --skip-git', 'Allow to skip git repository initialization.')
-      .option('-s, --skip-install', 'Allow to skip package installation.')
+      .option(
+        '-d, --dry-run',
+        'Allow to test changes before executing the command',
+      )
+      .option('-g, --skip-git', 'Allow to skip git repository initialization')
+      .option('-s, --skip-install', 'Allow to skip packages installation')
       .option(
         '-p, --package-manager [package-manager]',
-        'Allow to specify package manager to skip package-manager selection.',
+        'Allow to specify package manager to skip package-manager selection',
       )
-      .option('-l, --language [language]', 'Specify ts or js language to use')
+      .option(
+        '-l, --language [language]',
+        'Language that shall be used (TS or JS)',
+      )
       .option(
         '-c, --collection [collectionName]',
-        'Specify the Collection that shall be used.',
+        'Collection that shall be used',
       )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];

@@ -8,7 +8,8 @@
     "no-console": false,
     "object-literal-sort-keys": false,
     "quotemark": [true, "single", "avoid-escape", "avoid-template"],
-    "arrow-parens": false
+    "arrow-parens": false,
+    "no-unused-expression": false
   },
   "rulesDirectory": []
 }
