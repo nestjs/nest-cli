@@ -1,14 +1,20 @@
+import { join } from 'path';
+import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import webpack = require('webpack');
 import { defaultConfiguration } from '../../configuration/defaults';
+import { appendTsExtension } from '../helpers/append-extension';
 import { MultiNestCompilerPlugins } from '../plugins-loader';
 
 export const webpackDefaultsFactory = (
+  sourceRoot: string,
+  entryFilename: string,
   tsConfigFile = defaultConfiguration.compilerOptions.tsConfigPath,
   plugins: MultiNestCompilerPlugins,
-) => ({
+): webpack.Configuration => ({
+  entry: appendTsExtension(join(sourceRoot, entryFilename)),
   target: 'node',
   output: {
-    filename: 'main.js',
+    filename: `${entryFilename}.js`,
   },
   module: {
     rules: [
@@ -32,6 +38,11 @@ export const webpackDefaultsFactory = (
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigFile,
+      }),
+    ],
   },
   mode: 'none',
   plugins: [

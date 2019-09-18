@@ -1,7 +1,7 @@
-import { existsSync } from 'fs';
-import { join } from 'path';
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
+import { TsConfigProvider } from './helpers/tsconfig-provider';
+import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
 
 export class Compiler {
@@ -11,25 +11,19 @@ export class Compiler {
     getNewLine: () => ts.sys.newLine,
   };
 
-  constructor(private readonly pluginsLoader: PluginsLoader) {}
+  constructor(
+    private readonly pluginsLoader: PluginsLoader,
+    private readonly tsConfigProvider: TsConfigProvider,
+  ) {}
 
   public run(
     configuration: Required<Configuration>,
     configFilename: string,
     onSuccess?: () => void,
   ) {
-    const configPath = join(process.cwd(), configFilename);
-    if (!existsSync(configPath)) {
-      throw new Error(
-        `Could not find TypeScript configuration file "${configFilename}".`,
-      );
-    }
-    const parsedCmd = ts.getParsedCommandLineOfConfigFile(
-      configPath,
-      undefined!,
-      (ts.sys as unknown) as ts.ParseConfigFileHost,
+    const { options, fileNames } = this.tsConfigProvider.getByConfigFilename(
+      configFilename,
     );
-    const { options, fileNames } = parsedCmd!;
     const program = ts.createProgram({
       rootNames: fileNames,
       options,
@@ -38,13 +32,14 @@ export class Compiler {
     const plugins = this.pluginsLoader.load(
       configuration.compilerOptions.plugins || [],
     );
+    const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
     const emitResult = program.emit(
       undefined,
       undefined,
       undefined,
       undefined,
       {
-        before: plugins.beforeHooks,
+        before: plugins.beforeHooks.concat(tsconfigPathsPlugin),
         after: plugins.afterHooks,
         afterDeclarations: [],
       },

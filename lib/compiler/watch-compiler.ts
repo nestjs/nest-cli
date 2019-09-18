@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
+import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
 
 export class WatchCompiler {
@@ -44,11 +45,14 @@ export class WatchCompiler {
     const origCreateProgram = host.createProgram;
     (host as any).createProgram = (
       rootNames: ReadonlyArray<string>,
-      options: any,
+      options: ts.CompilerOptions,
       // tslint:disable-next-line:no-shadowed-variable
-      host: any,
-      oldProgram: any,
+      host: ts.CompilerHost,
+      oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
+      const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
+      plugins.beforeHooks.push(tsconfigPathsPlugin);
+
       const program = origCreateProgram(rootNames, options, host, oldProgram);
       const origProgramEmit = program.emit;
       program.emit = (...args: any[]) => {

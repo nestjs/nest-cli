@@ -4,6 +4,7 @@ export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
   sourceRoot: 'src',
   collection: '@nestjs/schematics',
+  entryFile: 'main',
   compilerOptions: {
     tsConfigPath: 'tsconfig.build.json',
     webpack: false,
@@ -12,6 +13,7 @@ export const defaultConfiguration: Required<Configuration> = {
   },
 };
 
+export const defaultOutDir = 'dist';
 export const defaultGitIgnore = `# compiled output
 /dist
 /node_modules

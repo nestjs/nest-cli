@@ -1,3 +1,5 @@
+import { existsSync } from 'fs';
+import { dirname, join, relative } from 'path';
 import webpack = require('webpack');
 import { Configuration } from '../configuration';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
@@ -9,20 +11,31 @@ export class WebpackCompiler {
   public run(
     configuration: Required<Configuration>,
     webpackConfig: Record<string, any>,
+    tsConfigPath: string,
     watchMode = false,
     onSuccess?: () => void,
   ) {
-    const tsConfigPath =
-      configuration.compilerOptions &&
-      configuration.compilerOptions.tsConfigPath;
+    const cwd = process.cwd();
+    const configPath = join(cwd, tsConfigPath!);
+    if (!existsSync(configPath)) {
+      throw new Error(
+        `Could not find TypeScript configuration file "${tsConfigPath!}".`,
+      );
+    }
+
     const plugins = this.pluginsLoader.load(
       configuration.compilerOptions.plugins || [],
     );
-
+    const relativeRootPath = dirname(relative(cwd, configPath));
     const compiler = webpack({
-      ...webpackDefaultsFactory(tsConfigPath, plugins),
+      ...webpackDefaultsFactory(
+        join(cwd, relativeRootPath, configuration.sourceRoot),
+        configuration.entryFile,
+        tsConfigPath,
+        plugins,
+      ),
       ...webpackConfig,
-    } as any);
+    });
 
     const afterCallback = (err: Error, stats: any) => {
       const statsOutput = stats.toString({

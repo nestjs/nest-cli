@@ -3,6 +3,7 @@ export interface Configuration {
   language?: string;
   collection?: string;
   sourceRoot?: string;
+  entryFile?: string;
   compilerOptions?: {
     tsConfigPath?: string;
     webpack?: boolean;
