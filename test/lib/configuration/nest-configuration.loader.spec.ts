@@ -33,6 +33,7 @@ describe('Nest Configuration Loader', () => {
       language: 'ts',
       collection: '@nestjs/schematics',
       sourceRoot: 'src',
+      entryFile: 'main',
       compilerOptions: {
         plugins: [],
         tsConfigPath: 'tsconfig.build.json',
