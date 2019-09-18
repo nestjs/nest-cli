@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { existsSync } from 'fs';
 import { dirname, join, relative } from 'path';
 import webpack = require('webpack');
@@ -51,7 +52,8 @@ export class WebpackCompiler {
 
     if (watchMode) {
       compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
-        console.log('Webpack is building your sources...');
+        console.log();
+        console.log(chalk.green('Webpack is building your sources...'));
         callback();
       });
       compiler.watch({}, afterCallback);

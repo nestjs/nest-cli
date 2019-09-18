@@ -55,14 +55,25 @@ export class WatchCompiler {
 
       const program = origCreateProgram(rootNames, options, host, oldProgram);
       const origProgramEmit = program.emit;
-      program.emit = (...args: any[]) => {
-        let transforms = args[args.length - 1];
+      program.emit = (
+        targetSourceFile?: ts.SourceFile,
+        writeFile?: ts.WriteFileCallback,
+        cancellationToken?: ts.CancellationToken,
+        emitOnlyDtsFiles?: boolean,
+        customTransformers?: ts.CustomTransformers,
+      ) => {
+        let transforms = customTransformers;
         transforms = typeof transforms !== 'object' ? {} : transforms;
         transforms.before = plugins.beforeHooks.concat(transforms.before || []);
         transforms.after = plugins.afterHooks.concat(transforms.after || []);
 
-        const newArgs = args.slice(0, args.length - 1);
-        return origProgramEmit(...newArgs, transforms);
+        return origProgramEmit(
+          targetSourceFile,
+          writeFile,
+          cancellationToken,
+          emitOnlyDtsFiles,
+          transforms,
+        );
       };
       return program as any;
     };
