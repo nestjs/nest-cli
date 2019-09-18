@@ -42,7 +42,12 @@ export class DevAction extends BuildAction {
         ? join(outDir, configuration.sourceRoot, configuration.entryFile)
         : join(outDir, configuration.entryFile);
 
-      childProcessRef = spawn('node', [outputFilePath], {
+      let childProcessArgs: string[] = [];
+      const argsStartIndex = process.argv.indexOf('--');
+      if (argsStartIndex >= 0) {
+        childProcessArgs = process.argv.slice(argsStartIndex + 1);
+      }
+      childProcessRef = spawn('node', [outputFilePath, ...childProcessArgs], {
         cwd: process.cwd(),
         stdio: 'pipe',
       });

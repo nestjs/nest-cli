@@ -11,7 +11,9 @@ export class WebpackCompiler {
 
   public run(
     configuration: Required<Configuration>,
-    webpackConfig: Record<string, any>,
+    webpackConfigFactoryOrConfig: (
+      config: webpack.Configuration,
+    ) => webpack.Configuration,
     tsConfigPath: string,
     watchMode = false,
     onSuccess?: () => void,
@@ -28,14 +30,20 @@ export class WebpackCompiler {
       configuration.compilerOptions.plugins || [],
     );
     const relativeRootPath = dirname(relative(cwd, configPath));
+    const defaultOptions = webpackDefaultsFactory(
+      join(cwd, relativeRootPath, configuration.sourceRoot),
+      configuration.entryFile,
+      tsConfigPath,
+      plugins,
+    );
+    const projectWebpackOptions =
+      typeof webpackConfigFactoryOrConfig !== 'function'
+        ? webpackConfigFactoryOrConfig
+        : webpackConfigFactoryOrConfig(defaultOptions);
+
     const compiler = webpack({
-      ...webpackDefaultsFactory(
-        join(cwd, relativeRootPath, configuration.sourceRoot),
-        configuration.entryFile,
-        tsConfigPath,
-        plugins,
-      ),
-      ...webpackConfig,
+      ...defaultOptions,
+      ...projectWebpackOptions,
     });
 
     const afterCallback = (err: Error, stats: any) => {

@@ -26,7 +26,7 @@ export function tsconfigPathsBeforeHookFactory(
           relative(
             dirname(sf.fileName),
             join(baseUrl!, head(paths[result.originalPath] as [string])),
-          ) || '.';
+          ) || './';
         item.text = item.text.replace(result.matcher, resolvedPath);
       });
       return sf;

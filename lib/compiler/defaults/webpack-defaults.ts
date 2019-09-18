@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import webpack = require('webpack');
+import nodeExternals = require('webpack-node-externals');
 import { defaultConfiguration } from '../../configuration/defaults';
 import { appendTsExtension } from '../helpers/append-extension';
 import { MultiNestCompilerPlugins } from '../plugins-loader';
@@ -16,6 +17,7 @@ export const webpackDefaultsFactory = (
   output: {
     filename: `${entryFilename}.js`,
   },
+  externals: [nodeExternals()],
   module: {
     rules: [
       {

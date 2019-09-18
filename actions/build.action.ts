@@ -57,13 +57,13 @@ export class BuildAction extends AbstractAction {
           .value as string) ||
         configuration.compilerOptions!.webpackConfigPath!;
 
-      const webpackConfig = this.getWebpackConfigByPath(
+      const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
         webpackPath,
         configuration.compilerOptions!.webpackConfigPath!,
       );
       return this.webpackCompiler.run(
         configuration,
-        webpackConfig,
+        webpackConfigFactoryOrConfig,
         pathToTsconfig!,
         watchMode,
         onSuccess,
@@ -77,10 +77,12 @@ export class BuildAction extends AbstractAction {
     }
   }
 
-  private getWebpackConfigByPath(
+  private getWebpackConfigFactoryByPath(
     webpackPath: string,
     defaultPath: string,
-  ): webpack.Configuration {
+  ): (
+    config: webpack.Configuration,
+  ) => webpack.Configuration | webpack.Configuration {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
     try {
       return require(pathToWebpackFile);
@@ -88,7 +90,7 @@ export class BuildAction extends AbstractAction {
       if (webpackPath !== defaultPath) {
         throw err;
       }
-      return {};
+      return ({}) => ({});
     }
   }
 }
