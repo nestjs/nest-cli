@@ -6,7 +6,7 @@ import { Configuration } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
 import { BuildAction } from './build.action';
 
-export class DevAction extends BuildAction {
+export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
       const configuration = await this.loader.load();
@@ -14,12 +14,14 @@ export class DevAction extends BuildAction {
         (options.find(option => option.name === 'path')!.value as string) ||
         configuration.compilerOptions!.tsConfigPath;
 
+      const watchModeOption = options.find(option => option.name === 'watch');
+      const watchMode = !!(watchModeOption && watchModeOption.value);
+
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
         pathToTsconfig!,
       );
       const outDir = tsOptions.outDir || defaultOutDir;
       const onSuccess = this.createOnSuccessHook(configuration, outDir);
-      const watchMode = true;
 
       await this.runBuild(options, watchMode, onSuccess);
     } catch (err) {
