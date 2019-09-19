@@ -9,7 +9,7 @@ export interface Schematic {
 
 export class NestCollection extends AbstractCollection {
   private static schematics: Schematic[] = [
-    { name: 'application', alias: 'app' },
+    { name: 'application', alias: 'application' },
     { name: 'angular-app', alias: 'ng-app' },
     { name: 'class', alias: 'cl' },
     { name: 'configuration', alias: 'config' },
@@ -27,6 +27,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'resolver', alias: 'r' },
     { name: 'service', alias: 's' },
     { name: 'library', alias: 'lib' },
+    { name: 'sub-app', alias: 'app' },
   ];
 
   constructor(runner: AbstractRunner) {
