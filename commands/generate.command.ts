@@ -12,6 +12,7 @@ export class GenerateCommand extends AbstractCommand {
       .alias('g')
       .description(this.buildDescription())
       .option('--dry-run', 'Allow to test changes before command execution')
+      .option('-p, --project [project]', 'Project in which to generate files')
       .option('--flat', 'Enforce flat structure of generated element')
       .option('--no-spec', 'Disable spec files generation')
       .option(
@@ -35,6 +36,10 @@ export class GenerateCommand extends AbstractCommand {
           options.push({
             name: 'collection',
             value: command.collection || Collection.NESTJS,
+          });
+          options.push({
+            name: 'project',
+            value: command.project,
           });
 
           const inputs: Input[] = [];

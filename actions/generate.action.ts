@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { Input } from '../commands';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration, ConfigurationLoader } from '../lib/configuration';
 import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
 import { FileSystemReader } from '../lib/readers';
@@ -20,18 +21,21 @@ const generateFiles = async (inputs: Input[]) => {
   const configuration = await loadConfiguration();
   const collectionOption = inputs.find(option => option.name === 'collection')!
     .value as string;
+  const appName = inputs.find(option => option.name === 'project')!
+    .value as string;
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
-
   schematicOptions.push(
     new SchematicOption('language', configuration.language),
   );
-  schematicOptions.push(
-    new SchematicOption('sourceRoot', configuration.sourceRoot),
-  );
+
+  const sourceRoot = appName
+    ? getValueOrDefault(configuration, 'sourceRoot', appName)
+    : configuration.sourceRoot;
+  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
   try {
     const schematicInput = inputs.find(input => input.name === 'schematic');
     if (!schematicInput) {
