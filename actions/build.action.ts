@@ -3,6 +3,7 @@ import { join } from 'path';
 import webpack = require('webpack');
 import { Input } from '../commands';
 import { Compiler } from '../lib/compiler/compiler';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins-loader';
 import { WatchCompiler } from '../lib/compiler/watch-compiler';
@@ -32,30 +33,46 @@ export class BuildAction extends AbstractAction {
     try {
       const watchModeOption = options.find(option => option.name === 'watch');
       const watchMode = !!(watchModeOption && watchModeOption.value);
-      await this.runBuild(options, watchMode);
+      await this.runBuild(inputs, options, watchMode);
     } catch (err) {
       console.error(chalk.red(err));
     }
   }
 
   public async runBuild(
+    inputs: Input[],
     options: Input[],
     watchMode: boolean,
+    isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
     const configuration = await this.loader.load();
-    const pathToTsconfig =
-      (options.find(option => option.name === 'path')!.value as string) ||
-      configuration.compilerOptions!.tsConfigPath;
-    const isWebpackEnabled =
-      (options.find(option => option.name === 'webpack')!.value as boolean) ||
-      configuration.compilerOptions!.webpack;
+    const appName = inputs.find(input => input.name === 'app')!.value as string;
+
+    const pathToTsconfig = getValueOrDefault<string>(
+      configuration,
+      'compilerOptions.tsConfigPath',
+      appName,
+      'path',
+      options,
+    );
+
+    const isWebpackEnabled = getValueOrDefault<boolean>(
+      configuration,
+      'compilerOptions.webpack',
+      appName,
+      'webpack',
+      options,
+    );
 
     if (isWebpackEnabled) {
-      const webpackPath =
-        (options.find(option => option.name === 'webpackPath')!
-          .value as string) ||
-        configuration.compilerOptions!.webpackConfigPath!;
+      const webpackPath = getValueOrDefault<string>(
+        configuration,
+        'compilerOptions.webpackConfigPath',
+        appName,
+        'webpackPath',
+        options,
+      );
 
       const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
         webpackPath,
@@ -64,16 +81,18 @@ export class BuildAction extends AbstractAction {
       return this.webpackCompiler.run(
         configuration,
         webpackConfigFactoryOrConfig,
-        pathToTsconfig!,
+        pathToTsconfig,
+        appName,
+        isDebugEnabled,
         watchMode,
         onSuccess,
       );
     }
 
     if (watchMode) {
-      this.watchCompiler.run(configuration, pathToTsconfig!, onSuccess);
+      this.watchCompiler.run(configuration, pathToTsconfig, appName, onSuccess);
     } else {
-      this.compiler.run(configuration, pathToTsconfig!, onSuccess);
+      this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
     }
   }
 

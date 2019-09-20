@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
+import { getValueOrDefault } from './helpers/get-value-or-default';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
@@ -19,6 +20,7 @@ export class Compiler {
   public run(
     configuration: Required<Configuration>,
     configFilename: string,
+    appName: string,
     onSuccess?: () => void,
   ) {
     const { options, fileNames } = this.tsConfigProvider.getByConfigFilename(
@@ -29,9 +31,12 @@ export class Compiler {
       options,
     });
 
-    const plugins = this.pluginsLoader.load(
-      configuration.compilerOptions.plugins || [],
+    const pluginsConfig = getValueOrDefault(
+      configuration,
+      'compilerOptions.plugins',
+      appName,
     );
+    const plugins = this.pluginsLoader.load(pluginsConfig);
     const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
     const emitResult = program.emit(
       undefined,

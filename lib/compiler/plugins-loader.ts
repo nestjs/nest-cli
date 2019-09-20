@@ -13,7 +13,7 @@ export interface MultiNestCompilerPlugins {
 }
 
 export class PluginsLoader {
-  public load(plugins: string[]): MultiNestCompilerPlugins {
+  public load(plugins: string[] = []): MultiNestCompilerPlugins {
     const pluginRefs: NestCompilerPlugin[] = (plugins || []).map(name =>
       require(name),
     );

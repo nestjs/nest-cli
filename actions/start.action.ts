@@ -1,7 +1,9 @@
 import chalk from 'chalk';
 import { spawn } from 'child_process';
+import * as fs from 'fs';
 import { join } from 'path';
 import { Input } from '../commands';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
 import { BuildAction } from './build.action';
@@ -10,20 +12,40 @@ export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
       const configuration = await this.loader.load();
-      const pathToTsconfig =
-        (options.find(option => option.name === 'path')!.value as string) ||
-        configuration.compilerOptions!.tsConfigPath;
+      const appName = inputs.find(input => input.name === 'app')!
+        .value as string;
+
+      const pathToTsconfig = getValueOrDefault<string>(
+        configuration,
+        'compilerOptions.tsConfigPath',
+        appName,
+        'path',
+        options,
+      );
 
       const watchModeOption = options.find(option => option.name === 'watch');
-      const watchMode = !!(watchModeOption && watchModeOption.value);
+      const debugModeOption = options.find(option => option.name === 'debug');
+      const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
+      const isDebugEnabled = !!(debugModeOption && debugModeOption.value);
 
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
-        pathToTsconfig!,
+        pathToTsconfig,
       );
       const outDir = tsOptions.outDir || defaultOutDir;
-      const onSuccess = this.createOnSuccessHook(configuration, outDir);
+      const onSuccess = this.createOnSuccessHook(
+        configuration,
+        appName,
+        isDebugEnabled,
+        outDir,
+      );
 
-      await this.runBuild(options, watchMode, onSuccess);
+      await this.runBuild(
+        inputs,
+        options,
+        isWatchEnabled,
+        isDebugEnabled,
+        onSuccess,
+      );
     } catch (err) {
       console.error(chalk.red(err));
     }
@@ -31,7 +53,9 @@ export class StartAction extends BuildAction {
 
   public createOnSuccessHook(
     configuration: Required<Configuration>,
-    outDir: string,
+    appName: string,
+    isDebugEnabled: boolean,
+    outDirName: string,
   ) {
     let childProcessRef: any;
     process.on('exit', code => childProcessRef && childProcessRef.kill(code));
@@ -40,20 +64,31 @@ export class StartAction extends BuildAction {
       if (childProcessRef) {
         childProcessRef.kill();
       }
-      const outputFilePath = configuration.projects
-        ? join(outDir, configuration.sourceRoot, configuration.entryFile)
-        : join(outDir, configuration.entryFile);
+      const sourceRoot = getValueOrDefault(
+        configuration,
+        'sourceRoot',
+        appName,
+      );
+      const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
+
+      let outputFilePath = join(outDirName, sourceRoot, entryFile);
+      if (!fs.existsSync(outputFilePath + '.js')) {
+        outputFilePath = join(outDirName, entryFile);
+      }
 
       let childProcessArgs: string[] = [];
       const argsStartIndex = process.argv.indexOf('--');
       if (argsStartIndex >= 0) {
         childProcessArgs = process.argv.slice(argsStartIndex + 1);
       }
-      childProcessRef = spawn('node', [outputFilePath, ...childProcessArgs], {
-        cwd: process.cwd(),
-        stdio: 'pipe',
+      const processArgs = [outputFilePath, ...childProcessArgs];
+      if (isDebugEnabled) {
+        processArgs.unshift('--inspect');
+      }
+      childProcessRef = spawn('node', processArgs, {
+        stdio: 'inherit',
+        shell: true,
       });
-      childProcessRef.stdout.pipe(process.stdout);
     };
   }
 }

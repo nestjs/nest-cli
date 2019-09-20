@@ -4,6 +4,7 @@ import { dirname, join, relative } from 'path';
 import webpack = require('webpack');
 import { Configuration } from '../configuration';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
+import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
 
 export class WebpackCompiler {
@@ -15,6 +16,8 @@ export class WebpackCompiler {
       config: webpack.Configuration,
     ) => webpack.Configuration,
     tsConfigPath: string,
+    appName: string,
+    isDebugEnabled = false,
     watchMode = false,
     onSuccess?: () => void,
   ) {
@@ -26,13 +29,35 @@ export class WebpackCompiler {
       );
     }
 
-    const plugins = this.pluginsLoader.load(
-      configuration.compilerOptions.plugins || [],
+    const pluginsConfig = getValueOrDefault(
+      configuration,
+      'compilerOptions.plugins',
+      appName,
     );
+    const plugins = this.pluginsLoader.load(pluginsConfig);
     const relativeRootPath = dirname(relative(cwd, configPath));
+    const sourceRoot = getValueOrDefault<string>(
+      configuration,
+      'sourceRoot',
+      appName,
+    );
+    const pathToSource =
+      sourceRoot.indexOf(relativeRootPath) >= 0
+        ? join(cwd, sourceRoot)
+        : join(cwd, relativeRootPath, sourceRoot);
+
+    const entryFile = getValueOrDefault<string>(
+      configuration,
+      'entryFile',
+      appName,
+    );
+    const entryFileRoot =
+      getValueOrDefault<string>(configuration, 'root', appName) || '';
     const defaultOptions = webpackDefaultsFactory(
-      join(cwd, relativeRootPath, configuration.sourceRoot),
-      configuration.entryFile,
+      pathToSource,
+      entryFileRoot,
+      entryFile,
+      isDebugEnabled,
       tsConfigPath,
       plugins,
     );

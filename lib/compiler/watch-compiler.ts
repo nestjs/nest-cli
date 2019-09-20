@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
+import { getValueOrDefault } from './helpers/get-value-or-default';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
 
@@ -9,6 +10,7 @@ export class WatchCompiler {
   public run(
     configuration: Required<Configuration>,
     configFilename: string,
+    appName: string,
     onSuccess?: () => void,
   ) {
     const configPath = ts.findConfigFile(
@@ -39,9 +41,12 @@ export class WatchCompiler {
       this.createWatchStatusChanged(origWatchStatusReporter, onSuccess),
     );
 
-    const plugins = this.pluginsLoader.load(
-      configuration.compilerOptions.plugins || [],
+    const pluginsConfig = getValueOrDefault(
+      configuration,
+      'compilerOptions.plugins',
+      appName,
     );
+    const plugins = this.pluginsLoader.load(pluginsConfig);
     const origCreateProgram = host.createProgram;
     (host as any).createProgram = (
       rootNames: ReadonlyArray<string>,
@@ -77,6 +82,7 @@ export class WatchCompiler {
       };
       return program as any;
     };
+
     ts.createWatchProgram(host);
   }
 

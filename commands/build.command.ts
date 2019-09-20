@@ -5,13 +5,13 @@ import { Input } from './command.input';
 export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
-      .command('build')
+      .command('build [app]')
       .option('-p, --path [path]', 'Path to tsconfig file')
       .option('-w, --watch', 'Run in watch mode (live-reload)')
       .option('--webpack', 'Use webpack for compilation')
       .option('--webpackPath [path]', 'Path to webpack configuration')
       .description('Build Nest application')
-      .action(async (command: Command) => {
+      .action(async (app: string, command: Command) => {
         const options: Input[] = [];
 
         options.push({ name: 'webpack', value: !!command.webpack });
@@ -25,7 +25,9 @@ export class BuildCommand extends AbstractCommand {
           value: command.webpackPath,
         });
 
-        await this.action.handle([], options);
+        const inputs: Input[] = [];
+        inputs.push({ name: 'app', value: app });
+        await this.action.handle(inputs, options);
       });
   }
 }

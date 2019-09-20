@@ -8,14 +8,17 @@ import { MultiNestCompilerPlugins } from '../plugins-loader';
 
 export const webpackDefaultsFactory = (
   sourceRoot: string,
+  relativeSourceRoot: string,
   entryFilename: string,
+  isDebugEnabled = false,
   tsConfigFile = defaultConfiguration.compilerOptions.tsConfigPath,
   plugins: MultiNestCompilerPlugins,
 ): webpack.Configuration => ({
   entry: appendTsExtension(join(sourceRoot, entryFilename)),
+  devtool: isDebugEnabled ? 'inline-source-map' : false,
   target: 'node',
   output: {
-    filename: `${entryFilename}.js`,
+    filename: join(relativeSourceRoot, `${entryFilename}.js`),
   },
   externals: [nodeExternals()],
   module: {
