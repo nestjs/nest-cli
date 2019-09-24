@@ -1,3 +1,4 @@
+import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import webpack = require('webpack');
@@ -69,6 +70,9 @@ export const webpackDefaultsFactory = (
         }
         return false;
       },
+    }),
+    new ForkTsCheckerWebpackPlugin({
+      tsconfig: tsConfigFile,
     }),
   ],
 });
