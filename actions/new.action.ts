@@ -21,7 +21,7 @@ import {
   CollectionFactory,
   SchematicOption,
 } from '../lib/schematics';
-import { emojis, messages } from '../lib/ui';
+import { EMOJIS, MESSAGES } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -63,7 +63,7 @@ const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find(input => input.name === 'name');
 
 const askForMissingInformation = async (inputs: Input[]) => {
-  console.info(messages.PROJECT_INFORMATION_START);
+  console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
@@ -128,7 +128,7 @@ const installPackages = async (
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
     console.info();
-    console.info(chalk.green(messages.DRY_RUN_MODE));
+    console.info(chalk.green(MESSAGES.DRY_RUN_MODE));
     console.info();
     return;
   }
@@ -157,7 +157,7 @@ const selectPackageManager = async (): Promise<AbstractPackageManager> => {
 
 const askForPackageManager = async (): Promise<Answers> => {
   const questions: Question[] = [
-    generateSelect('package-manager')(messages.PACKAGE_MANAGER_QUESTION)([
+    generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
     ]),
@@ -169,7 +169,7 @@ const askForPackageManager = async (): Promise<Answers> => {
 const initializeGitRepository = async (dir: string) => {
   const runner = new GitRunner();
   await runner.run('init', true, join(process.cwd(), dir)).catch(() => {
-    console.error(chalk.red(messages.GIT_INITIALIZATION_ERROR));
+    console.error(chalk.red(MESSAGES.GIT_INITIALIZATION_ERROR));
   });
 };
 
@@ -195,13 +195,13 @@ const printCollective = () => {
   const emptyLine = print();
 
   emptyLine();
-  yellow(`Thanks for installing Nest ${emojis.PRAY}`);
+  yellow(`Thanks for installing Nest ${EMOJIS.PRAY}`);
   dim('Please consider donating to our open collective');
   dim('to help us maintain this package.');
   emptyLine();
   emptyLine();
   print()(
-    `${chalk.bold(`${emojis.WINE}  Donate:`)} ${chalk.underline(
+    `${chalk.bold(`${EMOJIS.WINE}  Donate:`)} ${chalk.underline(
       'https://opencollective.com/nest',
     )}`,
   );

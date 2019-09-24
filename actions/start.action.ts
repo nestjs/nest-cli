@@ -2,10 +2,12 @@ import chalk from 'chalk';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
+import * as killProcess from 'tree-kill';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
+import { ERROR_PREFIX } from '../lib/ui';
 import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
@@ -47,7 +49,11 @@ export class StartAction extends BuildAction {
         onSuccess,
       );
     } catch (err) {
-      console.error(chalk.red(err));
+      if (err instanceof Error) {
+        console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
+      } else {
+        console.error(`\n${chalk.red(err)}\n`);
+      }
     }
   }
 
@@ -58,11 +64,15 @@ export class StartAction extends BuildAction {
     outDirName: string,
   ) {
     let childProcessRef: any;
-    process.on('exit', code => childProcessRef && childProcessRef.kill(code));
+    process.on(
+      'exit',
+      code => childProcessRef && killProcess(childProcessRef.pid),
+    );
 
     return () => {
       if (childProcessRef) {
-        childProcessRef.kill();
+        childProcessRef.stdin.pause();
+        killProcess(childProcessRef.pid);
       }
       const sourceRoot = getValueOrDefault(
         configuration,

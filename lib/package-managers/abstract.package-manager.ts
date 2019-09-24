@@ -4,7 +4,7 @@ import { readFile } from 'fs';
 import * as ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
-import { messages } from '../ui';
+import { MESSAGES } from '../ui';
 import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
 
@@ -17,7 +17,7 @@ export abstract class AbstractPackageManager {
         interval: 120,
         frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
-      text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
+      text: MESSAGES.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
     });
     spinner.start();
     try {
@@ -31,15 +31,15 @@ export abstract class AbstractPackageManager {
       );
       spinner.succeed();
       console.info();
-      console.info(messages.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
-      console.info(messages.GET_STARTED_INFORMATION);
+      console.info(MESSAGES.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
+      console.info(MESSAGES.GET_STARTED_INFORMATION);
       console.info();
-      console.info(chalk.gray(messages.CHANGE_DIR_COMMAND(directory)));
-      console.info(chalk.gray(messages.START_COMMAND(packageManager)));
+      console.info(chalk.gray(MESSAGES.CHANGE_DIR_COMMAND(directory)));
+      console.info(chalk.gray(MESSAGES.START_COMMAND(packageManager)));
       console.info();
     } catch {
       spinner.fail();
-      console.error(chalk.red(messages.PACKAGE_MANAGER_INSTALLATION_FAILED));
+      console.error(chalk.red(MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED));
     }
   }
 
@@ -61,7 +61,7 @@ export abstract class AbstractPackageManager {
         interval: 120,
         frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
-      text: messages.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
+      text: MESSAGES.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
     });
     spinner.start();
     try {

@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import { CLI_ERRORS } from '../ui';
 
 type Transformer = ts.TransformerFactory<any> | ts.CustomTransformerFactory;
 
@@ -19,7 +20,10 @@ export class PluginsLoader {
     );
     const beforeHooks: Transformer[] = [];
     const afterHooks: Transformer[] = [];
-    pluginRefs.forEach(plugin => {
+    pluginRefs.forEach((plugin, index) => {
+      if (!plugin.before && !plugin.after) {
+        throw new Error(CLI_ERRORS.WRONG_PLUGIN(plugins[index]));
+      }
       plugin.before && beforeHooks.push(plugin.before);
       plugin.after && afterHooks.push(plugin.after);
     });

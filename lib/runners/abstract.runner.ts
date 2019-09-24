@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
-import { messages } from '../ui';
+import { MESSAGES } from '../ui';
 
 export class AbstractRunner {
   constructor(protected binary: string) {}
@@ -29,7 +29,7 @@ export class AbstractRunner {
         } else {
           console.error(
             chalk.red(
-              messages.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`),
+              MESSAGES.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`),
             ),
           );
           reject();

@@ -1,8 +1,8 @@
-import chalk from 'chalk';
 import { existsSync } from 'fs';
 import { dirname, join, relative } from 'path';
 import webpack = require('webpack');
 import { Configuration } from '../configuration';
+import { INFO_PREFIX } from '../ui';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
@@ -75,6 +75,7 @@ export class WebpackCompiler {
       const statsOutput = stats.toString({
         chunks: false,
         colors: true,
+        modules: false,
         warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats.hasErrors()) {
@@ -85,8 +86,7 @@ export class WebpackCompiler {
 
     if (watchMode) {
       compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
-        console.log();
-        console.log(chalk.green('Webpack is building your sources...'));
+        console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
         callback();
       });
       compiler.watch({}, afterCallback);

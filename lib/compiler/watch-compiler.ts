@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
+import { CLI_ERRORS } from '../ui/errors';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
@@ -19,9 +20,7 @@ export class WatchCompiler {
       configFilename,
     );
     if (!configPath) {
-      throw new Error(
-        `Could not find TypeScript configuration file "${configFilename}".`,
-      );
+      throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
     }
 
     const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;

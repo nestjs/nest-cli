@@ -7,7 +7,7 @@ import {
   AbstractPackageManager,
   PackageManagerFactory,
 } from '../lib/package-managers';
-import { BANNER, messages } from '../lib/ui';
+import { BANNER, MESSAGES } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
 interface PackageJsonDependencies {
@@ -54,7 +54,7 @@ const displayNestInformation = async () => {
     const dependencies: PackageJsonDependencies = await readProjectPackageJsonDependencies();
     displayNestVersions(dependencies);
   } catch {
-    console.error(chalk.red(messages.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
+    console.error(chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
 };
 

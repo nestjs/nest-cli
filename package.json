@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "6.8.1",
+  "version": "6.8.2",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -48,6 +48,7 @@
     "ora": "3.4.0",
     "os-name": "3.1.0",
     "path-to-regexp": "3.1.0",
+    "tree-kill": "1.2.1",
     "tsconfig-paths-webpack-plugin": "3.2.0",
     "webpack": "4.40.2",
     "webpack-node-externals": "1.7.2"

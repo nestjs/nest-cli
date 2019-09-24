@@ -13,6 +13,7 @@ import {
   NestConfigurationLoader,
 } from '../lib/configuration';
 import { FileSystemReader } from '../lib/readers';
+import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
 export class BuildAction extends AbstractAction {
@@ -35,7 +36,11 @@ export class BuildAction extends AbstractAction {
       const watchMode = !!(watchModeOption && watchModeOption.value);
       await this.runBuild(inputs, options, watchMode);
     } catch (err) {
-      console.error(chalk.red(err));
+      if (err instanceof Error) {
+        console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
+      } else {
+        console.error(`\n${chalk.red(err)}\n`);
+      }
     }
   }
 

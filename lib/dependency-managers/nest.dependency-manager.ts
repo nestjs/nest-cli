@@ -1,6 +1,6 @@
 import * as ora from 'ora';
 import { AbstractPackageManager, ProjectDependency } from '../package-managers';
-import { messages } from '../ui';
+import { MESSAGES } from '../ui';
 
 export class NestDependencyManager {
   constructor(private packageManager: AbstractPackageManager) {}
@@ -18,7 +18,7 @@ export class NestDependencyManager {
         interval: 120,
         frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
-      text: messages.PACKAGE_MANAGER_UPDATE_IN_PROGRESS,
+      text: MESSAGES.PACKAGE_MANAGER_UPDATE_IN_PROGRESS,
     });
     spinner.start();
     const dependencies: string[] = await this.read();

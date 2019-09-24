@@ -1,6 +1,6 @@
 import { get } from 'node-emoji';
 
-export const emojis = {
+export const EMOJIS = {
   HEART: get('heart'),
   COFFEE: get('coffee'),
   BEER: get('beer'),

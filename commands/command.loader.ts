@@ -4,6 +4,7 @@ import { BuildAction, GenerateAction, InfoAction, NewAction } from '../actions';
 import { AddAction } from '../actions/add.action';
 import { StartAction } from '../actions/start.action';
 import { UpdateAction } from '../actions/update.action';
+import { ERROR_PREFIX } from '../lib/ui';
 import { AddCommand } from './add.command';
 import { BuildCommand } from './build.command';
 import { GenerateCommand } from './generate.command';
@@ -27,8 +28,13 @@ export class CommandLoader {
 
   private static handleInvalidCommand(program: CommanderStatic) {
     program.on('command:*', () => {
-      console.error(chalk.red('Invalid command: %s'), program.args.join(' '));
-      console.log('See --help for a list of available commands.');
+      console.error(
+        `\n${ERROR_PREFIX} Invalid command: ${chalk.red('%s')}`,
+        program.args.join(' '),
+      );
+      console.log(
+        `See ${chalk.red('--help')} for a list of available commands.\n`,
+      );
       process.exit(1);
     });
   }
