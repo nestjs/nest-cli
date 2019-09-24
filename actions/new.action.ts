@@ -97,7 +97,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const schematicOptions: SchematicOption[] = mapSchematicOptions(
     args.concat(options),
   );
-  await collection.execute('nest-new', schematicOptions);
+  await collection.execute('application', schematicOptions);
   console.info();
 };
 
