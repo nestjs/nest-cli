@@ -76,6 +76,7 @@ export class WebpackCompiler {
         chunks: false,
         colors: true,
         modules: false,
+        assets: false,
         warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats.hasErrors()) {
