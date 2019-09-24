@@ -71,7 +71,7 @@ export class StartAction extends BuildAction {
 
     return () => {
       if (childProcessRef) {
-        childProcessRef.stdin.pause();
+        childProcessRef.stdin && childProcessRef.stdin.pause();
         killProcess(childProcessRef.pid);
       }
       const sourceRoot = getValueOrDefault(
