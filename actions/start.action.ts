@@ -28,7 +28,7 @@ export class StartAction extends BuildAction {
       const watchModeOption = options.find(option => option.name === 'watch');
       const debugModeOption = options.find(option => option.name === 'debug');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
-      const isDebugEnabled = !!(debugModeOption && debugModeOption.value);
+      const debugFlag = debugModeOption && debugModeOption.value;
 
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
         pathToTsconfig,
@@ -37,7 +37,7 @@ export class StartAction extends BuildAction {
       const onSuccess = this.createOnSuccessHook(
         configuration,
         appName,
-        isDebugEnabled,
+        debugFlag,
         outDir,
       );
 
@@ -45,7 +45,7 @@ export class StartAction extends BuildAction {
         inputs,
         options,
         isWatchEnabled,
-        isDebugEnabled,
+        !!debugFlag,
         onSuccess,
       );
     } catch (err) {
@@ -60,7 +60,7 @@ export class StartAction extends BuildAction {
   public createOnSuccessHook(
     configuration: Required<Configuration>,
     appName: string,
-    isDebugEnabled: boolean,
+    debugFlag: boolean | string | undefined,
     outDirName: string,
   ) {
     const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
@@ -74,11 +74,12 @@ export class StartAction extends BuildAction {
 
     return () => {
       if (childProcessRef) {
+        childProcessRef.removeAllListeners('exit');
         childProcessRef.on('exit', () => {
           childProcessRef = this.spawnChildProcess(
             entryFile,
             sourceRoot,
-            isDebugEnabled,
+            debugFlag,
             outDirName,
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
@@ -90,7 +91,7 @@ export class StartAction extends BuildAction {
         childProcessRef = this.spawnChildProcess(
           entryFile,
           sourceRoot,
-          isDebugEnabled,
+          debugFlag,
           outDirName,
         );
         childProcessRef.on('exit', () => (childProcessRef = undefined));
@@ -101,7 +102,7 @@ export class StartAction extends BuildAction {
   private spawnChildProcess(
     entryFile: string,
     sourceRoot: string,
-    isDebugEnabled: boolean,
+    debug: boolean | string | undefined,
     outDirName: string,
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
@@ -115,8 +116,10 @@ export class StartAction extends BuildAction {
       childProcessArgs = process.argv.slice(argsStartIndex + 1);
     }
     const processArgs = [outputFilePath, ...childProcessArgs];
-    if (isDebugEnabled) {
-      processArgs.unshift('--inspect');
+    if (debug) {
+      const inspectFlag =
+        typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
+      processArgs.unshift(inspectFlag);
     }
     return spawn('node', processArgs, {
       stdio: 'inherit',
