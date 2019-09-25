@@ -66,13 +66,13 @@ export class StartAction extends BuildAction {
     let childProcessRef: any;
     process.on(
       'exit',
-      code => childProcessRef && killProcess(childProcessRef.pid),
+      code => childProcessRef && killProcess(childProcessRef.pid, 'SIGINT'),
     );
 
     return () => {
       if (childProcessRef) {
         childProcessRef.stdin && childProcessRef.stdin.pause();
-        killProcess(childProcessRef.pid);
+        killProcess(childProcessRef.pid, 'SIGINT');
       }
       const sourceRoot = getValueOrDefault(
         configuration,
