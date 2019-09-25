@@ -63,42 +63,64 @@ export class StartAction extends BuildAction {
     isDebugEnabled: boolean,
     outDirName: string,
   ) {
+    const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
+    const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
+
     let childProcessRef: any;
     process.on(
       'exit',
-      code => childProcessRef && killProcess(childProcessRef.pid, 'SIGINT'),
+      code => childProcessRef && killProcess(childProcessRef.pid),
     );
 
     return () => {
       if (childProcessRef) {
+        childProcessRef.on('exit', () => {
+          childProcessRef = this.spawnChildProcess(
+            entryFile,
+            sourceRoot,
+            isDebugEnabled,
+            outDirName,
+          );
+          childProcessRef.on('exit', () => (childProcessRef = undefined));
+        });
+
         childProcessRef.stdin && childProcessRef.stdin.pause();
-        killProcess(childProcessRef.pid, 'SIGINT');
+        killProcess(childProcessRef.pid);
+      } else {
+        childProcessRef = this.spawnChildProcess(
+          entryFile,
+          sourceRoot,
+          isDebugEnabled,
+          outDirName,
+        );
+        childProcessRef.on('exit', () => (childProcessRef = undefined));
       }
-      const sourceRoot = getValueOrDefault(
-        configuration,
-        'sourceRoot',
-        appName,
-      );
-      const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
-
-      let outputFilePath = join(outDirName, sourceRoot, entryFile);
-      if (!fs.existsSync(outputFilePath + '.js')) {
-        outputFilePath = join(outDirName, entryFile);
-      }
-
-      let childProcessArgs: string[] = [];
-      const argsStartIndex = process.argv.indexOf('--');
-      if (argsStartIndex >= 0) {
-        childProcessArgs = process.argv.slice(argsStartIndex + 1);
-      }
-      const processArgs = [outputFilePath, ...childProcessArgs];
-      if (isDebugEnabled) {
-        processArgs.unshift('--inspect');
-      }
-      childProcessRef = spawn('node', processArgs, {
-        stdio: 'inherit',
-        shell: true,
-      });
     };
+  }
+
+  private spawnChildProcess(
+    entryFile: string,
+    sourceRoot: string,
+    isDebugEnabled: boolean,
+    outDirName: string,
+  ) {
+    let outputFilePath = join(outDirName, sourceRoot, entryFile);
+    if (!fs.existsSync(outputFilePath + '.js')) {
+      outputFilePath = join(outDirName, entryFile);
+    }
+
+    let childProcessArgs: string[] = [];
+    const argsStartIndex = process.argv.indexOf('--');
+    if (argsStartIndex >= 0) {
+      childProcessArgs = process.argv.slice(argsStartIndex + 1);
+    }
+    const processArgs = [outputFilePath, ...childProcessArgs];
+    if (isDebugEnabled) {
+      processArgs.unshift('--inspect');
+    }
+    return spawn('node', processArgs, {
+      stdio: 'inherit',
+      shell: true,
+    });
   }
 }
