@@ -57,7 +57,7 @@
   "devDependencies": {
     "@types/inquirer": "6.5.0",
     "@types/jest": "24.0.18",
-    "@types/node": "12.7.5",
+    "@types/node": "12.7.7",
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.1.0",
     "@types/os-name": "2.0.0",
