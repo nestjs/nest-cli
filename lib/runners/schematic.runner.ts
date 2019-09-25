@@ -1,37 +1,25 @@
 import { existsSync } from 'fs';
-import { join, sep } from 'path';
+import { join, resolve } from 'path';
 import { AbstractRunner } from './abstract.runner';
 
 export class SchematicRunner extends AbstractRunner {
   constructor() {
-    super(`"${SchematicRunner.findClosestSchematicsBinary(__dirname)}"`);
+    super(`"${SchematicRunner.findClosestSchematicsBinary()}"`);
   }
 
-  public static findClosestSchematicsBinary(path: string): string {
-    const segments = path.split(sep);
-    const binaryPath = ['node_modules', '.bin', 'schematics'];
+  public static getModulePaths() {
+    return module.paths;
+  }
 
-    const combineSegments = (pkgLastIndex: number) => [
-      sep,
-      ...segments.slice(0, pkgLastIndex),
-      ...binaryPath,
-    ];
-    const globalBinPathSegments = combineSegments(
-      segments.lastIndexOf('cli') + 1,
-    );
-    const schematicsGlobalPath = join(...globalBinPathSegments);
-    if (existsSync(schematicsGlobalPath)) {
-      return schematicsGlobalPath;
+  public static findClosestSchematicsBinary(): string {
+    const subPath = join('.bin', 'schematics');
+    for (const path of this.getModulePaths()) {
+      const binaryPath = resolve(path, subPath);
+      if (existsSync(binaryPath)) {
+        return binaryPath;
+      }
     }
 
-    const localBinPathSegments = combineSegments(
-      segments.lastIndexOf('node_modules'),
-    );
-    const schematicsLocalPath = join(...localBinPathSegments);
-    if (existsSync(schematicsLocalPath)) {
-      return schematicsLocalPath;
-    }
-
-    return join(__dirname, '../..', 'node_modules/.bin/schematics');
+    throw new Error("'schematics' binary path could not be found!");
   }
 }
