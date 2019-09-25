@@ -65,12 +65,10 @@ export class GenerateCommand extends AbstractCommand {
     const tableConfig = {
       head: ['name', 'alias'],
       chars: {
-        // tslint:disable-next-line:quotemark
-        "left": leftMargin.concat('│'),
+        'left': leftMargin.concat('│'),
         'top-left': leftMargin.concat('┌'),
         'bottom-left': leftMargin.concat('└'),
-        // tslint:disable-next-line:quotemark
-        "mid": '',
+        'mid': '',
         'left-mid': '',
         'mid-mid': '',
         'right-mid': '',
