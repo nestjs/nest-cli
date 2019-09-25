@@ -46,7 +46,7 @@
     "fork-ts-checker-webpack-plugin": "^1.5.0",
     "inquirer": "7.0.0",
     "node-emoji": "1.10.0",
-    "ora": "3.4.0",
+    "ora": "4.0.1",
     "os-name": "3.1.0",
     "path-to-regexp": "3.1.0",
     "tree-kill": "1.2.1",
