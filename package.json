@@ -42,7 +42,7 @@
     "@types/webpack": "4.39.1",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
-    "commander": "3.0.1",
+    "commander": "3.0.2",
     "fork-ts-checker-webpack-plugin": "^1.5.0",
     "inquirer": "7.0.0",
     "node-emoji": "1.10.0",
