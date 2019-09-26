@@ -1,14 +1,18 @@
 import chalk from 'chalk';
+import { Answers, Question } from 'inquirer';
+import * as inquirer from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
-import { Configuration, ConfigurationLoader } from '../lib/configuration';
+import { Configuration, ConfigurationLoader, ProjectConfiguration } from '../lib/configuration';
 import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
+import { generateSelect } from '../lib/questions/questions';
 import { FileSystemReader } from '../lib/readers';
 import {
   AbstractCollection,
   CollectionFactory,
   SchematicOption,
 } from '../lib/schematics';
+import { MESSAGES } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
@@ -32,9 +36,32 @@ const generateFiles = async (inputs: Input[]) => {
     new SchematicOption('language', configuration.language),
   );
 
-  const sourceRoot = appName
+  let sourceRoot = appName
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
+
+  // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects{}"
+  // configuration.monorepo || configuration.projects
+  if (configuration.projects && !appName) {
+    let defaultProjectName: string = '';
+    const defaultLabel: string = ' [ Default ]';
+    for (const property in configuration.projects) {
+      if (configuration.projects[property].sourceRoot === configuration.sourceRoot) {
+        defaultProjectName = property + defaultLabel;
+      }
+    }
+
+    // Re-order projects to make sure Default is at the top
+    let projects: string[] = Object.keys(configuration.projects);
+    projects = projects.filter(p => p !== defaultProjectName);
+    projects.unshift(defaultProjectName);
+
+    const answers: Answers = await askForProjectName(inputs, projects);\
+    // tslint:disable-next-line: no-string-literal
+    const project: string = answers['appName'].replace(defaultLabel, '');
+    sourceRoot = configuration.projects[project].sourceRoot;
+  }
+
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
   try {
     const schematicInput = inputs.find(input => input.name === 'schematic');
@@ -47,6 +74,14 @@ const generateFiles = async (inputs: Input[]) => {
       console.error(chalk.red(error.message));
     }
   }
+};
+
+const askForProjectName = async (inputs: Input[], projects: string[]): Promise<Answers> => {
+  const questions: Question[] = [
+    generateSelect('appName')(MESSAGES.PROJECT_SELECTION_QUESTION)(projects),
+  ];
+  const prompt = inquirer.createPromptModule();
+  return await prompt(questions);
 };
 
 const loadConfiguration = async (): Promise<Required<Configuration>> => {

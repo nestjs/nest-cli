@@ -26,8 +26,9 @@
     "url": "git+https://github.com/nestjs/nest-cli.git"
   },
   "contributors": [
-    "ThomRick",
-    "Kamil Mysliwiec <mail@kamilmysliwiec.com>"
+    "Kamil Mysliwiec <mail@kamilmysliwiec.com>",
+    "Mark Pieszak <mark@trilon.io>",
+    "ThomRick"
   ],
   "license": "MIT",
   "bugs": {
