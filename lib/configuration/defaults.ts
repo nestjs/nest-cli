@@ -5,6 +5,8 @@ export const defaultConfiguration: Required<Configuration> = {
   sourceRoot: 'src',
   collection: '@nestjs/schematics',
   entryFile: 'main',
+  projects: {},
+  monorepo: false,
   compilerOptions: {
     tsConfigPath: 'tsconfig.build.json',
     webpack: false,

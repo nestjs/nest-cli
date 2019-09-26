@@ -25,6 +25,8 @@ const generateFiles = async (inputs: Input[]) => {
   const configuration = await loadConfiguration();
   const collectionOption = inputs.find(option => option.name === 'collection')!
     .value as string;
+  const schematic = inputs.find(option => option.name === 'schematic')!
+    .value as string;
   const appName = inputs.find(option => option.name === 'project')!
     .value as string;
 
@@ -41,10 +43,14 @@ const generateFiles = async (inputs: Input[]) => {
     : configuration.sourceRoot;
 
   // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects{}"
-  // configuration.monorepo || configuration.projects
-  if (configuration.projects && !appName) {
-    let defaultProjectName: string = '';
+  // Ensure we don't run for new app/libs schematics
+  if (
+    ['app', 'sub-app', 'library', 'lib'].indexOf(schematic) &&
+    Object.entries(configuration.projects).length !== 0 &&
+    !appName) {
     const defaultLabel: string = ' [ Default ]';
+    let defaultProjectName: string = configuration.sourceRoot + defaultLabel;
+
     for (const property in configuration.projects) {
       if (configuration.projects[property].sourceRoot === configuration.sourceRoot) {
         defaultProjectName = property + defaultLabel;
@@ -53,13 +59,17 @@ const generateFiles = async (inputs: Input[]) => {
 
     // Re-order projects to make sure Default is at the top
     let projects: string[] = Object.keys(configuration.projects);
-    projects = projects.filter(p => p !== defaultProjectName);
+    if (configuration.sourceRoot !== 'src') {
+      projects = projects.filter(p => p !== defaultProjectName.replace(defaultLabel, ''));
+    }
     projects.unshift(defaultProjectName);
 
-    const answers: Answers = await askForProjectName(inputs, projects);\
+    const answers: Answers = await askForProjectName(inputs, projects);
     // tslint:disable-next-line: no-string-literal
     const project: string = answers['appName'].replace(defaultLabel, '');
-    sourceRoot = configuration.projects[project].sourceRoot;
+    if (project !== configuration.sourceRoot) {
+      sourceRoot = configuration.projects[project].sourceRoot;
+    }
   }
 
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
