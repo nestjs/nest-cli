@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { Answers, Question } from 'inquirer';
 import * as inquirer from 'inquirer';
+import { Answers, Question } from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration, ConfigurationLoader, ProjectConfiguration } from '../lib/configuration';
@@ -37,6 +37,7 @@ const generateFiles = async (inputs: Input[]) => {
   schematicOptions.push(
     new SchematicOption('language', configuration.language),
   );
+  const configurationProjects = configuration.projects;
 
   let sourceRoot = appName
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
@@ -46,19 +47,21 @@ const generateFiles = async (inputs: Input[]) => {
   // Ensure we don't run for new app/libs schematics
   if (
     ['app', 'sub-app', 'library', 'lib'].indexOf(schematic) &&
-    Object.entries(configuration.projects).length !== 0 &&
-    !appName) {
+    configurationProjects &&
+    Object.entries(configurationProjects).length === 0 &&
+    !appName
+  ) {
     const defaultLabel: string = ' [ Default ]';
     let defaultProjectName: string = configuration.sourceRoot + defaultLabel;
 
-    for (const property in configuration.projects) {
-      if (configuration.projects[property].sourceRoot === configuration.sourceRoot) {
+    for (const property in configurationProjects) {
+      if (configurationProjects[property].sourceRoot === configuration.sourceRoot) {
         defaultProjectName = property + defaultLabel;
       }
     }
 
     // Re-order projects to make sure Default is at the top
-    let projects: string[] = Object.keys(configuration.projects);
+    let projects: string[] = Object.keys(configurationProjects);
     if (configuration.sourceRoot !== 'src') {
       projects = projects.filter(p => p !== defaultProjectName.replace(defaultLabel, ''));
     }
@@ -68,7 +71,7 @@ const generateFiles = async (inputs: Input[]) => {
     // tslint:disable-next-line: no-string-literal
     const project: string = answers['appName'].replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
-      sourceRoot = configuration.projects[project].sourceRoot;
+      sourceRoot = configurationProjects[project].sourceRoot;
     }
   }
 
