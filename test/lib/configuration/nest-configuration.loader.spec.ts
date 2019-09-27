@@ -34,6 +34,8 @@ describe('Nest Configuration Loader', () => {
       collection: '@nestjs/schematics',
       sourceRoot: 'src',
       entryFile: 'main',
+      monorepo: false,
+      projects: {},
       compilerOptions: {
         plugins: [],
         tsConfigPath: 'tsconfig.build.json',
