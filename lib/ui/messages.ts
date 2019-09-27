@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { EMOJIS } from './emojis';
 
 export const MESSAGES = {
+  PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   DRY_RUN_MODE: 'Command has been executed in the dry mode, nothing changed!',
   PROJECT_INFORMATION_START: `${EMOJIS.ZAP}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>

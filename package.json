@@ -26,8 +26,9 @@
     "url": "git+https://github.com/nestjs/nest-cli.git"
   },
   "contributors": [
-    "ThomRick",
-    "Kamil Mysliwiec <mail@kamilmysliwiec.com>"
+    "Kamil Mysliwiec <mail@kamilmysliwiec.com>",
+    "Mark Pieszak <mark@trilon.io>",
+    "ThomRick"
   ],
   "license": "MIT",
   "bugs": {
@@ -35,14 +36,14 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
-    "@angular-devkit/core": "8.3.5",
-    "@angular-devkit/schematics": "8.3.5",
-    "@angular-devkit/schematics-cli": "0.803.5",
+    "@angular-devkit/core": "8.3.6",
+    "@angular-devkit/schematics": "8.3.6",
+    "@angular-devkit/schematics-cli": "0.803.6",
     "@nestjs/schematics": "^6.6.3",
     "@types/webpack": "4.39.1",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
-    "commander": "3.0.1",
+    "commander": "3.0.2",
     "fork-ts-checker-webpack-plugin": "^1.5.0",
     "inquirer": "7.0.0",
     "node-emoji": "1.10.0",
@@ -57,7 +58,7 @@
   "devDependencies": {
     "@types/inquirer": "6.5.0",
     "@types/jest": "24.0.18",
-    "@types/node": "12.7.7",
+    "@types/node": "12.7.8",
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.1.0",
     "@types/os-name": "2.0.0",
