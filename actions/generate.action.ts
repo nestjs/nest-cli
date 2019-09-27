@@ -46,10 +46,7 @@ const generateFiles = async (inputs: Input[]) => {
   // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects{}"
   // Ensure we don't run for new app/libs schematics
   if (
-    ['app', 'sub-app', 'library', 'lib'].indexOf(schematic) &&
-    configurationProjects &&
-    Object.entries(configurationProjects).length === 0 &&
-    !appName
+    projectGeneratorQuestion(schematic, configurationProjects, appName)
   ) {
     const defaultLabel: string = ' [ Default ]';
     let defaultProjectName: string = configuration.sourceRoot + defaultLabel;
@@ -61,11 +58,7 @@ const generateFiles = async (inputs: Input[]) => {
     }
 
     // Re-order projects to make sure Default is at the top
-    let projects: string[] = Object.keys(configurationProjects);
-    if (configuration.sourceRoot !== 'src') {
-      projects = projects.filter(p => p !== defaultProjectName.replace(defaultLabel, ''));
-    }
-    projects.unshift(defaultProjectName);
+    const projects = moveDefaultProjectToStart(configuration, defaultProjectName, defaultLabel);
 
     const answers: Answers = await askForProjectName(inputs, projects);
     // tslint:disable-next-line: no-string-literal
@@ -87,6 +80,15 @@ const generateFiles = async (inputs: Input[]) => {
       console.error(chalk.red(error.message));
     }
   }
+};
+
+const moveDefaultProjectToStart = (configuration: Configuration, defaultProjectName: string, defaultLabel: string) => {
+  let projects: string[] = Object.keys(configuration.projects as {});
+  if (configuration.sourceRoot !== 'src') {
+    projects = projects.filter(p => p !== defaultProjectName.replace(defaultLabel, ''));
+  }
+  projects.unshift(defaultProjectName);
+  return projects;
 };
 
 const askForProjectName = async (inputs: Input[], projects: string[]): Promise<Answers> => {
@@ -112,4 +114,14 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
     }
   });
   return options;
+};
+const projectGeneratorQuestion = (
+  schematic: string,
+  configurationProjects: { [key: string]: ProjectConfiguration; },
+  appName: string,
+) => {
+  return ['app', 'sub-app', 'library', 'lib'].indexOf(schematic) &&
+    configurationProjects &&
+    Object.entries(configurationProjects).length === 0 &&
+    !appName;
 };
