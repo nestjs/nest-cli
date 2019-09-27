@@ -3,7 +3,11 @@ import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
-import { Configuration, ConfigurationLoader, ProjectConfiguration } from '../lib/configuration';
+import {
+  Configuration,
+  ConfigurationLoader,
+  ProjectConfiguration,
+} from '../lib/configuration';
 import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
 import { generateSelect } from '../lib/questions/questions';
 import { FileSystemReader } from '../lib/readers';
@@ -43,26 +47,29 @@ const generateFiles = async (inputs: Input[]) => {
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
 
-  // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects{}"
+  // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects"
   // Ensure we don't run for new app/libs schematics
-  if (
-    projectGeneratorQuestion(schematic, configurationProjects, appName)
-  ) {
+  if (shouldAskForProject(schematic, configurationProjects, appName)) {
     const defaultLabel: string = ' [ Default ]';
     let defaultProjectName: string = configuration.sourceRoot + defaultLabel;
 
     for (const property in configurationProjects) {
-      if (configurationProjects[property].sourceRoot === configuration.sourceRoot) {
+      if (
+        configurationProjects[property].sourceRoot === configuration.sourceRoot
+      ) {
         defaultProjectName = property + defaultLabel;
+        break;
       }
     }
 
-    // Re-order projects to make sure Default is at the top
-    const projects = moveDefaultProjectToStart(configuration, defaultProjectName, defaultLabel);
+    const projects = moveDefaultProjectToStart(
+      configuration,
+      defaultProjectName,
+      defaultLabel,
+    );
 
-    const answers: Answers = await askForProjectName(inputs, projects);
-    // tslint:disable-next-line: no-string-literal
-    const project: string = answers['appName'].replace(defaultLabel, '');
+    const answers: Answers = await askForProjectName(projects);
+    const project: string = answers.appName.replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
       sourceRoot = configurationProjects[project].sourceRoot;
     }
@@ -82,16 +89,22 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const moveDefaultProjectToStart = (configuration: Configuration, defaultProjectName: string, defaultLabel: string) => {
+const moveDefaultProjectToStart = (
+  configuration: Configuration,
+  defaultProjectName: string,
+  defaultLabel: string,
+) => {
   let projects: string[] = Object.keys(configuration.projects as {});
   if (configuration.sourceRoot !== 'src') {
-    projects = projects.filter(p => p !== defaultProjectName.replace(defaultLabel, ''));
+    projects = projects.filter(
+      p => p !== defaultProjectName.replace(defaultLabel, ''),
+    );
   }
   projects.unshift(defaultProjectName);
   return projects;
 };
 
-const askForProjectName = async (inputs: Input[], projects: string[]): Promise<Answers> => {
+const askForProjectName = async (projects: string[]): Promise<Answers> => {
   const questions: Question[] = [
     generateSelect('appName')(MESSAGES.PROJECT_SELECTION_QUESTION)(projects),
   ];
@@ -115,13 +128,16 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   });
   return options;
 };
-const projectGeneratorQuestion = (
+
+const shouldAskForProject = (
   schematic: string,
-  configurationProjects: { [key: string]: ProjectConfiguration; },
+  configurationProjects: { [key: string]: ProjectConfiguration },
   appName: string,
 ) => {
-  return ['app', 'sub-app', 'library', 'lib'].includes(schematic) === false &&
+  return (
+    ['app', 'sub-app', 'library', 'lib'].includes(schematic) === false &&
     configurationProjects &&
     Object.entries(configurationProjects).length !== 0 &&
-    !appName;
+    !appName
+  );
 };
