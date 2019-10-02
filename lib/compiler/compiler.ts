@@ -23,11 +23,14 @@ export class Compiler {
     appName: string,
     onSuccess?: () => void,
   ) {
-    const { options, fileNames } = this.tsConfigProvider.getByConfigFilename(
-      configFilename,
-    );
+    const {
+      options,
+      fileNames,
+      projectReferences,
+    } = this.tsConfigProvider.getByConfigFilename(configFilename);
     const program = ts.createProgram({
       rootNames: fileNames,
+      projectReferences,
       options,
     });
 

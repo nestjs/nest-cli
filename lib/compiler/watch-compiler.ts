@@ -2,11 +2,15 @@ import * as ts from 'typescript';
 import { Configuration } from '../configuration';
 import { CLI_ERRORS } from '../ui/errors';
 import { getValueOrDefault } from './helpers/get-value-or-default';
+import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
 
 export class WatchCompiler {
-  constructor(private readonly pluginsLoader: PluginsLoader) {}
+  constructor(
+    private readonly pluginsLoader: PluginsLoader,
+    private readonly tsConfigProvider: TsConfigProvider,
+  ) {}
 
   public run(
     configuration: Required<Configuration>,
@@ -22,6 +26,9 @@ export class WatchCompiler {
     if (!configPath) {
       throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
     }
+    const { projectReferences } = this.tsConfigProvider.getByConfigFilename(
+      configFilename,
+    );
 
     const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;
     const origDiagnosticReporter = (ts as any).createDiagnosticReporter(
@@ -57,7 +64,14 @@ export class WatchCompiler {
       const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
       plugins.beforeHooks.push(tsconfigPathsPlugin);
 
-      const program = origCreateProgram(rootNames, options, host, oldProgram);
+      const program = origCreateProgram(
+        rootNames,
+        options,
+        host,
+        oldProgram,
+        undefined,
+        projectReferences,
+      );
       const origProgramEmit = program.emit;
       program.emit = (
         targetSourceFile?: ts.SourceFile,

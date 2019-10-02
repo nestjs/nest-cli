@@ -37,6 +37,7 @@ describe('Nest Configuration Loader', () => {
       monorepo: false,
       projects: {},
       compilerOptions: {
+        assets: [],
         plugins: [],
         tsConfigPath: 'tsconfig.build.json',
         webpack: false,

@@ -14,7 +14,7 @@ export class TsConfigProvider {
       undefined!,
       (ts.sys as unknown) as ts.ParseConfigFileHost,
     );
-    const { options, fileNames } = parsedCmd!;
-    return { options, fileNames };
+    const { options, fileNames, projectReferences } = parsedCmd!;
+    return { options, fileNames, projectReferences };
   }
 }

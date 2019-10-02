@@ -27,7 +27,10 @@ export class BuildAction extends AbstractAction {
     this.tsConfigProvider,
   );
   protected readonly webpackCompiler = new WebpackCompiler(this.pluginsLoader);
-  protected readonly watchCompiler = new WatchCompiler(this.pluginsLoader);
+  protected readonly watchCompiler = new WatchCompiler(
+    this.pluginsLoader,
+    this.tsConfigProvider,
+  );
   protected readonly fileSystemReader = new FileSystemReader(process.cwd());
   protected readonly loader: ConfigurationLoader = new NestConfigurationLoader(
     this.fileSystemReader,
