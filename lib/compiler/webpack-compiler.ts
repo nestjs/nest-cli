@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { dirname, join, relative } from 'path';
+import { dirname, join, normalize, relative } from 'path';
 import webpack = require('webpack');
 import { Configuration } from '../configuration';
 import { INFO_PREFIX } from '../ui';
@@ -42,7 +42,7 @@ export class WebpackCompiler {
       appName,
     );
     const pathToSource =
-      sourceRoot.indexOf(relativeRootPath) >= 0
+      normalize(sourceRoot).indexOf(normalize(relativeRootPath)) >= 0
         ? join(cwd, sourceRoot)
         : join(cwd, relativeRootPath, sourceRoot);
 
