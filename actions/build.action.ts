@@ -2,16 +2,19 @@ import chalk from 'chalk';
 import { join } from 'path';
 import webpack = require('webpack');
 import { Input } from '../commands';
+import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins-loader';
 import { WatchCompiler } from '../lib/compiler/watch-compiler';
 import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
+import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
 import {
   ConfigurationLoader,
   NestConfigurationLoader,
 } from '../lib/configuration';
+import { defaultOutDir } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
@@ -29,6 +32,8 @@ export class BuildAction extends AbstractAction {
   protected readonly loader: ConfigurationLoader = new NestConfigurationLoader(
     this.fileSystemReader,
   );
+  protected readonly assetsManager = new AssetsManager();
+  protected readonly workspaceUtils = new WorkspaceUtils();
 
   public async handle(inputs: Input[], options: Input[]) {
     try {
@@ -61,7 +66,10 @@ export class BuildAction extends AbstractAction {
       'path',
       options,
     );
-
+    const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
+      pathToTsconfig,
+    );
+    const outDir = tsOptions.outDir || defaultOutDir;
     const isWebpackEnabled = getValueOrDefault<boolean>(
       configuration,
       'compilerOptions.webpack',
@@ -69,6 +77,12 @@ export class BuildAction extends AbstractAction {
       'webpack',
       options,
     );
+    await this.workspaceUtils.deleteOutDirIfEnabled(
+      configuration,
+      appName,
+      outDir,
+    );
+    await this.assetsManager.copyAssets(configuration, appName, outDir);
 
     if (isWebpackEnabled) {
       const webpackPath = getValueOrDefault<string>(

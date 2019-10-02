@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "6.9.1",
+  "version": "6.10.0",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -44,24 +44,28 @@
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "3.0.2",
-    "fork-ts-checker-webpack-plugin": "^1.5.0",
+    "copyfiles": "2.1.1",
+    "fork-ts-checker-webpack-plugin": "1.5.0",
     "inquirer": "7.0.0",
     "node-emoji": "1.10.0",
     "ora": "4.0.1",
     "os-name": "3.1.0",
     "path-to-regexp": "3.1.0",
+    "rimraf": "3.0.0",
     "tree-kill": "1.2.1",
     "tsconfig-paths-webpack-plugin": "3.2.0",
     "webpack": "4.41.0",
     "webpack-node-externals": "1.7.2"
   },
   "devDependencies": {
+    "@types/copyfiles": "2.1.1",
     "@types/inquirer": "6.5.0",
     "@types/jest": "24.0.18",
     "@types/node": "12.7.8",
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.1.0",
     "@types/os-name": "2.0.0",
+    "@types/rimraf": "2.0.2",
     "@types/webpack-node-externals": "1.6.3",
     "delete-empty": "3.0.0",
     "gulp": "4.0.2",

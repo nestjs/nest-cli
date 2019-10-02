@@ -12,6 +12,7 @@ export const defaultConfiguration: Required<Configuration> = {
     webpack: false,
     webpackConfigPath: 'webpack.config.js',
     plugins: [],
+    assets: [],
   },
 };
 
