@@ -206,6 +206,9 @@ const printCollective = () => {
     )}`,
   );
   emptyLine();
+  
+// Exits the process after the project has been successfully created
+ process.exit(0)
 };
 
 const print = (color: string | null = null) => (str = '') => {
