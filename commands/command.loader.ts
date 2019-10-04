@@ -1,9 +1,14 @@
 import chalk from 'chalk';
 import { CommanderStatic } from 'commander';
-import { BuildAction, GenerateAction, InfoAction, NewAction } from '../actions';
-import { AddAction } from '../actions/add.action';
-import { StartAction } from '../actions/start.action';
-import { UpdateAction } from '../actions/update.action';
+import {
+  BuildAction,
+  GenerateAction,
+  InfoAction,
+  NewAction,
+  AddAction,
+  StartAction,
+  UpdateAction,
+} from '../actions';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AddCommand } from './add.command';
 import { BuildCommand } from './build.command';
