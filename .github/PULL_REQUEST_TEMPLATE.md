@@ -1,21 +1,41 @@
-## Description
+## PR Checklist
+Please check if your PR fulfills the following requirements:
 
-<!-- Please include a description of the change. Please also include relevant motivation and context. -->
-
-
-### Type of change
-
-Please delete options that are not relevant.
-
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+- [ ] The commit message follows our guidelines: https://github.com/nestjs/nest/blob/master/CONTRIBUTING.md
+- [ ] Tests for the changes have been added (for bug fixes / features)
+- [ ] Docs have been added / updated (for bug fixes / features)
 
 
-Fixes # (if issue, add link)
-<!-- Please include a link to the issue which this PR tries to fix -->
+## PR Type
+What kind of change does this PR introduce?
 
-## Screenshots (if any)
+<!-- Please check the one that applies to this PR using "x". -->
+```
+[ ] Bugfix
+[ ] Feature
+[ ] Code style update (formatting, local variables)
+[ ] Refactoring (no functional changes, no api changes)
+[ ] Build related changes
+[ ] CI related changes
+[ ] Other... Please describe:
+```
+
+## What is the current behavior?
+<!-- Please describe the current behavior that you are modifying, or link to a relevant issue. -->
+
+Issue Number: N/A
 
 
+## What is the new behavior?
+
+
+## Does this PR introduce a breaking change?
+```
+[ ] Yes
+[ ] No
+```
+
+<!-- If this PR contains a breaking change, please describe the impact and migration path for existing applications below. -->
+
+
+## Other information
