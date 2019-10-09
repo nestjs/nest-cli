@@ -91,7 +91,7 @@ export class WebpackCompiler {
         console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
         callback();
       });
-      compiler.watch(webpackConfiguration.watchOptions!, afterCallback);
+      compiler.watch(webpackConfiguration.watchOptions! || {}, afterCallback);
     } else {
       compiler.run(afterCallback);
     }
