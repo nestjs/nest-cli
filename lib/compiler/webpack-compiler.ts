@@ -65,7 +65,6 @@ export class WebpackCompiler {
       typeof webpackConfigFactoryOrConfig !== 'function'
         ? webpackConfigFactoryOrConfig
         : webpackConfigFactoryOrConfig(defaultOptions);
-    //to get watch/watchOptions
     const webpackConfiguration = {
       ...defaultOptions,
       ...projectWebpackOptions,
