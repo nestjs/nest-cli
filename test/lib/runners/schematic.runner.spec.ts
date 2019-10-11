@@ -2,7 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SchematicRunner } from '../../../lib/runners/schematic.runner';
 
-const withSep = (route: string) => path.resolve(route.split('/').join(path.sep));
+const withSep = (route: string) =>
+  path.resolve(route.split('/').join(path.sep));
 
 const existsSyncTrueForPathMock = (pathToExist: string) => {
   pathToExist = withSep(pathToExist);
@@ -51,14 +52,18 @@ describe('SchematicRunner', () => {
 
   describe('findClosestSchematicsBinary', () => {
     it('it should return the correct path when called from globally installed package', () => {
-      const existingPath = withSep('/home/test/.nvm/versions/node/v8.12.0/lib/node_modules/@nestjs/cli/node_modules/.bin/schematics');
+      const existingPath = withSep(
+        '/home/test/.nvm/versions/node/v8.12.0/lib/node_modules/@nestjs/cli/node_modules/.bin/schematics',
+      );
 
       const globalRunnersDirname = withSep(
         '/home/test/.nvm/versions/node/v8.12.0/lib/node_modules/@nestjs/cli/lib/runners',
       );
 
       (fs as any).existsSync = jest.fn(existsSyncTrueForPathMock(existingPath));
-      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(globalRunnersDirname);
+      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(
+        globalRunnersDirname,
+      );
 
       const resolvedPath = SchematicRunner.findClosestSchematicsBinary();
 
@@ -66,14 +71,18 @@ describe('SchematicRunner', () => {
     });
 
     it('should return the correct path when called from locally installed package', () => {
-      const existingPath = withSep('/home/test/project/node_modules/.bin/schematics');
+      const existingPath = withSep(
+        '/home/test/project/node_modules/.bin/schematics',
+      );
 
       const localRunnersDirname = withSep(
         '/home/test/project/node_modules/@nestjs/cli/lib/runners',
       );
 
       (fs as any).existsSync = jest.fn(existsSyncTrueForPathMock(existingPath));
-      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(localRunnersDirname);
+      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(
+        localRunnersDirname,
+      );
 
       const resolvedPath = SchematicRunner.findClosestSchematicsBinary();
 
@@ -86,7 +95,9 @@ describe('SchematicRunner', () => {
       );
 
       (fs as any).existsSync = jest.fn().mockReturnValue(false);
-      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(globalRunnersDirname);
+      (SchematicRunner as any).prototype.constructor.getModulePaths = getModulePathsMock(
+        globalRunnersDirname,
+      );
 
       expect(SchematicRunner.findClosestSchematicsBinary).toThrow();
     });
