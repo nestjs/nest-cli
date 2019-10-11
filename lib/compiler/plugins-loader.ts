@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import * as ts from 'typescript';
 import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
@@ -26,7 +27,7 @@ export class PluginsLoader {
       isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
     );
     const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item =>
-      require(item),
+      require(resolve(item)),
     );
     const beforeHooks: Transformer[] = [];
     const afterHooks: Transformer[] = [];
