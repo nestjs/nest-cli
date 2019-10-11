@@ -1,11 +1,18 @@
 import * as ts from 'typescript';
+import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
 
 type Transformer = ts.TransformerFactory<any> | ts.CustomTransformerFactory;
+type PluginEntry = string | PluginAndOptions;
+
+interface PluginAndOptions {
+  name: 'string';
+  options: Record<string, any>;
+}
 
 export interface NestCompilerPlugin {
-  before?: Transformer;
-  after?: Transformer;
+  before?: (options?: Record<string, any>) => Transformer;
+  after?: (options?: Record<string, any>) => Transformer;
 }
 
 export interface MultiNestCompilerPlugins {
@@ -14,18 +21,24 @@ export interface MultiNestCompilerPlugins {
 }
 
 export class PluginsLoader {
-  public load(plugins: string[] = []): MultiNestCompilerPlugins {
-    const pluginRefs: NestCompilerPlugin[] = (plugins || []).map(name =>
-      require(name),
+  public load(plugins: PluginEntry[] = []): MultiNestCompilerPlugins {
+    const pluginNames = plugins.map(entry =>
+      isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
+    );
+    const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item =>
+      require(item),
     );
     const beforeHooks: Transformer[] = [];
     const afterHooks: Transformer[] = [];
     pluginRefs.forEach((plugin, index) => {
       if (!plugin.before && !plugin.after) {
-        throw new Error(CLI_ERRORS.WRONG_PLUGIN(plugins[index]));
+        throw new Error(CLI_ERRORS.WRONG_PLUGIN(pluginNames[index]));
       }
-      plugin.before && beforeHooks.push(plugin.before);
-      plugin.after && afterHooks.push(plugin.after);
+      const options = isObject(plugins[index])
+        ? (plugins[index] as PluginAndOptions).options || {}
+        : {};
+      plugin.before && beforeHooks.push(plugin.before(options));
+      plugin.after && afterHooks.push(plugin.after(options));
     });
     return {
       beforeHooks,
