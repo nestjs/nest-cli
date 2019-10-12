@@ -1,4 +1,4 @@
-import { CommanderStatic } from 'commander';
+import { Command, CommanderStatic } from 'commander';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
@@ -6,15 +6,32 @@ import { Input } from './command.input';
 export class AddCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
-      .command('add <library> [args...]')
+      .command('add <library>')
       .allowUnknownOption()
-      .description('Add a library')
-      .action(async (library: string) => {
+      .description('Adds support for an external library to your project.')
+      .option(
+        '-d, --dry-run',
+        'Report actions that would be performed without writing out results.',
+      )
+      .option('-p, --project [project]', 'Project in which to generate files.')
+      .usage('<library> [options] [library-specific-options]')
+      .action(async (library: string, command: Command) => {
+        const options: Input[] = [];
+        options.push({ name: 'dry-run', value: !!command.dryRun });
+        options.push({
+          name: 'project',
+          value: command.project,
+        });
+
         const inputs: Input[] = [];
+        inputs.push({ name: 'library', value: library });
 
         const flags = getRemainingFlags(program);
-        inputs.push({ name: 'library', value: library });
-        await this.action.handle(inputs, [], flags);
+        try {
+          await this.action.handle(inputs, options, flags);
+        } catch (err) {
+          process.exit(0);
+        }
       });
   }
 }

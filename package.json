@@ -18,7 +18,7 @@
     "format": "prettier --write \"**/*.ts\"",
     "lint": "tslint -p .",
     "start": "node bin/nest.js",
-    "test": "jest --config test/jest-config.json",
+    "test": "npm run clean && jest --config test/jest-config.json",
     "test:dev": "jest --config test/jest-config.json --watchAll"
   },
   "repository": {

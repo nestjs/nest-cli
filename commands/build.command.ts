@@ -6,11 +6,11 @@ export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
       .command('build [app]')
-      .option('-p, --path [path]', 'Path to tsconfig file')
-      .option('-w, --watch', 'Run in watch mode (live-reload)')
-      .option('--webpack', 'Use webpack for compilation')
-      .option('--webpackPath [path]', 'Path to webpack configuration')
-      .description('Build Nest application')
+      .option('-p, --path [path]', 'Path to tsconfig file.')
+      .option('-w, --watch', 'Run in watch mode (live-reload).')
+      .option('--webpack', 'Use webpack for compilation.')
+      .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
 
