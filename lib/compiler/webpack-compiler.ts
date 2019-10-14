@@ -8,7 +8,7 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
 
 export class WebpackCompiler {
-  constructor(private readonly pluginsLoader: PluginsLoader) {}
+  constructor(private readonly pluginsLoader: PluginsLoader) { }
 
   public run(
     configuration: Required<Configuration>,
@@ -65,11 +65,11 @@ export class WebpackCompiler {
       typeof webpackConfigFactoryOrConfig !== 'function'
         ? webpackConfigFactoryOrConfig
         : webpackConfigFactoryOrConfig(defaultOptions);
-
-    const compiler = webpack({
+    const webpackConfiguration = {
       ...defaultOptions,
       ...projectWebpackOptions,
-    });
+    }
+    const compiler = webpack(webpackConfiguration);
 
     const afterCallback = (err: Error, stats: any) => {
       const statsOutput = stats.toString({
@@ -85,12 +85,12 @@ export class WebpackCompiler {
       console.log(statsOutput);
     };
 
-    if (watchMode) {
+    if (watchMode || webpackConfiguration.watch) {
       compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
         console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
         callback();
       });
-      compiler.watch({}, afterCallback);
+      compiler.watch(webpackConfiguration.watchOptions! || {}, afterCallback);
     } else {
       compiler.run(afterCallback);
     }
