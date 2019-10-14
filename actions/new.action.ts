@@ -56,6 +56,7 @@ export class NewAction extends AbstractAction {
 
       printCollective();
     }
+    process.exit(0);
   }
 }
 
