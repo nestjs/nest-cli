@@ -64,7 +64,9 @@ export const webpackDefaultsFactory = (
           return false;
         }
         try {
-          require.resolve(resource);
+          require.resolve(resource, {
+            paths: [process.cwd()],
+          });
         } catch (err) {
           return true;
         }
