@@ -54,6 +54,10 @@ export const webpackDefaultsFactory = (
   optimization: {
     nodeEnv: false,
   },
+  node: {
+    __filename: false,
+    __dirname: false,
+  },
   plugins: [
     new webpack.IgnorePlugin({
       checkResource(resource: any) {
