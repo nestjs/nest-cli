@@ -45,7 +45,7 @@
     "cli-table3": "0.5.1",
     "commander": "3.0.2",
     "copyfiles": "2.1.1",
-    "fork-ts-checker-webpack-plugin": "1.6.0",
+    "fork-ts-checker-webpack-plugin": "2.0.0",
     "inquirer": "7.0.0",
     "node-emoji": "1.10.0",
     "ora": "4.0.2",
