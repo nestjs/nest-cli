@@ -14,12 +14,17 @@ export class StartCommand extends AbstractCommand {
       )
       .option('--webpack', 'Use webpack for compilation')
       .option('--webpackPath [path]', 'Path to webpack configuration')
+      .option('--tsc', 'Use tsc for compilation')
       .description('Build Nest application')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
 
+        let isWebpackEnabled = !!command.webpack;
+        if (command.tsc) {
+          isWebpackEnabled = false;
+        }
+        options.push({ name: 'webpack', value: isWebpackEnabled });
         options.push({ name: 'debug', value: command.debug });
-        options.push({ name: 'webpack', value: !!command.webpack });
         options.push({ name: 'watch', value: !!command.watch });
         options.push({
           name: 'path',
