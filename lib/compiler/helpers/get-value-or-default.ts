@@ -11,7 +11,7 @@ export function getValueOrDefault<T = any>(
 ): T {
   const item = options.find(option => option.name === key);
   const origValue = item && ((item.value as unknown) as T);
-  if (origValue) {
+  if (origValue !== undefined && origValue !== null) {
     return origValue as T;
   }
   if (configuration.projects && configuration.projects[appName]) {

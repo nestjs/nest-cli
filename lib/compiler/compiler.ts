@@ -54,13 +54,12 @@ export class Compiler {
         afterDeclarations: [],
       },
     );
-    this.reportAfterCompilationDiagnostic(program, emitResult);
 
     const errorsCount = this.reportAfterCompilationDiagnostic(
       program,
       emitResult,
     );
-    if (errorsCount && !onSuccess) {
+    if (errorsCount) {
       process.exit(1);
     } else if (!errorsCount && onSuccess) {
       onSuccess();

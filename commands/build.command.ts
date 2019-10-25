@@ -15,10 +15,7 @@ export class BuildCommand extends AbstractCommand {
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
 
-        let isWebpackEnabled = !!command.webpack;
-        if (command.tsc) {
-          isWebpackEnabled = false;
-        }
+        let isWebpackEnabled = command.tsc ? false : command.webpack;
         options.push({ name: 'webpack', value: isWebpackEnabled });
         options.push({ name: 'watch', value: !!command.watch });
         options.push({

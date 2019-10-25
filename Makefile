@@ -32,7 +32,7 @@ publish-npm-package: prepublish
 	@docker run -w /nestjs/cli nestjs/cli:$$ARTEFACT_ID \
 		/bin/sh -c "\
 			echo //registry.npmjs.org/:_authToken=$$NPM_TOKEN >> .npmrc && \
-			npm publish --tag next \
+			npm publish \
 		"
 
 prepublish:
