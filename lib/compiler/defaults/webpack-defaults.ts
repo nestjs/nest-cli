@@ -32,8 +32,8 @@ export const webpackDefaultsFactory = (
             options: {
               configFile: tsConfigFile,
               getCustomTransformers: (program: any) => ({
-                before: plugins.beforeHooks,
-                after: plugins.afterHooks,
+                before: plugins.beforeHooks.map(hook => hook(program)),
+                after: plugins.afterHooks.map(hook => hook(program)),
               }),
             },
           },

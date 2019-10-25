@@ -62,8 +62,6 @@ export class WatchCompiler {
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
       const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
-      plugins.beforeHooks.push(tsconfigPathsPlugin);
-
       const program = origCreateProgram(
         rootNames,
         options,
@@ -82,8 +80,17 @@ export class WatchCompiler {
       ) => {
         let transforms = customTransformers;
         transforms = typeof transforms !== 'object' ? {} : transforms;
-        transforms.before = plugins.beforeHooks.concat(transforms.before || []);
-        transforms.after = plugins.afterHooks.concat(transforms.after || []);
+
+        const before = plugins.beforeHooks.map(hook =>
+          hook(program.getProgram()),
+        );
+        const after = plugins.afterHooks.map(hook =>
+          hook(program.getProgram()),
+        );
+        before.unshift(tsconfigPathsPlugin);
+
+        transforms.before = before.concat(transforms.before || []);
+        transforms.after = after.concat(transforms.after || []);
 
         return origProgramEmit(
           targetSourceFile,

@@ -28,7 +28,7 @@ export class Compiler {
       fileNames,
       projectReferences,
     } = this.tsConfigProvider.getByConfigFilename(configFilename);
-    const program = ts.createProgram({
+    const program = ts.createIncrementalProgram({
       rootNames: fileNames,
       projectReferences,
       options,
@@ -41,34 +41,38 @@ export class Compiler {
     );
     const plugins = this.pluginsLoader.load(pluginsConfig);
     const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
+    const before = plugins.beforeHooks.map(hook => hook(program as any));
+    const after = plugins.afterHooks.map(hook => hook(program as any));
     const emitResult = program.emit(
       undefined,
       undefined,
       undefined,
       undefined,
       {
-        before: plugins.beforeHooks.concat(tsconfigPathsPlugin),
-        after: plugins.afterHooks,
+        before: before.concat(tsconfigPathsPlugin),
+        after,
         afterDeclarations: [],
       },
     );
     this.reportAfterCompilationDiagnostic(program, emitResult);
 
-    const exitCode = emitResult.emitSkipped ? 1 : 0;
-    if (exitCode) {
-      console.log(`Process exiting with code '${exitCode}'.`);
-      process.exit(exitCode);
-    } else {
-      onSuccess && onSuccess();
+    const errorsCount = this.reportAfterCompilationDiagnostic(
+      program,
+      emitResult,
+    );
+    if (errorsCount && !onSuccess) {
+      process.exit(1);
+    } else if (!errorsCount && onSuccess) {
+      onSuccess();
     }
   }
 
   private reportAfterCompilationDiagnostic(
-    program: ts.Program,
+    program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     emitResult: ts.EmitResult,
-  ) {
+  ): number {
     const diagnostics = ts
-      .getPreEmitDiagnostics(program)
+      .getPreEmitDiagnostics((program as unknown) as ts.Program)
       .concat(emitResult.diagnostics);
     console.error(
       ts.formatDiagnosticsWithColorAndContext(diagnostics, this.formatHost),
@@ -76,5 +80,6 @@ export class Compiler {
     if (diagnostics.length > 0) {
       console.info(`Found ${diagnostics.length} error(s).` + ts.sys.newLine);
     }
+    return diagnostics.length;
   }
 }

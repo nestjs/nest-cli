@@ -8,7 +8,7 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
 
 export class WebpackCompiler {
-  constructor(private readonly pluginsLoader: PluginsLoader) { }
+  constructor(private readonly pluginsLoader: PluginsLoader) {}
 
   public run(
     configuration: Required<Configuration>,
@@ -68,7 +68,7 @@ export class WebpackCompiler {
     const webpackConfiguration = {
       ...defaultOptions,
       ...projectWebpackOptions,
-    }
+    };
     const compiler = webpack(webpackConfiguration);
 
     const afterCallback = (err: Error, stats: any) => {
@@ -81,6 +81,9 @@ export class WebpackCompiler {
       });
       if (!err && !stats.hasErrors()) {
         onSuccess && onSuccess();
+      } else if (!watchMode && !webpackConfiguration.watch) {
+        console.log(statsOutput);
+        return process.exit(1);
       }
       console.log(statsOutput);
     };
