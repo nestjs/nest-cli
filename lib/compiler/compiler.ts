@@ -28,7 +28,9 @@ export class Compiler {
       fileNames,
       projectReferences,
     } = this.tsConfigProvider.getByConfigFilename(configFilename);
-    const program = ts.createIncrementalProgram({
+
+    const createProgram = ts.createIncrementalProgram || ts.createProgram;
+    const program = createProgram.call(ts, {
       rootNames: fileNames,
       projectReferences,
       options,
