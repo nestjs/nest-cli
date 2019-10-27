@@ -58,7 +58,7 @@ export class Compiler {
     );
 
     const errorsCount = this.reportAfterCompilationDiagnostic(
-      program,
+      program as any,
       emitResult,
     );
     if (errorsCount) {
@@ -75,10 +75,11 @@ export class Compiler {
     const diagnostics = ts
       .getPreEmitDiagnostics((program as unknown) as ts.Program)
       .concat(emitResult.diagnostics);
-    console.error(
-      ts.formatDiagnosticsWithColorAndContext(diagnostics, this.formatHost),
-    );
+
     if (diagnostics.length > 0) {
+      console.error(
+        ts.formatDiagnosticsWithColorAndContext(diagnostics, this.formatHost),
+      );
       console.info(`Found ${diagnostics.length} error(s).` + ts.sys.newLine);
     }
     return diagnostics.length;
