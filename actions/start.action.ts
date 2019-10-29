@@ -115,6 +115,9 @@ export class StartAction extends BuildAction {
     if (argsStartIndex >= 0) {
       childProcessArgs = process.argv.slice(argsStartIndex + 1);
     }
+    outputFilePath =
+      outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
+
     const processArgs = [outputFilePath, ...childProcessArgs];
     if (debug) {
       const inspectFlag =
