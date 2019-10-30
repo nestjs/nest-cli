@@ -18,39 +18,12 @@
 
 ## Description
 
-In order to help people manage their projects, the CLI tool has been created. It helps on many grounds at once, from scaffolding the project to build well-structured applications. The Nest CLI is based on the [@angular-devkit](https://github.com/angular/devkit) package. Also, there're special schematics that are dedicated to the Nest development [@nestjs/schematics](https://github.com/nestjs/schematics).
-
+The Nest CLI is a command-line interface tool that helps you to initialize, develop, and maintain your Nest applications. It assists in multiple ways, including scaffolding the project, serving it in development mode, and building and bundling the application for production distribution. It embodies best-practice architectural patterns to encourage well-structured apps. Read more [here](https://docs.nestjs.com/cli/overview).
 
 ## Installation
-### NPM:
 
 ```
 $ npm install -g @nestjs/cli
-```
-
-### Docker:
-```
-$ docker pull nestjs/cli[:version]
-$ docker run -it --rm -p 3000:3000 -v `pwd`:/workspace nestjs/cli[:version]
-```
-
-### GIT:
-```
-$ git clone https://github.com/nestjs/nest-cli.git <project>
-$ cd <project>
-```
-
-With your Node runtime:
-```
-$ npm install
-$ npm run build
-$ npm link
-```
-
-With Docker:
-
-```
-$ docker build -t nestjs/cli .
 ```
 
 ## Usage
@@ -59,6 +32,5 @@ Learn more in the [official documentation](https://docs.nestjs.com/cli/overview)
 
 ## Stay in touch
 
-* CLI Author - [Thomas Ricart](https://github.com/ThomRick)
-* Website - [https://nestjs.com](https://nestjs.com/)
-* Twitter - [@nestframework](https://twitter.com/nestframework)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
