@@ -40,7 +40,7 @@
     "@angular-devkit/schematics": "8.3.15",
     "@angular-devkit/schematics-cli": "0.803.15",
     "@nestjs/schematics": "^6.6.3",
-    "@types/webpack": "4.39.5",
+    "@types/webpack": "4.39.8",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "3.0.2",
