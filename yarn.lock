@@ -4904,11 +4904,6 @@ path-starts-with@^2.0.0:
   resolved "https://registry.yarnpkg.com/path-starts-with/-/path-starts-with-2.0.0.tgz#ffd6d51926cd497022b44d392196033d5451892f"
   integrity sha512-3UHTHbJz5+NLkPafFR+2ycJOjoc4WV2e9qCZCnm71zHiWaFrm1XniLVTkZXvaRgxr1xFh9JsTdicpH2yM03nLA==
 
-path-to-regexp@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-3.1.0.tgz#f45a9cc4dc6331ae8f131e0ce4fde8607f802367"
-  integrity sha512-PtHLisEvUOepjc+sStXxJ/pDV/s5UBTOKWJY2SOz3e6E/iN/jLknY9WL72kTwRrwXDUbZTEAtSnJbz2fF127DA==
-
 path-type@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-1.1.0.tgz#59c44f7ee491da704da415da5a4070ba4f8fe441"
@@ -6230,7 +6225,7 @@ tsconfig-paths-webpack-plugin@3.2.0:
     enhanced-resolve "^4.0.0"
     tsconfig-paths "^3.4.0"
 
-tsconfig-paths@^3.4.0:
+tsconfig-paths@3.9.0, tsconfig-paths@^3.4.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.9.0.tgz#098547a6c4448807e8fcb8eae081064ee9a3c90b"
   integrity sha512-dRcuzokWhajtZWkQsDVKbWyY+jgcLC5sqJhg2PSgf4ZkH2aHPvaOY8YWGhmjb68b5qqTfasSsDO9k7RUiEmZAw==
@@ -6245,10 +6240,10 @@ tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
   integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
 
-tslint@5.20.0:
-  version "5.20.0"
-  resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.20.0.tgz#fac93bfa79568a5a24e7be9cdde5e02b02d00ec1"
-  integrity sha512-2vqIvkMHbnx8acMogAERQ/IuINOq6DFqgF8/VDvhEkBqQh/x6SP0Y+OHnKth9/ZcHQSroOZwUQSN18v8KKF0/g==
+tslint@5.20.1:
+  version "5.20.1"
+  resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.20.1.tgz#e401e8aeda0152bc44dd07e614034f3f80c67b7d"
+  integrity sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     builtin-modules "^1.1.1"
