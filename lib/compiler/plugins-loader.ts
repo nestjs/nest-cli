@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 import * as ts from 'typescript';
 import { isObject } from 'util';
@@ -26,9 +27,15 @@ export class PluginsLoader {
     const pluginNames = plugins.map(entry =>
       isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
     );
-    const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item =>
-      require(resolve(item)),
-    );
+    const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item => {
+      for (const path of module.paths) {
+        const binaryPath = resolve(path, item);
+        if (existsSync(binaryPath + '.js')) {
+          return require(binaryPath);
+        }
+      }
+      throw new Error(`"${item}" plugin could not be found!`);
+    });
     const beforeHooks: MultiNestCompilerPlugins['afterHooks'] = [];
     const afterHooks: MultiNestCompilerPlugins['beforeHooks'] = [];
     pluginRefs.forEach((plugin, index) => {
