@@ -11,7 +11,7 @@ const bootstrap = () => {
   CommandLoader.load(program);
   commander.parse(process.argv);
 
-  if (!program.args.length) {
+  if (!process.argv.slice(2).length) {
     program.outputHelp();
   }
 };
