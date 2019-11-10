@@ -1,4 +1,9 @@
 {
+  "semanticCommits": true,
+  "packageRules": [{
+    "depTypeList": ["devDependencies"],
+    "automerge": true
+  }],
   "extends": [
     "config:base"
   ]
