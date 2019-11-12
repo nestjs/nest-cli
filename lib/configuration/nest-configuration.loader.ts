@@ -6,13 +6,14 @@ import { defaultConfiguration } from './defaults';
 export class NestConfigurationLoader implements ConfigurationLoader {
   constructor(private readonly reader: Reader) {}
 
-  public async load(): Promise<Required<Configuration>> {
-    const content: string | undefined = await this.reader.readAnyOf([
+  public async load(name?: string): Promise<Required<Configuration>> {
+    const content: string | undefined = name ? await this.reader.read(name) : await this.reader.readAnyOf([
       '.nestcli.json',
       '.nest-cli.json',
       'nest-cli.json',
       'nest.json',
     ]);
+
     if (!content) {
       return defaultConfiguration;
     }
