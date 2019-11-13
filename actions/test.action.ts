@@ -64,7 +64,7 @@ export class TestAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
   ) {
-    const sourceRoot = 'test';
+    const testRoot = 'test';
 
     let childProcessRef: any;
     process.on(
@@ -77,7 +77,7 @@ export class TestAction extends BuildAction {
         childProcessRef.removeAllListeners('exit');
         childProcessRef.on('exit', () => {
           childProcessRef = this.spawnChildProcess(
-            sourceRoot,
+              testRoot,
             debugFlag,
             outDirName,
           );
@@ -88,7 +88,7 @@ export class TestAction extends BuildAction {
         killProcess(childProcessRef.pid);
       } else {
         childProcessRef = this.spawnChildProcess(
-          sourceRoot,
+            testRoot,
           debugFlag,
           outDirName,
         );
