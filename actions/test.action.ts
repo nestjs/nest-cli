@@ -1,12 +1,10 @@
 import chalk from 'chalk';
 import { spawn } from 'child_process';
-import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration } from '../lib/configuration';
-import { defaultOutDir } from '../lib/configuration/defaults';
 import { ERROR_PREFIX } from '../lib/ui';
 import { BuildAction } from './build.action';
 
@@ -25,9 +23,7 @@ export class TestAction extends BuildAction {
         options,
       );
 
-      const watchModeOption = options.find(option => option.name === 'watch');
       const debugModeOption = options.find(option => option.name === 'debug');
-      const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
       const debugFlag = debugModeOption && debugModeOption.value;
 
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
@@ -45,7 +41,7 @@ export class TestAction extends BuildAction {
       await this.runBuild(
         inputs,
         options,
-        isWatchEnabled,
+        false,
         !!debugFlag,
         onSuccess,
       );
@@ -64,7 +60,7 @@ export class TestAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
   ) {
-    const sourceRoot = getValueOrDefault(configuration, 'testRoot', appName);
+    const testRoot = getValueOrDefault(configuration, 'testRoot', appName);
 
     let childProcessRef: any;
     process.on(
@@ -77,7 +73,7 @@ export class TestAction extends BuildAction {
         childProcessRef.removeAllListeners('exit');
         childProcessRef.on('exit', () => {
           childProcessRef = this.spawnChildProcess(
-            sourceRoot,
+            testRoot,
             debugFlag,
             outDirName,
           );
@@ -88,7 +84,7 @@ export class TestAction extends BuildAction {
         killProcess(childProcessRef.pid);
       } else {
         childProcessRef = this.spawnChildProcess(
-          sourceRoot,
+          testRoot,
           debugFlag,
           outDirName,
         );
@@ -98,11 +94,11 @@ export class TestAction extends BuildAction {
   }
 
   private spawnChildProcess(
-    sourceRoot: string,
+    testRoot: string,
     debug: boolean | string | undefined,
     outDirName: string,
   ) {
-    let outputFilePath = join(outDirName, sourceRoot);
+    let outputFilePath = join(outDirName, testRoot);
     let childProcessArgs: string[] = [];
     const argsStartIndex = process.argv.indexOf('--');
     if (argsStartIndex >= 0) {
