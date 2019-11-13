@@ -5,4 +5,5 @@ export * from './info.action';
 export * from './new.action';
 export * from './update.action';
 export * from './start.action';
+export * from './test.action';
 export * from './add.action';

@@ -1,12 +1,13 @@
 import chalk from 'chalk';
 import { CommanderStatic } from 'commander';
 import {
+  AddAction,
   BuildAction,
   GenerateAction,
   InfoAction,
   NewAction,
-  AddAction,
   StartAction,
+  TestAction,
   UpdateAction,
 } from '../actions';
 import { ERROR_PREFIX } from '../lib/ui';
@@ -16,6 +17,7 @@ import { GenerateCommand } from './generate.command';
 import { InfoCommand } from './info.command';
 import { NewCommand } from './new.command';
 import { StartCommand } from './start.command';
+import { TestCommand } from './test.command';
 import { UpdateCommand } from './update.command';
 
 export class CommandLoader {
@@ -23,6 +25,7 @@ export class CommandLoader {
     new NewCommand(new NewAction()).load(program);
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
+    new TestCommand(new TestAction()).load(program);
     new GenerateCommand(new GenerateAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
     new UpdateCommand(new UpdateAction()).load(program);
