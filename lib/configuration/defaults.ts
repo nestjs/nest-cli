@@ -3,7 +3,7 @@ import { Configuration } from './configuration';
 export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
   sourceRoot: 'src',
-  entryTestDir: 'test',
+  testRoot: 'test',
   collection: '@nestjs/schematics',
   entryFile: 'main',
   projects: {},
@@ -18,6 +18,7 @@ export const defaultConfiguration: Required<Configuration> = {
 };
 
 export const defaultOutDir = 'dist';
+export const defaultTestDir = 'test';
 export const defaultGitIgnore = `# compiled output
 /dist
 /node_modules

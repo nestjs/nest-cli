@@ -33,8 +33,8 @@ export class TestAction extends BuildAction {
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
         pathToTsconfig,
       );
+      const outDir = getValueOrDefault(configuration, 'root', appName);
 
-      const outDir = (tsOptions.outDir || defaultOutDir).replace('dist', '');
       const onSuccess = this.createOnSuccessHook(
         configuration,
         appName,
@@ -64,8 +64,7 @@ export class TestAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
   ) {
-    const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
-    const entryFile = getValueOrDefault(configuration, 'entryTestDir', appName);
+    const sourceRoot = getValueOrDefault(configuration, 'testRoot', appName);
 
     let childProcessRef: any;
     process.on(
@@ -78,7 +77,6 @@ export class TestAction extends BuildAction {
         childProcessRef.removeAllListeners('exit');
         childProcessRef.on('exit', () => {
           childProcessRef = this.spawnChildProcess(
-            entryFile,
             sourceRoot,
             debugFlag,
             outDirName,
@@ -90,7 +88,6 @@ export class TestAction extends BuildAction {
         killProcess(childProcessRef.pid);
       } else {
         childProcessRef = this.spawnChildProcess(
-          entryFile,
           sourceRoot,
           debugFlag,
           outDirName,
@@ -101,15 +98,11 @@ export class TestAction extends BuildAction {
   }
 
   private spawnChildProcess(
-    entryFile: string,
     sourceRoot: string,
     debug: boolean | string | undefined,
     outDirName: string,
   ) {
-    let outputFilePath = join(outDirName, sourceRoot, entryFile);
-    if (!fs.existsSync(outputFilePath + '.js')) {
-      outputFilePath = join(outDirName, entryFile);
-    }
+    let outputFilePath = join(outDirName, sourceRoot);
     let childProcessArgs: string[] = [];
     const argsStartIndex = process.argv.indexOf('--');
     if (argsStartIndex >= 0) {
