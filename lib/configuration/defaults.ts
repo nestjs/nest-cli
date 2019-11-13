@@ -3,6 +3,7 @@ import { Configuration } from './configuration';
 export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
   sourceRoot: 'src',
+  entryTestDir: 'test',
   collection: '@nestjs/schematics',
   entryFile: 'main',
   projects: {},

@@ -65,7 +65,7 @@ export class TestAction extends BuildAction {
     outDirName: string,
   ) {
     const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
-    const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
+    const entryFile = getValueOrDefault(configuration, 'entryTestDir', appName);
 
     let childProcessRef: any;
     process.on(
@@ -117,10 +117,6 @@ export class TestAction extends BuildAction {
     }
     outputFilePath =
       outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
-
-    outputFilePath = outputFilePath
-        // .replace('/dist', '')
-        .replace('main', 'test');
 
     const processArgs = [outputFilePath, ...childProcessArgs];
     if (debug) {
