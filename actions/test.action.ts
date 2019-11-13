@@ -64,7 +64,7 @@ export class TestAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
   ) {
-    const sourceRoot = getValueOrDefault(configuration, 'testRoot', appName);
+    const sourceRoot = 'test';
 
     let childProcessRef: any;
     process.on(
