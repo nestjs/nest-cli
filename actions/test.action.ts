@@ -34,7 +34,7 @@ export class TestAction extends BuildAction {
         pathToTsconfig,
       );
 
-      const outDir = (tsOptions.outDir || defaultOutDir).replace('dist', '');
+      const outDir = tsOptions.outDir || defaultOutDir;
       const onSuccess = this.createOnSuccessHook(
         configuration,
         appName,
