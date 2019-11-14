@@ -9,14 +9,15 @@ export class CollectionFactory {
   public static create(collection: Collection | string): AbstractCollection {
     switch (collection) {
       case Collection.NESTJS:
-        return new NestCollection(RunnerFactory.create(
-          Runner.SCHEMATIC,
-        ) as SchematicRunner);
+        return new NestCollection(
+          RunnerFactory.create(Runner.SCHEMATIC) as SchematicRunner,
+        );
 
       default:
-        return new CustomCollection(collection, RunnerFactory.create(
-          Runner.SCHEMATIC,
-        ) as SchematicRunner);
+        return new CustomCollection(
+          collection,
+          RunnerFactory.create(Runner.SCHEMATIC) as SchematicRunner,
+        );
     }
   }
 }

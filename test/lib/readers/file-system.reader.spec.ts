@@ -28,7 +28,7 @@ describe('File System Reader', () => {
     it('should call readFile when running readAnyOf fn', async () => {
       const filenames: string[] = ['file1', 'file2', 'file3'];
       await reader.readAnyOf(filenames);
-  
+
       expect(fs.readFile).toHaveBeenCalled();
     });
 

@@ -56,7 +56,9 @@ describe('Nest Configuration Loader', () => {
   });
   it('should call reader.read when load with filename', async () => {
     const loader: ConfigurationLoader = new NestConfigurationLoader(reader);
-    const configuration: Configuration = await loader.load('nest-cli.secondary.config.json');
+    const configuration: Configuration = await loader.load(
+      'nest-cli.secondary.config.json',
+    );
     expect(reader.read).toHaveBeenCalledWith('nest-cli.secondary.config.json');
     expect(configuration).toEqual({
       language: 'ts',

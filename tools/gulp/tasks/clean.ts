@@ -13,9 +13,12 @@ function cleanOutput() {
     `${source}/**/*.js.map`,
     `${source}/**/*.d.ts.map`,
   ]);
-  return src(files.reduce((a, b) => a.concat(b), []), {
-    read: false,
-  }).pipe(clean());
+  return src(
+    files.reduce((a, b) => a.concat(b), []),
+    {
+      read: false,
+    },
+  ).pipe(clean());
 }
 
 /**

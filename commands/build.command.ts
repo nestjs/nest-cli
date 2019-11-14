@@ -6,7 +6,7 @@ export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
       .command('build [app]')
-      .option('-c, --config [path]', 'Path to nest-cli config file')
+      .option('-c, --config [path]', 'Path to nest-cli configuration file')
       .option('-p, --path [path]', 'Path to tsconfig file')
       .option('-w, --watch', 'Run in watch mode (live-reload)')
       .option('--webpack', 'Use webpack for compilation')
