@@ -13,7 +13,8 @@ import { BuildAction } from './build.action';
 export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
-      const configuration = await this.loader.load();
+      const configFileName = options.find( option => option.name === 'config')!.value as string;
+      const configuration = await this.loader.load(configFileName);
       const appName = inputs.find(input => input.name === 'app')!
         .value as string;
 

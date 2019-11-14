@@ -1,5 +1,5 @@
 import { Configuration } from './configuration';
 
 export interface ConfigurationLoader {
-  load(): Required<Configuration> | Promise<Required<Configuration>>;
+  load(name?: string): Required<Configuration> | Promise<Required<Configuration>>;
 }
