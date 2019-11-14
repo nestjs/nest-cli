@@ -6,6 +6,7 @@ export class StartCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
       .command('start [app]')
+      .option('-c, --config [path]', 'Path to nest-cli configuration file')
       .option('-p, --path [path]', 'Path to tsconfig file')
       .option('-w, --watch', 'Run in watch mode (live-reload)')
       .option(
@@ -18,6 +19,11 @@ export class StartCommand extends AbstractCommand {
       .description('Start Nest application')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
+
+        options.push({
+          name: 'config',
+          value: command.config,
+        });
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
         options.push({ name: 'webpack', value: isWebpackEnabled });

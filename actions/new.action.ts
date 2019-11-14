@@ -38,8 +38,9 @@ export class NewAction extends AbstractAction {
     const shouldSkipGit = options.some(
       option => option.name === 'skip-git' && option.value === true,
     );
-    const projectDirectory = dasherize(getApplicationNameInput(inputs)!
-      .value as string);
+    const projectDirectory = dasherize(
+      getApplicationNameInput(inputs)!.value as string,
+    );
 
     if (!shouldSkipInstall) {
       await installPackages(
