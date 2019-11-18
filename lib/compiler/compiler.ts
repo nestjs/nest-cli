@@ -43,8 +43,11 @@ export class Compiler {
     );
     const plugins = this.pluginsLoader.load(pluginsConfig);
     const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
-    const before = plugins.beforeHooks.map(hook => hook(program as any));
-    const after = plugins.afterHooks.map(hook => hook(program as any));
+    const programRef = program.getProgram
+      ? program.getProgram()
+      : ((program as any) as ts.Program);
+    const before = plugins.beforeHooks.map(hook => hook(programRef));
+    const after = plugins.afterHooks.map(hook => hook(programRef));
     const emitResult = program.emit(
       undefined,
       undefined,
