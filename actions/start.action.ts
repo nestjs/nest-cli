@@ -120,7 +120,7 @@ export class StartAction extends BuildAction {
     outputFilePath =
       outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
 
-    const processArgs = [outputFilePath, ...childProcessArgs];
+    const processArgs = [...childProcessArgs, outputFilePath];
     if (debug) {
       const inspectFlag =
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
