@@ -10,18 +10,45 @@ export function tsconfigPathsBeforeHookFactory(
 
   return (ctx: ts.TransformationContext): ts.Transformer<any> => {
     return (sf: ts.SourceFile) => {
-      const imports: ts.StringLiteral[] = (sf as any).imports || [];
-      imports.forEach(item => {
-        const result = matcher(item.text, undefined, undefined, ['.ts', '.js']);
-        if (!result) {
-          return;
+      const visitNode = (node: ts.Node): ts.Node => {
+        if (
+          ts.isImportDeclaration(node) ||
+          (ts.isExportDeclaration(node) && node.moduleSpecifier)
+        ) {
+          const newNode = ts.getMutableClone(node);
+          const importPathWithQuotes =
+            node.moduleSpecifier && node.moduleSpecifier.getText();
+
+          if (!importPathWithQuotes) {
+            return node;
+          }
+          const text = importPathWithQuotes.substr(
+            1,
+            importPathWithQuotes.length - 2,
+          );
+          const result = getNotAliasedPath(sf, matcher, text);
+          if (!result) {
+            return node;
+          }
+          newNode.moduleSpecifier = ts.createLiteral(result);
+          return newNode;
         }
-        let resolvedPath = relative(dirname(sf.fileName), result) || './';
-        resolvedPath =
-          resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
-        item.text = resolvedPath;
-      });
-      return sf;
+        return ts.visitEachChild(node, visitNode, ctx);
+      };
+      return ts.visitNode(sf, visitNode);
     };
   };
+}
+
+function getNotAliasedPath(
+  sf: ts.SourceFile,
+  matcher: tsPaths.MatchPath,
+  text: string,
+) {
+  const result = matcher(text, undefined, undefined, ['.ts', '.js']);
+  if (!result) {
+    return;
+  }
+  const resolvedPath = relative(dirname(sf.fileName), result) || './';
+  return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
 }
