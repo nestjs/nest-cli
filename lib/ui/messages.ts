@@ -13,7 +13,9 @@ export const MESSAGES = {
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   GIT_INITIALIZATION_ERROR: 'Git repository has not been initialized',
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name: string) =>
-    `${EMOJIS.ROCKET}  Successfully created project ${chalk.green(name)}`,
+    name !== '.'
+      ? `${EMOJIS.ROCKET}  Successfully created project ${chalk.green(name)}`
+      : `${EMOJIS.ROCKET}  Successfully created a new project`,
   GET_STARTED_INFORMATION: `${EMOJIS.POINT_RIGHT}  Get started with the following commands:`,
   CHANGE_DIR_COMMAND: (name: string) => `$ cd ${name}`,
   START_COMMAND: (name: string) => `$ ${name} run start`,
