@@ -5,7 +5,7 @@ import * as ts from 'typescript';
 export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
-  const { paths = {}, baseUrl } = compilerOptions;
+  const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
 
   return (ctx: ts.TransformationContext): ts.Transformer<any> => {
