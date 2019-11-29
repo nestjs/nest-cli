@@ -27,10 +27,13 @@ export class StartAction extends BuildAction {
         options,
       );
 
+      const binaryToRunOption = options.find(option => option.name === 'exec');
       const watchModeOption = options.find(option => option.name === 'watch');
       const debugModeOption = options.find(option => option.name === 'debug');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
       const debugFlag = debugModeOption && debugModeOption.value;
+      const binaryToRun =
+        binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
       const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
         pathToTsconfig,
@@ -41,6 +44,7 @@ export class StartAction extends BuildAction {
         appName,
         debugFlag,
         outDir,
+        binaryToRun,
       );
 
       await this.runBuild(
@@ -64,6 +68,7 @@ export class StartAction extends BuildAction {
     appName: string,
     debugFlag: boolean | string | undefined,
     outDirName: string,
+    binaryToRun = 'node',
   ) {
     const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
     const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
@@ -83,6 +88,7 @@ export class StartAction extends BuildAction {
             sourceRoot,
             debugFlag,
             outDirName,
+            binaryToRun,
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
         });
@@ -95,6 +101,7 @@ export class StartAction extends BuildAction {
           sourceRoot,
           debugFlag,
           outDirName,
+          binaryToRun,
         );
         childProcessRef.on('exit', () => (childProcessRef = undefined));
       }
@@ -106,6 +113,7 @@ export class StartAction extends BuildAction {
     sourceRoot: string,
     debug: boolean | string | undefined,
     outDirName: string,
+    binaryToRun: string,
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
     if (!fs.existsSync(outputFilePath + '.js')) {
@@ -126,7 +134,7 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
-    return spawn('node', processArgs, {
+    return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
       shell: true,
     });

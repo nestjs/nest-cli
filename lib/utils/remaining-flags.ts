@@ -1,10 +1,11 @@
 import { CommanderStatic } from 'commander';
 
 export function getRemainingFlags(cli: CommanderStatic) {
-  return cli.rawArgs
+  const rawArgs = [...cli.rawArgs];
+  return rawArgs
     .splice(
       Math.max(
-        cli.rawArgs.findIndex((item: string) => item.startsWith('--')),
+        rawArgs.findIndex((item: string) => item.startsWith('--')),
         0,
       ),
     )
@@ -18,7 +19,7 @@ export function getRemainingFlags(cli: CommanderStatic) {
       // skip it too
       const prevKeyRaw = array[index - 1];
       if (prevKeyRaw) {
-        const previousKey = camelcase(
+        const previousKey = camelCase(
           prevKeyRaw.replace('--', '').replace('no', ''),
         );
         if (cli[previousKey] === item) {
@@ -38,7 +39,7 @@ export function getRemainingFlags(cli: CommanderStatic) {
  * @api private
  */
 
-function camelcase(flag: string) {
+function camelCase(flag: string) {
   return flag.split('-').reduce((str, word) => {
     return str + word[0].toUpperCase() + word.slice(1);
   });

@@ -16,6 +16,7 @@ export class StartCommand extends AbstractCommand {
       .option('--webpack', 'Use webpack for compilation')
       .option('--webpackPath [path]', 'Path to webpack configuration')
       .option('--tsc', 'Use tsc for compilation')
+      .option('-e, --exec [binary]', 'Binary to run (default: "node")')
       .description('Start Nest application')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
@@ -36,6 +37,10 @@ export class StartCommand extends AbstractCommand {
         options.push({
           name: 'webpackPath',
           value: command.webpackPath,
+        });
+        options.push({
+          name: 'exec',
+          value: command.exec,
         });
 
         const inputs: Input[] = [];
