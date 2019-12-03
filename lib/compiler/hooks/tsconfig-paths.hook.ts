@@ -1,4 +1,4 @@
-import { dirname, relative } from 'path';
+import { dirname, posix } from 'path';
 import tsPaths = require('tsconfig-paths');
 import * as ts from 'typescript';
 
@@ -49,6 +49,6 @@ function getNotAliasedPath(
   if (!result) {
     return;
   }
-  const resolvedPath = relative(dirname(sf.fileName), result) || './';
+  const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
 }
