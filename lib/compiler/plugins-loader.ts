@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 import * as ts from 'typescript';
 import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
@@ -27,8 +27,12 @@ export class PluginsLoader {
     const pluginNames = plugins.map(entry =>
       isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
     );
+    const nodeModulePaths = [
+      join(process.cwd(), 'node_modules'),
+      ...module.paths,
+    ];
     const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item => {
-      for (const path of module.paths) {
+      for (const path of nodeModulePaths) {
         const binaryPath = resolve(path, item);
         if (existsSync(binaryPath + '.js')) {
           return require(binaryPath);
