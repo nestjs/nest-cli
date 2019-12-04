@@ -2,7 +2,9 @@ FROM node:carbon-alpine as production-dependencies
 WORKDIR /nestjs/cli
 COPY package.json package.json
 COPY package-lock.json package-lock.json
+
 RUN npm install --production
+RUN npm config set unsafe-perm true
 
 FROM node:carbon-alpine as build-dependencies
 WORKDIR /nestjs/cli
