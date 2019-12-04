@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import { CommanderStatic } from 'commander';
 import {
+  AddAction,
   BuildAction,
   GenerateAction,
   InfoAction,
   NewAction,
-  AddAction,
   StartAction,
   UpdateAction,
 } from '../actions';
@@ -17,7 +17,6 @@ import { InfoCommand } from './info.command';
 import { NewCommand } from './new.command';
 import { StartCommand } from './start.command';
 import { UpdateCommand } from './update.command';
-
 export class CommandLoader {
   public static load(program: CommanderStatic): void {
     new NewCommand(new NewAction()).load(program);
