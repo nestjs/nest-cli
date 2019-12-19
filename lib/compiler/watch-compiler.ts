@@ -5,11 +5,13 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
+import { TypeScriptBinaryLoader } from './typescript-loader';
 
 export class WatchCompiler {
   constructor(
     private readonly pluginsLoader: PluginsLoader,
     private readonly tsConfigProvider: TsConfigProvider,
+    private readonly typescriptLoader: TypeScriptBinaryLoader,
   ) {}
 
   public run(
@@ -18,9 +20,10 @@ export class WatchCompiler {
     appName: string,
     onSuccess?: () => void,
   ) {
-    const configPath = ts.findConfigFile(
+    const tsBin = this.typescriptLoader.load();
+    const configPath = tsBin.findConfigFile(
       process.cwd(),
-      ts.sys.fileExists,
+      tsBin.sys.fileExists,
       configFilename,
     );
     if (!configPath) {
@@ -30,18 +33,18 @@ export class WatchCompiler {
       configFilename,
     );
 
-    const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;
-    const origDiagnosticReporter = (ts as any).createDiagnosticReporter(
-      ts.sys,
+    const createProgram = tsBin.createEmitAndSemanticDiagnosticsBuilderProgram;
+    const origDiagnosticReporter = (tsBin as any).createDiagnosticReporter(
+      tsBin.sys,
       true,
     );
-    const origWatchStatusReporter = (ts as any).createWatchStatusReporter(
-      ts.sys,
+    const origWatchStatusReporter = (tsBin as any).createWatchStatusReporter(
+      tsBin.sys,
     );
-    const host = ts.createWatchCompilerHost(
+    const host = tsBin.createWatchCompilerHost(
       configPath,
       {},
-      ts.sys,
+      tsBin.sys,
       createProgram,
       this.createDiagnosticReporter(origDiagnosticReporter),
       this.createWatchStatusChanged(origWatchStatusReporter, onSuccess),
@@ -103,7 +106,7 @@ export class WatchCompiler {
       return program as any;
     };
 
-    ts.createWatchProgram(host);
+    tsBin.createWatchProgram(host);
   }
 
   private createDiagnosticReporter(

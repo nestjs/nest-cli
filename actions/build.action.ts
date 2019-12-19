@@ -7,6 +7,7 @@ import { Compiler } from '../lib/compiler/compiler';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins-loader';
+import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
 import { WatchCompiler } from '../lib/compiler/watch-compiler';
 import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
 import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
@@ -21,15 +22,18 @@ import { AbstractAction } from './abstract.action';
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
-  protected readonly tsConfigProvider = new TsConfigProvider();
+  protected readonly tsLoader = new TypeScriptBinaryLoader();
+  protected readonly tsConfigProvider = new TsConfigProvider(this.tsLoader);
   protected readonly compiler = new Compiler(
     this.pluginsLoader,
     this.tsConfigProvider,
+    this.tsLoader,
   );
   protected readonly webpackCompiler = new WebpackCompiler(this.pluginsLoader);
   protected readonly watchCompiler = new WatchCompiler(
     this.pluginsLoader,
     this.tsConfigProvider,
+    this.tsLoader,
   );
   protected readonly fileSystemReader = new FileSystemReader(process.cwd());
   protected readonly loader: ConfigurationLoader = new NestConfigurationLoader(

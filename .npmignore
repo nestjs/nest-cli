@@ -3,10 +3,14 @@
 .prettierrc
 .travis.yml
 Makefile
+node_modules/
+.DS_Store
+CONTRIBUTE.md
 
 # source
 **/*.ts
 *.ts
+/test
 
 # definitions
 !**/*.d.ts
@@ -15,8 +19,11 @@ Makefile
 # configuration
 renovate.json
 gulpfile.js
+tsconfig.json
+tslint.json
+tools
+/test/jest-config.json
 /.vscode
-
 
 # sample
 /sample

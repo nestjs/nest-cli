@@ -4,17 +4,13 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
+import { TypeScriptBinaryLoader } from './typescript-loader';
 
 export class Compiler {
-  private readonly formatHost: ts.FormatDiagnosticsHost = {
-    getCanonicalFileName: path => path,
-    getCurrentDirectory: ts.sys.getCurrentDirectory,
-    getNewLine: () => ts.sys.newLine,
-  };
-
   constructor(
     private readonly pluginsLoader: PluginsLoader,
     private readonly tsConfigProvider: TsConfigProvider,
+    private readonly typescriptLoader: TypeScriptBinaryLoader,
   ) {}
 
   public run(
@@ -23,13 +19,21 @@ export class Compiler {
     appName: string,
     onSuccess?: () => void,
   ) {
+    const tsBinary = this.typescriptLoader.load();
+    const formatHost: ts.FormatDiagnosticsHost = {
+      getCanonicalFileName: path => path,
+      getCurrentDirectory: tsBinary.sys.getCurrentDirectory,
+      getNewLine: () => tsBinary.sys.newLine,
+    };
+
     const {
       options,
       fileNames,
       projectReferences,
     } = this.tsConfigProvider.getByConfigFilename(configFilename);
 
-    const createProgram = ts.createIncrementalProgram || ts.createProgram;
+    const createProgram =
+      tsBinary.createIncrementalProgram || tsBinary.createProgram;
     const program = createProgram.call(ts, {
       rootNames: fileNames,
       projectReferences,
@@ -63,6 +67,8 @@ export class Compiler {
     const errorsCount = this.reportAfterCompilationDiagnostic(
       program as any,
       emitResult,
+      tsBinary,
+      formatHost,
     );
     if (errorsCount) {
       process.exit(1);
@@ -74,16 +80,20 @@ export class Compiler {
   private reportAfterCompilationDiagnostic(
     program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     emitResult: ts.EmitResult,
+    tsBinary: typeof ts,
+    formatHost: ts.FormatDiagnosticsHost,
   ): number {
-    const diagnostics = ts
+    const diagnostics = tsBinary
       .getPreEmitDiagnostics((program as unknown) as ts.Program)
       .concat(emitResult.diagnostics);
 
     if (diagnostics.length > 0) {
       console.error(
-        ts.formatDiagnosticsWithColorAndContext(diagnostics, this.formatHost),
+        tsBinary.formatDiagnosticsWithColorAndContext(diagnostics, formatHost),
       );
-      console.info(`Found ${diagnostics.length} error(s).` + ts.sys.newLine);
+      console.info(
+        `Found ${diagnostics.length} error(s).` + tsBinary.sys.newLine,
+      );
     }
     return diagnostics.length;
   }

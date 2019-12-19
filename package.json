@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "6.12.9",
+  "version": "6.13.0",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -18,6 +18,10 @@
     "format": "prettier --write \"**/*.ts\"",
     "lint": "tslint -p .",
     "start": "node bin/nest.js",
+    "prepublish:next": "npm run build",
+    "publish:next": "npm publish --access public --tag next",
+    "prepublish:npm": "npm run build",
+    "publish:npm": "npm publish --access public",
     "test": "jest --config test/jest-config.json",
     "test:dev": "jest --config test/jest-config.json --watchAll"
   },
@@ -39,7 +43,7 @@
     "@angular-devkit/core": "8.3.20",
     "@angular-devkit/schematics": "8.3.20",
     "@angular-devkit/schematics-cli": "0.803.20",
-    "@nestjs/schematics": "^6.6.3",
+    "@nestjs/schematics": "^6.7.6-next.3",
     "@types/webpack": "4.41.0",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
@@ -54,6 +58,7 @@
     "tree-kill": "1.2.1",
     "tsconfig-paths": "3.9.0",
     "tsconfig-paths-webpack-plugin": "3.2.0",
+    "typescript": "3.6.4",
     "webpack": "4.41.2",
     "webpack-node-externals": "1.7.2"
   },
@@ -77,8 +82,5 @@
     "ts-node": "8.5.4",
     "tslint": "5.20.1",
     "typescript": "3.7.3"
-  },
-  "peerDependencies": {
-    "typescript": "^3.6.4"
   }
 }

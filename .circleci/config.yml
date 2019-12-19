@@ -1,0 +1,62 @@
+version: 2
+
+aliases:
+  - &restore-cache
+    restore_cache:
+        key: dependency-cache-{{ checksum "package.json" }}
+  - &install-deps
+    run:
+        name: Install dependencies
+        command: npm ci
+  - &build-packages
+    run:
+        name: Build
+        command: npm run build
+  - &run-unit-tests
+    run:
+        name: Test
+        command: npm run test
+
+jobs:
+  build:
+    working_directory: ~/nest
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - run:
+          name: Update NPM version
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Build
+          command: npm run build    
+
+  unit_tests:
+    working_directory: ~/nest
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - *restore-cache
+      - *install-deps
+      - *build-packages
+      - *run-unit-tests
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build
+      - unit_tests:
+          requires:
+            - build
+      

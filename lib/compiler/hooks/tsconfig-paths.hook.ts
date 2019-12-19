@@ -1,10 +1,12 @@
 import { dirname, posix } from 'path';
 import tsPaths = require('tsconfig-paths');
 import * as ts from 'typescript';
+import { TypeScriptBinaryLoader } from '../typescript-loader';
 
 export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
+  const tsBinary = new TypeScriptBinaryLoader().load();
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
 
@@ -12,10 +14,10 @@ export function tsconfigPathsBeforeHookFactory(
     return (sf: ts.SourceFile) => {
       const visitNode = (node: ts.Node): ts.Node => {
         if (
-          ts.isImportDeclaration(node) ||
-          (ts.isExportDeclaration(node) && node.moduleSpecifier)
+          tsBinary.isImportDeclaration(node) ||
+          (tsBinary.isExportDeclaration(node) && node.moduleSpecifier)
         ) {
-          const newNode = ts.getMutableClone(node);
+          const newNode = tsBinary.getMutableClone(node);
           const importPathWithQuotes =
             node.moduleSpecifier && node.moduleSpecifier.getText();
 
@@ -30,12 +32,12 @@ export function tsconfigPathsBeforeHookFactory(
           if (!result) {
             return node;
           }
-          newNode.moduleSpecifier = ts.createLiteral(result);
+          newNode.moduleSpecifier = tsBinary.createLiteral(result);
           return newNode;
         }
-        return ts.visitEachChild(node, visitNode, ctx);
+        return tsBinary.visitEachChild(node, visitNode, ctx);
       };
-      return ts.visitNode(sf, visitNode);
+      return tsBinary.visitNode(sf, visitNode);
     };
   };
 }
