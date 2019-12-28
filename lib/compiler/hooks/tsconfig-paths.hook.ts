@@ -47,10 +47,11 @@ function getNotAliasedPath(
   matcher: tsPaths.MatchPath,
   text: string,
 ) {
-  const result = matcher(text, undefined, undefined, ['.ts', '.js']);
+  let result = matcher(text, undefined, undefined, ['.ts', '.js']);
   if (!result) {
     return;
   }
+  result = result.replace(new RegExp('\\\\', 'g'), '/');
   const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
 }
