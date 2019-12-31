@@ -41,7 +41,7 @@ export class AssetsManager {
       const copyFiles = (item: AssetEntry) =>
         new Promise((resolve, reject) =>
           copyfiles(
-            [(item as any).glob!, outDir],
+            [(item as any).glob!, (item as any).outDir!],
             {
               exclude: item.exclude,
               flat: item.flat,
