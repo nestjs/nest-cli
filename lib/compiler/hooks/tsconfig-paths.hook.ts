@@ -1,3 +1,4 @@
+import * as os from 'os';
 import { dirname, posix } from 'path';
 import tsPaths = require('tsconfig-paths');
 import * as ts from 'typescript';
@@ -47,9 +48,12 @@ function getNotAliasedPath(
   matcher: tsPaths.MatchPath,
   text: string,
 ) {
-  const result = matcher(text, undefined, undefined, ['.ts', '.js']);
+  let result = matcher(text, undefined, undefined, ['.ts', '.js']);
   if (!result) {
     return;
+  }
+  if (os.platform() === 'win32') {
+    result = result.replace(/\\g/, '/');
   }
   const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
