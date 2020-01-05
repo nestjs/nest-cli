@@ -44,7 +44,7 @@
     "@angular-devkit/schematics": "7.3.8",
     "@angular-devkit/schematics-cli": "0.13.8",
     "@nestjs/schematics": "^6.8.0",
-    "@types/webpack": "4.41.0",
+    "@types/webpack": "4.41.1",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "4.0.1",
@@ -59,7 +59,7 @@
     "tsconfig-paths": "3.9.0",
     "tsconfig-paths-webpack-plugin": "3.2.0",
     "typescript": "3.6.4",
-    "webpack": "4.41.4",
+    "webpack": "4.41.5",
     "webpack-node-externals": "1.7.2"
   },
   "devDependencies": {
