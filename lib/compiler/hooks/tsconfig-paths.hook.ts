@@ -53,7 +53,7 @@ function getNotAliasedPath(
     return;
   }
   if (os.platform() === 'win32') {
-    result = result.replace(/\\g/, '/');
+    result = result.replace(/\\/g, '/');
   }
   const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
