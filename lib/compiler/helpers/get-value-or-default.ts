@@ -19,12 +19,15 @@ export function getValueOrDefault<T = any>(
       configuration,
       `projects.${appName}.`.concat(propertyPath),
     );
-    if (perAppValue) {
+    if (perAppValue !== undefined) {
       return perAppValue as T;
     }
   }
-  const value = getValueOfPath(configuration, propertyPath);
-  return value || defaultValue;
+  let value = getValueOfPath(configuration, propertyPath);
+  if (value === undefined) {
+    value = defaultValue;
+  }
+  return value;
 }
 
 function getValueOfPath<T = any>(
