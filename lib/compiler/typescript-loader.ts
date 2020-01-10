@@ -11,7 +11,7 @@ export class TypeScriptBinaryLoader {
     }
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
-      ...module.paths,
+      ...this.getModulePaths(),
     ];
     let tsBinary;
     for (const path of nodeModulePaths) {
@@ -28,5 +28,14 @@ export class TypeScriptBinaryLoader {
     }
     this.tsBinary = tsBinary;
     return tsBinary;
+  }
+
+  public getModulePaths() {
+    const modulePaths = module.paths.slice(2, module.paths.length);
+    const packageDeps = modulePaths.slice(0, 3);
+    return [
+      ...packageDeps.reverse(),
+      ...modulePaths.slice(3, modulePaths.length).reverse(),
+    ];
   }
 }
