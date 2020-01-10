@@ -44,7 +44,7 @@
     "@angular-devkit/schematics": "7.3.8",
     "@angular-devkit/schematics-cli": "0.13.8",
     "@nestjs/schematics": "^6.8.0",
-    "@types/webpack": "4.41.1",
+    "@types/webpack": "4.41.2",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
     "commander": "4.1.0",
@@ -79,7 +79,7 @@
     "prettier": "1.19.1",
     "ts-jest": "24.3.0",
     "ts-loader": "6.2.1",
-    "ts-node": "8.5.4",
+    "ts-node": "8.6.0",
     "tslint": "5.20.1"
   }
 }
