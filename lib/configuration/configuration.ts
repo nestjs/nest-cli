@@ -15,6 +15,10 @@ interface CompilerOptions {
   deleteOutDir?: boolean;
 }
 
+interface GenerateOptions {
+  spec?: boolean | Record<string, boolean>;
+}
+
 export interface ProjectConfiguration {
   type?: string;
   root?: string;
@@ -31,6 +35,7 @@ export interface Configuration {
   entryFile?: string;
   monorepo?: boolean;
   compilerOptions?: CompilerOptions;
+  generateOptions?: GenerateOptions;
   projects?: {
     [key: string]: ProjectConfiguration;
   };
