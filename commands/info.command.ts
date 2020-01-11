@@ -6,7 +6,7 @@ export class InfoCommand extends AbstractCommand {
     program
       .command('info')
       .alias('i')
-      .description('Display Nest CLI details')
+      .description('Display Nest project details.')
       .action(async () => {
         await this.action.handle();
       });

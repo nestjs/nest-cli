@@ -11,13 +11,16 @@ export class GenerateCommand extends AbstractCommand {
       .command('generate <schematic> [name] [path]')
       .alias('g')
       .description(this.buildDescription())
-      .option('--dry-run', 'Allow to test changes before command execution')
-      .option('-p, --project [project]', 'Project in which to generate files')
-      .option('--flat', 'Enforce flat structure of generated element')
-      .option('--no-spec', 'Disable spec files generation')
+      .option(
+        '--dry-run',
+        'Report actions that would be taken without writing out results.',
+      )
+      .option('-p, --project [project]', 'Project in which to generate files.')
+      .option('--flat', 'Enforce flat structure of generated element.')
+      .option('--no-spec', 'Disable spec files generation.')
       .option(
         '-c, --collection [collectionName]',
-        'Collection that shall be used',
+        'Schematics collection to use.',
       )
       .action(
         async (
@@ -54,7 +57,7 @@ export class GenerateCommand extends AbstractCommand {
 
   private buildDescription(): string {
     return (
-      'Generate a Nest element\n' +
+      'Generate a Nest element.\n' +
       '  Available schematics:\n' +
       this.buildSchematicsListAsTable()
     );

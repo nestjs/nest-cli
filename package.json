@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "6.13.3",
+  "version": "6.14.0-next.1",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
@@ -23,7 +23,7 @@
     "prepublish:npm": "npm run build",
     "publish:npm": "npm publish --access public",
     "test": "jest --config test/jest-config.json",
-    "test:dev": "jest --config test/jest-config.json --watchAll"
+    "test:dev": "npm run clean && jest --config test/jest-config.json --watchAll"
   },
   "repository": {
     "type": "git",
