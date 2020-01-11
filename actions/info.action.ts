@@ -42,20 +42,30 @@ const displayPackageManagerVersion = async () => {
   const manager: AbstractPackageManager = await PackageManagerFactory.find();
   try {
     const version: string = await manager.version();
-    console.info(`${manager.name} Version    :`, chalk.blue(version));
+    console.info(`${manager.name} Version    :`, chalk.blue(version), '\n');
   } catch {
-    console.error(`${manager.name} Version    :`, chalk.red('Unknown'));
+    console.error(`${manager.name} Version    :`, chalk.red('Unknown'), '\n');
   }
 };
 
 const displayNestInformation = async () => {
-  console.info(chalk.green('[Nest Information]'));
+  displayCliVersion();
+  console.info(chalk.green('[Nest Platform Information]'));
   try {
     const dependencies: PackageJsonDependencies = await readProjectPackageJsonDependencies();
     displayNestVersions(dependencies);
   } catch {
     console.error(chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
+};
+
+const displayCliVersion = () => {
+  console.info(chalk.green('[Nest CLI]'));
+  console.info(
+    'Nest CLI Version :',
+    chalk.blue(require('../package.json').version),
+    '\n',
+  );
 };
 
 const readProjectPackageJsonDependencies = async (): Promise<PackageJsonDependencies> => {

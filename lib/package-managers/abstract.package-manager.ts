@@ -49,7 +49,10 @@ export abstract class AbstractPackageManager {
     return this.runner.run(commandArguments, collect) as Promise<string>;
   }
 
-  public async addProduction(dependencies: string[], tag: string) {
+  public async addProduction(
+    dependencies: string[],
+    tag: string,
+  ): Promise<boolean> {
     const command: string = [this.cli.add, this.cli.saveFlag]
       .filter(i => i)
       .join(' ');
@@ -61,14 +64,16 @@ export abstract class AbstractPackageManager {
         interval: 120,
         frames: ['▹▹▹▹▹', '▸▹▹▹▹', '▹▸▹▹▹', '▹▹▸▹▹', '▹▹▹▸▹', '▹▹▹▹▸'],
       },
-      text: MESSAGES.PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS,
+      text: MESSAGES.PACKAGE_MANAGER_PRODUCTION_INSTALLATION_IN_PROGRESS,
     });
     spinner.start();
     try {
       await this.add(`${command} ${args}`);
       spinner.succeed();
+      return true;
     } catch {
       spinner.fail();
+      return false;
     }
   }
 

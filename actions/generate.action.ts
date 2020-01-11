@@ -1,22 +1,19 @@
 import chalk from 'chalk';
-import * as inquirer from 'inquirer';
-import { Answers, Question } from 'inquirer';
+import { Answers } from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
-import {
-  Configuration,
-  ConfigurationLoader,
-  ProjectConfiguration,
-} from '../lib/configuration';
-import { NestConfigurationLoader } from '../lib/configuration/nest-configuration.loader';
-import { generateSelect } from '../lib/questions/questions';
-import { FileSystemReader } from '../lib/readers';
 import {
   AbstractCollection,
   CollectionFactory,
   SchematicOption,
 } from '../lib/schematics';
 import { MESSAGES } from '../lib/ui';
+import { loadConfiguration } from '../lib/utils/load-configuration';
+import {
+  askForProjectName,
+  moveDefaultProjectToStart,
+  shouldAskForProject,
+} from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
@@ -68,7 +65,11 @@ const generateFiles = async (inputs: Input[]) => {
       defaultLabel,
     );
 
-    const answers: Answers = await askForProjectName(projects);
+    const answers: Answers = await askForProjectName(
+      MESSAGES.PROJECT_SELECTION_QUESTION,
+      projects,
+    );
+
     const project: string = answers.appName.replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
       sourceRoot = configurationProjects[project].sourceRoot;
@@ -89,36 +90,6 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const moveDefaultProjectToStart = (
-  configuration: Configuration,
-  defaultProjectName: string,
-  defaultLabel: string,
-) => {
-  let projects: string[] = Object.keys(configuration.projects as {});
-  if (configuration.sourceRoot !== 'src') {
-    projects = projects.filter(
-      p => p !== defaultProjectName.replace(defaultLabel, ''),
-    );
-  }
-  projects.unshift(defaultProjectName);
-  return projects;
-};
-
-const askForProjectName = async (projects: string[]): Promise<Answers> => {
-  const questions: Question[] = [
-    generateSelect('appName')(MESSAGES.PROJECT_SELECTION_QUESTION)(projects),
-  ];
-  const prompt = inquirer.createPromptModule();
-  return await prompt(questions);
-};
-
-const loadConfiguration = async (): Promise<Required<Configuration>> => {
-  const loader: ConfigurationLoader = new NestConfigurationLoader(
-    new FileSystemReader(process.cwd()),
-  );
-  return loader.load();
-};
-
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
   inputs.forEach(input => {
@@ -127,17 +98,4 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
     }
   });
   return options;
-};
-
-const shouldAskForProject = (
-  schematic: string,
-  configurationProjects: { [key: string]: ProjectConfiguration },
-  appName: string,
-) => {
-  return (
-    ['app', 'sub-app', 'library', 'lib'].includes(schematic) === false &&
-    configurationProjects &&
-    Object.entries(configurationProjects).length !== 0 &&
-    !appName
-  );
 };

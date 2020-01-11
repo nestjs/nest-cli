@@ -6,18 +6,18 @@ export class StartCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
       .command('start [app]')
-      .option('-c, --config [path]', 'Path to nest-cli configuration file')
-      .option('-p, --path [path]', 'Path to tsconfig file')
-      .option('-w, --watch', 'Run in watch mode (live-reload)')
+      .option('-c, --config [path]', 'Path to nest-cli configuration file.')
+      .option('-p, --path [path]', 'Path to tsconfig file.')
+      .option('-w, --watch', 'Run in watch mode (live-reload).')
       .option(
         '-d, --debug [hostport] ',
-        'Run in debug mode (with --inspect flag)',
+        'Run in debug mode (with --inspect flag).',
       )
-      .option('--webpack', 'Use webpack for compilation')
-      .option('--webpackPath [path]', 'Path to webpack configuration')
-      .option('--tsc', 'Use tsc for compilation')
-      .option('-e, --exec [binary]', 'Binary to run (default: "node")')
-      .description('Start Nest application')
+      .option('--webpack', 'Use webpack for compilation.')
+      .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .option('--tsc', 'Use tsc for compilation.')
+      .option('-e, --exec [binary]', 'Binary to run (default: "node").')
+      .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
 
