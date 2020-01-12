@@ -9,6 +9,7 @@ export class NewCommand extends AbstractCommand {
       .command('new [name]')
       .alias('n')
       .description('Generate Nest application.')
+      .option('--directory [directory]', 'Specify the destination directory')
       .option(
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
@@ -29,6 +30,7 @@ export class NewCommand extends AbstractCommand {
       )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
+        options.push({ name: 'directory', value: command.directory });
         options.push({ name: 'dry-run', value: !!command.dryRun });
         options.push({ name: 'skip-git', value: !!command.skipGit });
         options.push({ name: 'skip-install', value: !!command.skipInstall });
