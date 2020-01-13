@@ -52,6 +52,7 @@ describe('Nest Configuration Loader', () => {
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
+      generateOptions: {},
     });
   });
   it('should call reader.read when load with filename', async () => {
@@ -74,6 +75,7 @@ describe('Nest Configuration Loader', () => {
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
+      generateOptions: {},
     });
   });
 });

@@ -17,7 +17,17 @@ export class GenerateCommand extends AbstractCommand {
       )
       .option('-p, --project [project]', 'Project in which to generate files.')
       .option('--flat', 'Enforce flat structure of generated element.')
-      .option('--no-spec', 'Disable spec files generation.')
+      .option(
+        '--spec',
+        'Enforce spec files generation.',
+        () => {
+          return { value: true, passedAsInput: true };
+        },
+        true,
+      )
+      .option('--no-spec', 'Disable spec files generation.', () => {
+        return { value: false, passedAsInput: true };
+      })
       .option(
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
@@ -34,7 +44,16 @@ export class GenerateCommand extends AbstractCommand {
           options.push({ name: 'flat', value: command.flat });
           options.push({
             name: 'spec',
-            value: command.spec,
+            value:
+              typeof command.spec === 'boolean'
+                ? command.spec
+                : command.spec.value,
+            options: {
+              passedAsInput:
+                typeof command.spec === 'boolean'
+                  ? false
+                  : command.spec.passedAsInput,
+            },
           });
           options.push({
             name: 'collection',
