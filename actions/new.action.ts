@@ -26,6 +26,7 @@ import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
+    const directoryOption = options.find(option => option.name === 'directory');
     const dryRunOption = options.find(option => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
@@ -38,8 +39,9 @@ export class NewAction extends AbstractAction {
     const shouldSkipGit = options.some(
       option => option.name === 'skip-git' && option.value === true,
     );
-    const projectDirectory = dasherize(
-      getApplicationNameInput(inputs)!.value as string,
+    const projectDirectory = getProjectDirectory(
+      getApplicationNameInput(inputs)!,
+      directoryOption,
     );
 
     if (!shouldSkipInstall) {
@@ -63,6 +65,16 @@ export class NewAction extends AbstractAction {
 
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find(input => input.name === 'name');
+
+const getProjectDirectory = (
+  applicationName: Input,
+  directoryOption?: Input,
+): string => {
+  return (
+    (directoryOption && (directoryOption.value as string)) ||
+    dasherize(applicationName.value as string)
+  );
+};
 
 const askForMissingInformation = async (inputs: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
