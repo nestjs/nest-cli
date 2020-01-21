@@ -32,13 +32,12 @@ export class PluginsLoader {
       ...module.paths,
     ];
     const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item => {
-      for (const path of nodeModulePaths) {
-        const binaryPath = resolve(path, item);
-        if (existsSync(binaryPath + '.js')) {
-          return require(binaryPath);
-        }
+      try {
+        const binaryPath = require.resolve(item, {paths: nodeModulePaths});
+        return require(binaryPath);
+      } catch (e) {
+        throw new Error(`"${item}" plugin could not be found!`);
       }
-      throw new Error(`"${item}" plugin could not be found!`);
     });
     const beforeHooks: MultiNestCompilerPlugins['afterHooks'] = [];
     const afterHooks: MultiNestCompilerPlugins['beforeHooks'] = [];
