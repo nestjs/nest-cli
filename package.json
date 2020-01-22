@@ -75,7 +75,7 @@
     "delete-empty": "3.0.0",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
-    "jest": "24.9.0",
+    "jest": "25.1.0",
     "prettier": "1.19.1",
     "ts-jest": "24.3.0",
     "ts-loader": "6.2.1",
