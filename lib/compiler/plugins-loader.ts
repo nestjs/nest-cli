@@ -1,5 +1,4 @@
-import { existsSync } from 'fs';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import * as ts from 'typescript';
 import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
@@ -33,7 +32,7 @@ export class PluginsLoader {
     ];
     const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item => {
       try {
-        const binaryPath = require.resolve(item, {paths: nodeModulePaths});
+        const binaryPath = require.resolve(item, { paths: nodeModulePaths });
         return require(binaryPath);
       } catch (e) {
         throw new Error(`"${item}" plugin could not be found!`);
