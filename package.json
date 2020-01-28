@@ -54,7 +54,7 @@
     "node-emoji": "1.10.0",
     "ora": "4.0.3",
     "os-name": "3.1.0",
-    "rimraf": "3.0.0",
+    "rimraf": "3.0.1",
     "tree-kill": "1.2.2",
     "tsconfig-paths": "3.9.0",
     "tsconfig-paths-webpack-plugin": "3.2.0",
