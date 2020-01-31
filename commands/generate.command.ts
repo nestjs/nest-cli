@@ -12,7 +12,7 @@ export class GenerateCommand extends AbstractCommand {
       .alias('g')
       .description(this.buildDescription())
       .option(
-        '--dry-run',
+        '-d, --dry-run',
         'Report actions that would be taken without writing out results.',
       )
       .option('-p, --project [project]', 'Project in which to generate files.')
