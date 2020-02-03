@@ -47,7 +47,7 @@
     "@types/webpack": "4.41.3",
     "chalk": "2.4.2",
     "cli-table3": "0.5.1",
-    "commander": "4.1.0",
+    "commander": "4.1.1",
     "copyfiles": "2.2.0",
     "fork-ts-checker-webpack-plugin": "4.0.3",
     "inquirer": "7.0.4",
