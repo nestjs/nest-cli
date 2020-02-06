@@ -9,6 +9,7 @@ export function localBinExists() {
 }
 
 export function loadLocalBinCommandLoader(): typeof CommandLoader {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const commandsFile = require(posix.join(...localBinPathSegments, 'commands'));
   return commandsFile.CommandLoader;
 }

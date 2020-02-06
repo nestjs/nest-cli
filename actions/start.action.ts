@@ -76,7 +76,7 @@ export class StartAction extends BuildAction {
     let childProcessRef: any;
     process.on(
       'exit',
-      code => childProcessRef && killProcess(childProcessRef.pid),
+      () => childProcessRef && killProcess(childProcessRef.pid),
     );
 
     return () => {

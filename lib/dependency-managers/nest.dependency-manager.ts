@@ -12,7 +12,7 @@ export class NestDependencyManager {
       .map(dependency => dependency.name);
   }
 
-  public async update(force: boolean, tag: string = 'latest') {
+  public async update(force: boolean, tag = 'latest') {
     const spinner = ora({
       spinner: {
         interval: 120,

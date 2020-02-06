@@ -78,7 +78,7 @@ export abstract class AbstractPackageManager {
   }
 
   public async addDevelopment(dependencies: string[], tag: string) {
-    const command: string = `${this.cli.add} ${this.cli.saveDevFlag}`;
+    const command = `${this.cli.add} ${this.cli.saveDevFlag}`;
     const args: string = dependencies
       .map(dependency => `${dependency}@${tag}`)
       .join(' ');
@@ -130,14 +130,14 @@ export abstract class AbstractPackageManager {
   }
 
   public async updateProduction(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.update} ${dependencies.join(
+    const commandArguments = `${this.cli.update} ${dependencies.join(
       ' ',
     )}`;
     await this.update(commandArguments);
   }
 
   public async updateDevelopement(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.update} ${dependencies.join(
+    const commandArguments = `${this.cli.update} ${dependencies.join(
       ' ',
     )}`;
     await this.update(commandArguments);
@@ -167,7 +167,7 @@ export abstract class AbstractPackageManager {
   }
 
   public async deleteDevelopment(dependencies: string[]) {
-    const commandArguments: string = `${this.cli.remove} ${
+    const commandArguments = `${this.cli.remove} ${
       this.cli.saveDevFlag
     } ${dependencies.join(' ')}`;
     await this.delete(commandArguments);

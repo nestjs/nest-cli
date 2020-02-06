@@ -7,7 +7,7 @@ export class AbstractRunner {
 
   public async run(
     command: string,
-    collect: boolean = false,
+    collect = false,
     cwd: string = process.cwd(),
   ): Promise<null | string> {
     const args: string[] = [command];

@@ -59,7 +59,7 @@ const generateFiles = async (inputs: Input[]) => {
   // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects"
   // Ensure we don't run for new app/libs schematics
   if (shouldAskForProject(schematic, configurationProjects, appName)) {
-    const defaultLabel: string = ' [ Default ]';
+    const defaultLabel = ' [ Default ]';
     let defaultProjectName: string = configuration.sourceRoot + defaultLabel;
 
     for (const property in configurationProjects) {
