@@ -84,7 +84,7 @@
     "eslint-plugin-import": "2.20.1",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
-    "husky": "4.2.1",
+    "husky": "4.2.2",
     "jest": "25.1.0",
     "prettier": "1.19.1",
     "release-it": "12.4.3",
