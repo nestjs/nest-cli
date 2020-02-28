@@ -7155,10 +7155,10 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@12.6.1:
-  version "12.6.1"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-12.6.1.tgz#85136c07751308d67225da16c4dc6ff5db9b683f"
-  integrity sha512-6sXt4TkmYuOnp2IY3DUKW2L/XEy+Xh9ylLtqmRWe5SIimvDLufGwQ1iPVjUvEaOdLrUV/mnGT5Vvuf6TcfgDQw==
+release-it@12.6.2:
+  version "12.6.2"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-12.6.2.tgz#85a7cee2a8b5d6bf1d8cf25443834ae3eef71b3e"
+  integrity sha512-2aLGlJMbmKBoWj46OGh0RxsMqcq1J9C0W58warVNV54cSr7PserFYtk2rd6XWEy3RUcWTtF66mPYBjyCVCMB1w==
   dependencies:
     "@iarna/toml" "2.2.3"
     "@octokit/rest" "16.43.1"
@@ -7186,7 +7186,7 @@ release-it@12.6.1:
     supports-color "7.1.0"
     update-notifier "4.1.0"
     url-join "4.0.1"
-    uuid "3.4.0"
+    uuid "7.0.1"
     window-size "1.1.1"
     yargs-parser "17.0.0"
 
@@ -8651,10 +8651,10 @@ util@^0.11.0:
   dependencies:
     inherits "2.0.3"
 
-uuid@3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
-  integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
+uuid@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.1.tgz#95ed6ff3d8c881cbf85f0f05cc3915ef994818ef"
+  integrity sha512-yqjRXZzSJm9Dbl84H2VDHpM3zMjzSJQ+hn6C4zqd5ilW+7P4ZmLEEqwho9LjP+tGuZlF4xrHQXT0h9QZUS/pWA==
 
 uuid@^3.3.2:
   version "3.3.3"
