@@ -17,6 +17,7 @@ export class StartCommand extends AbstractCommand {
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use tsc for compilation.')
       .option('-e, --exec [binary]', 'Binary to run (default: "node").')
+      .option('--preserveWatchOutput', 'Use preserveWatchOutput option when tsc watch mode.')
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
@@ -42,6 +43,10 @@ export class StartCommand extends AbstractCommand {
           name: 'exec',
           value: command.exec,
         });
+        options.push({
+          name: 'preserveWatchOutput',
+          value: !!command.preserveWatchOutput && !!command.watch && !isWebpackEnabled
+        })
 
         const inputs: Input[] = [];
         inputs.push({ name: 'app', value: app });

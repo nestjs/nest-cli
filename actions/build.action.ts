@@ -1,3 +1,4 @@
+import * as ts from 'typescript';
 import chalk from 'chalk';
 import { join } from 'path';
 import webpack = require('webpack');
@@ -118,7 +119,11 @@ export class BuildAction extends AbstractAction {
     }
 
     if (watchMode) {
-      this.watchCompiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      const tsCompilerOptions: ts.CompilerOptions = {};
+      if(options.find(option => option.name === 'preserveWatchOutput' && option.value === true)) {
+        tsCompilerOptions.preserveWatchOutput = true
+      }
+      this.watchCompiler.run(configuration, pathToTsconfig, appName, tsCompilerOptions, onSuccess);
     } else {
       this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
     }
