@@ -91,7 +91,12 @@ export class BuildAction extends AbstractAction {
       appName,
       outDir,
     );
-    await this.assetsManager.copyAssets(configuration, appName, outDir);
+    this.assetsManager.copyAssets(
+      configuration,
+      appName,
+      outDir,
+      watchMode,
+    );
 
     if (isWebpackEnabled) {
       const webpackPath = getValueOrDefault<string>(
