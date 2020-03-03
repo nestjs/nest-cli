@@ -46,7 +46,15 @@ export class BuildAction extends AbstractAction {
     try {
       const watchModeOption = options.find(option => option.name === 'watch');
       const watchMode = !!(watchModeOption && watchModeOption.value);
-      await this.runBuild(inputs, options, watchMode);
+
+      const watchAssetsModeOption = options.find(
+        option => option.name === 'watchAssets',
+      );
+      const watchAssetsMode = !!(
+        watchAssetsModeOption && watchAssetsModeOption.value
+      );
+
+      await this.runBuild(inputs, options, watchMode, watchAssetsMode);
     } catch (err) {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
@@ -60,6 +68,7 @@ export class BuildAction extends AbstractAction {
     inputs: Input[],
     options: Input[],
     watchMode: boolean,
+    watchAssetsMode: boolean,
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
@@ -95,7 +104,7 @@ export class BuildAction extends AbstractAction {
       configuration,
       appName,
       outDir,
-      watchMode,
+      watchAssetsMode,
     );
 
     if (isWebpackEnabled) {
@@ -126,6 +135,7 @@ export class BuildAction extends AbstractAction {
       this.watchCompiler.run(configuration, pathToTsconfig, appName, onSuccess);
     } else {
       this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      this.assetsManager.closeWatchers();
     }
   }
 

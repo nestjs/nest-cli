@@ -13,12 +13,20 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
+  private watchers: chokidar.FSWatcher[] = [];
+
+  /**
+   * Using on `nest build` to close file watch or the build process will not end
+   */
+  public closeWatchers() {
+    setTimeout(() => this.watchers.forEach(watcher => watcher.close()), 300);
+  }
 
   public copyAssets(
     configuration: Required<Configuration>,
     appName: string,
     outDir: string,
-    watchMode: boolean,
+    watchAssetsMode: boolean,
   ) {
     const assets =
       getValueOrDefault<Asset[]>(
@@ -30,6 +38,7 @@ export class AssetsManager {
     if (assets.length <= 0) {
       return;
     }
+
     try {
       let sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
       sourceRoot = join(process.cwd(), sourceRoot);
@@ -45,9 +54,17 @@ export class AssetsManager {
           outDir: item.outDir || outDir,
           glob: join(sourceRoot, item.include!),
           exclude: item.exclude ? join(sourceRoot, item.exclude) : undefined,
-          flat: item.flat,
+          flat: item.flat, // deprecated field
+          watchAssets: item.watchAssets,
         };
       });
+
+      const isWatchEnabled =
+        getValueOrDefault<boolean>(
+          configuration,
+          'compilerOptions.watchAssets',
+          appName,
+        ) || watchAssetsMode;
 
       for (const item of filesToCopy) {
         const opt: ActionOnFile = {
@@ -55,15 +72,17 @@ export class AssetsManager {
           item,
           path: '',
           sourceRoot,
-          watchMode,
+          watchAssetsMode: isWatchEnabled,
         };
 
         // prettier-ignore
-        chokidar
+        const watcher = chokidar
           .watch(item.glob, { ignored: item.exclude })
           .on('add',    path => this.actionOnFile({ ...opt, path, action: 'change' }))
           .on('change', path => this.actionOnFile({ ...opt, path, action: 'change' }))
           .on('unlink', path => this.actionOnFile({ ...opt, path, action: 'unlink' }));
+
+        this.watchers.push(watcher);
       }
     } catch (err) {
       throw new Error(
@@ -73,13 +92,16 @@ export class AssetsManager {
   }
 
   private actionOnFile(opt: ActionOnFile) {
-    const { action, item, path, sourceRoot, watchMode } = opt;
+    const { action, item, path, sourceRoot, watchAssetsMode } = opt;
+    const isWatchEnabled = watchAssetsMode || item.watchAssets;
 
     // Allow to do action for the first time before check watchMode
-    if (!watchMode && this.watchAssetsKeyValue[path]) {
+    if (!isWatchEnabled && this.watchAssetsKeyValue[path]) {
       return;
     }
-    this.watchAssetsKeyValue[path] = true; // Set path value to true for watching the first time
+
+    // Set path value to true for watching the first time
+    this.watchAssetsKeyValue[path] = true;
 
     const dest = copyPathResolve(
       path,

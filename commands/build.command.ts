@@ -9,6 +9,7 @@ export class BuildCommand extends AbstractCommand {
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
+      .option('--watchAssets', 'Watch non-ts file mode.')
       .option('--webpack', 'Use webpack for compilation.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use tsc for compilation.')
@@ -24,6 +25,7 @@ export class BuildCommand extends AbstractCommand {
         const isWebpackEnabled = command.tsc ? false : command.webpack;
         options.push({ name: 'webpack', value: isWebpackEnabled });
         options.push({ name: 'watch', value: !!command.watch });
+        options.push({ name: 'watchAssets', value: !!command.watchAssets });
         options.push({
           name: 'path',
           value: command.path,

@@ -5,6 +5,7 @@ export interface AssetEntry {
   flat?: boolean;
   exclude?: string;
   outDir?: string;
+  watchAssets?: boolean;
 }
 
 export interface ActionOnFile {
@@ -12,7 +13,7 @@ export interface ActionOnFile {
   item: AssetEntry;
   path: string;
   sourceRoot: string;
-  watchMode: boolean;
+  watchAssetsMode: boolean;
 }
 
 interface CompilerOptions {

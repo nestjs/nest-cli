@@ -28,9 +28,15 @@ export class StartAction extends BuildAction {
       );
 
       const binaryToRunOption = options.find(option => option.name === 'exec');
-      const watchModeOption = options.find(option => option.name === 'watch');
       const debugModeOption = options.find(option => option.name === 'debug');
+      const watchModeOption = options.find(option => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
+      const watchAssetsModeOption = options.find(
+        option => option.name === 'watchAssets',
+      );
+      const isWatchAssetsEnabled = !!(
+        watchAssetsModeOption && watchAssetsModeOption.value
+      );
       const debugFlag = debugModeOption && debugModeOption.value;
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
@@ -51,6 +57,7 @@ export class StartAction extends BuildAction {
         inputs,
         options,
         isWatchEnabled,
+        isWatchAssetsEnabled,
         !!debugFlag,
         onSuccess,
       );
