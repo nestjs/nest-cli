@@ -232,6 +232,13 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime@^7.8.7":
+  version "7.8.7"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.8.7.tgz#8fefce9802db54881ba59f90bb28719b4996324d"
+  integrity sha512-+AATMUFppJDw6aiR5NVPHqIQBlV/Pj8wY/EZH+lmvRdUo9xBaz/rF3alAwFJQavvKfeOlPE7oaaDHVbcySbCsg==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/template@^7.1.0", "@babel/template@^7.6.0":
   version "7.6.0"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.6.0.tgz#7f0159c7f5012230dad64cca42ec9bdb5c9536e6"
@@ -7284,6 +7291,11 @@ regenerator-runtime@^0.13.2:
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.3.tgz#7cf6a77d8f5c6f60eb73c5fc1955b2ceb01e6bf5"
   integrity sha512-naKIZz2GQ8JWh///G7L3X6LaQUAMp2lvb1rvwwsURe/VXwD6VMfr+/1NuNw3ag8v2kY1aQ/go5SNn79O9JU7yw==
 
+regenerator-runtime@^0.13.4:
+  version "0.13.4"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.4.tgz#e96bf612a3362d12bb69f7e8f74ffeab25c7ac91"
+  integrity sha512-plpwicqEzfEyTQohIKktWigcLzmNStMGwbOUbykx51/29Z3JOGYldaaNGK7ngNXV+UcoqvIMmloZ48Sr74sd+g==
+
 regex-not@^1.0.0, regex-not@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/regex-not/-/regex-not-1.0.2.tgz#1f4ece27e00b0b65e0247a6810e6a85d83a5752c"
@@ -7316,10 +7328,10 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@13.0.1:
-  version "13.0.1"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.0.1.tgz#54d42c3910a74cae42d24582b436cd21d9c4f2c3"
-  integrity sha512-uNxWYA70Kg5loLqAYaTdWyyUJXg89Ao9xbuScMEG+p5kMRNU7ds2b874dzClKxvjTOg9zBPDvYdhmwp6ceGRkQ==
+release-it@13.0.2:
+  version "13.0.2"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.0.2.tgz#2a89840a1faf3cc072bf4d1ded28bd657f0100c5"
+  integrity sha512-ZEjuvRqhM68B6r4lItMrfTUAYEmbK7FkcDiDccQ0IDG0ElKqqFYWZ2S82KKFCQWwZjyiW3KMKHH03BtSwTQO/Q==
   dependencies:
     "@iarna/toml" "2.2.3"
     "@octokit/rest" "17.0.0"
@@ -7350,8 +7362,8 @@ release-it@13.0.1:
     url-join "4.0.1"
     uuid "7.0.2"
     window-size "1.1.1"
-    yaml "1.7.2"
-    yargs-parser "18.0.0"
+    yaml "1.8.0"
+    yargs-parser "18.1.0"
 
 remove-bom-buffer@^3.0.0:
   version "3.0.0"
@@ -9223,17 +9235,24 @@ yallist@^3.0.0, yallist@^3.0.2, yallist@^3.0.3:
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-3.1.1.tgz#dbb7daf9bfd8bac9ab45ebf602b8cbad0d5d08fd"
   integrity sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==
 
-yaml@1.7.2, yaml@^1.7.2:
+yaml@1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.8.0.tgz#169fbcfa2081302dc9441d02b0b6fe667e4f74c9"
+  integrity sha512-6qI/tTx7OVtA4qNqD0OyutbM6Z9EKu4rxWm/2Y3FDEBQ4/2X2XAnyuRXMzAE2+1BPyqzksJZtrIwblOHg0IEzA==
+  dependencies:
+    "@babel/runtime" "^7.8.7"
+
+yaml@^1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.7.2.tgz#f26aabf738590ab61efaca502358e48dc9f348b2"
   integrity sha512-qXROVp90sb83XtAoqE8bP9RwAkTTZbugRUTm5YeFCBfNRPEp2YzTeqWiz7m5OORHzEvrA/qcGS8hp/E+MMROYw==
   dependencies:
     "@babel/runtime" "^7.6.3"
 
-yargs-parser@18.0.0:
-  version "18.0.0"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-18.0.0.tgz#cb32a77e173f7ab758fe32b8a498b16433fc977e"
-  integrity sha512-dEcTjO1rkFcERdsoh++v+o7PQ6+POeIS4lOHr5Xy3WuYWhU4+inNSpJSvnsAEd3TOgzytS4DrueTuswP3VAmWQ==
+yargs-parser@18.1.0:
+  version "18.1.0"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-18.1.0.tgz#1b0ab1118ebd41f68bb30e729f4c83df36ae84c3"
+  integrity sha512-o/Jr6JBOv6Yx3pL+5naWSoIA2jJ+ZkMYQG/ie9qFbukBe4uzmBatlXFOiu/tNKRWEtyf+n5w7jc/O16ufqOTdQ==
   dependencies:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
