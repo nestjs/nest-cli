@@ -7316,10 +7316,10 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@13.0.0:
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.0.0.tgz#7ba923347c8b827d7d1711a9a581c76e0bdbc699"
-  integrity sha512-iFqaZduyzCyGmk+jpmRjVUpbJ03AMYfaJjRkggB3Kgv2HMcWhUGfqQ2Vdf1LaYEdwPbiNIVWtjh0BjjpaidqhQ==
+release-it@13.0.1:
+  version "13.0.1"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.0.1.tgz#54d42c3910a74cae42d24582b436cd21d9c4f2c3"
+  integrity sha512-uNxWYA70Kg5loLqAYaTdWyyUJXg89Ao9xbuScMEG+p5kMRNU7ds2b874dzClKxvjTOg9zBPDvYdhmwp6ceGRkQ==
   dependencies:
     "@iarna/toml" "2.2.3"
     "@octokit/rest" "17.0.0"
