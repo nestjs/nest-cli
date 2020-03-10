@@ -1,5 +1,5 @@
 import { dasherize } from '@angular-devkit/core/src/utils/strings';
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as inquirer from 'inquirer';
