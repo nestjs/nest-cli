@@ -40,6 +40,7 @@ export class WatchCompiler {
     );
     const origWatchStatusReporter = (tsBin as any).createWatchStatusReporter(
       tsBin.sys,
+      true,
     );
     const host = tsBin.createWatchCompilerHost(
       configPath,
