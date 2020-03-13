@@ -51,7 +51,7 @@
     "chokidar": "3.3.1",
     "cli-table3": "0.5.1",
     "commander": "4.1.1",
-    "fork-ts-checker-webpack-plugin": "4.0.5",
+    "fork-ts-checker-webpack-plugin": "4.1.0",
     "inquirer": "7.1.0",
     "node-emoji": "1.10.0",
     "ora": "4.0.3",
@@ -89,7 +89,7 @@
     "husky": "4.2.3",
     "jest": "25.1.0",
     "prettier": "1.19.1",
-    "release-it": "13.0.2",
+    "release-it": "13.1.0",
     "ts-jest": "25.2.1",
     "ts-loader": "6.2.1",
     "ts-node": "8.6.2"
