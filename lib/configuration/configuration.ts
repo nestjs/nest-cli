@@ -1,9 +1,19 @@
 export type Asset = 'string' | AssetEntry;
 export interface AssetEntry {
+  glob: string;
   include?: string;
   flat?: boolean;
   exclude?: string;
   outDir?: string;
+  watchAssets?: boolean;
+}
+
+export interface ActionOnFile {
+  action: 'change' | 'unlink';
+  item: AssetEntry;
+  path: string;
+  sourceRoot: string;
+  watchAssetsMode: boolean;
 }
 
 interface CompilerOptions {

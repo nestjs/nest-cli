@@ -9,6 +9,7 @@ export class StartCommand extends AbstractCommand {
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
+      .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option(
         '-d, --debug [hostport] ',
         'Run in debug mode (with --inspect flag).',
@@ -30,6 +31,7 @@ export class StartCommand extends AbstractCommand {
         options.push({ name: 'webpack', value: isWebpackEnabled });
         options.push({ name: 'debug', value: command.debug });
         options.push({ name: 'watch', value: !!command.watch });
+        options.push({ name: 'watchAssets', value: !!command.watchAssets });
         options.push({
           name: 'path',
           value: command.path,
