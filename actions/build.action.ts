@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { join } from 'path';
 import { CompilerOptions } from 'typescript';
 import { Input } from '../commands';
