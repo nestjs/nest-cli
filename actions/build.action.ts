@@ -1,6 +1,6 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { join } from 'path';
-import webpack = require('webpack');
+import { CompilerOptions } from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
@@ -19,6 +19,7 @@ import { defaultOutDir } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
+import webpack = require('webpack');
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -132,7 +133,21 @@ export class BuildAction extends AbstractAction {
     }
 
     if (watchMode) {
-      this.watchCompiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      const tsCompilerOptions: CompilerOptions = {};
+      const isPreserveWatchOutputEnabled = options.find(
+        option =>
+          option.name === 'preserveWatchOutput' && option.value === true,
+      );
+      if (isPreserveWatchOutputEnabled) {
+        tsCompilerOptions.preserveWatchOutput = true;
+      }
+      this.watchCompiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        tsCompilerOptions,
+        onSuccess,
+      );
     } else {
       this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
       this.assetsManager.closeWatchers();
