@@ -67,7 +67,7 @@ export class StartAction extends BuildAction {
   public createOnSuccessHook(
     configuration: Required<Configuration>,
     appName: string,
-    debugFlag: Input,
+    debugFlag: Input | undefined,
     outDirName: string,
     binaryToRun = 'node',
   ) {
@@ -112,7 +112,7 @@ export class StartAction extends BuildAction {
   private spawnChildProcess(
     entryFile: string,
     sourceRoot: string,
-    debug: Input,
+    debug: Input | undefined,
     outDirName: string,
     binaryToRun: string,
   ) {
