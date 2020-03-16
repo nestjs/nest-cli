@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { NpmRunner } from './npm.runner';
 import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';

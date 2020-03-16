@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { readFile } from 'fs';
 import { platform, release } from 'os';
 import osName = require('os-name');

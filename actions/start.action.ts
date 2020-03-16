@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -33,6 +33,12 @@ export class StartAction extends BuildAction {
       );
       const watchModeOption = options.find(option => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
+      const watchAssetsModeOption = options.find(
+        option => option.name === 'watchAssets',
+      );
+      const isWatchAssetsEnabled = !!(
+        watchAssetsModeOption && watchAssetsModeOption.value
+      );
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
@@ -52,6 +58,7 @@ export class StartAction extends BuildAction {
         inputs,
         options,
         isWatchEnabled,
+        isWatchAssetsEnabled,
         !!debugModeOption,
         onSuccess,
       );

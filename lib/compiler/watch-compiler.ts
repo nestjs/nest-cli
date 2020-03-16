@@ -18,6 +18,7 @@ export class WatchCompiler {
     configuration: Required<Configuration>,
     configFilename: string,
     appName: string,
+    tsCompilerOptions: ts.CompilerOptions,
     onSuccess?: () => void,
   ) {
     const tsBin = this.typescriptLoader.load();
@@ -40,10 +41,11 @@ export class WatchCompiler {
     );
     const origWatchStatusReporter = (tsBin as any).createWatchStatusReporter(
       tsBin.sys,
+      true,
     );
     const host = tsBin.createWatchCompilerHost(
       configPath,
-      {},
+      tsCompilerOptions,
       tsBin.sys,
       createProgram,
       this.createDiagnosticReporter(origDiagnosticReporter),

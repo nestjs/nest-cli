@@ -1,6 +1,6 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { join } from 'path';
-import webpack = require('webpack');
+import { CompilerOptions } from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
@@ -19,6 +19,7 @@ import { defaultOutDir } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
+import webpack = require('webpack');
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -46,7 +47,15 @@ export class BuildAction extends AbstractAction {
     try {
       const watchModeOption = options.find(option => option.name === 'watch');
       const watchMode = !!(watchModeOption && watchModeOption.value);
-      await this.runBuild(inputs, options, watchMode);
+
+      const watchAssetsModeOption = options.find(
+        option => option.name === 'watchAssets',
+      );
+      const watchAssetsMode = !!(
+        watchAssetsModeOption && watchAssetsModeOption.value
+      );
+
+      await this.runBuild(inputs, options, watchMode, watchAssetsMode);
     } catch (err) {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
@@ -60,6 +69,7 @@ export class BuildAction extends AbstractAction {
     inputs: Input[],
     options: Input[],
     watchMode: boolean,
+    watchAssetsMode: boolean,
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
@@ -91,7 +101,12 @@ export class BuildAction extends AbstractAction {
       appName,
       outDir,
     );
-    await this.assetsManager.copyAssets(configuration, appName, outDir);
+    this.assetsManager.copyAssets(
+      configuration,
+      appName,
+      outDir,
+      watchAssetsMode,
+    );
 
     if (isWebpackEnabled) {
       const webpackPath = getValueOrDefault<string>(
@@ -118,9 +133,24 @@ export class BuildAction extends AbstractAction {
     }
 
     if (watchMode) {
-      this.watchCompiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      const tsCompilerOptions: CompilerOptions = {};
+      const isPreserveWatchOutputEnabled = options.find(
+        option =>
+          option.name === 'preserveWatchOutput' && option.value === true,
+      );
+      if (isPreserveWatchOutputEnabled) {
+        tsCompilerOptions.preserveWatchOutput = true;
+      }
+      this.watchCompiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        tsCompilerOptions,
+        onSuccess,
+      );
     } else {
       this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      this.assetsManager.closeWatchers();
     }
   }
 

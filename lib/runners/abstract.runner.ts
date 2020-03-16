@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { MESSAGES } from '../ui';
 
