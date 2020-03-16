@@ -28,12 +28,11 @@ export class StartAction extends BuildAction {
       );
 
       const binaryToRunOption = options.find(option => option.name === 'exec');
-      const watchModeOption = options.find(option => option.name === 'watch');
       const debugModeOption = options.find(option =>
         ['debug', 'debug-brk'].includes(option.name),
       );
+      const watchModeOption = options.find(option => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
-      const debugFlag = debugModeOption;
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
@@ -44,7 +43,7 @@ export class StartAction extends BuildAction {
       const onSuccess = this.createOnSuccessHook(
         configuration,
         appName,
-        debugFlag,
+        debugModeOption,
         outDir,
         binaryToRun,
       );
@@ -53,7 +52,7 @@ export class StartAction extends BuildAction {
         inputs,
         options,
         isWatchEnabled,
-        !!debugFlag,
+        !!debugModeOption,
         onSuccess,
       );
     } catch (err) {
