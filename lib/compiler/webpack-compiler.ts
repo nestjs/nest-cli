@@ -1,8 +1,10 @@
 import { existsSync } from 'fs';
 import { dirname, join, normalize, relative } from 'path';
 import webpack = require('webpack');
+
 import { Configuration } from '../configuration';
 import { INFO_PREFIX } from '../ui';
+import { AssetsManager } from './assets-manager';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
@@ -19,6 +21,7 @@ export class WebpackCompiler {
     appName: string,
     isDebugEnabled = false,
     watchMode = false,
+    assetsManager: AssetsManager,
     onSuccess?: () => void,
   ) {
     const cwd = process.cwd();
@@ -80,6 +83,7 @@ export class WebpackCompiler {
         warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats.hasErrors()) {
+        !onSuccess && assetsManager.closeWatchers(); // if use `nest build` on webpack, close assets watchers
         onSuccess && onSuccess();
       } else if (!watchMode && !webpackConfiguration.watch) {
         console.log(statsOutput);
