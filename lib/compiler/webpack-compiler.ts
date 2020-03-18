@@ -83,8 +83,11 @@ export class WebpackCompiler {
         warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats.hasErrors()) {
-        !onSuccess && assetsManager.closeWatchers(); // if use `nest build` on webpack, close assets watchers
-        onSuccess && onSuccess();
+        if (!onSuccess) {
+          assetsManager.closeWatchers();
+        } else {
+          onSuccess();
+        }
       } else if (!watchMode && !webpackConfiguration.watch) {
         console.log(statsOutput);
         return process.exit(1);
