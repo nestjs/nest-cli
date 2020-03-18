@@ -128,6 +128,7 @@ export class BuildAction extends AbstractAction {
         appName,
         isDebugEnabled,
         watchMode,
+        this.assetsManager,
         onSuccess,
       );
     }
