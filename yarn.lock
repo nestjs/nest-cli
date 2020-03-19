@@ -13,14 +13,25 @@
     rxjs "6.5.3"
     source-map "0.7.3"
 
-"@angular-devkit/schematics-cli@0.900.6":
-  version "0.900.6"
-  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics-cli/-/schematics-cli-0.900.6.tgz#30bbc87c0d502526fb242a3394f083ec994c6315"
-  integrity sha512-TH8uPGK0sL2UACnYXnpnXLvH8rThDxfWCJrPQAWbFtE9R6vpb5n1jGqVt0DEacI1fcvOd2ANHiBGHDMShOHv1g==
+"@angular-devkit/core@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-9.0.7.tgz#97e452ad88d36391d621748487c5bab655edfe84"
+  integrity sha512-tMrz36sM1xrwvFf9Qm59GwALscVlMP7rQBjtd0fIR/QbsiOAIX4AQbV+vN6Vtwnzo5NIRZY1IXJUhesWms+h5w==
   dependencies:
-    "@angular-devkit/core" "9.0.6"
-    "@angular-devkit/schematics" "9.0.6"
-    "@schematics/schematics" "0.900.6"
+    ajv "6.10.2"
+    fast-json-stable-stringify "2.0.0"
+    magic-string "0.25.4"
+    rxjs "6.5.3"
+    source-map "0.7.3"
+
+"@angular-devkit/schematics-cli@0.900.7":
+  version "0.900.7"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics-cli/-/schematics-cli-0.900.7.tgz#7483e8be5bdf67360add5c3a2a775563c270e997"
+  integrity sha512-p0wGgLxM27FV/eqT16G9F/u5jnQYSTThl1Z9vGtiYSf86WZIuBkNghzEGN/0K0iN3Ot9KpikLZYMM166J33VrA==
+  dependencies:
+    "@angular-devkit/core" "9.0.7"
+    "@angular-devkit/schematics" "9.0.7"
+    "@schematics/schematics" "0.900.7"
     inquirer "7.0.0"
     minimist "1.2.0"
     rxjs "6.5.3"
@@ -32,6 +43,15 @@
   integrity sha512-X7qZDJVrFcPUn+jNUeOH7Bx1D7YTpTFr0d3DBIsQzseReSGu7ugWziQPS4gc5Xm5K0nb8vx6DYtyW0FaIvX0ZA==
   dependencies:
     "@angular-devkit/core" "9.0.6"
+    ora "4.0.2"
+    rxjs "6.5.3"
+
+"@angular-devkit/schematics@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics/-/schematics-9.0.7.tgz#df5936b0cf24a102d110da7ab3ab63feab7e28ff"
+  integrity sha512-ryPC+l24f3gX5DFMTLkDM/q2Kp6LPzBn6400k7j4qVdb1cIrZx+JUQd7F4iAksTTkX15EQPanptQXeztUrl9Ng==
+  dependencies:
+    "@angular-devkit/core" "9.0.7"
     ora "4.0.2"
     rxjs "6.5.3"
 
@@ -769,13 +789,13 @@
   dependencies:
     "@types/node" ">= 8"
 
-"@schematics/schematics@0.900.6":
-  version "0.900.6"
-  resolved "https://registry.yarnpkg.com/@schematics/schematics/-/schematics-0.900.6.tgz#2357c21da7129d4e9e122751ec14a221b8346ebf"
-  integrity sha512-AIHhA4qWffUHARZPgyIRVijB/AR14x+Esf6JRZ2OImoF9k8pc2uqb1NYlyHN9zMjd4XPsG9o9ZgPuSO+ClmUHg==
+"@schematics/schematics@0.900.7":
+  version "0.900.7"
+  resolved "https://registry.yarnpkg.com/@schematics/schematics/-/schematics-0.900.7.tgz#0a93808000df4a0abe3b68fb54000cd31cfda426"
+  integrity sha512-vqPQ7V90C0JRkYepjb+/xSgijWSrHHQub1mBjvsZjvKcTlgtZj7n2bjdqNMrl8ReK2z6eoNF+FUBAGs+MDRHgg==
   dependencies:
-    "@angular-devkit/core" "9.0.6"
-    "@angular-devkit/schematics" "9.0.6"
+    "@angular-devkit/core" "9.0.7"
+    "@angular-devkit/schematics" "9.0.7"
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
