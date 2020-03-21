@@ -7220,10 +7220,10 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@13.1.1:
-  version "13.1.1"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.1.1.tgz#64c9e84cf1049f6261e95ab1427849c61ffd9137"
-  integrity sha512-3JrbRMkUnup+PGtTR78MBjfrgEDd1UBJtW0eZF4MQRMvhv2am1VyYzz5i7Vv1xkomsaxhy06gZVjVFAa+Qn4JA==
+release-it@13.1.2:
+  version "13.1.2"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.1.2.tgz#b022a178d4bdd7320532c9fa4e11a3a7b4f4ee76"
+  integrity sha512-oZSWWD2tdZMxNLBZnK3G3KSqIOruPex9vYbo3POuugsG7+LPsH2dl5f8FnB53ftnHhkspsTJBcg26VVu/03VzQ==
   dependencies:
     "@iarna/toml" "2.2.3"
     "@octokit/rest" "17.1.0"
