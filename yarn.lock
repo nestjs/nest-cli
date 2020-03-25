@@ -699,10 +699,10 @@
   dependencies:
     "@octokit/types" "^2.0.0"
 
-"@octokit/core@^2.4.0":
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/@octokit/core/-/core-2.4.2.tgz#c22e583afc97e74015ea5bfd3ffb3ffc56c186ed"
-  integrity sha512-fUx/Qt774cgiPhb3HRKfdl6iufVL/ltECkwkCg373I4lIPYvAPY4cbidVZqyVqHI+ThAIlFlTW8FT4QHChv3Sg==
+"@octokit/core@^2.4.3":
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/@octokit/core/-/core-2.4.3.tgz#f51c0c228e6aa01253f9452ba5a25dc20aee8577"
+  integrity sha512-9T91nYeBB7+PNK3oxOuA+6DXCPRvhJ80ke+NqhXirBjVtNepTKFJXoWPqguRSBQ+dkEVA8dZJMxfFzjz9yhiuA==
   dependencies:
     "@octokit/auth-token" "^2.4.0"
     "@octokit/graphql" "^4.3.1"
@@ -772,12 +772,12 @@
     once "^1.4.0"
     universal-user-agent "^5.0.0"
 
-"@octokit/rest@17.1.1":
-  version "17.1.1"
-  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.1.1.tgz#357a9f6da687fc2ca9276715c1541562bd2c1581"
-  integrity sha512-Cn9XpevTJdQj/GbACY1WjArDabPpdAhvlS5zoCdZ/chiKbl4vutL1X1VeJHzDLK0K6BdZXXe4SnEPN31wKPA7A==
+"@octokit/rest@17.1.2":
+  version "17.1.2"
+  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-17.1.2.tgz#f718ce8b0cf0f43d3b7ecc6241e087d7ca7d5eb0"
+  integrity sha512-Dm24iVakcVQwl1mrANYdaf1lvSeMwN9SxnEEh+EZQCfx5R8BE8E8w5Oe+LaKexbYZTv+MHqE7Af4LrSHSo9JgQ==
   dependencies:
-    "@octokit/core" "^2.4.0"
+    "@octokit/core" "^2.4.3"
     "@octokit/plugin-paginate-rest" "^2.0.0"
     "@octokit/plugin-request-log" "^1.0.0"
     "@octokit/plugin-rest-endpoint-methods" "^3.3.0"
@@ -4078,10 +4078,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-got@10.6.0:
-  version "10.6.0"
-  resolved "https://registry.yarnpkg.com/got/-/got-10.6.0.tgz#ac3876261a4d8e5fc4f81186f79955ce7b0501dc"
-  integrity sha512-3LIdJNTdCFbbJc+h/EH0V5lpNpbJ6Bfwykk21lcQvQsEcrzdi/ltCyQehFHLzJ/ka0UMH4Slg0hkYvAZN9qUDg==
+got@10.7.0:
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/got/-/got-10.7.0.tgz#62889dbcd6cca32cd6a154cc2d0c6895121d091f"
+  integrity sha512-aWTDeNw9g+XqEZNcTjMMZSy7B7yE9toWOFYip7ofFTLleJhvZwUxxTxkTpKvF+p1SAA4VHmuEy7PiHTHyq8tJg==
   dependencies:
     "@sindresorhus/is" "^2.0.0"
     "@szmarczak/http-timer" "^4.0.0"
@@ -7240,13 +7240,13 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@13.3.0:
-  version "13.3.0"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.3.0.tgz#b15a96eb22913b4f4fe8d75dfe0e5a752a7cd431"
-  integrity sha512-NGkqRFfv63bEN1LieI57gyDJZHrHPc5E7ocDwgxyMD6cA5c8XHBcP8tXRSIiGq/ytEmckGQCMu8msNZzT+MbSg==
+release-it@13.3.1:
+  version "13.3.1"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.3.1.tgz#3792f3fdf3bd209e0c294c21ea40cfed599246fb"
+  integrity sha512-juKrG8sReAHbEot6VCWbFSaoUnyu7o2WWDFbdu5BbX8FZAIvF3SOYM1fS9GRIwG10xBDogokMFqu/eO1UK8WRQ==
   dependencies:
     "@iarna/toml" "2.2.3"
-    "@octokit/rest" "17.1.1"
+    "@octokit/rest" "17.1.2"
     async-retry "1.3.1"
     chalk "3.0.0"
     cosmiconfig "6.0.0"
@@ -7258,7 +7258,7 @@ release-it@13.3.0:
     form-data "3.0.0"
     git-url-parse "11.1.2"
     globby "11.0.0"
-    got "10.6.0"
+    got "10.7.0"
     import-cwd "3.0.0"
     inquirer "7.1.0"
     is-ci "2.0.0"
