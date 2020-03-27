@@ -14,6 +14,10 @@ export class StartCommand extends AbstractCommand {
         '-d, --debug [hostport] ',
         'Run in debug mode (with --inspect flag).',
       )
+      .option(
+        '--debug-brk [hostport] ',
+        'Run in debug mode (with --inspect-brk flag).',
+      )
       .option('--webpack', 'Use webpack for compilation.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use tsc for compilation.')
