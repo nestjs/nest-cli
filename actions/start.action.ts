@@ -28,9 +28,7 @@ export class StartAction extends BuildAction {
       );
 
       const binaryToRunOption = options.find(option => option.name === 'exec');
-      const debugModeOption = options.find(option =>
-        ['debug', 'debug-brk'].includes(option.name),
-      );
+      const debugModeOption = options.find(option => option.name === 'debug');
       const watchModeOption = options.find(option => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
       const watchAssetsModeOption = options.find(
@@ -39,6 +37,7 @@ export class StartAction extends BuildAction {
       const isWatchAssetsEnabled = !!(
         watchAssetsModeOption && watchAssetsModeOption.value
       );
+      const debugFlag = debugModeOption && debugModeOption.value;
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
@@ -49,7 +48,7 @@ export class StartAction extends BuildAction {
       const onSuccess = this.createOnSuccessHook(
         configuration,
         appName,
-        debugModeOption,
+        debugFlag,
         outDir,
         binaryToRun,
       );
@@ -59,7 +58,7 @@ export class StartAction extends BuildAction {
         options,
         isWatchEnabled,
         isWatchAssetsEnabled,
-        !!debugModeOption,
+        !!debugFlag,
         onSuccess,
       );
     } catch (err) {
@@ -74,7 +73,7 @@ export class StartAction extends BuildAction {
   public createOnSuccessHook(
     configuration: Required<Configuration>,
     appName: string,
-    debugFlag: Input | undefined,
+    debugFlag: boolean | string | undefined,
     outDirName: string,
     binaryToRun = 'node',
   ) {
@@ -119,7 +118,7 @@ export class StartAction extends BuildAction {
   private spawnChildProcess(
     entryFile: string,
     sourceRoot: string,
-    debug: Input | undefined,
+    debug: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
   ) {
@@ -138,13 +137,9 @@ export class StartAction extends BuildAction {
 
     const processArgs = [outputFilePath, ...childProcessArgs];
     if (debug) {
-      const inspectFlag = debug.name === 'debug' ? 'inspect' : 'inspect-brk';
-      const debugFlag =
-        typeof debug.value === 'string'
-          ? `--${inspectFlag}=${debug}`
-          : `--${inspectFlag}`;
-
-      processArgs.unshift(debugFlag);
+      const inspectFlag =
+        typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
+      processArgs.unshift(inspectFlag);
     }
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
