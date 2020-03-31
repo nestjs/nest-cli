@@ -16,7 +16,7 @@ export class WebpackCompiler {
     configuration: Required<Configuration>,
     webpackConfigFactoryOrConfig: (
       config: webpack.Configuration,
-    ) => webpack.Configuration,
+    ) => webpack.Configuration | webpack.Configuration[],
     tsConfigPath: string,
     appName: string,
     isDebugEnabled = false,
@@ -68,10 +68,21 @@ export class WebpackCompiler {
       typeof webpackConfigFactoryOrConfig !== 'function'
         ? webpackConfigFactoryOrConfig
         : webpackConfigFactoryOrConfig(defaultOptions);
-    const webpackConfiguration = {
-      ...defaultOptions,
-      ...projectWebpackOptions,
-    };
+
+    let webpackConfiguration: webpack.Configuration | webpack.Configuration[];
+
+    if (Array.isArray(projectWebpackOptions)) {
+      webpackConfiguration = projectWebpackOptions.map((projectWebpackOptionsItem) => ({
+        ...defaultOptions,
+        ...projectWebpackOptionsItem,
+      }));
+    } else {
+      webpackConfiguration = {
+        ...defaultOptions,
+        ...projectWebpackOptions,
+      };
+    }
+
     const compiler = webpack(webpackConfiguration);
 
     const afterCallback = (err: Error, stats: any) => {
