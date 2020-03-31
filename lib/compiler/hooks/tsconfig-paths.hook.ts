@@ -1,8 +1,8 @@
 import * as os from 'os';
 import { dirname, posix } from 'path';
-import tsPaths = require('tsconfig-paths');
 import * as ts from 'typescript';
 import { TypeScriptBinaryLoader } from '../typescript-loader';
+import tsPaths = require('tsconfig-paths');
 
 export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
@@ -18,23 +18,27 @@ export function tsconfigPathsBeforeHookFactory(
           tsBinary.isImportDeclaration(node) ||
           (tsBinary.isExportDeclaration(node) && node.moduleSpecifier)
         ) {
-          const newNode = tsBinary.getMutableClone(node);
-          const importPathWithQuotes =
-            node.moduleSpecifier && node.moduleSpecifier.getText();
+          try {
+            const newNode = tsBinary.getMutableClone(node);
+            const importPathWithQuotes =
+              node.moduleSpecifier && node.moduleSpecifier.getText();
 
-          if (!importPathWithQuotes) {
+            if (!importPathWithQuotes) {
+              return node;
+            }
+            const text = importPathWithQuotes.substr(
+              1,
+              importPathWithQuotes.length - 2,
+            );
+            const result = getNotAliasedPath(sf, matcher, text);
+            if (!result) {
+              return node;
+            }
+            newNode.moduleSpecifier = tsBinary.createLiteral(result);
+            return newNode;
+          } catch {
             return node;
           }
-          const text = importPathWithQuotes.substr(
-            1,
-            importPathWithQuotes.length - 2,
-          );
-          const result = getNotAliasedPath(sf, matcher, text);
-          if (!result) {
-            return node;
-          }
-          newNode.moduleSpecifier = tsBinary.createLiteral(result);
-          return newNode;
         }
         return tsBinary.visitEachChild(node, visitNode, ctx);
       };
