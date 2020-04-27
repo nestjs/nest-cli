@@ -5,29 +5,106 @@ import { SchematicOption } from './schematic.option';
 export interface Schematic {
   name: string;
   alias: string;
+  description:string;
 }
 
 export class NestCollection extends AbstractCollection {
   private static schematics: Schematic[] = [
-    { name: 'application', alias: 'application' },
-    { name: 'angular-app', alias: 'ng-app' },
-    { name: 'class', alias: 'cl' },
-    { name: 'configuration', alias: 'config' },
-    { name: 'controller', alias: 'co' },
-    { name: 'decorator', alias: 'd' },
-    { name: 'filter', alias: 'f' },
-    { name: 'gateway', alias: 'ga' },
-    { name: 'guard', alias: 'gu' },
-    { name: 'interceptor', alias: 'in' },
-    { name: 'interface', alias: 'interface' },
-    { name: 'middleware', alias: 'mi' },
-    { name: 'module', alias: 'mo' },
-    { name: 'pipe', alias: 'pi' },
-    { name: 'provider', alias: 'pr' },
-    { name: 'resolver', alias: 'r' },
-    { name: 'service', alias: 's' },
-    { name: 'library', alias: 'lib' },
-    { name: 'sub-app', alias: 'app' },
+    { 
+      name: 'application', 
+      alias: 'application' , 
+      description:'Generate a new application within a monorepo' 
+    },
+    { 
+      name:'angular-app', 
+      alias: 'ng-app' , 
+      description:'' 
+    },
+    { 
+      name: 'class', 
+      alias: 'cl',
+      description:'Generate a new class' 
+    },
+    { 
+      name: 'configuration',
+      alias: 'config',
+      description:'Generate a config file' 
+    },
+    { 
+      name: 'controller',
+      alias: 'co',
+      description: 'Generate a controller declaration'
+    },
+    { 
+      name: 'decorator', 
+      alias: 'd',
+      description: 'Generate a custom decorator'
+    },
+    { 
+      name: 'filter', 
+      alias: 'f',
+      description: 'Generate a filter declaration'
+    },
+    { 
+      name: 'gateway', 
+      alias: 'ga',
+      description: 'Generate a gateway declaration'
+    },
+    { 
+      name: 'guard', 
+      alias: 'gu',
+      description: 'Generate a guard declaration' 
+    },
+    {
+      name: 'interceptor',
+      alias: 'in',
+      description: 'Generate an interceptor declaration'
+    },
+    { 
+      name: 'interface', 
+      alias: 'interface',
+      description: 'Generate an interface'
+    },
+    { 
+      name: 'middleware', 
+      alias: 'mi',
+      description: 'Generate a middleware declaration'
+    },
+    { 
+      name: 'module', 
+      alias: 'mo',
+      description: 'Generate a module declaration'
+     },
+    { 
+      name: 'pipe', 
+      alias: 'pi',
+      description: 'Generate a pipe declaration'
+    },
+    { 
+      name: 'provider',
+      alias: 'pr',
+      description: 'Generate a provider declaration' 
+    },
+    { 
+      name: 'resolver', 
+      alias: 'r',
+      description: 'Generate a resolver declaration'
+    },
+    { 
+      name: 'service',
+      alias: 's',
+      description: 'Generate a service declaration'
+    },
+    { 
+      name: 'library',
+      alias: 'lib',
+      description: 'Generate a new library within a monorepo'
+    },
+    { 
+      name: 'sub-app', 
+      alias: 'app',
+      description: 'Generate a sub app module'
+     },
   ];
 
   constructor(runner: AbstractRunner) {

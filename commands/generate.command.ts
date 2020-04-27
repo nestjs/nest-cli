@@ -1,4 +1,5 @@
 import * as Table from 'cli-table3';
+import * as Colors from 'colors/safe';
 import { Command, CommanderStatic } from 'commander';
 import { Collection } from '../lib/schematics';
 import { NestCollection } from '../lib/schematics/nest.collection';
@@ -85,7 +86,7 @@ export class GenerateCommand extends AbstractCommand {
   private buildSchematicsListAsTable(): string {
     const leftMargin = '    ';
     const tableConfig = {
-      head: ['name', 'alias'],
+      head: ['name', 'alias', 'description'],
       chars: {
         'left': leftMargin.concat('│'),
         'top-left': leftMargin.concat('┌'),
@@ -98,7 +99,7 @@ export class GenerateCommand extends AbstractCommand {
     };
     const table: any = new Table(tableConfig);
     for (const schematic of NestCollection.getSchematics()) {
-      table.push([schematic.name, schematic.alias]);
+      table.push([Colors.green(schematic.name), Colors.cyan(schematic.alias), schematic.description]);
     }
     return table.toString();
   }
