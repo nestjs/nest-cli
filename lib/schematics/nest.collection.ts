@@ -41,7 +41,7 @@ export class NestCollection extends AbstractCollection {
 
   public static getSchematics(): Schematic[] {
     return NestCollection.schematics.filter(
-      item => item.name === 'angular-app',
+      item => item.name !== 'angular-app',
     );
   }
 
