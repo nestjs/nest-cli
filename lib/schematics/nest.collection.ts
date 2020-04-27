@@ -40,7 +40,9 @@ export class NestCollection extends AbstractCollection {
   }
 
   public static getSchematics(): Schematic[] {
-    return NestCollection.schematics;
+    return NestCollection.schematics.filter(
+      item => item.name === 'angular-app',
+    );
   }
 
   private validate(name: string) {

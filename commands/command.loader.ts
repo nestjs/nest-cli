@@ -22,10 +22,10 @@ export class CommandLoader {
     new NewCommand(new NewAction()).load(program);
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
-    new GenerateCommand(new GenerateAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
     new UpdateCommand(new UpdateAction()).load(program);
     new AddCommand(new AddAction()).load(program);
+    new GenerateCommand(new GenerateAction()).load(program);
 
     this.handleInvalidCommand(program);
   }
