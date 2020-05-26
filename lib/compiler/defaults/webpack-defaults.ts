@@ -30,6 +30,7 @@ export const webpackDefaultsFactory = (
           {
             loader: 'ts-loader',
             options: {
+              transpileOnly: true,
               configFile: tsConfigFile,
               getCustomTransformers: (program: any) => ({
                 before: plugins.beforeHooks.map(hook => hook(program)),
