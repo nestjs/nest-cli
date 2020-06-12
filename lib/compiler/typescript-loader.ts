@@ -6,6 +6,12 @@ export class TypeScriptBinaryLoader {
   private tsBinary?: typeof ts;
 
   public load(): typeof ts {
+    if ('pnp' in process.versions) {
+      // User is running Yarn Berry with PnP mode. It changes module resolution behaviour.
+      try {
+        this.tsBinary = require('typescript');
+      } catch {}
+    }
     if (this.tsBinary) {
       return this.tsBinary;
     }
