@@ -9,6 +9,13 @@ export class TypeScriptBinaryLoader {
     if (this.tsBinary) {
       return this.tsBinary;
     }
+    if (this.isYarnBerryPnpEnabled()) {
+      try {
+        this.tsBinary = require('typescript');
+        return this.tsBinary!;
+      } catch {}
+    }
+
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
       ...this.getModulePaths(),
@@ -37,5 +44,9 @@ export class TypeScriptBinaryLoader {
       ...packageDeps.reverse(),
       ...modulePaths.slice(3, modulePaths.length).reverse(),
     ];
+  }
+
+  private isYarnBerryPnpEnabled() {
+    return 'pnp' in process.versions;
   }
 }
