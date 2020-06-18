@@ -1,11 +1,11 @@
 import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import webpack = require('webpack');
-import nodeExternals = require('webpack-node-externals');
 import { defaultConfiguration } from '../../configuration/defaults';
 import { appendTsExtension } from '../helpers/append-extension';
 import { MultiNestCompilerPlugins } from '../plugins-loader';
+import webpack = require('webpack');
+import nodeExternals = require('webpack-node-externals');
 
 export const webpackDefaultsFactory = (
   sourceRoot: string,
@@ -33,8 +33,8 @@ export const webpackDefaultsFactory = (
               transpileOnly: true,
               configFile: tsConfigFile,
               getCustomTransformers: (program: any) => ({
-                before: plugins.beforeHooks.map(hook => hook(program)),
-                after: plugins.afterHooks.map(hook => hook(program)),
+                before: plugins.beforeHooks.map((hook) => hook(program)),
+                after: plugins.afterHooks.map((hook) => hook(program)),
               }),
             },
           },
@@ -82,7 +82,9 @@ export const webpackDefaultsFactory = (
       },
     }),
     new ForkTsCheckerWebpackPlugin({
-      tsconfig: tsConfigFile,
+      typescript: {
+        configFile: tsConfigFile,
+      },
     }),
   ],
 });
