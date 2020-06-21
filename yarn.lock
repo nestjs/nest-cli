@@ -3933,10 +3933,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-fork-ts-checker-webpack-plugin@5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-5.0.1.tgz#21adab94c30340c50dc5a3d36c25d180a8bb29e5"
-  integrity sha512-bys+hPwlPckrSCzNkg0BSUTsCRZWS6qIRiwk+8AjKitLWTqokda0QVImCx/Vm9cL/OGZZUnrFXazsVc99nijKQ==
+fork-ts-checker-webpack-plugin@5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-5.0.4.tgz#92ae758e581239e1e37ddd5a6c9cb955764ef470"
+  integrity sha512-nSEqM3KhAjTf8VmuZym2k6WadIasvXybJExFegqMJDkTrOBOY8yGjsXG2FGFJls3DOHtXKzrr3Bv0ZD1LaM7cA==
   dependencies:
     "@babel/code-frame" "^7.8.3"
     chalk "^2.4.1"
