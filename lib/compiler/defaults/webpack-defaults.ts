@@ -30,7 +30,7 @@ export const webpackDefaultsFactory = (
           {
             loader: 'ts-loader',
             options: {
-              transpileOnly: true,
+              transpileOnly: !isAnyPluginRegistered(plugins),
               configFile: tsConfigFile,
               getCustomTransformers: (program: any) => ({
                 before: plugins.beforeHooks.map((hook) => hook(program)),
@@ -88,3 +88,10 @@ export const webpackDefaultsFactory = (
     }),
   ],
 });
+
+function isAnyPluginRegistered(plugins: MultiNestCompilerPlugins) {
+  return (
+    (plugins.afterHooks && plugins.afterHooks.length > 0) ||
+    (plugins.beforeHooks && plugins.beforeHooks.length > 0)
+  );
+}
