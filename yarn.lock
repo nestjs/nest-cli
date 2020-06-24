@@ -2,6 +2,17 @@
 # yarn lockfile v1
 
 
+"@angular-devkit/core@10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-10.0.0.tgz#9f6378a295a559d1a0bf12af200c0c9d59428a65"
+  integrity sha512-IvX9IMaCjDkN9vDVnYcgWbSBinlUUb7jdFhDGeTtK6rGSnjX1GoLvWneVI2hoccS07fPbnfMoYXBoZLwVxiIxw==
+  dependencies:
+    ajv "6.12.2"
+    fast-json-stable-stringify "2.1.0"
+    magic-string "0.25.7"
+    rxjs "6.5.5"
+    source-map "0.7.3"
+
 "@angular-devkit/core@9.1.7":
   version "9.1.7"
   resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-9.1.7.tgz#f193ccbae4c80b34188bc9cc401c16b3ced50339"
@@ -24,18 +35,27 @@
     rxjs "6.5.4"
     source-map "0.7.3"
 
-"@angular-devkit/schematics-cli@0.901.9":
-  version "0.901.9"
-  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics-cli/-/schematics-cli-0.901.9.tgz#507718a152da6ab6f8d71525f7747077efb0c5c2"
-  integrity sha512-mkbN30u7/GvFOIOjj20w5OWi+vEOc/mdnpSrm3AxXvmha4AG56VL6uzF/kKHw9vyhfv8wLMt11OK/iSms9hSWw==
+"@angular-devkit/schematics-cli@0.1000.0":
+  version "0.1000.0"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics-cli/-/schematics-cli-0.1000.0.tgz#d1b2fec029e7d1b01115d1f7ca7c4af10dec2df7"
+  integrity sha512-WJ7gXGanCN+Ug4an7lCSQEfD3RnfuHY4AjBSiatYYjhIyScGI5xpVbPm4Hqm+gjwdn9tg+AGVpnD3g5SN+NO3w==
   dependencies:
-    "@angular-devkit/core" "9.1.9"
-    "@angular-devkit/schematics" "9.1.9"
-    "@schematics/schematics" "0.901.9"
+    "@angular-devkit/core" "10.0.0"
+    "@angular-devkit/schematics" "10.0.0"
+    "@schematics/schematics" "0.1000.0"
     inquirer "7.1.0"
     minimist "1.2.5"
-    rxjs "6.5.4"
+    rxjs "6.5.5"
     symbol-observable "1.2.0"
+
+"@angular-devkit/schematics@10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics/-/schematics-10.0.0.tgz#6ba61092621c25fef78e29c700a7fb3f523b6cc0"
+  integrity sha512-FJ/dY18M+cnAT9RkVjVRJ0PMFZci3ok0WoOosW25Fk68jwNSbGCeF8k8NcD6YE60+CfF4/0LxQWgFagr/wdEhw==
+  dependencies:
+    "@angular-devkit/core" "10.0.0"
+    ora "4.0.4"
+    rxjs "6.5.5"
 
 "@angular-devkit/schematics@9.1.7":
   version "9.1.7"
@@ -940,13 +960,13 @@
   dependencies:
     "@types/node" ">= 8"
 
-"@schematics/schematics@0.901.9":
-  version "0.901.9"
-  resolved "https://registry.yarnpkg.com/@schematics/schematics/-/schematics-0.901.9.tgz#298b59acfe5b478ba12c80feb42a9e618ef2522e"
-  integrity sha512-Nca8Ig/mFFnhLmosbdWysX4N2HiwVOzA4gQj2TZnMCJ98Cftdebs388LstjsJwGtJyvAa2v4yoaPaUMIGVgQ9w==
+"@schematics/schematics@0.1000.0":
+  version "0.1000.0"
+  resolved "https://registry.yarnpkg.com/@schematics/schematics/-/schematics-0.1000.0.tgz#c07fa33b0609ca32afa1f6df06d1fffe6787ac0d"
+  integrity sha512-HRGF6QVE/qbWDyIXGj8hI/duJM/zf/YhgUrSsAu05PvKH09U7e/dh8PlJJuiicYjV3QYzsFqpMiO+Q/Ud7lxFw==
   dependencies:
-    "@angular-devkit/core" "9.1.9"
-    "@angular-devkit/schematics" "9.1.9"
+    "@angular-devkit/core" "10.0.0"
+    "@angular-devkit/schematics" "10.0.0"
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
@@ -1560,6 +1580,16 @@ ajv@6.12.0:
   version "6.12.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.0.tgz#06d60b96d87b8454a5adaba86e7854da629db4b7"
   integrity sha512-D6gFiFA0RRLyUbvijN74DWAjXSFxWKaWP7mldxkVhyhAV3+SWA9HEJPHQ2c9soIeTFJqcSdFDGFgdqs1iUU2Hw==
+  dependencies:
+    fast-deep-equal "^3.1.1"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.4.1"
+    uri-js "^4.2.2"
+
+ajv@6.12.2:
+  version "6.12.2"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.2.tgz#c629c5eced17baf314437918d2da88c99d5958cd"
+  integrity sha512-k+V+hzjm5q/Mr8ef/1Y9goCmlsK4I6Sm74teeyGvFk1XrOsbsKLjEdrvny42CZ+a8sXbk8KWpY/bDwS+FLL2UQ==
   dependencies:
     fast-deep-equal "^3.1.1"
     fast-json-stable-stringify "^2.0.0"
@@ -7796,6 +7826,13 @@ rxjs@6.5.4:
   version "6.5.4"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.4.tgz#e0777fe0d184cec7872df147f303572d414e211c"
   integrity sha512-naMQXcgEo3csAEGvw/NydRA0fuS2nDZJiw1YUWFKU7aPPAPGZEsD4Iimit96qwCieH6y614MCLYwdkrWx7z/7Q==
+  dependencies:
+    tslib "^1.9.0"
+
+rxjs@6.5.5:
+  version "6.5.5"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.5.tgz#c5c884e3094c8cfee31bf27eb87e54ccfc87f9ec"
+  integrity sha512-WfQI+1gohdf0Dai/Bbmk5L5ItH5tYqm3ki2c5GdWhKjalzjg93N3avFjVStyZZz+A2Em+ZxKH5bNghw9UeylGQ==
   dependencies:
     tslib "^1.9.0"
 
