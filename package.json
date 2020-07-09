@@ -46,7 +46,7 @@
     "@angular-devkit/schematics": "10.0.1",
     "@angular-devkit/schematics-cli": "0.1000.1",
     "@nestjs/schematics": "^7.0.1",
-    "@types/webpack": "4.41.17",
+    "@types/webpack": "4.41.21",
     "chalk": "3.0.0",
     "chokidar": "3.4.0",
     "cli-table3": "0.5.1",
