@@ -174,6 +174,7 @@ const askForPackageManager = async (): Promise<Answers> => {
     generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
+      PackageManager.PNPM
     ]),
   ];
   const prompt = inquirer.createPromptModule();
