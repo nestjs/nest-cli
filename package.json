@@ -52,7 +52,7 @@
     "cli-table3": "0.5.1",
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "5.0.7",
-    "inquirer": "7.3.0",
+    "inquirer": "7.3.2",
     "node-emoji": "1.10.0",
     "ora": "4.0.4",
     "os-name": "3.1.0",
