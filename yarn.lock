@@ -9285,10 +9285,10 @@ webidl-conversions@^6.0.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
 
-webpack-node-externals@2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/webpack-node-externals/-/webpack-node-externals-2.5.0.tgz#8d50f3289c71bc2b921a8da228e0b652acc503f1"
-  integrity sha512-g7/Z7Q/gsP8GkJkKZuJggn6RSb5PvxW1YD5vvmRZIxaSxAzkqjfL5n9CslVmNYlSqBVCyiqFgOqVS2IOObCSRg==
+webpack-node-externals@2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/webpack-node-externals/-/webpack-node-externals-2.5.1.tgz#4718ec08aafa8babe246dbfd477e725c94032ef3"
+  integrity sha512-RWxKGibUU5kuJT6JDYmXGa3QsZskqIaiBvZ2wBxHlJzWVJPOyBMnroXf23uxEHnj1rYS8jNdyUfrNAXJ2bANNw==
 
 webpack-sources@^1.4.0, webpack-sources@^1.4.1:
   version "1.4.3"
