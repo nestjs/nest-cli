@@ -89,7 +89,7 @@
     "husky": "4.2.5",
     "jest": "26.4.0",
     "prettier": "2.0.5",
-    "release-it": "13.6.6",
+    "release-it": "13.6.7",
     "ts-jest": "26.2.0",
     "ts-loader": "8.0.2",
     "ts-node": "8.10.2"
