@@ -32,6 +32,10 @@ export class GenerateCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option(
+        '-r, --resource',
+        'Generate CRUD controller',
+      )
       .action(
         async (
           schematic: string,
@@ -58,6 +62,10 @@ export class GenerateCommand extends AbstractCommand {
           options.push({
             name: 'collection',
             value: command.collection || Collection.NESTJS,
+          });
+          options.push({
+            name: 'resource',
+            value: command.resource,
           });
           options.push({
             name: 'project',
