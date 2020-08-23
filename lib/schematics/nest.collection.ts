@@ -28,6 +28,7 @@ export class NestCollection extends AbstractCollection {
     { name: 'service', alias: 's' },
     { name: 'library', alias: 'lib' },
     { name: 'sub-app', alias: 'app' },
+    { name: 'resource', alias: 'res' },
   ];
 
   constructor(runner: AbstractRunner) {
@@ -41,13 +42,13 @@ export class NestCollection extends AbstractCollection {
 
   public static getSchematics(): Schematic[] {
     return NestCollection.schematics.filter(
-      item => item.name !== 'angular-app',
+      (item) => item.name !== 'angular-app',
     );
   }
 
   private validate(name: string) {
     const schematic = NestCollection.schematics.find(
-      s => s.name === name || s.alias === name,
+      (s) => s.name === name || s.alias === name,
     );
 
     if (schematic === undefined || schematic === null) {
