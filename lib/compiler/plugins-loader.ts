@@ -3,6 +3,8 @@ import * as ts from 'typescript';
 import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
 
+const PLUGIN_ENTRY_FILENAME = 'plugin';
+
 type Transformer = ts.TransformerFactory<any> | ts.CustomTransformerFactory;
 type PluginEntry = string | PluginAndOptions;
 
@@ -23,15 +25,25 @@ export interface MultiNestCompilerPlugins {
 
 export class PluginsLoader {
   public load(plugins: PluginEntry[] = []): MultiNestCompilerPlugins {
-    const pluginNames = plugins.map(entry =>
+    const pluginNames = plugins.map((entry) =>
       isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
     );
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
       ...module.paths,
     ];
-    const pluginRefs: NestCompilerPlugin[] = pluginNames.map(item => {
+    const pluginRefs: NestCompilerPlugin[] = pluginNames.map((item) => {
       try {
+        try {
+          const binaryPath = require.resolve(
+            join(item, PLUGIN_ENTRY_FILENAME),
+            {
+              paths: nodeModulePaths,
+            },
+          );
+          return require(binaryPath);
+        } catch {}
+
         const binaryPath = require.resolve(item, { paths: nodeModulePaths });
         return require(binaryPath);
       } catch (e) {
