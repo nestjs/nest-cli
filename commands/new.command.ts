@@ -30,6 +30,7 @@ export class NewCommand extends AbstractCommand {
       )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
+        const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
         options.push({ name: 'directory', value: command.directory });
         options.push({ name: 'dry-run', value: !!command.dryRun });
         options.push({ name: 'skip-git', value: !!command.skipGit });
@@ -38,6 +39,25 @@ export class NewCommand extends AbstractCommand {
           name: 'package-manager',
           value: command.packageManager,
         });
+
+        if (!!command.language) {
+          const langMatch = availableLanguages.includes(
+            command.language.toLowerCase(),
+          );
+          if (!langMatch) {
+            throw new Error(
+              `Invalid language "${command.language}" selected. Available languages are "typescript" or "javascript"`,
+            );
+          }
+          switch (command.language) {
+            case 'javascript':
+              command.language = 'js';
+              break;
+            case 'typescript':
+              command.language = 'ts';
+              break;
+          }
+        }
         options.push({
           name: 'language',
           value: !!command.language ? command.language : 'ts',
