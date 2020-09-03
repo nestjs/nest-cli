@@ -2474,11 +2474,6 @@ chalk@^4.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-changelog-filename-regex@^1.1.0:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/changelog-filename-regex/-/changelog-filename-regex-1.1.2.tgz#19e98e38248cff0c1cf3ae3bf51bfb22c48592d6"
-  integrity sha512-kpOfKlZ9x2UpeC4at6FAXHLKfi/JEUqUqkPCb1JUCa5FnNbJIzOHRM9RfeQ1QDcpj+Gxuc/UoHqASgmEeFDejQ==
-
 char-regex@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/char-regex/-/char-regex-1.0.2.tgz#d744358226217f981ed58f479b1d6bcc29545dcf"
@@ -3249,16 +3244,6 @@ detect-newline@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
-
-detect-repo-changelog@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/detect-repo-changelog/-/detect-repo-changelog-1.0.1.tgz#c2108cbbf0964da7bc074645b6ad1d3b80a6bd6d"
-  integrity sha1-whCMu/CWTae8B0ZFtq0dO4CmvW0=
-  dependencies:
-    changelog-filename-regex "^1.1.0"
-    is-regular-file "^1.0.1"
-    lodash.find "^4.6.0"
-    pify "^2.3.0"
 
 diff-sequences@^25.2.6:
   version "25.2.6"
@@ -5139,11 +5124,6 @@ is-regex@^1.0.5:
   dependencies:
     has "^1.0.3"
 
-is-regular-file@^1.0.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/is-regular-file/-/is-regular-file-1.1.1.tgz#ffcf9cae56ec63bc55b17d6fed1af441986dab66"
-  integrity sha512-+1U3MZrVwC4HM6VUKk3L5fiHtNd2d9kayzEJhmQ+B+uIBPE/p8Fy8QVdkx0HIr3o9J5TOKJY40eI5GfTfBqbdA==
-
 is-relative@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-relative/-/is-relative-1.0.0.tgz#a1bb6935ce8c5dba1e8b9754b9b2dcc020e2260d"
@@ -6061,11 +6041,6 @@ lodash._reinterpolate@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
   integrity sha1-DM8tiRZq8Ds2Y8eWU4t1rG4RTZ0=
-
-lodash.find@^4.6.0:
-  version "4.6.0"
-  resolved "https://registry.yarnpkg.com/lodash.find/-/lodash.find-4.6.0.tgz#cb0704d47ab71789ffa0de8b97dd926fb88b13b1"
-  integrity sha1-ywcE1Hq3F4n/oN6Ll92Sb7iLE7E=
 
 lodash.memoize@4.x:
   version "4.1.2"
@@ -7265,7 +7240,7 @@ picomatch@^2.0.5:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.0.7.tgz#514169d8c7cd0bdbeecc8a2609e34a7163de69f6"
   integrity sha512-oLHIdio3tZ0qH76NybpeneBhYVj0QFTfXEFTc/B3zKQspYfYYkWYgFsmzo+4kvId/bQRcNkVeguI3y+CD22BtA==
 
-pify@^2.0.0, pify@^2.3.0:
+pify@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
   integrity sha1-7RQaasBDqEnqWISY59yosVMw6Qw=
@@ -7720,10 +7695,10 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@13.7.1:
-  version "13.7.1"
-  resolved "https://registry.yarnpkg.com/release-it/-/release-it-13.7.1.tgz#c23316bb538429c1576f969731df135a6016a32e"
-  integrity sha512-OAupGLMZJBGrGRJmb8RvZ8ZQAQquKlkGGYvgRrJmkHE+jnGdf+YSvEmItBv08CwhDcwCyXdTkkN/rJ2Flt68+g==
+release-it@14.0.1:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/release-it/-/release-it-14.0.1.tgz#9795e53d50308b4d15de769bed5dcd31a46acce1"
+  integrity sha512-QwC3xqsoWJqTylyfFwjDUwlR4JG03OV02xr7y7YX+SY78LU2+2PmYndnZRKBsmswXPKBFe8EtP7Og34wlWmjzg==
   dependencies:
     "@iarna/toml" "2.2.5"
     "@octokit/rest" "18.0.4"
@@ -7732,7 +7707,6 @@ release-it@13.7.1:
     cosmiconfig "7.0.0"
     debug "4.1.1"
     deprecated-obj "2.0.0"
-    detect-repo-changelog "1.0.1"
     execa "4.0.3"
     find-up "5.0.0"
     form-data "3.0.0"
@@ -7749,11 +7723,9 @@ release-it@13.7.1:
     parse-json "5.1.0"
     semver "7.3.2"
     shelljs "0.8.4"
-    supports-color "7.2.0"
     update-notifier "4.1.1"
     url-join "4.0.1"
     uuid "8.3.0"
-    window-size "1.1.1"
     yaml "1.10.0"
     yargs-parser "19.0.4"
 
@@ -8634,13 +8606,6 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-supports-color@7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-7.2.0.tgz#1b7dcdcb32b8138801b3e478ba6a51caa89648da"
-  integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
-  dependencies:
-    has-flag "^4.0.0"
-
 supports-color@^5.3.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -9509,14 +9474,6 @@ widest-line@^3.1.0:
   integrity sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==
   dependencies:
     string-width "^4.0.0"
-
-window-size@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/window-size/-/window-size-1.1.1.tgz#9858586580ada78ab26ecd6978a6e03115c1af20"
-  integrity sha512-5D/9vujkmVQ7pSmc0SCBmHXbkv6eaHwXEx65MywhmUMsI8sGqJ972APq1lotfcwMKPFLuCFfL8xGHLIp7jaBmA==
-  dependencies:
-    define-property "^1.0.0"
-    is-number "^3.0.0"
 
 windows-release@^3.1.0:
   version "3.2.0"
