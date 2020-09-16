@@ -75,6 +75,13 @@ export class WebpackCompiler {
     const compiler = webpack(webpackConfiguration);
 
     const afterCallback = (err: Error, stats: any) => {
+      if (err && stats === undefined) {
+        // Could not complete the compilation
+        // The error caught is most likely thrown by underlying tasks
+        console.log(err);
+        return process.exit(1);
+      }
+
       const statsOutput = stats.toString({
         chunks: false,
         colors: true,
