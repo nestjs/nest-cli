@@ -10,8 +10,14 @@ import {
 import { BANNER, MESSAGES } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 
+interface LockfileDependency {
+  version: string;
+  resolved: string;
+  integrity: string;
+}
+
 interface PackageJsonDependencies {
-  [key: string]: string;
+  [key: string]: LockfileDependency;
 }
 
 interface NestDependency {
@@ -20,42 +26,24 @@ interface NestDependency {
 }
 
 export class InfoAction extends AbstractAction {
+  private manager!: AbstractPackageManager;
+
   public async handle() {
-    displayBanner();
-    await displaySystemInformation();
-    await displayNestInformation();
+    this.manager = await PackageManagerFactory.find();
+    this.displayBanner();
+    await this.displaySystemInformation();
+    await this.displayNestInformation();
   }
-}
 
-const displayBanner = () => {
-  console.info(chalk.red(BANNER));
-};
-
-const displaySystemInformation = async () => {
-  console.info(chalk.green('[System Information]'));
-  console.info('OS Version     :', chalk.blue(osName(platform(), release())));
-  console.info('NodeJS Version :', chalk.blue(process.version));
-  await displayPackageManagerVersion();
-};
-
-const displayPackageManagerVersion = async () => {
-  const manager: AbstractPackageManager = await PackageManagerFactory.find();
-  try {
-    const version: string = await manager.version();
-    console.info(`${manager.name} Version    :`, chalk.blue(version), '\n');
-  } catch {
-    console.error(`${manager.name} Version    :`, chalk.red('Unknown'), '\n');
+  private displayBanner() {
+    console.info(chalk.red(BANNER));
   }
-};
 
-const displayNestInformation = async () => {
-  displayCliVersion();
-  console.info(chalk.green('[Nest Platform Information]'));
-  try {
-    const dependencies: PackageJsonDependencies = await readProjectPackageJsonDependencies();
-    displayNestVersions(dependencies);
-  } catch {
-    console.error(chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
+  private async displaySystemInformation(): Promise<void> {
+    console.info(chalk.green('[System Information]'));
+    console.info('OS Version     :', chalk.blue(osName(platform(), release())));
+    console.info('NodeJS Version :', chalk.blue(process.version));
+    await this.displayPackageManagerVersion();
   }
 };
 
@@ -123,15 +111,6 @@ const format = (dependencies: NestDependency[]): NestDependency[] => {
     if (dependency.name.length < length) {
       dependency.name = rightPad(dependency.name, length);
     }
-    dependency.name = dependency.name.concat(' :');
-    dependency.value = dependency.value.replace(/(\^|\~)/, '');
-  });
-  return sorted;
-};
-
-const rightPad = (name: string, length: number): string => {
-  while (name.length < length) {
-    name = name.concat(' ');
+    return name;
   }
-  return name;
-};
+}

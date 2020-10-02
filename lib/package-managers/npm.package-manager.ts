@@ -1,6 +1,7 @@
 import { Runner, RunnerFactory } from '../runners';
 import { NpmRunner } from '../runners/npm.runner';
 import { AbstractPackageManager } from './abstract.package-manager';
+import { LockParser } from './lock-parser';
 import { PackageManager } from './package-manager';
 import { PackageManagerCommands } from './package-manager-commands';
 
@@ -23,4 +24,8 @@ export class NpmPackageManager extends AbstractPackageManager {
       saveDevFlag: '--save-dev',
     };
   }
+
+  get lockParser(): LockParser {
+    return JSON;
+  } 
 }
