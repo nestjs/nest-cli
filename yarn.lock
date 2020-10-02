@@ -1091,10 +1091,10 @@
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
   integrity sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
 
-"@types/copyfiles@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@types/copyfiles/-/copyfiles-2.2.0.tgz#efc8f0f7c9c33e4d60fa769772c608141c0e059d"
-  integrity sha512-NskhScWjcrZ2U7Erz6ywaMsY9nZ/l4CDE2GUqIAVzonp7CSMvzIK/v0/iu3+BkMHAYIsCMqdDrkmZkkoRHnUCA==
+"@types/copyfiles@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@types/copyfiles/-/copyfiles-2.4.0.tgz#877ef9aa9def7df889fb1ca900206c79a873d113"
+  integrity sha512-ujm66wtJzW0ok5bIfwSZdvI4C4E6rbAvG58zow71wLjPPj65rIMu4Uy5LOx5H4eRvaagGUrrKTxqfLiDSsHEGQ==
 
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
