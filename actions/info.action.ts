@@ -45,30 +45,87 @@ export class InfoAction extends AbstractAction {
     console.info('NodeJS Version :', chalk.blue(process.version));
     await this.displayPackageManagerVersion();
   }
-};
 
-const displayCliVersion = () => {
-  console.info(chalk.green('[Nest CLI]'));
-  console.info(
-    'Nest CLI Version :',
-    chalk.blue(require('../package.json').version),
-    '\n',
-  );
-};
+  async displayPackageManagerVersion() {
+    try {
+      const version: string = await this.manager.version();
+      console.info(`${this.manager.name} Version    :`, chalk.blue(version), '\n');
+    } catch {
+      console.error(`${this.manager.name} Version    :`, chalk.red('Unknown'), '\n');
+    }
+  }
 
-const readProjectPackageJsonDependencies = async (): Promise<
-  PackageJsonDependencies
-> => {
-  return new Promise<PackageJsonDependencies>((resolve, reject) => {
-    readFile(
-      join(process.cwd(), 'package.json'),
-      (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
-        if (error !== undefined && error !== null) {
-          reject(error);
-        } else {
-          resolve(JSON.parse(buffer.toString()).dependencies);
+  async displayNestInformation(): Promise<void> {
+    this.displayCliVersion();
+    console.info(chalk.green('[Nest Platform Information]'));
+    try {
+      const dependencies: PackageJsonDependencies = await this.readProjectLockDependencies();
+      this.displayNestVersions(dependencies);
+    } catch {
+      await this.displayNestInformationFromPackage();
+    }
+  }
+
+  async displayNestInformationFromPackage(): Promise<void> {
+    try {
+      const dependencies: PackageJsonDependencies =await this.readProjectPackageDependencies();
+      this.displayNestVersions(dependencies);
+    } catch {
+      console.error(
+        chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED),
+      );
+    }
+  }
+
+  displayCliVersion(): void {
+    console.info(chalk.green('[Nest CLI]'));
+    console.info(
+      'Nest CLI Version :',
+      chalk.blue(require('../package.json').version),
+      '\n',
+    );
+  }
+
+  async readProjectLockDependencies(): Promise<PackageJsonDependencies> {
+    return new Promise<PackageJsonDependencies>((resolve, reject) => {
+      readFile(
+        join(process.cwd(), this.manager.name === 'YARN' ? 'yarn.lock' : 'package-lock.json'),
+        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
+          if (error !== undefined && error !== null) {
+            reject(error);
+          } else {
+            resolve(this.manager.lockParser.parse(buffer.toString())[this.manager.name === 'YARN' ? 'object' : 'dependencies']);
+          }
+        },
+      );
+    });
+  }
+
+  async readProjectPackageDependencies(): Promise<PackageJsonDependencies> {
+    return new Promise<PackageJsonDependencies>((resolve, reject) => {
+      readFile(
+        join(process.cwd(), 'package.json'), 
+        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
+          if (error !== undefined && error !== null) {
+            reject(error);
+          } else {
+            const pack = JSON.parse(buffer.toString());
+            const dependencies = { ...pack.dependencies, ...pack.devDependencies };
+            Object.keys(dependencies).forEach((key) => {
+              dependencies[key] = {
+                version: dependencies[key]
+              }
+            });
+            resolve(dependencies);
+          }
         }
-      },
+      )
+    });
+  }
+
+  displayNestVersions(dependencies: PackageJsonDependencies) {
+    this.buildNestVersionsMessage(dependencies).forEach((dependency) =>
+      console.info(dependency.name, chalk.blue(dependency.value)),
     );
   });
 };
