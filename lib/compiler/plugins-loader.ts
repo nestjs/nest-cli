@@ -42,7 +42,7 @@ export class PluginsLoader {
             },
           );
           return require(binaryPath);
-        } catch {}
+        } catch (error) { }
 
         const binaryPath = require.resolve(item, { paths: nodeModulePaths });
         return require(binaryPath);

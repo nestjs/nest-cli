@@ -13,7 +13,7 @@ export class TypeScriptBinaryLoader {
       try {
         this.tsBinary = require('typescript');
         return this.tsBinary!;
-      } catch {}
+      } catch (error) { }
     }
 
     const nodeModulePaths = [

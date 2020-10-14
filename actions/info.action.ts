@@ -43,7 +43,7 @@ const displayPackageManagerVersion = async () => {
   try {
     const version: string = await manager.version();
     console.info(`${manager.name} Version    :`, chalk.blue(version), '\n');
-  } catch {
+  } catch (error) {
     console.error(`${manager.name} Version    :`, chalk.red('Unknown'), '\n');
   }
 };
@@ -54,7 +54,7 @@ const displayNestInformation = async () => {
   try {
     const dependencies: PackageJsonDependencies = await readProjectPackageJsonDependencies();
     displayNestVersions(dependencies);
-  } catch {
+  } catch (error) {
     console.error(chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
   }
 };

@@ -240,7 +240,7 @@ export const retrieveCols = () => {
       stdio: ['pipe', 'pipe', 'ignore'],
     });
     return parseInt(terminalCols.toString(), 10) || defaultCols;
-  } catch {
+  } catch (error) {
     return defaultCols;
   }
 };

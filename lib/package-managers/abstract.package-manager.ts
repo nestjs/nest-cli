@@ -9,7 +9,7 @@ import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
 
 export abstract class AbstractPackageManager {
-  constructor(protected runner: AbstractRunner) {}
+  constructor(protected runner: AbstractRunner) { }
 
   public async install(directory: string, packageManager: string) {
     const spinner = ora({
@@ -37,7 +37,7 @@ export abstract class AbstractPackageManager {
       console.info(chalk.gray(MESSAGES.CHANGE_DIR_COMMAND(directory)));
       console.info(chalk.gray(MESSAGES.START_COMMAND(packageManager)));
       console.info();
-    } catch {
+    } catch (error) {
       spinner.fail();
       console.error(chalk.red(MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED));
     }
@@ -71,7 +71,7 @@ export abstract class AbstractPackageManager {
       await this.add(`${command} ${args}`);
       spinner.succeed();
       return true;
-    } catch {
+    } catch (error) {
       spinner.fail();
       return false;
     }
@@ -167,9 +167,8 @@ export abstract class AbstractPackageManager {
   }
 
   public async deleteDevelopment(dependencies: string[]) {
-    const commandArguments = `${this.cli.remove} ${
-      this.cli.saveDevFlag
-    } ${dependencies.join(' ')}`;
+    const commandArguments = `${this.cli.remove} ${this.cli.saveDevFlag
+      } ${dependencies.join(' ')}`;
     await this.delete(commandArguments);
   }
 
