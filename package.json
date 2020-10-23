@@ -90,7 +90,7 @@
     "jest": "26.6.1",
     "prettier": "2.1.2",
     "release-it": "14.2.0",
-    "ts-jest": "26.4.1",
+    "ts-jest": "26.4.2",
     "ts-loader": "8.0.6",
     "ts-node": "9.0.0"
   },
