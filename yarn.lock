@@ -748,9 +748,9 @@
     "@octokit/types" "^5.0.0"
 
 "@octokit/core@^3.0.0":
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/@octokit/core/-/core-3.1.2.tgz"
-  integrity sha512-AInOFULmwOa7+NFi9F8DlDkm5qtZVmDQayi7TUgChE3yeIGPq0Y+6cAEXPexQ3Ea+uZy66hKEazR7DJyU+4wfw==
+  version "3.2.0"
+  resolved "https://registry.npmjs.org/@octokit/core/-/core-3.2.0.tgz"
+  integrity sha512-42jzu1GWlCr4KUo52X4hD3if2AwjNJLzsS8mqUs9JkJbsM3vzvSx8AqTnVBQjOM0hQMYBqR7/7SAUTfH7IZqIg==
   dependencies:
     "@octokit/auth-token" "^2.4.0"
     "@octokit/graphql" "^4.3.1"
@@ -778,16 +778,16 @@
     universal-user-agent "^6.0.0"
 
 "@octokit/plugin-paginate-rest@^2.2.0":
-  version "2.4.0"
-  resolved "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.4.0.tgz"
-  integrity sha512-YT6Klz3LLH6/nNgi0pheJnUmTFW4kVnxGft+v8Itc41IIcjl7y1C8TatmKQBbCSuTSNFXO5pCENnqg6sjwpJhg==
+  version "2.5.0"
+  resolved "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.5.0.tgz"
+  integrity sha512-o1S16bR49QxKFBRkoXAwULLNZEq97PnhFrlvNOABOxb1ryde0WlTxWexu0gvVqkn+nNK5RB/cETfxWMWzLCriQ==
   dependencies:
     "@octokit/types" "^5.5.0"
 
 "@octokit/plugin-request-log@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@octokit/plugin-request-log/-/plugin-request-log-1.0.0.tgz"
-  integrity sha512-ywoxP68aOT3zHCLgWZgwUJatiENeHE7xJzYjfz8WI0goynp96wETBF+d95b8g/uL4QmS6owPVlaxiz3wyMAzcw==
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@octokit/plugin-request-log/-/plugin-request-log-1.0.2.tgz"
+  integrity sha512-oTJSNAmBqyDR41uSMunLQKMX0jmEXbwD1fpz8FG27lScV3RhtGfBa1/BBLym+PxcC16IBlF7KH9vP1BUYxA+Eg==
 
 "@octokit/plugin-rest-endpoint-methods@4.2.0":
   version "4.2.0"
@@ -820,10 +820,10 @@
     once "^1.4.0"
     universal-user-agent "^6.0.0"
 
-"@octokit/rest@18.0.6":
-  version "18.0.6"
-  resolved "https://registry.npmjs.org/@octokit/rest/-/rest-18.0.6.tgz"
-  integrity sha512-ES4lZBKPJMX/yUoQjAZiyFjei9pJ4lTTfb9k7OtYoUzKPDLl/M8jiHqt6qeSauyU4eZGLw0sgP1WiQl9FYeM5w==
+"@octokit/rest@18.0.7":
+  version "18.0.7"
+  resolved "https://registry.npmjs.org/@octokit/rest/-/rest-18.0.7.tgz"
+  integrity sha512-ctz0cMIb3c6gO2ADto+A1r4JI+2hkUkDcD1JRunkhk1SOUrNGQcQ+9FBqZ6UekS1Z/c3xPvF0OoLtX2cQ118+A==
   dependencies:
     "@octokit/core" "^3.0.0"
     "@octokit/plugin-paginate-rest" "^2.2.0"
@@ -850,10 +850,10 @@
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.14.0.tgz"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@sindresorhus/is@^3.1.1":
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-3.1.2.tgz"
-  integrity sha512-JiX9vxoKMmu8Y3Zr2RVathBL1Cdu4Nt4MuNWemt1Nc06A0RAin9c5FArkhGsyMBWfCu4zj+9b+GxtjAnE4qqLQ==
+"@sindresorhus/is@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-4.0.0.tgz"
+  integrity sha512-FyD2meJpDPjyNQejSjvnhpgI/azsQkA4lGbuu5BQZfjvJ9cbRZXzeWL2HceCekW4lixO9JPesIIQkSoLjeJHNQ==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.1"
@@ -3449,10 +3449,10 @@ exec-sh@^0.3.2:
   resolved "https://registry.npmjs.org/exec-sh/-/exec-sh-0.3.4.tgz"
   integrity sha512-sEFIkc61v75sWeOe72qyrqg2Qg0OuLESziUDk/O/z2qgS15y2gWVFrI6f2Qn/qw/0/NCfCEsmNA4zOjkwEZT1A==
 
-execa@4.0.3, execa@^4.0.0, execa@^4.0.2:
-  version "4.0.3"
-  resolved "https://registry.npmjs.org/execa/-/execa-4.0.3.tgz"
-  integrity sha512-WFDXGHckXPWZX19t1kCsXzOpqX9LWYNqn4C+HqZlk/V0imTkzJZqf87ZBhvpHaftERYknpk0fjSylnXVlVgI0A==
+execa@4.1.0, execa@^4.0.2:
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/execa/-/execa-4.1.0.tgz"
+  integrity sha512-j5W0//W7f8UxAn8hXVnwG8tLwdiUy4FJLcSupCg6maBYZDpyBvTApK7KyuI4bKj8KOh1r2YH+6ucuYtJv1bTZA==
   dependencies:
     cross-spawn "^7.0.0"
     get-stream "^5.0.0"
@@ -3476,6 +3476,21 @@ execa@^1.0.0:
     p-finally "^1.0.0"
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
+
+execa@^4.0.0:
+  version "4.0.3"
+  resolved "https://registry.npmjs.org/execa/-/execa-4.0.3.tgz"
+  integrity sha512-WFDXGHckXPWZX19t1kCsXzOpqX9LWYNqn4C+HqZlk/V0imTkzJZqf87ZBhvpHaftERYknpk0fjSylnXVlVgI0A==
+  dependencies:
+    cross-spawn "^7.0.0"
+    get-stream "^5.0.0"
+    human-signals "^1.1.1"
+    is-stream "^2.0.0"
+    merge-stream "^2.0.0"
+    npm-run-path "^4.0.0"
+    onetime "^5.1.0"
+    signal-exit "^3.0.2"
+    strip-final-newline "^2.0.0"
 
 exit@^0.1.2:
   version "0.1.2"
@@ -4017,10 +4032,10 @@ git-up@^4.0.0:
     is-ssh "^1.3.0"
     parse-url "^5.0.0"
 
-git-url-parse@11.3.0:
-  version "11.3.0"
-  resolved "https://registry.npmjs.org/git-url-parse/-/git-url-parse-11.3.0.tgz"
-  integrity sha512-i3XNa8IKmqnUqWBcdWBjOcnyZYfN3C1WRvnKI6ouFWwsXCZEnlgbwbm55ZpJ3OJMhfEP/ryFhqW8bBhej3C5Ug==
+git-url-parse@11.4.0:
+  version "11.4.0"
+  resolved "https://registry.npmjs.org/git-url-parse/-/git-url-parse-11.4.0.tgz"
+  integrity sha512-KlIa5jvMYLjXMQXkqpFzobsyD/V2K5DRHl5OAf+6oDFPlPLxrGDVQlIdI63c4/Kt6kai4kALENSALlzTGST3GQ==
   dependencies:
     git-up "^4.0.0"
 
@@ -4144,12 +4159,12 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-got@11.7.0:
-  version "11.7.0"
-  resolved "https://registry.npmjs.org/got/-/got-11.7.0.tgz"
-  integrity sha512-7en2XwH2MEqOsrK0xaKhbWibBoZqy+f1RSUoIeF1BLcnf+pyQdDsljWMfmOh+QKJwuvDIiKx38GtPh5wFdGGjg==
+got@11.8.0:
+  version "11.8.0"
+  resolved "https://registry.npmjs.org/got/-/got-11.8.0.tgz"
+  integrity sha512-k9noyoIIY9EejuhaBNLyZ31D5328LeqnyPNXJQb2XlJZcKakLqN5m6O/ikhq/0lw56kUYS54fVm+D1x57YC9oQ==
   dependencies:
-    "@sindresorhus/is" "^3.1.1"
+    "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"
     "@types/cacheable-request" "^6.0.1"
     "@types/responselike" "^1.0.0"
@@ -7321,24 +7336,24 @@ registry-url@^5.0.0:
   dependencies:
     rc "^1.2.8"
 
-release-it@14.2.0:
-  version "14.2.0"
-  resolved "https://registry.npmjs.org/release-it/-/release-it-14.2.0.tgz"
-  integrity sha512-34m8YlmZOUs+/mJhiVx11hcJEi67CAxtqqWXGGszc0uoEUdojUNTm1cWCEW/kuJbv6bMhmb8jP8B/8qmGjiKyQ==
+release-it@14.2.1:
+  version "14.2.1"
+  resolved "https://registry.npmjs.org/release-it/-/release-it-14.2.1.tgz"
+  integrity sha512-zHXJjU2eOvVcbXTQSfgNC9DcDU7WgTc9qappBFfGRDicK//Bqt1KaOAEhCS6EZ9u4v7YbWBRbUejSrVXOLfCVQ==
   dependencies:
     "@iarna/toml" "2.2.5"
-    "@octokit/rest" "18.0.6"
+    "@octokit/rest" "18.0.7"
     async-retry "1.3.1"
     chalk "4.1.0"
     cosmiconfig "7.0.0"
     debug "4.2.0"
     deprecated-obj "2.0.0"
-    execa "4.0.3"
+    execa "4.1.0"
     find-up "5.0.0"
     form-data "3.0.0"
-    git-url-parse "11.3.0"
+    git-url-parse "11.4.0"
     globby "11.0.1"
-    got "11.7.0"
+    got "11.8.0"
     import-cwd "3.0.0"
     inquirer "7.3.3"
     is-ci "2.0.0"
