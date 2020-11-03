@@ -1,5 +1,3 @@
-import { existsSync } from 'fs';
-import { join, resolve } from 'path';
 import * as ts from 'typescript';
 
 export class TypeScriptBinaryLoader {
@@ -9,32 +7,20 @@ export class TypeScriptBinaryLoader {
     if (this.tsBinary) {
       return this.tsBinary;
     }
-    if (this.isYarnBerryPnpEnabled()) {
-      try {
-        this.tsBinary = require('typescript');
-        return this.tsBinary!;
-      } catch {}
-    }
 
-    const nodeModulePaths = [
-      join(process.cwd(), 'node_modules'),
-      ...this.getModulePaths(),
-    ];
-    let tsBinary;
-    for (const path of nodeModulePaths) {
-      const binaryPath = resolve(path, 'typescript');
-      if (existsSync(binaryPath)) {
-        tsBinary = require(binaryPath);
-        break;
-      }
-    }
-    if (!tsBinary) {
+    try {
+      const tsBinaryPath = require.resolve('typescript', {
+        paths: this.getModulePaths(),
+      });
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const tsBinary = require(tsBinaryPath);
+      this.tsBinary = tsBinary;
+      return tsBinary;
+    } catch {
       throw new Error(
         'TypeScript could not be found! Please, install "typescript" package.',
       );
     }
-    this.tsBinary = tsBinary;
-    return tsBinary;
   }
 
   public getModulePaths() {
@@ -44,9 +30,5 @@ export class TypeScriptBinaryLoader {
       ...packageDeps.reverse(),
       ...modulePaths.slice(3, modulePaths.length).reverse(),
     ];
-  }
-
-  private isYarnBerryPnpEnabled() {
-    return 'pnp' in process.versions;
   }
 }
