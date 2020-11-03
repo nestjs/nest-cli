@@ -18,6 +18,7 @@
     "format": "prettier --write \"**/*.ts\"",
     "lint": "eslint '{lib,commands,actions}/**/*.ts' --fix",
     "start": "node bin/nest.js",
+    "prepack": "npm run build",
     "prepublish:next": "npm run build",
     "publish:next": "npm publish --access public --tag next",
     "prepublish:npm": "npm run build",
