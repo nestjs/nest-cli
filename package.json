@@ -63,7 +63,7 @@
     "tsconfig-paths-webpack-plugin": "3.3.0",
     "typescript": "^3.6.4",
     "webpack": "4.44.2",
-    "webpack-node-externals": "2.5.1"
+    "webpack-node-externals": "2.5.2"
   },
   "devDependencies": {
     "@commitlint/cli": "11.0.0",
