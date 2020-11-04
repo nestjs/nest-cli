@@ -45,11 +45,11 @@ export class BuildAction extends AbstractAction {
 
   public async handle(inputs: Input[], options: Input[]) {
     try {
-      const watchModeOption = options.find(option => option.name === 'watch');
+      const watchModeOption = options.find((option) => option.name === 'watch');
       const watchMode = !!(watchModeOption && watchModeOption.value);
 
       const watchAssetsModeOption = options.find(
-        option => option.name === 'watchAssets',
+        (option) => option.name === 'watchAssets',
       );
       const watchAssetsMode = !!(
         watchAssetsModeOption && watchAssetsModeOption.value
@@ -73,10 +73,11 @@ export class BuildAction extends AbstractAction {
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = options.find(option => option.name === 'config')!
+    const configFileName = options.find((option) => option.name === 'config')!
       .value as string;
     const configuration = await this.loader.load(configFileName);
-    const appName = inputs.find(input => input.name === 'app')!.value as string;
+    const appName = inputs.find((input) => input.name === 'app')!
+      .value as string;
 
     const pathToTsconfig = getValueOrDefault<string>(
       configuration,
@@ -136,7 +137,7 @@ export class BuildAction extends AbstractAction {
     if (watchMode) {
       const tsCompilerOptions: CompilerOptions = {};
       const isPreserveWatchOutputEnabled = options.find(
-        option =>
+        (option) =>
           option.name === 'preserveWatchOutput' && option.value === true,
       );
       if (isPreserveWatchOutputEnabled) {

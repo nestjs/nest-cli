@@ -47,7 +47,7 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `add ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
@@ -59,7 +59,7 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `add -D ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
@@ -91,7 +91,7 @@ describe('YarnPackageManager', () => {
       const uninstallCommand = `remove ${dependencies.join(' ')}`;
 
       const installCommand = `add ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
 
       return packageManager.upgradeProduction(dependencies, tag).then(() => {
@@ -110,7 +110,7 @@ describe('YarnPackageManager', () => {
       const uninstallCommand = `remove -D ${dependencies.join(' ')}`;
 
       const installCommand = `add -D ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
 
       return packageManager.upgradeDevelopement(dependencies, tag).then(() => {

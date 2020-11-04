@@ -47,7 +47,7 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --save ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
@@ -59,7 +59,7 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --save-dev ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
@@ -91,7 +91,7 @@ describe('NpmPackageManager', () => {
       const uninstallCommand = `uninstall --save ${dependencies.join(' ')}`;
 
       const installCommand = `install --save ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
 
       return packageManager.upgradeProduction(dependencies, tag).then(() => {
@@ -110,7 +110,7 @@ describe('NpmPackageManager', () => {
       const uninstallCommand = `uninstall --save-dev ${dependencies.join(' ')}`;
 
       const installCommand = `install --save-dev ${dependencies
-        .map(dependency => `${dependency}@${tag}`)
+        .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
 
       return packageManager.upgradeDevelopement(dependencies, tag).then(() => {

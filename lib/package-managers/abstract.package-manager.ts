@@ -54,10 +54,10 @@ export abstract class AbstractPackageManager {
     tag: string,
   ): Promise<boolean> {
     const command: string = [this.cli.add, this.cli.saveFlag]
-      .filter(i => i)
+      .filter((i) => i)
       .join(' ');
     const args: string = dependencies
-      .map(dependency => `${dependency}@${tag}`)
+      .map((dependency) => `${dependency}@${tag}`)
       .join(' ');
     const spinner = ora({
       spinner: {
@@ -80,7 +80,7 @@ export abstract class AbstractPackageManager {
   public async addDevelopment(dependencies: string[], tag: string) {
     const command = `${this.cli.add} ${this.cli.saveDevFlag}`;
     const args: string = dependencies
-      .map(dependency => `${dependency}@${tag}`)
+      .map((dependency) => `${dependency}@${tag}`)
       .join(' ');
     await this.add(`${command} ${args}`);
   }
@@ -130,16 +130,12 @@ export abstract class AbstractPackageManager {
   }
 
   public async updateProduction(dependencies: string[]) {
-    const commandArguments = `${this.cli.update} ${dependencies.join(
-      ' ',
-    )}`;
+    const commandArguments = `${this.cli.update} ${dependencies.join(' ')}`;
     await this.update(commandArguments);
   }
 
   public async updateDevelopement(dependencies: string[]) {
-    const commandArguments = `${this.cli.update} ${dependencies.join(
-      ' ',
-    )}`;
+    const commandArguments = `${this.cli.update} ${dependencies.join(' ')}`;
     await this.update(commandArguments);
   }
 
@@ -160,7 +156,7 @@ export abstract class AbstractPackageManager {
 
   public async deleteProduction(dependencies: string[]) {
     const command: string = [this.cli.remove, this.cli.saveFlag]
-      .filter(i => i)
+      .filter((i) => i)
       .join(' ');
     const args: string = dependencies.join(' ');
     await this.delete(`${command} ${args}`);

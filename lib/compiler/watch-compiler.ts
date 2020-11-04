@@ -86,10 +86,10 @@ export class WatchCompiler {
         let transforms = customTransformers;
         transforms = typeof transforms !== 'object' ? {} : transforms;
 
-        const before = plugins.beforeHooks.map(hook =>
+        const before = plugins.beforeHooks.map((hook) =>
           hook(program.getProgram()),
         );
-        const after = plugins.afterHooks.map(hook =>
+        const after = plugins.afterHooks.map((hook) =>
           hook(program.getProgram()),
         );
         before.unshift(tsconfigPathsPlugin);
@@ -114,7 +114,7 @@ export class WatchCompiler {
   private createDiagnosticReporter(
     diagnosticReporter: (diagnostic: ts.Diagnostic, ...args: any[]) => any,
   ) {
-    return function(this: any, diagnostic: ts.Diagnostic, ...args: any[]) {
+    return function (this: any, diagnostic: ts.Diagnostic, ...args: any[]) {
       return diagnosticReporter.call(this, diagnostic, ...args);
     };
   }
@@ -123,7 +123,7 @@ export class WatchCompiler {
     watchStatusReporter: (diagnostic: ts.Diagnostic, ...args: any[]) => any,
     onSuccess?: () => void,
   ) {
-    return function(this: any, diagnostic: ts.Diagnostic, ...args: any[]) {
+    return function (this: any, diagnostic: ts.Diagnostic, ...args: any[]) {
       const messageText = diagnostic && diagnostic.messageText;
       const noErrorsMessage = '0 errors';
       if (

@@ -8,7 +8,6 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
 import webpack = require('webpack');
 
-
 export class WebpackCompiler {
   constructor(private readonly pluginsLoader: PluginsLoader) {}
 
@@ -74,7 +73,10 @@ export class WebpackCompiler {
     };
     const compiler = webpack(webpackConfiguration);
 
-    const afterCallback = (err: Error | undefined, stats: webpack.Stats | undefined) => {
+    const afterCallback = (
+      err: Error | undefined,
+      stats: webpack.Stats | undefined,
+    ) => {
       if (err && stats === undefined) {
         // Could not complete the compilation
         // The error caught is most likely thrown by underlying tasks

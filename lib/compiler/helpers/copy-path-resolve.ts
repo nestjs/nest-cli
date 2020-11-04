@@ -1,8 +1,8 @@
 import * as path from 'path';
 
 /**
- * Helper function for returning a copy destination filename 
- * 
+ * Helper function for returning a copy destination filename
+ *
  * @description used in `assets-manager.ts` (copy from `copyfiles`)
  * @see https://github.com/calvinmetcalf/copyfiles/blob/master/index.js#L22
  */
@@ -19,12 +19,7 @@ function dealWith(inPath: string, up: number) {
     throw new Error('cant go up that far');
   }
 
-  return path.join(
-    ...path
-      .normalize(inPath)
-      .split(path.sep)
-      .slice(up),
-  );
+  return path.join(...path.normalize(inPath).split(path.sep).slice(up));
 }
 
 function depth(string: string) {

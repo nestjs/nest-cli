@@ -17,7 +17,7 @@ export class WorkspaceUtils {
       return;
     }
     await new Promise((resolve, reject) =>
-      rimraf(dirPath, err => (err ? reject(err) : resolve())),
+      rimraf(dirPath, (err) => (err ? reject(err) : resolve())),
     );
   }
 }

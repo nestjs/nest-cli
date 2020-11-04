@@ -10,102 +10,106 @@ export interface Schematic {
 
 export class NestCollection extends AbstractCollection {
   private static schematics: Schematic[] = [
-    { 
-      name: 'application', 
-      alias: 'application' , 
-      description:'Generate a new application workspace' 
+    {
+      name: 'application',
+      alias: 'application',
+      description: 'Generate a new application workspace',
     },
-    { 
-      name:'angular-app', 
-      alias: 'ng-app' , 
-      description:'' 
+    {
+      name: 'angular-app',
+      alias: 'ng-app',
+      description: '',
     },
-    { 
-      name: 'class', 
+    {
+      name: 'class',
       alias: 'cl',
-      description:'Generate a new class' 
+      description: 'Generate a new class',
     },
-    { 
+    {
       name: 'configuration',
       alias: 'config',
-      description:'Generate a CLI configuration file' 
+      description: 'Generate a CLI configuration file',
     },
-    { 
+    {
       name: 'controller',
       alias: 'co',
-      description: 'Generate a controller declaration'
+      description: 'Generate a controller declaration',
     },
-    { 
-      name: 'decorator', 
+    {
+      name: 'decorator',
       alias: 'd',
-      description: 'Generate a custom decorator'
+      description: 'Generate a custom decorator',
     },
-    { 
-      name: 'filter', 
+    {
+      name: 'filter',
       alias: 'f',
-      description: 'Generate a filter declaration'
+      description: 'Generate a filter declaration',
     },
-    { 
-      name: 'gateway', 
+    {
+      name: 'gateway',
       alias: 'ga',
-      description: 'Generate a gateway declaration'
+      description: 'Generate a gateway declaration',
     },
-    { 
-      name: 'guard', 
+    {
+      name: 'guard',
       alias: 'gu',
-      description: 'Generate a guard declaration' 
+      description: 'Generate a guard declaration',
     },
     {
       name: 'interceptor',
       alias: 'in',
-      description: 'Generate an interceptor declaration'
+      description: 'Generate an interceptor declaration',
     },
-    { 
-      name: 'interface', 
+    {
+      name: 'interface',
       alias: 'interface',
-      description: 'Generate an interface'
+      description: 'Generate an interface',
     },
-    { 
-      name: 'middleware', 
+    {
+      name: 'middleware',
       alias: 'mi',
-      description: 'Generate a middleware declaration'
+      description: 'Generate a middleware declaration',
     },
-    { 
-      name: 'module', 
+    {
+      name: 'module',
       alias: 'mo',
-      description: 'Generate a module declaration'
-     },
-    { 
-      name: 'pipe', 
-      alias: 'pi',
-      description: 'Generate a pipe declaration'
+      description: 'Generate a module declaration',
     },
-    { 
+    {
+      name: 'pipe',
+      alias: 'pi',
+      description: 'Generate a pipe declaration',
+    },
+    {
       name: 'provider',
       alias: 'pr',
-      description: 'Generate a provider declaration' 
+      description: 'Generate a provider declaration',
     },
-    { 
-      name: 'resolver', 
+    {
+      name: 'resolver',
       alias: 'r',
-      description: 'Generate a GraphQL resolver declaration'
+      description: 'Generate a GraphQL resolver declaration',
     },
-    { 
+    {
       name: 'service',
       alias: 's',
-      description: 'Generate a service declaration'
+      description: 'Generate a service declaration',
     },
-    { 
+    {
       name: 'library',
       alias: 'lib',
-      description: 'Generate a new library within a monorepo'
+      description: 'Generate a new library within a monorepo',
     },
-    { 
-      name: 'sub-app', 
+    {
+      name: 'sub-app',
       alias: 'app',
-      description: 'Generate a new application within a monorepo'
-     },
-     { name: 'resource', alias: 'res', description: 'Generate a new CRUD resource' },
+      description: 'Generate a new application within a monorepo',
+    },
+    {
+      name: 'resource',
+      alias: 'res',
+      description: 'Generate a new CRUD resource',
+    },
   ];
 
   constructor(runner: AbstractRunner) {

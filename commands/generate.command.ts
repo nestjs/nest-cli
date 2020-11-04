@@ -99,7 +99,11 @@ export class GenerateCommand extends AbstractCommand {
     };
     const table: any = new Table(tableConfig);
     for (const schematic of NestCollection.getSchematics()) {
-      table.push([chalk.green(schematic.name), chalk.cyan(schematic.alias), schematic.description]);
+      table.push([
+        chalk.green(schematic.name),
+        chalk.cyan(schematic.alias),
+        schematic.description,
+      ]);
     }
     return table.toString();
   }

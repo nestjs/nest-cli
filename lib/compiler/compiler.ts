@@ -21,7 +21,7 @@ export class Compiler {
   ) {
     const tsBinary = this.typescriptLoader.load();
     const formatHost: ts.FormatDiagnosticsHost = {
-      getCanonicalFileName: path => path,
+      getCanonicalFileName: (path) => path,
       getCurrentDirectory: tsBinary.sys.getCurrentDirectory,
       getNewLine: () => tsBinary.sys.newLine,
     };
@@ -50,8 +50,8 @@ export class Compiler {
     const programRef = program.getProgram
       ? program.getProgram()
       : ((program as any) as ts.Program);
-    const before = plugins.beforeHooks.map(hook => hook(programRef));
-    const after = plugins.afterHooks.map(hook => hook(programRef));
+    const before = plugins.beforeHooks.map((hook) => hook(programRef));
+    const after = plugins.afterHooks.map((hook) => hook(programRef));
     const emitResult = program.emit(
       undefined,
       undefined,

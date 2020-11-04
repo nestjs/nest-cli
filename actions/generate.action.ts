@@ -25,13 +25,14 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration = await loadConfiguration();
-  const collectionOption = inputs.find(option => option.name === 'collection')!
+  const collectionOption = inputs.find(
+    (option) => option.name === 'collection',
+  )!.value as string;
+  const schematic = inputs.find((option) => option.name === 'schematic')!
     .value as string;
-  const schematic = inputs.find(option => option.name === 'schematic')!
+  const appName = inputs.find((option) => option.name === 'project')!
     .value as string;
-  const appName = inputs.find(option => option.name === 'project')!
-    .value as string;
-  const spec = inputs.find(option => option.name === 'spec');
+  const spec = inputs.find((option) => option.name === 'spec');
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection,
@@ -102,7 +103,7 @@ const generateFiles = async (inputs: Input[]) => {
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
   schematicOptions.push(new SchematicOption('spec', generateSpec));
   try {
-    const schematicInput = inputs.find(input => input.name === 'schematic');
+    const schematicInput = inputs.find((input) => input.name === 'schematic');
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }
@@ -117,7 +118,7 @@ const generateFiles = async (inputs: Input[]) => {
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec'];
   const options: SchematicOption[] = [];
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
       options.push(new SchematicOption(input.name, input.value));
     }

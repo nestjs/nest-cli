@@ -19,7 +19,7 @@ export class AssetsManager {
    */
   public closeWatchers() {
     const timeoutMs = 300;
-    const closeFn = () => this.watchers.forEach(watcher => watcher.close());
+    const closeFn = () => this.watchers.forEach((watcher) => watcher.close());
 
     setTimeout(closeFn, timeoutMs);
   }
@@ -45,7 +45,7 @@ export class AssetsManager {
       let sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
       sourceRoot = join(process.cwd(), sourceRoot);
 
-      const filesToCopy = assets.map<AssetEntry>(item => {
+      const filesToCopy = assets.map<AssetEntry>((item) => {
         if (typeof item === 'string') {
           return {
             glob: join(sourceRoot, item),

@@ -5,8 +5,8 @@ import { AbstractAction } from './abstract.action';
 
 export class UpdateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    const force = options.find(option => option.name === 'force') as Input;
-    const tag = options.find(option => option.name === 'tag') as Input;
+    const force = options.find((option) => option.name === 'force') as Input;
+    const tag = options.find((option) => option.name === 'tag') as Input;
 
     const manager = new NestDependencyManager(
       await PackageManagerFactory.find(),

@@ -51,7 +51,7 @@ export class AddAction extends AbstractAction {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
-    const appName = inputs.find(option => option.name === 'project')!
+    const appName = inputs.find((option) => option.name === 'project')!
       .value as string;
 
     let sourceRoot = appName
@@ -122,7 +122,7 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find(option => option.name === 'sourceRoot')!.value as string,
+        options.find((option) => option.name === 'sourceRoot')!.value as string,
       ),
     );
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
@@ -146,7 +146,7 @@ export class AddAction extends AbstractAction {
 
   private getLibraryName(inputs: Input[]): string {
     const libraryInput: Input = inputs.find(
-      input => input.name === 'library',
+      (input) => input.name === 'library',
     ) as Input;
 
     if (!libraryInput) {

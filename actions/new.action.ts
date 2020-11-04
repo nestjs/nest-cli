@@ -26,18 +26,20 @@ import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    const directoryOption = options.find(option => option.name === 'directory');
-    const dryRunOption = options.find(option => option.name === 'dry-run');
+    const directoryOption = options.find(
+      (option) => option.name === 'directory',
+    );
+    const dryRunOption = options.find((option) => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
     await askForMissingInformation(inputs);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
-      option => option.name === 'skip-install' && option.value === true,
+      (option) => option.name === 'skip-install' && option.value === true,
     );
     const shouldSkipGit = options.some(
-      option => option.name === 'skip-git' && option.value === true,
+      (option) => option.name === 'skip-git' && option.value === true,
     );
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs)!,
@@ -64,7 +66,7 @@ export class NewAction extends AbstractAction {
 }
 
 const getApplicationNameInput = (inputs: Input[]) =>
-  inputs.find(input => input.name === 'name');
+  inputs.find((input) => input.name === 'name');
 
 const getProjectDirectory = (
   applicationName: Input,
@@ -95,7 +97,7 @@ const replaceInputMissingInformation = (
   answers: Answers,
 ): Input[] => {
   return inputs.map(
-    input =>
+    (input) =>
       (input.value =
         input.value !== undefined ? input.value : answers[input.name]),
   );
@@ -103,7 +105,7 @@ const replaceInputMissingInformation = (
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const collectionName = options.find(
-    option => option.name === 'collection' && option.value != null,
+    (option) => option.name === 'collection' && option.value != null,
   )!.value;
   const collection: AbstractCollection = CollectionFactory.create(
     (collectionName as Collection) || Collection.NESTJS,
@@ -136,7 +138,7 @@ const installPackages = async (
   installDirectory: string,
 ) => {
   const inputPackageManager: string = options.find(
-    option => option.name === 'package-manager',
+    (option) => option.name === 'package-manager',
   )!.value as string;
 
   let packageManager: AbstractPackageManager;

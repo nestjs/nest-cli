@@ -68,7 +68,9 @@ const displayCliVersion = () => {
   );
 };
 
-const readProjectPackageJsonDependencies = async (): Promise<PackageJsonDependencies> => {
+const readProjectPackageJsonDependencies = async (): Promise<
+  PackageJsonDependencies
+> => {
   return new Promise<PackageJsonDependencies>((resolve, reject) => {
     readFile(
       join(process.cwd(), 'package.json'),
@@ -84,7 +86,7 @@ const readProjectPackageJsonDependencies = async (): Promise<PackageJsonDependen
 };
 
 const displayNestVersions = (dependencies: PackageJsonDependencies) => {
-  buildNestVersionsMessage(dependencies).forEach(dependency =>
+  buildNestVersionsMessage(dependencies).forEach((dependency) =>
     console.info(dependency.name, chalk.blue(dependency.value)),
   );
 };
@@ -100,7 +102,7 @@ const collectNestDependencies = (
   dependencies: PackageJsonDependencies,
 ): NestDependency[] => {
   const nestDependencies: NestDependency[] = [];
-  Object.keys(dependencies).forEach(key => {
+  Object.keys(dependencies).forEach((key) => {
     if (key.indexOf('@nestjs') > -1) {
       nestDependencies.push({
         name: `${key.replace(/@nestjs\//, '')} version`,
@@ -117,7 +119,7 @@ const format = (dependencies: NestDependency[]): NestDependency[] => {
       dependencyB.name.length - dependencyA.name.length,
   );
   const length = sorted[0].name.length;
-  sorted.forEach(dependency => {
+  sorted.forEach((dependency) => {
     if (dependency.name.length < length) {
       dependency.name = rightPad(dependency.name, length);
     }

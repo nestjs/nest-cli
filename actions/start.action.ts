@@ -13,10 +13,10 @@ import { BuildAction } from './build.action';
 export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
-      const configFileName = options.find(option => option.name === 'config')!
+      const configFileName = options.find((option) => option.name === 'config')!
         .value as string;
       const configuration = await this.loader.load(configFileName);
-      const appName = inputs.find(input => input.name === 'app')!
+      const appName = inputs.find((input) => input.name === 'app')!
         .value as string;
 
       const pathToTsconfig = getValueOrDefault<string>(
@@ -27,12 +27,14 @@ export class StartAction extends BuildAction {
         options,
       );
 
-      const binaryToRunOption = options.find(option => option.name === 'exec');
-      const debugModeOption = options.find(option => option.name === 'debug');
-      const watchModeOption = options.find(option => option.name === 'watch');
+      const binaryToRunOption = options.find(
+        (option) => option.name === 'exec',
+      );
+      const debugModeOption = options.find((option) => option.name === 'debug');
+      const watchModeOption = options.find((option) => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
       const watchAssetsModeOption = options.find(
-        option => option.name === 'watchAssets',
+        (option) => option.name === 'watchAssets',
       );
       const isWatchAssetsEnabled = !!(
         watchAssetsModeOption && watchAssetsModeOption.value

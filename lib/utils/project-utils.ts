@@ -86,7 +86,7 @@ export function moveDefaultProjectToStart(
   let projects: string[] = Object.keys(configuration.projects as {});
   if (configuration.sourceRoot !== 'src') {
     projects = projects.filter(
-      p => p !== defaultProjectName.replace(defaultLabel, ''),
+      (p) => p !== defaultProjectName.replace(defaultLabel, ''),
     );
   }
   projects.unshift(defaultProjectName);

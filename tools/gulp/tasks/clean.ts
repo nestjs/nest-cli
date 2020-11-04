@@ -7,7 +7,7 @@ import { sources } from '../config';
  * Cleans the build output assets from the packages folders
  */
 function cleanOutput() {
-  const files = sources.map(source => [
+  const files = sources.map((source) => [
     `${source}/**/*.js`,
     `${source}/**/*.d.ts`,
     `${source}/**/*.js.map`,
@@ -25,7 +25,7 @@ function cleanOutput() {
  * Cleans empty dirs
  */
 function cleanDirs(done: () => void) {
-  sources.forEach(source => deleteEmpty.sync(`${source}/`));
+  sources.forEach((source) => deleteEmpty.sync(`${source}/`));
   done();
 }
 

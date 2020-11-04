@@ -8,8 +8,8 @@ export class NestDependencyManager {
   public async read(): Promise<string[]> {
     const production: ProjectDependency[] = await this.packageManager.getProduction();
     return production
-      .filter(dependency => dependency.name.indexOf('@nestjs') > -1)
-      .map(dependency => dependency.name);
+      .filter((dependency) => dependency.name.indexOf('@nestjs') > -1)
+      .map((dependency) => dependency.name);
   }
 
   public async update(force: boolean, tag = 'latest') {
