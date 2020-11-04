@@ -59,6 +59,17 @@ function getNotAliasedPath(
   if (os.platform() === 'win32') {
     result = result.replace(/\\/g, '/');
   }
+  try {
+    // Installed packages (node modules) should take precedence over root files with the same name.
+    // Ref: https://github.com/nestjs/nest-cli/issues/838
+    const packagePath = require.resolve(text, {
+      paths: [process.cwd(), ...module.paths],
+    });
+    if (packagePath) {
+      return text;
+    }
+  } catch {}
+
   const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;
 }
