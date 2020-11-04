@@ -1,13 +1,13 @@
 import { existsSync } from 'fs';
 import { dirname, join, normalize, relative } from 'path';
-import webpack = require('webpack');
-
 import { Configuration } from '../configuration';
 import { INFO_PREFIX } from '../ui';
 import { AssetsManager } from './assets-manager';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
+import webpack = require('webpack');
+
 
 export class WebpackCompiler {
   constructor(private readonly pluginsLoader: PluginsLoader) {}
@@ -74,15 +74,15 @@ export class WebpackCompiler {
     };
     const compiler = webpack(webpackConfiguration);
 
-    const afterCallback = (err: Error, stats: any) => {
-      const statsOutput = stats.toString({
+    const afterCallback = (err: Error | undefined, stats: webpack.Stats | undefined) => {
+      const statsOutput = stats!.toString({
         chunks: false,
         colors: true,
         modules: false,
         assets: false,
         warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
-      if (!err && !stats.hasErrors()) {
+      if (!err && !stats!.hasErrors()) {
         if (!onSuccess) {
           assetsManager.closeWatchers();
         } else {
