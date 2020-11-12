@@ -45,7 +45,7 @@
   "dependencies": {
     "@angular-devkit/core": "11.0.0",
     "@angular-devkit/schematics": "11.0.0",
-    "@angular-devkit/schematics-cli": "0.1002.0",
+    "@angular-devkit/schematics-cli": "0.1100.0",
     "@nestjs/schematics": "^7.1.0",
     "@types/webpack": "4.41.24",
     "chalk": "3.0.0",
