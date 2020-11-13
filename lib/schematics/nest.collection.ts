@@ -41,6 +41,11 @@ export class NestCollection extends AbstractCollection {
       description: 'Generate a custom decorator',
     },
     {
+      name: 'entity',
+      alias: 'en',
+      description: 'Generate a new Entity declaration',
+    },
+    {
       name: 'filter',
       alias: 'f',
       description: 'Generate a filter declaration',
@@ -116,15 +121,15 @@ export class NestCollection extends AbstractCollection {
     super('@nestjs/schematics', runner);
   }
 
-  public async execute(name: string, options: SchematicOption[]) {
-    const schematic: string = this.validate(name);
-    await super.execute(schematic, options);
-  }
-
   public static getSchematics(): Schematic[] {
     return NestCollection.schematics.filter(
       (item) => item.name !== 'angular-app',
     );
+  }
+
+  public async execute(name: string, options: SchematicOption[]) {
+    const schematic: string = this.validate(name);
+    await super.execute(schematic, options);
   }
 
   private validate(name: string) {
