@@ -52,7 +52,7 @@
     "chokidar": "3.4.3",
     "cli-table3": "0.5.1",
     "commander": "4.1.1",
-    "fork-ts-checker-webpack-plugin": "6.0.1",
+    "fork-ts-checker-webpack-plugin": "6.0.2",
     "inquirer": "7.3.3",
     "node-emoji": "1.10.0",
     "ora": "5.1.0",
