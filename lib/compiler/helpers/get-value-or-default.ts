@@ -17,7 +17,7 @@ export function getValueOrDefault<T = any>(
   if (configuration.projects && configuration.projects[appName]) {
     const perAppValue = getValueOfPath(
       configuration,
-      `projects.${appName}.`.concat(propertyPath),
+      `projects."${appName}".`.concat(propertyPath),
     );
     if (perAppValue !== undefined) {
       return perAppValue as T;
@@ -30,18 +30,38 @@ export function getValueOrDefault<T = any>(
   return value;
 }
 
-function getValueOfPath<T = any>(
+export function getValueOfPath<T = any>(
   object: Record<string, any>,
   propertyPath: string,
 ): T {
   const fragments = propertyPath.split('.');
 
   let propertyValue = object;
+  let isConcatInProgress = false;
+  let path = '';
+
   for (const fragment of fragments) {
     if (!propertyValue) {
       break;
     }
-    propertyValue = propertyValue[fragment];
+    /**
+     * When path is escaped with "" double quotes,
+     * concatenate the property path.
+     * Reference: https://github.com/nestjs/nest-cli/issues/947
+     */
+    if (fragment.startsWith('"')) {
+      path += fragment.replace('"', '') + '.';
+      isConcatInProgress = true;
+      continue;
+    } else if (isConcatInProgress) {
+      path += '.';
+      continue;
+    } else if (fragment.endsWith('"')) {
+      path += fragment.replace('"', '');
+      isConcatInProgress = false;
+    }
+    propertyValue = propertyValue[path];
+    path = '';
   }
   return propertyValue as T;
 }

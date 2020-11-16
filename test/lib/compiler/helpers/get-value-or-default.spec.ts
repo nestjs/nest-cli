@@ -170,4 +170,29 @@ describe('Get Value or Default', () => {
     );
     expect(value).toBeUndefined();
   });
+
+  it('should concatenate property path when app name contains dots', async () => {
+    let configuration: Required<Configuration> = {
+      monorepo: true,
+      sourceRoot: '',
+      entryFile: '',
+      projects: {
+        'test.project.v1.api': {
+          compilerOptions: {},
+        },
+      },
+      language: '',
+      collection: '',
+      compilerOptions: {
+        webpack: true,
+      },
+      generateOptions: {},
+    };
+    let value = getValueOrDefault(
+      configuration,
+      'compilerOptions.webpack',
+      'test.project.v1.api',
+    );
+    expect(value).toEqual(true);
+  });
 });
