@@ -49,19 +49,27 @@ export function getValueOfPath<T = any>(
      * concatenate the property path.
      * Reference: https://github.com/nestjs/nest-cli/issues/947
      */
-    if (fragment.startsWith('"')) {
-      path += fragment.replace('"', '') + '.';
+    if (fragment.startsWith('"') && fragment.endsWith('"')) {
+      path = stripDoubleQuotes(fragment);
+    } else if (fragment.startsWith('"')) {
+      path += stripDoubleQuotes(fragment) + '.';
       isConcatInProgress = true;
       continue;
-    } else if (isConcatInProgress) {
+    } else if (isConcatInProgress && !fragment.endsWith('"')) {
       path += '.';
       continue;
     } else if (fragment.endsWith('"')) {
-      path += fragment.replace('"', '');
+      path += stripDoubleQuotes(fragment);
       isConcatInProgress = false;
+    } else {
+      path = fragment;
     }
     propertyValue = propertyValue[path];
     path = '';
   }
   return propertyValue as T;
+}
+
+function stripDoubleQuotes(text: string) {
+  return text.replace(/"/g, '');
 }
