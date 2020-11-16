@@ -60,7 +60,7 @@ export function getValueOfPath<T = any>(
       isConcatInProgress = true;
       continue;
     } else if (isConcatInProgress && !fragment.endsWith('"')) {
-      path += '.';
+      path += fragment + '.';
       continue;
     } else if (fragment.endsWith('"')) {
       path += stripDoubleQuotes(fragment);

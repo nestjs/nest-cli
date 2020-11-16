@@ -178,7 +178,10 @@ describe('Get Value or Default', () => {
       entryFile: '',
       projects: {
         'test.project.v1.api': {
-          compilerOptions: {},
+          sourceRoot: 'apps/test.project.v1.api/src',
+          compilerOptions: {
+            tsConfigPath: 'apps/test.project.v1.api/tsconfig.app.json',
+          },
         },
       },
       language: '',
@@ -188,11 +191,22 @@ describe('Get Value or Default', () => {
       },
       generateOptions: {},
     };
-    let value = getValueOrDefault(
+    const sourceRoot = getValueOrDefault(
       configuration,
-      'compilerOptions.webpack',
+      'sourceRoot',
       'test.project.v1.api',
     );
-    expect(value).toEqual(true);
+    const tsConfigPath = getValueOrDefault(
+      configuration,
+      'compilerOptions.tsConfigPath',
+      'test.project.v1.api',
+    );
+    expect(sourceRoot).toEqual(
+      configuration.projects['test.project.v1.api'].sourceRoot,
+    );
+    expect(tsConfigPath).toEqual(
+      configuration.projects['test.project.v1.api'].compilerOptions!
+        .tsConfigPath,
+    );
   });
 });
