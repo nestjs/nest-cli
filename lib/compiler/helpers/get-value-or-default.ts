@@ -15,9 +15,13 @@ export function getValueOrDefault<T = any>(
     return origValue as T;
   }
   if (configuration.projects && configuration.projects[appName]) {
+    // Wrap the application name in double-quotes to prevent splitting it
+    // into separate chunks
+    appName = appName && !appName.includes('"') ? `"${appName}"` : appName;
+
     const perAppValue = getValueOfPath(
       configuration,
-      `projects."${appName}".`.concat(propertyPath),
+      `projects.${appName}.`.concat(propertyPath),
     );
     if (perAppValue !== undefined) {
       return perAppValue as T;
