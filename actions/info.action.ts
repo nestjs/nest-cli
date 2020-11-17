@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { readFile } from 'fs';
+import { readFileSync } from 'fs';
 import { platform, release } from 'os';
 import osName = require('os-name');
 import { join } from 'path';
@@ -12,8 +12,6 @@ import { AbstractAction } from './abstract.action';
 
 interface LockfileDependency {
   version: string;
-  resolved: string;
-  integrity: string;
 }
 
 interface PackageJsonDependencies {
@@ -58,19 +56,14 @@ export class InfoAction extends AbstractAction {
   async displayNestInformation(): Promise<void> {
     this.displayCliVersion();
     console.info(chalk.green('[Nest Platform Information]'));
-    try {
-      const dependencies: PackageJsonDependencies = await this.readProjectLockDependencies();
-      this.displayNestVersions(dependencies);
-    } catch {
-      await this.displayNestInformationFromPackage();
-    }
+    await this.displayNestInformationFromPackage();
   }
 
   async displayNestInformationFromPackage(): Promise<void> {
     try {
-      const dependencies: PackageJsonDependencies =await this.readProjectPackageDependencies();
+      const dependencies: PackageJsonDependencies = this.readProjectPackageDependencies();
       this.displayNestVersions(dependencies);
-    } catch {
+    } catch (err) {
       console.error(
         chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED),
       );
@@ -81,92 +74,73 @@ export class InfoAction extends AbstractAction {
     console.info(chalk.green('[Nest CLI]'));
     console.info(
       'Nest CLI Version :',
-      chalk.blue(require('../package.json').version),
+      chalk.blue(JSON.parse(readFileSync(join(__dirname, '../package.json')).toString()).version),
       '\n',
     );
   }
 
-  async readProjectLockDependencies(): Promise<PackageJsonDependencies> {
-    return new Promise<PackageJsonDependencies>((resolve, reject) => {
-      readFile(
-        join(process.cwd(), this.manager.name === 'YARN' ? 'yarn.lock' : 'package-lock.json'),
-        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
-          if (error !== undefined && error !== null) {
-            reject(error);
-          } else {
-            resolve(this.manager.lockParser.parse(buffer.toString())[this.manager.name === 'YARN' ? 'object' : 'dependencies']);
-          }
-        },
-      );
+  readProjectPackageDependencies(): PackageJsonDependencies {
+    const buffer = readFileSync(join(process.cwd(), 'package.json'));
+    const pack = JSON.parse(buffer.toString());
+    const dependencies = { ...pack.dependencies, ...pack.devDependencies };
+    Object.keys(dependencies).forEach((key) => {
+      dependencies[key] = {
+        version: dependencies[key]
+      }
     });
-  }
-
-  async readProjectPackageDependencies(): Promise<PackageJsonDependencies> {
-    return new Promise<PackageJsonDependencies>((resolve, reject) => {
-      readFile(
-        join(process.cwd(), 'package.json'), 
-        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
-          if (error !== undefined && error !== null) {
-            reject(error);
-          } else {
-            const pack = JSON.parse(buffer.toString());
-            const dependencies = { ...pack.dependencies, ...pack.devDependencies };
-            Object.keys(dependencies).forEach((key) => {
-              dependencies[key] = {
-                version: dependencies[key]
-              }
-            });
-            resolve(dependencies);
-          }
-        }
-      )
-    });
+    return dependencies;
   }
 
   displayNestVersions(dependencies: PackageJsonDependencies) {
     this.buildNestVersionsMessage(dependencies).forEach((dependency) =>
       console.info(dependency.name, chalk.blue(dependency.value)),
     );
-  });
-};
+  }
 
-const displayNestVersions = (dependencies: PackageJsonDependencies) => {
-  buildNestVersionsMessage(dependencies).forEach((dependency) =>
-    console.info(dependency.name, chalk.blue(dependency.value)),
-  );
-};
+  buildNestVersionsMessage(
+    dependencies: PackageJsonDependencies,
+  ): NestDependency[] {
+    const nestDependencies = this.collectNestDependencies(dependencies);
+    return this.format(nestDependencies);
+  }
 
-const buildNestVersionsMessage = (
-  dependencies: PackageJsonDependencies,
-): NestDependency[] => {
-  const nestDependencies = collectNestDependencies(dependencies);
-  return format(nestDependencies);
-};
+  collectNestDependencies(
+    dependencies: PackageJsonDependencies,
+  ): NestDependency[] {
+    const nestDependencies: NestDependency[] = [];
+    Object.keys(dependencies).forEach((key) => {
+      if (key.indexOf('@nestjs') > -1) {
+        const depPackagePath = require.resolve(key + '/package.json', { paths: [process.cwd()]});
+        const depPackage = readFileSync(depPackagePath).toString();
+        const value = JSON.parse(depPackage).version;
+        nestDependencies.push({
+          name: `${key.replace(/@nestjs\//, '').replace(/@.*/, '')} version`,
+          value: value || dependencies[key].version,
+        });
+      }
+    });
+    return nestDependencies;
+  }
 
-const collectNestDependencies = (
-  dependencies: PackageJsonDependencies,
-): NestDependency[] => {
-  const nestDependencies: NestDependency[] = [];
-  Object.keys(dependencies).forEach((key) => {
-    if (key.indexOf('@nestjs') > -1) {
-      nestDependencies.push({
-        name: `${key.replace(/@nestjs\//, '')} version`,
-        value: dependencies[key],
-      });
-    }
-  });
-  return nestDependencies;
-};
+  format(dependencies: NestDependency[]): NestDependency[] {
+    const sorted = dependencies.sort(
+      (dependencyA, dependencyB) =>
+        dependencyB.name.length - dependencyA.name.length,
+    );
+    const length = sorted[0].name.length;
+    sorted.forEach((dependency) => {
+      if (dependency.name.length < length) {
+        dependency.name = this.rightPad(dependency.name, length);
+      }
+      dependency.name = dependency.name.concat(' :');
+      dependency.value = dependency.value.replace(/(\^|\~)/, '');
+    });
+    return sorted;
+  }
 
-const format = (dependencies: NestDependency[]): NestDependency[] => {
-  const sorted = dependencies.sort(
-    (dependencyA, dependencyB) =>
-      dependencyB.name.length - dependencyA.name.length,
-  );
-  const length = sorted[0].name.length;
-  sorted.forEach((dependency) => {
-    if (dependency.name.length < length) {
-      dependency.name = rightPad(dependency.name, length);
+  rightPad(name: string, length: number): string {
+    while (name.length < length) {
+      name = name.concat(' ');
     }
     return name;
   }

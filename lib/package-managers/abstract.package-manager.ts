@@ -5,7 +5,6 @@ import * as ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
 import { MESSAGES } from '../ui';
-import { LockParser } from './lock-parser';
 import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
 
@@ -178,6 +177,4 @@ export abstract class AbstractPackageManager {
   public abstract get name(): string;
 
   public abstract get cli(): PackageManagerCommands;
-
-  public abstract get lockParser(): LockParser;
 }
