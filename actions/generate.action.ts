@@ -35,7 +35,7 @@ const generateFiles = async (inputs: Input[]) => {
   const spec = inputs.find((option) => option.name === 'spec');
 
   const collection: AbstractCollection = CollectionFactory.create(
-    collectionOption || configuration.collection,
+    configuration.collection||collectionOption ,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
   schematicOptions.push(
