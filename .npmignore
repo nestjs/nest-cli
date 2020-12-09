@@ -20,7 +20,6 @@ CONTRIBUTE.md
 renovate.json
 gulpfile.js
 tsconfig.json
-tslint.json
 tools
 /test/jest-config.json
 /.vscode
