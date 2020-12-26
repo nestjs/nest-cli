@@ -45,6 +45,11 @@
   "peerDependencies": {
     "webpack": ">= 5"
   },
+  "peerDependenciesMeta": {
+    "webpack": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@angular-devkit/core": "11.0.5",
     "@angular-devkit/schematics": "11.0.5",
