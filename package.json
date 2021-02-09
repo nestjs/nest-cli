@@ -91,7 +91,7 @@
     "jest": "26.6.3",
     "prettier": "2.2.1",
     "release-it": "14.3.0",
-    "ts-jest": "26.5.0",
+    "ts-jest": "26.5.1",
     "ts-loader": "8.0.16",
     "ts-node": "9.1.1"
   },
