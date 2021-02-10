@@ -55,6 +55,9 @@ export class NewCommand extends AbstractCommand {
             case 'typescript':
               command.language = 'ts';
               break;
+            default:
+              command.language = lowercasedLanguage;
+              break;
           }
         }
         options.push({
