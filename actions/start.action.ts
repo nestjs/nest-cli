@@ -112,7 +112,10 @@ export class StartAction extends BuildAction {
           outDirName,
           binaryToRun,
         );
-        childProcessRef.on('exit', () => (childProcessRef = undefined));
+        childProcessRef.on('exit', (code: number) => {
+          process.exitCode = code;
+          childProcessRef = undefined;
+        });
       }
     };
   }
