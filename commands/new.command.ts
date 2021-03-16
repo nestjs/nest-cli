@@ -41,20 +41,22 @@ export class NewCommand extends AbstractCommand {
         });
 
         if (!!command.language) {
-          const langMatch = availableLanguages.includes(
-            command.language.toLowerCase(),
-          );
+          const lowercasedLanguage = command.language.toLowerCase();
+          const langMatch = availableLanguages.includes(lowercasedLanguage);
           if (!langMatch) {
             throw new Error(
               `Invalid language "${command.language}" selected. Available languages are "typescript" or "javascript"`,
             );
           }
-          switch (command.language) {
+          switch (lowercasedLanguage) {
             case 'javascript':
               command.language = 'js';
               break;
             case 'typescript':
               command.language = 'ts';
+              break;
+            default:
+              command.language = lowercasedLanguage;
               break;
           }
         }

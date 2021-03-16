@@ -15,6 +15,7 @@ export class WebpackCompiler {
     configuration: Required<Configuration>,
     webpackConfigFactoryOrConfig: (
       config: webpack.Configuration,
+      webpackRef: typeof webpack,
     ) => webpack.Configuration,
     tsConfigPath: string,
     appName: string,
@@ -66,7 +67,7 @@ export class WebpackCompiler {
     const projectWebpackOptions =
       typeof webpackConfigFactoryOrConfig !== 'function'
         ? webpackConfigFactoryOrConfig
-        : webpackConfigFactoryOrConfig(defaultOptions);
+        : webpackConfigFactoryOrConfig(defaultOptions, webpack);
     const webpackConfiguration = {
       ...defaultOptions,
       ...projectWebpackOptions,
