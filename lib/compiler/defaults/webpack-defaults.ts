@@ -21,7 +21,7 @@ export const webpackDefaultsFactory = (
   output: {
     filename: join(relativeSourceRoot, `${entryFilename}.js`),
   },
-  externals: [nodeExternals()],
+  externals: [nodeExternals() as any],
   module: {
     rules: [
       {
