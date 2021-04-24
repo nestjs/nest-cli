@@ -92,7 +92,7 @@
     "prettier": "2.2.1",
     "release-it": "14.6.1",
     "ts-jest": "26.5.5",
-    "ts-loader": "9.1.0",
+    "ts-loader": "9.1.1",
     "ts-node": "9.1.1"
   },
   "husky": {
