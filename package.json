@@ -61,7 +61,7 @@
     "tree-kill": "1.2.2",
     "tsconfig-paths": "3.9.0",
     "tsconfig-paths-webpack-plugin": "3.5.1",
-    "typescript": "4.2.3",
+    "typescript": "4.2.4",
     "webpack": "5.28.0",
     "webpack-node-externals": "2.5.2"
   },
