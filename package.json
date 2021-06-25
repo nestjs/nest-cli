@@ -48,7 +48,7 @@
     "@angular-devkit/schematics-cli": "0.1102.6",
     "@nestjs/schematics": "^7.3.0",
     "chalk": "3.0.0",
-    "chokidar": "3.5.1",
+    "chokidar": "3.5.2",
     "cli-table3": "0.5.1",
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "6.2.0",
