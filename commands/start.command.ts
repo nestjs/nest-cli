@@ -16,6 +16,7 @@ export class StartCommand extends AbstractCommand {
       )
       .option('--webpack', 'Use webpack for compilation.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .option('--webpackSourceMap  [type]', 'Type of webpack source map to output.')
       .option('--tsc', 'Use tsc for compilation.')
       .option('-e, --exec [binary]', 'Binary to run (default: "node").')
       .option(
@@ -43,6 +44,10 @@ export class StartCommand extends AbstractCommand {
         options.push({
           name: 'webpackPath',
           value: command.webpackPath,
+        });
+        options.push({
+          name: 'webpackSourceMap',
+          value: command.webpackSourceMap,
         });
         options.push({
           name: 'exec',

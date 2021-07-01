@@ -12,6 +12,7 @@ export class BuildCommand extends AbstractCommand {
       .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option('--webpack', 'Use webpack for compilation.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .option('--webpackSourceMap  [type]', 'Type of webpack source map to output.')
       .option('--tsc', 'Use tsc for compilation.')
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
@@ -33,6 +34,10 @@ export class BuildCommand extends AbstractCommand {
         options.push({
           name: 'webpackPath',
           value: command.webpackPath,
+        });
+        options.push({
+          name: 'webpackSourceMap',
+          value: command.webpackSourceMap,
         });
 
         const inputs: Input[] = [];

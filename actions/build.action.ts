@@ -46,6 +46,9 @@ export class BuildAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
       const watchModeOption = options.find((option) => option.name === 'watch');
+      const webpackSourceMapOption = options.find(
+        (option) => option.name === 'webpackSourceMap',
+      );
       const watchMode = !!(watchModeOption && watchModeOption.value);
 
       const watchAssetsModeOption = options.find(
@@ -55,7 +58,13 @@ export class BuildAction extends AbstractAction {
         watchAssetsModeOption && watchAssetsModeOption.value
       );
 
-      await this.runBuild(inputs, options, watchMode, watchAssetsMode);
+      await this.runBuild(
+        inputs,
+        options,
+        watchMode,
+        watchAssetsMode,
+        webpackSourceMapOption?.value as string | undefined,
+      );
     } catch (err) {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
@@ -70,7 +79,7 @@ export class BuildAction extends AbstractAction {
     options: Input[],
     watchMode: boolean,
     watchAssetsMode: boolean,
-    isDebugEnabled = false,
+    webpackSourceMap?: string,
     onSuccess?: () => void,
   ) {
     const configFileName = options.find((option) => option.name === 'config')!
@@ -127,7 +136,7 @@ export class BuildAction extends AbstractAction {
         webpackConfigFactoryOrConfig,
         pathToTsconfig,
         appName,
-        isDebugEnabled,
+        webpackSourceMap ?? false,
         watchMode,
         this.assetsManager,
         onSuccess,

@@ -31,6 +31,9 @@ export class StartAction extends BuildAction {
         (option) => option.name === 'exec',
       );
       const debugModeOption = options.find((option) => option.name === 'debug');
+      const webpackSourceMapOption = options.find(
+        (option) => option.name === 'webpackSourceMap',
+      );
       const watchModeOption = options.find((option) => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
       const watchAssetsModeOption = options.find(
@@ -43,9 +46,11 @@ export class StartAction extends BuildAction {
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
-      const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
-        pathToTsconfig,
-      );
+      // If the webpackSourceMap is provided, use that. If it isn't and debug is set to true, use inline-sourcemap
+      const sourceMapType = (webpackSourceMapOption?.value as string | undefined) ?? (!!debugFlag ? 'inline-source-map' : undefined);
+
+      const { options: tsOptions } =
+        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
       const onSuccess = this.createOnSuccessHook(
         configuration,
@@ -60,7 +65,7 @@ export class StartAction extends BuildAction {
         options,
         isWatchEnabled,
         isWatchAssetsEnabled,
-        !!debugFlag,
+        sourceMapType,
         onSuccess,
       );
     } catch (err) {

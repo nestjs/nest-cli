@@ -19,7 +19,7 @@ export class WebpackCompiler {
     ) => webpack.Configuration,
     tsConfigPath: string,
     appName: string,
-    isDebugEnabled = false,
+    sourceMapType: string | false = false,
     watchMode = false,
     assetsManager: AssetsManager,
     onSuccess?: () => void,
@@ -60,7 +60,7 @@ export class WebpackCompiler {
       pathToSource,
       entryFileRoot,
       entryFile,
-      isDebugEnabled,
+      sourceMapType,
       tsConfigPath,
       plugins,
     );

@@ -11,12 +11,12 @@ export const webpackDefaultsFactory = (
   sourceRoot: string,
   relativeSourceRoot: string,
   entryFilename: string,
-  isDebugEnabled = false,
+  sourceMapType: string | false = false,
   tsConfigFile = defaultConfiguration.compilerOptions.tsConfigPath,
   plugins: MultiNestCompilerPlugins,
 ): webpack.Configuration => ({
   entry: appendTsExtension(join(sourceRoot, entryFilename)),
-  devtool: isDebugEnabled ? 'inline-source-map' : false,
+  devtool: sourceMapType,
   target: 'node',
   output: {
     filename: join(relativeSourceRoot, `${entryFilename}.js`),
