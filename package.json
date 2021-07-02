@@ -78,7 +78,7 @@
     "@types/rimraf": "3.0.0",
     "@types/shelljs": "0.8.8",
     "@types/webpack": "5.28.0",
-    "@types/webpack-node-externals": "2.5.1",
+    "@types/webpack-node-externals": "2.5.2",
     "@typescript-eslint/eslint-plugin": "4.28.1",
     "@typescript-eslint/parser": "4.28.1",
     "delete-empty": "3.0.0",
