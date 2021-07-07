@@ -1,7 +1,6 @@
 import * as chalk from 'chalk';
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
-import { Collection } from '../lib/schematics';
 import { NestCollection } from '../lib/schematics/nest.collection';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
@@ -58,7 +57,7 @@ export class GenerateCommand extends AbstractCommand {
           });
           options.push({
             name: 'collection',
-            value: command.collection || Collection.NESTJS,
+            value: command.collection,
           });
           options.push({
             name: 'project',
