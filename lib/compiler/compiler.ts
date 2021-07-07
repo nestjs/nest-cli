@@ -52,6 +52,9 @@ export class Compiler {
       : ((program as any) as ts.Program);
     const before = plugins.beforeHooks.map((hook) => hook(programRef));
     const after = plugins.afterHooks.map((hook) => hook(programRef));
+    const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
+      hook(programRef),
+    );
     const emitResult = program.emit(
       undefined,
       undefined,
@@ -60,7 +63,7 @@ export class Compiler {
       {
         before: before.concat(tsconfigPathsPlugin),
         after,
-        afterDeclarations: [],
+        afterDeclarations,
       },
     );
 

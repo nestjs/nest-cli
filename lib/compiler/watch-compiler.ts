@@ -92,10 +92,16 @@ export class WatchCompiler {
         const after = plugins.afterHooks.map((hook) =>
           hook(program.getProgram()),
         );
+        const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
+          hook(program.getProgram()),
+        );
         before.unshift(tsconfigPathsPlugin);
 
         transforms.before = before.concat(transforms.before || []);
         transforms.after = after.concat(transforms.after || []);
+        transforms.afterDeclarations = afterDeclarations.concat(
+          transforms.afterDeclarations || [],
+        );
 
         return origProgramEmit(
           targetSourceFile,

@@ -35,6 +35,9 @@ export const webpackDefaultsFactory = (
               getCustomTransformers: (program: any) => ({
                 before: plugins.beforeHooks.map((hook) => hook(program)),
                 after: plugins.afterHooks.map((hook) => hook(program)),
+                afterDeclaratqions: plugins.afterDeclarationsHooks.map((hook) =>
+                  hook(program),
+                ),
               }),
             },
           },
@@ -92,6 +95,8 @@ export const webpackDefaultsFactory = (
 function isAnyPluginRegistered(plugins: MultiNestCompilerPlugins) {
   return (
     (plugins.afterHooks && plugins.afterHooks.length > 0) ||
-    (plugins.beforeHooks && plugins.beforeHooks.length > 0)
+    (plugins.beforeHooks && plugins.beforeHooks.length > 0) ||
+    (plugins.afterDeclarationsHooks &&
+      plugins.afterDeclarationsHooks.length > 0)
   );
 }

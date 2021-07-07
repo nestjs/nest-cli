@@ -16,11 +16,16 @@ interface PluginAndOptions {
 export interface NestCompilerPlugin {
   before?: (options?: Record<string, any>, program?: ts.Program) => Transformer;
   after?: (options?: Record<string, any>, program?: ts.Program) => Transformer;
+  afterDeclarations?: (
+    options?: Record<string, any>,
+    program?: ts.Program,
+  ) => Transformer;
 }
 
 export interface MultiNestCompilerPlugins {
   beforeHooks: Array<(program?: ts.Program) => Transformer>;
   afterHooks: Array<(program?: ts.Program) => Transformer>;
+  afterDeclarationsHooks: Array<(program?: ts.Program) => Transformer>;
 }
 
 export class PluginsLoader {
@@ -52,8 +57,9 @@ export class PluginsLoader {
     });
     const beforeHooks: MultiNestCompilerPlugins['afterHooks'] = [];
     const afterHooks: MultiNestCompilerPlugins['beforeHooks'] = [];
+    const afterDeclarationsHooks: MultiNestCompilerPlugins['afterDeclarationsHooks'] = [];
     pluginRefs.forEach((plugin, index) => {
-      if (!plugin.before && !plugin.after) {
+      if (!plugin.before && !plugin.after && !plugin.afterDeclarations) {
         throw new Error(CLI_ERRORS.WRONG_PLUGIN(pluginNames[index]));
       }
       const options = isObject(plugins[index])
@@ -62,10 +68,15 @@ export class PluginsLoader {
       plugin.before &&
         beforeHooks.push(plugin.before.bind(plugin.before, options));
       plugin.after && afterHooks.push(plugin.after.bind(plugin.after, options));
+      plugin.afterDeclarations &&
+        afterDeclarationsHooks.push(
+          plugin.afterDeclarations.bind(plugin.afterDeclarations, options),
+        );
     });
     return {
       beforeHooks,
       afterHooks,
+      afterDeclarationsHooks,
     };
   }
 }
