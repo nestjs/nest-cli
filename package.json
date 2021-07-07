@@ -59,7 +59,7 @@
     "rimraf": "3.0.2",
     "shelljs": "0.8.4",
     "tree-kill": "1.2.2",
-    "tsconfig-paths": "3.9.0",
+    "tsconfig-paths": "3.10.1",
     "tsconfig-paths-webpack-plugin": "3.5.1",
     "typescript": "4.3.4",
     "webpack": "5.28.0",
