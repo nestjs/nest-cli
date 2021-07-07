@@ -4,6 +4,7 @@ import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractCollection,
+  Collection,
   CollectionFactory,
   SchematicOption,
 } from '../lib/schematics';
@@ -35,7 +36,7 @@ const generateFiles = async (inputs: Input[]) => {
   const spec = inputs.find((option) => option.name === 'spec');
 
   const collection: AbstractCollection = CollectionFactory.create(
-    collectionOption || configuration.collection,
+    collectionOption || configuration.collection || Collection.NESTJS,
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
   schematicOptions.push(
