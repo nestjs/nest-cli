@@ -43,9 +43,8 @@ export class StartAction extends BuildAction {
       const binaryToRun =
         binaryToRunOption && (binaryToRunOption.value as string | undefined);
 
-      const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
-        pathToTsconfig,
-      );
+      const { options: tsOptions } =
+        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
       const onSuccess = this.createOnSuccessHook(
         configuration,
@@ -146,9 +145,21 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
+    if (this.isSourceMapSupportPkgAvailable()) {
+      processArgs.unshift('-r source-map-support/register');
+    }
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
       shell: true,
     });
+  }
+
+  private isSourceMapSupportPkgAvailable() {
+    try {
+      require.resolve('source-map-support');
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
