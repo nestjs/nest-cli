@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
+import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { Configuration } from '../lib/configuration';
@@ -84,7 +85,7 @@ export class StartAction extends BuildAction {
     let childProcessRef: any;
     process.on(
       'exit',
-      () => childProcessRef && killProcess(childProcessRef.pid),
+      () => childProcessRef && killProcessSync(childProcessRef.pid),
     );
 
     return () => {
