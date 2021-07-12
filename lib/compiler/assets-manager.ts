@@ -13,6 +13,7 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
+  private initialLoadPhase = true; // set to false once initial load has concluded, as we don't want to restart the server when files are initially loaded
 
   /**
    * Using on `nest build` to close file watch or the build process will not end
@@ -50,6 +51,7 @@ export class AssetsManager {
           return {
             glob: join(sourceRoot, item),
             outDir,
+            reload: false,
           };
         }
         return {
@@ -58,6 +60,7 @@ export class AssetsManager {
           exclude: item.exclude ? join(sourceRoot, item.exclude) : undefined,
           flat: item.flat, // deprecated field
           watchAssets: item.watchAssets,
+          reload: item.reload ?? false,
         };
       });
 
@@ -72,8 +75,9 @@ export class AssetsManager {
         const option: ActionOnFile = {
           action: 'change',
           item,
-          path: '',
+          path: '', // why is this always an empty string?
           sourceRoot,
+          reload: item.reload,
           watchAssetsMode: isWatchEnabled,
         };
 
@@ -86,6 +90,11 @@ export class AssetsManager {
 
         this.watchers.push(watcher);
       }
+
+      // all file watchers added, now schedule the end of initial load phase
+      setTimeout(() => {
+        this.initialLoadPhase = false;
+      }, getValueOrDefault<number>(configuration, 'compilerOptions.loadTimeout', appName, 'path', undefined, 30000));
     } catch (err) {
       throw new Error(
         `An error occurred during the assets copying process. ${err.message}`,
@@ -94,8 +103,9 @@ export class AssetsManager {
   }
 
   private actionOnFile(option: ActionOnFile) {
-    const { action, item, path, sourceRoot, watchAssetsMode } = option;
+    const { action, item, path, sourceRoot, watchAssetsMode, reload } = option;
     const isWatchEnabled = watchAssetsMode || item.watchAssets;
+    const shouldReloadOnChange = reload && isWatchEnabled;
 
     // Allow to do action for the first time before check watchMode
     if (!isWatchEnabled && this.watchAssetsKeyValue[path]) {
@@ -118,6 +128,12 @@ export class AssetsManager {
     } else if (action === 'unlink') {
       // Remove from output dir if file is deleted
       shell.rm(dest);
+    }
+
+    // TODO: trigger reload if new file added after initial load phase
+    if (shouldReloadOnChange) {
+      this.closeWatchers();
+      // TODO: how to reload server here?????
     }
   }
 }

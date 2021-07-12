@@ -6,6 +6,7 @@ export interface AssetEntry {
   exclude?: string;
   outDir?: string;
   watchAssets?: boolean;
+  reload: boolean;
 }
 
 export interface ActionOnFile {
@@ -14,6 +15,7 @@ export interface ActionOnFile {
   path: string;
   sourceRoot: string;
   watchAssetsMode: boolean;
+  reload: boolean;
 }
 
 interface CompilerOptions {
@@ -23,6 +25,7 @@ interface CompilerOptions {
   plugins?: string[];
   assets?: string[];
   deleteOutDir?: boolean;
+  loadTimeout?: number;
 }
 
 interface GenerateOptions {
