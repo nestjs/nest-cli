@@ -20,9 +20,14 @@ interface CompilerOptions {
   tsConfigPath?: string;
   webpack?: boolean;
   webpackConfigPath?: string;
-  plugins?: string[];
+  plugins?: string[] | PluginOptions[];
   assets?: string[];
   deleteOutDir?: boolean;
+}
+
+interface PluginOptions {
+  name: string;
+  options: object;
 }
 
 interface GenerateOptions {
