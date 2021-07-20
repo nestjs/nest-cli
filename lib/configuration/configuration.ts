@@ -27,7 +27,7 @@ interface CompilerOptions {
 
 interface PluginOptions {
   name: string;
-  options: object;
+  options: Record<string, any>[];
 }
 
 interface GenerateOptions {
