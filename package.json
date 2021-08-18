@@ -93,7 +93,7 @@
     "release-it": "14.11.5",
     "ts-jest": "27.0.5",
     "ts-loader": "9.2.5",
-    "ts-node": "10.2.0"
+    "ts-node": "10.2.1"
   },
   "husky": {
     "hooks": {
