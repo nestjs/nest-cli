@@ -58,7 +58,7 @@
     "os-name": "4.0.1",
     "rimraf": "3.0.2",
     "shelljs": "0.8.4",
-    "source-map-support": "0.5.19",
+    "source-map-support": "0.5.20",
     "tree-kill": "1.2.2",
     "tsconfig-paths": "3.10.1",
     "tsconfig-paths-webpack-plugin": "3.5.1",
