@@ -88,7 +88,7 @@
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "husky": "7.0.2",
-    "jest": "27.1.1",
+    "jest": "27.2.0",
     "prettier": "2.4.0",
     "release-it": "14.11.5",
     "ts-jest": "27.0.5",
