@@ -70,6 +70,7 @@ export class WebpackCompiler {
         : webpackConfigFactoryOrConfig(defaultOptions, webpack);
     const webpackConfiguration = {
       ...defaultOptions,
+      mode: watchMode ? 'development' : defaultOptions.mode,
       ...projectWebpackOptions,
     };
     const compiler = webpack(webpackConfiguration);
