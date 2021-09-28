@@ -28,6 +28,7 @@ export class NewCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option('--strict', 'Enables strict mode in TypeScript.')
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
@@ -35,6 +36,7 @@ export class NewCommand extends AbstractCommand {
         options.push({ name: 'dry-run', value: !!command.dryRun });
         options.push({ name: 'skip-git', value: !!command.skipGit });
         options.push({ name: 'skip-install', value: !!command.skipInstall });
+        options.push({ name: 'strict', value: !!command.strict });
         options.push({
           name: 'package-manager',
           value: command.packageManager,
