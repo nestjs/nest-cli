@@ -1,7 +1,25 @@
 import { SchematicOption } from '../../../lib/schematics';
 
+interface TestOption {
+  input: string;
+  expected: string;
+}
+
+interface TestFlag {
+  input: boolean;
+}
+
+type TestSuite = {
+  description: string;
+  option: string;
+} & (TestOption | TestFlag);
+
+function isFlagTest(test: any): test is TestFlag {
+  return typeof test.expected === 'undefined';
+}
+
 describe('Schematic Option', () => {
-  [
+  const tests: TestSuite[] = [
     {
       description: 'should manage string option name',
       option: 'name',
@@ -51,6 +69,16 @@ describe('Schematic Option', () => {
       expected: '"name <name@example.com>"',
     },
     {
+      description: 'should use "strict" mode',
+      option: 'strict',
+      input: true,
+    },
+    {
+      description: 'should not use "strict" mode',
+      option: 'strict',
+      input: false,
+    },
+    {
       description: 'should manage version',
       option: 'version',
       input: '1.0.0',
@@ -62,12 +90,23 @@ describe('Schematic Option', () => {
       input: 'path/to/generate',
       expected: 'path/to/generate',
     },
-  ].forEach((test) => {
+  ];
+
+  tests.forEach((test) => {
     it(test.description, () => {
       const option = new SchematicOption(test.option, test.input);
-      expect(option.toCommandString()).toEqual(
-        `--${test.option}=${test.expected}`,
-      );
+
+      if (isFlagTest(test)) {
+        if (test.input) {
+          expect(option.toCommandString()).toEqual(`--${test.option}`);
+        } else {
+          expect(option.toCommandString()).toEqual(`--no-${test.option}`);
+        }
+      } else {
+        expect(option.toCommandString()).toEqual(
+          `--${test.option}=${test.expected}`,
+        );
+      }
     });
   });
 
