@@ -102,7 +102,7 @@ export abstract class AbstractPackageManager {
     return dependencies as ProjectDependency[];
   }
 
-  public async getDevelopement(): Promise<ProjectDependency[]> {
+  public async getDevelopment(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
     const packageJsonDevDependencies: any = packageJsonContent.devDependencies;
     const dependencies = [];
@@ -134,7 +134,7 @@ export abstract class AbstractPackageManager {
     await this.update(commandArguments);
   }
 
-  public async updateDevelopement(dependencies: string[]) {
+  public async updateDevelopment(dependencies: string[]) {
     const commandArguments = `${this.cli.update} ${dependencies.join(' ')}`;
     await this.update(commandArguments);
   }
@@ -149,7 +149,7 @@ export abstract class AbstractPackageManager {
     await this.addProduction(dependencies, tag);
   }
 
-  public async upgradeDevelopement(dependencies: string[], tag: string) {
+  public async upgradeDevelopment(dependencies: string[], tag: string) {
     await this.deleteDevelopment(dependencies);
     await this.addDevelopment(dependencies, tag);
   }
