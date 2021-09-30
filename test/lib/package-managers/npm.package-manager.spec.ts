@@ -79,7 +79,7 @@ describe('NpmPackageManager', () => {
       const spy = jest.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `update ${dependencies.join(' ')}`;
-      packageManager.updateDevelopement(dependencies);
+      packageManager.updateDevelopment(dependencies);
       expect(spy).toBeCalledWith(command, true);
     });
   });
@@ -113,7 +113,7 @@ describe('NpmPackageManager', () => {
         .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
 
-      return packageManager.upgradeDevelopement(dependencies, tag).then(() => {
+      return packageManager.upgradeDevelopment(dependencies, tag).then(() => {
         expect(spy.mock.calls).toEqual([
           [uninstallCommand, true],
           [installCommand, true],
