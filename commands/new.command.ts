@@ -21,6 +21,10 @@ export class NewCommand extends AbstractCommand {
         'Specify package manager.',
       )
       .option(
+        '--platform [platform]',
+        'Specify the underlying HTTP platform to be used (express or fastify).',
+      )
+      .option(
         '-l, --language [language]',
         'Programming language to be used (TypeScript or JavaScript).',
       )
@@ -30,8 +34,10 @@ export class NewCommand extends AbstractCommand {
       )
       .option('--strict', 'Enables strict mode in TypeScript.')
       .action(async (name: string, command: Command) => {
-        const options: Input[] = [];
+        const availableHttpPlatforms = ['express', 'fastify'];
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
+
+        const options: Input[] = [];
         options.push({ name: 'directory', value: command.directory });
         options.push({ name: 'dry-run', value: !!command.dryRun });
         options.push({ name: 'skip-git', value: !!command.skipGit });
@@ -41,6 +47,20 @@ export class NewCommand extends AbstractCommand {
           name: 'package-manager',
           value: command.packageManager,
         });
+        options.push({
+          name: 'platform',
+          value: command.platform,
+        });
+
+        if (!!command.platform) {
+          const lowercasedPlatform = command.platform.toLowerCase();
+          if (!availableHttpPlatforms.includes(lowercasedPlatform)) {
+            throw new Error(
+              `Invalid HTTP platform "${command.platform}" selected. Available platforms are "express" or "fastify"`,
+            );
+          }
+          command.platform = lowercasedPlatform;
+        }
 
         if (!!command.language) {
           const lowercasedLanguage = command.language.toLowerCase();
@@ -62,6 +82,7 @@ export class NewCommand extends AbstractCommand {
               break;
           }
         }
+
         options.push({
           name: 'language',
           value: !!command.language ? command.language : 'ts',
