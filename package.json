@@ -49,7 +49,7 @@
     "@nestjs/schematics": "^8.0.3",
     "chalk": "3.0.0",
     "chokidar": "3.5.2",
-    "cli-table3": "0.5.1",
+    "cli-table3": "0.6.0",
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "6.3.3",
     "inquirer": "7.3.3",
