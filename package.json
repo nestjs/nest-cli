@@ -61,7 +61,7 @@
     "source-map-support": "0.5.20",
     "tree-kill": "1.2.2",
     "tsconfig-paths": "3.11.0",
-    "tsconfig-paths-webpack-plugin": "3.5.1",
+    "tsconfig-paths-webpack-plugin": "3.5.2",
     "typescript": "4.3.5",
     "webpack": "5.58.2",
     "webpack-node-externals": "3.0.0"
