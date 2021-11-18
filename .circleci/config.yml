@@ -21,7 +21,7 @@ jobs:
   build:
     working_directory: ~/nest
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:17
     steps:
       - checkout
       - run:
@@ -43,7 +43,7 @@ jobs:
   unit_tests:
     working_directory: ~/nest
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:17
     steps:
       - checkout
       - *restore-cache
