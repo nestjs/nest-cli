@@ -11,15 +11,11 @@ import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
 import { WatchCompiler } from '../lib/compiler/watch-compiler';
 import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
 import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
-import {
-  ConfigurationLoader,
-  NestConfigurationLoader,
-} from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
-import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
 import webpack = require('webpack');
+import { loadConfiguration } from '../lib/utils/load-configuration';
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -35,10 +31,6 @@ export class BuildAction extends AbstractAction {
     this.pluginsLoader,
     this.tsConfigProvider,
     this.tsLoader,
-  );
-  protected readonly fileSystemReader = new FileSystemReader(process.cwd());
-  protected readonly loader: ConfigurationLoader = new NestConfigurationLoader(
-    this.fileSystemReader,
   );
   protected readonly assetsManager = new AssetsManager();
   protected readonly workspaceUtils = new WorkspaceUtils();
@@ -75,7 +67,7 @@ export class BuildAction extends AbstractAction {
   ) {
     const configFileName = options.find((option) => option.name === 'config')!
       .value as string;
-    const configuration = await this.loader.load(configFileName);
+    const configuration = await loadConfiguration(configFileName);
     const appName = inputs.find((input) => input.name === 'app')!
       .value as string;
 
@@ -86,9 +78,8 @@ export class BuildAction extends AbstractAction {
       'path',
       options,
     );
-    const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
-      pathToTsconfig,
-    );
+    const { options: tsOptions } =
+      this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
     const outDir = tsOptions.outDir || defaultOutDir;
     const isWebpackEnabled = getValueOrDefault<boolean>(
       configuration,
