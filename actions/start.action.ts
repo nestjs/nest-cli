@@ -10,13 +10,14 @@ import { Configuration } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
 import { ERROR_PREFIX } from '../lib/ui';
 import { BuildAction } from './build.action';
+import { loadConfiguration } from '../lib/utils/load-configuration';
 
 export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
       const configFileName = options.find((option) => option.name === 'config')!
         .value as string;
-      const configuration = await this.loader.load(configFileName);
+      const configuration = await loadConfiguration(configFileName);
       const appName = inputs.find((input) => input.name === 'app')!
         .value as string;
 
