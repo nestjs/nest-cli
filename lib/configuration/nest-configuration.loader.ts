@@ -1,38 +1,31 @@
 import { Reader } from '../readers';
 import { Configuration } from './configuration';
 import { ConfigurationLoader } from './configuration.loader';
-import { defaultConfiguration } from './defaults';
+import { Schema } from 'types-joi';
 
 export class NestConfigurationLoader implements ConfigurationLoader {
-  constructor(private readonly reader: Reader) {}
+  constructor(
+    private readonly reader: Reader,
+    private readonly configurationSchema: Schema<any>,
+  ) {}
+
+  private validateConfiguration(configuration: Configuration): Configuration {
+    const { error, value } = this.configurationSchema.validate(configuration);
+    if (error) throw error;
+    return value;
+  }
 
   public async load(name?: string): Promise<Required<Configuration>> {
-    const content: string | undefined = name
-      ? await this.reader.read(name)
-      : await this.reader.readAnyOf([
-          '.nestcli.json',
-          '.nest-cli.json',
-          'nest-cli.json',
-          'nest.json',
-        ]);
-
-    if (!content) {
-      return defaultConfiguration;
-    }
+    const content =
+      (name
+        ? await this.reader.read(name)
+        : await this.reader.readAnyOf([
+            '.nestcli.json',
+            '.nest-cli.json',
+            'nest-cli.json',
+            'nest.json',
+          ])) || '{}';
     const fileConfig = JSON.parse(content);
-    if (fileConfig.compilerOptions) {
-      return {
-        ...defaultConfiguration,
-        ...fileConfig,
-        compilerOptions: {
-          ...defaultConfiguration.compilerOptions,
-          ...fileConfig.compilerOptions,
-        },
-      };
-    }
-    return {
-      ...defaultConfiguration,
-      ...fileConfig,
-    };
+    return this.validateConfiguration(fileConfig);
   }
 }

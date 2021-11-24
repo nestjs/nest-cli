@@ -1,4 +1,8 @@
+import * as Joi from 'types-joi';
+import { InterfaceFrom } from 'types-joi';
+
 export type Asset = 'string' | AssetEntry;
+
 export interface AssetEntry {
   glob: string;
   include?: string;
@@ -16,42 +20,65 @@ export interface ActionOnFile {
   watchAssetsMode: boolean;
 }
 
-interface CompilerOptions {
-  tsConfigPath?: string;
-  webpack?: boolean;
-  webpackConfigPath?: string;
-  plugins?: string[] | PluginOptions[];
-  assets?: string[];
-  deleteOutDir?: boolean;
-}
+const pluginOptionsSchema = Joi.object({
+  name: Joi.string().required(),
+  options: Joi.object().pattern(Joi.string(), Joi.any()).required(),
+});
 
-interface PluginOptions {
-  name: string;
-  options: Record<string, any>[];
-}
+const generateOptionsSchema = Joi.object({
+  spec: Joi.alternatives([
+    Joi.boolean(),
+    Joi.object().pattern(Joi.string(), Joi.boolean().required()),
+  ]).optional(),
+});
 
-interface GenerateOptions {
-  spec?: boolean | Record<string, boolean>;
-}
+const compilerOptionsSchema = Joi.object({
+  tsConfigPath: Joi.string().default('tsconfig.build.json'),
+  webpack: Joi.boolean().default(false),
+  webpackConfigPath: Joi.string().default('webpack.config.js'),
+  plugins: Joi.array()
+    .items(Joi.alternatives([Joi.string(), pluginOptionsSchema]))
+    .default([]),
+  assets: Joi.array()
+    .items(
+      Joi.alternatives([
+        Joi.string(),
+        Joi.object({
+          include: Joi.string().optional(),
+          exclude: Joi.string().optional(),
+          outDir: Joi.string().optional(),
+          watchAssets: Joi.boolean().optional(),
+        }),
+      ]),
+    )
+    .default([]),
+  watchAssets: Joi.boolean().default(false),
+  deleteOutDir: Joi.boolean().default(false),
+});
 
-export interface ProjectConfiguration {
-  type?: string;
-  root?: string;
-  entryFile?: string;
-  sourceRoot?: string;
-  compilerOptions?: CompilerOptions;
-}
+const projectConfigurationSchema = Joi.object({
+  type: Joi.string().optional(),
+  root: Joi.string().optional(),
+  entryFile: Joi.string().optional(),
+  sourceRoot: Joi.string().optional(),
+  compilerOptions: compilerOptionsSchema.optional(),
+});
 
-export interface Configuration {
-  [key: string]: any;
-  language?: string;
-  collection?: string;
-  sourceRoot?: string;
-  entryFile?: string;
-  monorepo?: boolean;
-  compilerOptions?: CompilerOptions;
-  generateOptions?: GenerateOptions;
-  projects?: {
-    [key: string]: ProjectConfiguration;
-  };
-}
+export const configurationSchema = Joi.object({
+  language: Joi.string().default('ts'),
+  collection: Joi.string().default('@nestjs/schematics'),
+  sourceRoot: Joi.string().default('src'),
+  entryFile: Joi.string().default('main'),
+  monorepo: Joi.boolean().default(false),
+  compilerOptions: compilerOptionsSchema.default(undefined),
+  generateOptions: generateOptionsSchema.default(undefined),
+  projects: Joi.object()
+    .pattern(Joi.string(), projectConfigurationSchema.required())
+    .default({}),
+}).required();
+
+export type Configuration = InterfaceFrom<typeof configurationSchema>;
+
+export type ProjectConfiguration = InterfaceFrom<
+  typeof projectConfigurationSchema
+>;

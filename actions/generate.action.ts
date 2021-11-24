@@ -66,7 +66,7 @@ const generateFiles = async (inputs: Input[]) => {
 
     for (const property in configurationProjects) {
       if (
-        configurationProjects[property].sourceRoot === configuration.sourceRoot
+        configurationProjects[property]!.sourceRoot === configuration.sourceRoot
       ) {
         defaultProjectName = property + defaultLabel;
         break;
@@ -86,7 +86,7 @@ const generateFiles = async (inputs: Input[]) => {
 
     const project: string = answers.appName.replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
-      sourceRoot = configurationProjects[project].sourceRoot;
+      sourceRoot = configurationProjects[project]!.sourceRoot;
     }
 
     if (answers.appName !== defaultProjectName) {
