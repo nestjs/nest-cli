@@ -15,8 +15,8 @@ import { loadConfiguration } from '../lib/utils/load-configuration';
 export class StartAction extends BuildAction {
   public async handle(inputs: Input[], options: Input[]) {
     try {
-      const configFileName = options.find((option) => option.name === 'config')!
-        .value as string;
+      const configFileName = options.find((option) => option.name === 'config')
+        ?.value as string | undefined;
       const configuration = await loadConfiguration(configFileName);
       const appName = inputs.find((input) => input.name === 'app')!
         .value as string;

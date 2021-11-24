@@ -65,8 +65,8 @@ export class BuildAction extends AbstractAction {
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = options.find((option) => option.name === 'config')!
-      .value as string;
+    const configFileName = options.find((option) => option.name === 'config')
+      ?.value as string | undefined;
     const configuration = await loadConfiguration(configFileName);
     const appName = inputs.find((input) => input.name === 'app')!
       .value as string;
@@ -153,7 +153,7 @@ export class BuildAction extends AbstractAction {
   ): (
     config: webpack.Configuration,
     webpackRef: typeof webpack,
-  ) => webpack.Configuration | webpack.Configuration {
+  ) => webpack.Configuration {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
     try {
       return require(pathToWebpackFile);
