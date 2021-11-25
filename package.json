@@ -89,7 +89,7 @@
     "gulp-clean": "0.4.0",
     "husky": "7.0.4",
     "jest": "27.3.1",
-    "prettier": "2.4.1",
+    "prettier": "2.5.0",
     "release-it": "14.11.8",
     "ts-jest": "27.0.7",
     "ts-loader": "9.2.6",
