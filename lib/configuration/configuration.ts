@@ -1,5 +1,6 @@
 import * as Joi from 'types-joi';
 import { InterfaceFrom } from 'types-joi';
+import { Schema } from 'joi';
 
 export type Asset = 'string' | AssetEntry;
 
@@ -64,7 +65,7 @@ const projectConfigurationSchema = Joi.object({
   compilerOptions: compilerOptionsSchema.optional(),
 });
 
-export const configurationSchema = Joi.object({
+const configurationSchemaOfTypesJoi = Joi.object({
   language: Joi.string().default('ts'),
   collection: Joi.string().default('@nestjs/schematics'),
   sourceRoot: Joi.string().default('src'),
@@ -77,7 +78,10 @@ export const configurationSchema = Joi.object({
     .default({}),
 }).required();
 
-export type Configuration = InterfaceFrom<typeof configurationSchema>;
+export const configurationSchema =
+  configurationSchemaOfTypesJoi as unknown as Schema;
+
+export type Configuration = InterfaceFrom<typeof configurationSchemaOfTypesJoi>;
 
 export type ProjectConfiguration = InterfaceFrom<
   typeof projectConfigurationSchema

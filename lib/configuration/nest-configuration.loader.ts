@@ -1,7 +1,7 @@
 import { Reader } from '../readers';
 import { Configuration } from './configuration';
 import { ConfigurationLoader } from './configuration.loader';
-import { Schema } from 'types-joi';
+import { Schema } from 'joi';
 
 export class NestConfigurationLoader implements ConfigurationLoader {
   constructor(
