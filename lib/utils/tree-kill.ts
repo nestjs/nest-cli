@@ -27,7 +27,7 @@ function getAllPid(): {
 
   return rows
     .map(function (row) {
-      var parts = row.match(/\s*(\d+)\s*(\d+)/);
+      const parts = row.match(/\s*(\d+)\s*(\d+)/);
 
       if (parts === null) {
         return null;
@@ -38,7 +38,7 @@ function getAllPid(): {
         ppid: Number(parts[2]),
       };
     })
-    .filter(<T extends Object>(input: null | undefined | T): input is T => {
+    .filter(<T>(input: null | undefined | T): input is T => {
       return input != null;
     });
 }
@@ -46,11 +46,11 @@ function getAllPid(): {
 function getAllChilds(pid: number) {
   const allpid = getAllPid();
 
-  let ppidHash: {
+  const ppidHash: {
     [key: number]: number[];
   } = {};
 
-  let result: number[] = [];
+  const result: number[] = [];
 
   allpid.forEach(function (item) {
     ppidHash[item.ppid] = ppidHash[item.ppid] || [];
