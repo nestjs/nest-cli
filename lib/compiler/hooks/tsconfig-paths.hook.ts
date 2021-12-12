@@ -36,6 +36,7 @@ export function tsconfigPathsBeforeHookFactory(
             }
             (newNode as any).moduleSpecifier = tsBinary.createLiteral(result);
             (newNode as any).moduleSpecifier.parent = (node as any).moduleSpecifier.parent;
+            (newNode as any).flags = node.flags;
             return newNode;
           } catch {
             return node;
