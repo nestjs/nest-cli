@@ -77,7 +77,9 @@ export class GenerateCommand extends AbstractCommand {
   private buildDescription(): string {
     return (
       'Generate a Nest element.\n' +
-      '  Available schematics:\n' +
+      `  Schematics available on ${chalk.bold(
+        '@nestjs/schematics',
+      )} collection:\n` +
       this.buildSchematicsListAsTable()
     );
   }
