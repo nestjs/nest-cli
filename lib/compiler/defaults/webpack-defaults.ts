@@ -23,6 +23,7 @@ export const webpackDefaultsFactory = (
   },
   ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
   externals: [nodeExternals() as any],
+  externalsPresets: { node: true },
   module: {
     rules: [
       {
