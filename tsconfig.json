@@ -6,7 +6,11 @@
     "target": "es6",
     "skipLibCheck": true,
     "sourceMap": false,
-    "strict": true
+    "strict": true,
+    "types": [
+      "node",
+      "jest"
+    ]
   },
   "include": ["actions", "bin", "commands", "lib"],
   "exclude": ["node_modules", "e2e"]
