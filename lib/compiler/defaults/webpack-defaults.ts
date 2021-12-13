@@ -21,6 +21,7 @@ export const webpackDefaultsFactory = (
   output: {
     filename: join(relativeSourceRoot, `${entryFilename}.js`),
   },
+  ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
   externals: [nodeExternals() as any],
   module: {
     rules: [

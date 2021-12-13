@@ -90,7 +90,6 @@ export class WebpackCompiler {
         colors: true,
         modules: false,
         assets: false,
-        warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats!.hasErrors()) {
         if (!onSuccess) {
