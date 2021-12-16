@@ -77,7 +77,7 @@
     "@types/ora": "3.2.0",
     "@types/os-name": "3.1.0",
     "@types/rimraf": "3.0.2",
-    "@types/shelljs": "0.8.9",
+    "@types/shelljs": "0.8.10",
     "@types/webpack-node-externals": "2.5.3",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
