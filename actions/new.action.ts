@@ -118,12 +118,11 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
 };
 
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
+  const optionsToExclude = ['skip-install', 'skip-git', 'package-manager'];
+
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
-      if (
-        option.name !== 'skip-install' &&
-        option.value !== 'package-manager'
-      ) {
+      if (!optionsToExclude.includes(option.name)) {
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
