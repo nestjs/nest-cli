@@ -17,7 +17,7 @@ export class NewCommand extends AbstractCommand {
       .option('-g, --skip-git', 'Skip git repository initialization.')
       .option('-s, --skip-install', 'Skip package installation.')
       .option(
-        '-p, --package-manager [package-manager]',
+        '-p, --package-manager [packageManager]',
         'Specify package manager.',
       )
       .option(
@@ -38,7 +38,7 @@ export class NewCommand extends AbstractCommand {
         options.push({ name: 'skip-install', value: !!command.skipInstall });
         options.push({ name: 'strict', value: !!command.strict });
         options.push({
-          name: 'package-manager',
+          name: 'packageManager',
           value: command.packageManager,
         });
 
