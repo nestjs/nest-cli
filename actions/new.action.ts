@@ -141,34 +141,26 @@ const installPackages = async (
     (option) => option.name === 'package-manager',
   )!.value as string;
 
-  let packageManager: AbstractPackageManager;
   if (dryRunMode) {
     console.info();
     console.info(chalk.green(MESSAGES.DRY_RUN_MODE));
     console.info();
     return;
   }
-  if (inputPackageManager !== undefined) {
-    try {
-      packageManager = PackageManagerFactory.create(inputPackageManager);
-      await packageManager.install(installDirectory, inputPackageManager);
-    } catch (error) {
-      if (error && error.message) {
-        console.error(chalk.red(error.message));
-      }
+  try {
+    const packageManagerName =
+      inputPackageManager || (await askForPackageManager())['package-manager'];
+    const packageManager: AbstractPackageManager | undefined =
+      packageManagerName === PackageManager.NONE
+        ? undefined
+        : PackageManagerFactory.create(packageManagerName);
+    // will not install if user select `none`
+    await packageManager?.install(installDirectory, packageManagerName);
+  } catch (error) {
+    if (error && error.message) {
+      console.error(chalk.red(error.message));
     }
-  } else {
-    packageManager = await selectPackageManager();
-    await packageManager.install(
-      installDirectory,
-      packageManager.name.toLowerCase(),
-    );
   }
-};
-
-const selectPackageManager = async (): Promise<AbstractPackageManager> => {
-  const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers['package-manager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
@@ -176,7 +168,8 @@ const askForPackageManager = async (): Promise<Answers> => {
     generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
-      PackageManager.PNPM
+      PackageManager.PNPM,
+      PackageManager.NONE,
     ]),
   ];
   const prompt = inquirer.createPromptModule();
@@ -225,16 +218,18 @@ const printCollective = () => {
   emptyLine();
 };
 
-const print = (color: string | null = null) => (str = '') => {
-  const terminalCols = retrieveCols();
-  const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
-  const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
-  const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
-  if (color) {
-    str = (chalk as any)[color](str);
-  }
-  console.log(leftPadding, str);
-};
+const print =
+  (color: string | null = null) =>
+  (str = '') => {
+    const terminalCols = retrieveCols();
+    const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
+    const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
+    const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
+    if (color) {
+      str = (chalk as any)[color](str);
+    }
+    console.log(leftPadding, str);
+  };
 
 export const retrieveCols = () => {
   const defaultCols = 80;
