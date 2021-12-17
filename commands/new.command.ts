@@ -39,11 +39,15 @@ export class NewCommand extends AbstractCommand {
         options.push({ name: 'strict', value: !!command.strict });
         options.push({
           name: 'packageManager',
-          value: command.packageManager,
+          value: command.packageManager?.trim().toLowerCase(),
+        });
+        options.push({
+          name: 'collection',
+          value: command.collection || Collection.NESTJS,
         });
 
         if (!!command.language) {
-          const lowercasedLanguage = command.language.toLowerCase();
+          const lowercasedLanguage = (command.language as string).toLowerCase();
           const langMatch = availableLanguages.includes(lowercasedLanguage);
           if (!langMatch) {
             throw new Error(
@@ -65,10 +69,6 @@ export class NewCommand extends AbstractCommand {
         options.push({
           name: 'language',
           value: !!command.language ? command.language : 'ts',
-        });
-        options.push({
-          name: 'collection',
-          value: command.collection || Collection.NESTJS,
         });
 
         const inputs: Input[] = [];

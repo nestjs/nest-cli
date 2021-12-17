@@ -2,6 +2,8 @@ import * as chalk from 'chalk';
 import { EMOJIS } from './emojis';
 
 export const MESSAGES = {
+  APPLICATION_NAME_QUESTION:
+    'What name would you like to use for the new project?',
   PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',

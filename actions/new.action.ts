@@ -20,24 +20,18 @@ import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
-    const directoryOption = options.find(
-      (option) => option.name === 'directory',
-    );
-    const dryRunOption = options.find((option) => option.name === 'dry-run');
+    const dryRunOption = getDryRunOption(options);
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
-    const shouldSkipInstall = options.some(
-      (option) => option.name === 'skip-install' && option.value === true,
-    );
-    const shouldSkipGit = options.some(
-      (option) => option.name === 'skip-git' && option.value === true,
-    );
+    const shouldSkipInstall = getSkipInstallOption(options)?.value === true;
+    const shouldSkipGit = getSkipGitOption(options)?.value === true;
+
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs)!,
-      directoryOption,
+      getDirectoryOption(options),
     );
 
     if (!shouldSkipInstall) {
@@ -59,9 +53,33 @@ export class NewAction extends AbstractAction {
   }
 }
 
+const getDirectoryOption = (options: Input[]): Input | undefined =>
+  options.find((option) => option.name === 'directory');
+
+const getSkipInstallOption = (options: Input[]): Input | undefined =>
+  options.find((option) => option.name === 'skip-install');
+
+const getSkipGitOption = (options: Input[]): Input | undefined =>
+  options.find((option) => option.name === 'skip-git');
+
+const getDryRunOption = (options: Input[]): Input | undefined =>
+  options.find((option) => option.name === 'dry-run');
+
+const getApplicationNameInput = (inputs: Input[]): Input =>
+  inputs.find((input) => input.name === 'name')!;
+
+const getPackageManagerOption = (options: Input[]): Input | undefined =>
+  options.find((option) => option.name === 'packageManager');
+
+const getCollectionOption = (options: Input[]): Input =>
+  options.find((option) => option.name === 'collection')!;
+
+const getPackageManagerName = (options: Input[]): string =>
+  (getPackageManagerOption(options)?.value as string) || PackageManager.NPM;
+
 const getProjectDirectory = (
   applicationName: Input,
-  directoryOption?: Input,
+  directoryOption: Input | undefined,
 ): string => {
   return (
     (directoryOption && (directoryOption.value as string)) ||
@@ -69,17 +87,27 @@ const getProjectDirectory = (
   );
 };
 
-const getApplicationNameInput = (inputs: Input[]): Input | undefined =>
-  inputs.find((input) => input.name === 'name');
+const askForApplicationNameUsingPrompt =
+  async (): Promise<inquirer.Answers> => {
+    const questions: inquirer.Question[] = [
+      generateInput('name', MESSAGES.APPLICATION_NAME_QUESTION)('nest-app'),
+    ];
 
-const getPackageManagerOption = (options: Input[]): Input | undefined =>
-  options.find((option) => option.name === 'packageManager');
+    const prompt = inquirer.createPromptModule();
+    return prompt(questions);
+  };
 
-const getPackageManagerName = (options: Input[]): string => {
-  const packageManager = getPackageManagerOption(options);
-  return (
-    (packageManager?.value as string) || PackageManager.NPM
-  ).toLowerCase();
+const askForPackageManagerUsingPrompt = async (): Promise<inquirer.Answers> => {
+  const questions: inquirer.Question[] = [
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
+      PackageManager.NPM,
+      PackageManager.YARN,
+      PackageManager.PNPM,
+    ]),
+  ];
+
+  const prompt = inquirer.createPromptModule();
+  return prompt(questions);
 };
 
 /**
@@ -90,17 +118,15 @@ const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
-  const prompt = inquirer.createPromptModule();
-
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
-    const answers = await askForApplicationNameUsingPrompt(prompt);
+    const answers = await askForApplicationNameUsingPrompt();
     replaceInputMissingInformation(inputs, answers);
   }
 
   const packageManagerInput = getPackageManagerOption(options);
   if (!packageManagerInput!.value) {
-    const answers = await askForPackageManagerUsingPrompt(prompt);
+    const answers = await askForPackageManagerUsingPrompt();
     replaceInputMissingInformation(options, answers);
   }
 };
@@ -117,12 +143,8 @@ const replaceInputMissingInformation = (
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
-  const collectionName = options.find(
-    (option) => option.name === 'collection' && option.value != null,
-  )!.value;
-  const collection = CollectionFactory.create(
-    (collectionName as Collection) || Collection.NESTJS,
-  );
+  const collectionName = getCollectionOption(options).value as Collection;
+  const collection = CollectionFactory.create(collectionName);
   const schematicOptions = mapSchematicOptions(args.concat(options));
   await collection.execute('application', schematicOptions);
   console.info();
@@ -160,30 +182,6 @@ const installPackages = async (
       console.error(chalk.red(error.message));
     }
   }
-};
-
-const askForApplicationNameUsingPrompt = async (
-  prompt: inquirer.PromptModule,
-): Promise<inquirer.Answers> => {
-  const questions: inquirer.Question[] = [
-    generateInput('name', MESSAGES.APPLICATION_NAME_QUESTION)('nest-app'),
-  ];
-
-  return prompt(questions as ReadonlyArray<inquirer.Question>);
-};
-
-const askForPackageManagerUsingPrompt = async (
-  prompt: inquirer.PromptModule,
-): Promise<inquirer.Answers> => {
-  const questions: inquirer.Question[] = [
-    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
-      PackageManager.NPM,
-      PackageManager.YARN,
-      PackageManager.PNPM,
-    ]),
-  ];
-
-  return prompt(questions);
 };
 
 const initializeGitRepository = async (dir: string) => {
