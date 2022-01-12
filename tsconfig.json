@@ -7,6 +7,7 @@
     "skipLibCheck": true,
     "sourceMap": false,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "types": [
       "node",
       "jest"

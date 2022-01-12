@@ -53,7 +53,7 @@ export const webpackDefaultsFactory = (
     plugins: [
       new TsconfigPathsPlugin({
         configFile: tsConfigFile,
-      }),
+      }) as any,
     ],
   },
   mode: 'none',
