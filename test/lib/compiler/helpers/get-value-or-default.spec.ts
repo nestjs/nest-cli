@@ -1,9 +1,8 @@
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default';
-import { Configuration } from '../../../../lib/configuration';
 
 describe('Get Value or Default', () => {
   it('should return assigned configuration value', async () => {
-    let configuration: Required<Configuration> = {
+    let configuration: any = {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
@@ -34,7 +33,7 @@ describe('Get Value or Default', () => {
   });
 
   it('should return assigned project configuration value', async () => {
-    let configuration: Required<Configuration> = {
+    let configuration: any = {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
@@ -103,7 +102,7 @@ describe('Get Value or Default', () => {
   });
 
   it('should return default configuration value when project value not found', async () => {
-    let configuration: Required<Configuration> = {
+    let configuration: any = {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
@@ -172,7 +171,7 @@ describe('Get Value or Default', () => {
   });
 
   it('should concatenate property path when app name contains dots', async () => {
-    let configuration: Required<Configuration> = {
+    let configuration: any = {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',

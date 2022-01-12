@@ -69,7 +69,7 @@ export class AddAction extends AbstractAction {
 
       for (const property in configurationProjects) {
         if (
-          configurationProjects[property].sourceRoot ===
+          configurationProjects[property]!.sourceRoot ===
           configuration.sourceRoot
         ) {
           defaultProjectName = property + defaultLabel;
@@ -89,7 +89,7 @@ export class AddAction extends AbstractAction {
       );
       const project = answers.appName.replace(defaultLabel, '');
       if (project !== configuration.sourceRoot) {
-        sourceRoot = configurationProjects[project].sourceRoot;
+        sourceRoot = configurationProjects[project]!.sourceRoot;
       }
     }
     return { name: 'sourceRoot', value: sourceRoot };

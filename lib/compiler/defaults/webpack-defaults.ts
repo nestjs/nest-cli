@@ -1,7 +1,6 @@
 import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import { defaultConfiguration } from '../../configuration/defaults';
 import { appendTsExtension } from '../helpers/append-extension';
 import { MultiNestCompilerPlugins } from '../plugins-loader';
 import webpack = require('webpack');
@@ -12,7 +11,7 @@ export const webpackDefaultsFactory = (
   relativeSourceRoot: string,
   entryFilename: string,
   isDebugEnabled = false,
-  tsConfigFile = defaultConfiguration.compilerOptions.tsConfigPath,
+  tsConfigFile: string,
   plugins: MultiNestCompilerPlugins,
 ): webpack.Configuration => ({
   entry: appendTsExtension(join(sourceRoot, entryFilename)),
