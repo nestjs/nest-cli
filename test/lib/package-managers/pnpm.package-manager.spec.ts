@@ -7,7 +7,7 @@ import { PnpmRunner } from '../../../lib/runners/pnpm.runner';
 
 jest.mock('../../../lib/runners/pnpm.runner');
 
-describe('NpmPackageManager', () => {
+describe('PnpmPackageManager', () => {
   let packageManager: PnpmPackageManager;
   beforeEach(() => {
     (PnpmRunner as any).mockClear();
@@ -29,6 +29,7 @@ describe('NpmPackageManager', () => {
       remove: 'uninstall',
       saveFlag: '--save',
       saveDevFlag: '--save-dev',
+      silentFlag: '--reporter=silent',
     };
     expect(packageManager.cli).toMatchObject(expectedValues);
   });
@@ -38,7 +39,7 @@ describe('NpmPackageManager', () => {
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'pnpm');
-      expect(spy).toBeCalledWith('install --silent', true, testDir);
+      expect(spy).toBeCalledWith('install --reporter=silent', true, testDir);
     });
   });
   describe('addProduction', () => {
@@ -47,8 +48,8 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --save ${dependencies
-          .map((dependency) => `${dependency}@${tag}`)
-          .join(' ')}`;
+        .map((dependency) => `${dependency}@${tag}`)
+        .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -59,8 +60,8 @@ describe('NpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --save-dev ${dependencies
-          .map((dependency) => `${dependency}@${tag}`)
-          .join(' ')}`;
+        .map((dependency) => `${dependency}@${tag}`)
+        .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
       expect(spy).toBeCalledWith(command, true);
     });
@@ -91,8 +92,8 @@ describe('NpmPackageManager', () => {
       const uninstallCommand = `uninstall --save ${dependencies.join(' ')}`;
 
       const installCommand = `install --save ${dependencies
-          .map((dependency) => `${dependency}@${tag}`)
-          .join(' ')}`;
+        .map((dependency) => `${dependency}@${tag}`)
+        .join(' ')}`;
 
       return packageManager.upgradeProduction(dependencies, tag).then(() => {
         expect(spy.mock.calls).toEqual([
@@ -110,8 +111,8 @@ describe('NpmPackageManager', () => {
       const uninstallCommand = `uninstall --save-dev ${dependencies.join(' ')}`;
 
       const installCommand = `install --save-dev ${dependencies
-          .map((dependency) => `${dependency}@${tag}`)
-          .join(' ')}`;
+        .map((dependency) => `${dependency}@${tag}`)
+        .join(' ')}`;
 
       return packageManager.upgradeDevelopment(dependencies, tag).then(() => {
         expect(spy.mock.calls).toEqual([

@@ -21,6 +21,7 @@ export class YarnPackageManager extends AbstractPackageManager {
       remove: 'remove',
       saveFlag: '',
       saveDevFlag: '-D',
+      silentFlag: '--silent',
     };
   }
 }

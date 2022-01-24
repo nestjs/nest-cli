@@ -41,4 +41,13 @@ export class AbstractRunner {
       });
     });
   }
+
+  /**
+   * @param command
+   * @returns The entire command that will be ran when calling `run(command)`.
+   */
+  public rawFullCommand(command: string): string {
+    const commandArgs: string[] = [...this.args, command];
+    return `${this.binary} ${commandArgs.join(' ')}`;
+  }
 }

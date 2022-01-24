@@ -22,6 +22,7 @@ export class PnpmPackageManager extends AbstractPackageManager {
       remove: 'uninstall',
       saveFlag: '--save',
       saveDevFlag: '--save-dev',
+      silentFlag: '--reporter=silent',
     };
   }
 }

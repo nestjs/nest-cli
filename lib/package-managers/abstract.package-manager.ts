@@ -21,11 +21,11 @@ export abstract class AbstractPackageManager {
     });
     spinner.start();
     try {
-      const commandArguments = `${this.cli.install} --silent`;
+      const commandArgs = `${this.cli.install} ${this.cli.silentFlag}`;
       const collect = true;
-      const dasherizedDirectory: string = dasherize(directory);
+      const dasherizedDirectory = dasherize(directory);
       await this.runner.run(
-        commandArguments,
+        commandArgs,
         collect,
         join(process.cwd(), dasherizedDirectory),
       );
@@ -39,7 +39,15 @@ export abstract class AbstractPackageManager {
       console.info();
     } catch {
       spinner.fail();
-      console.error(chalk.red(MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED));
+      const commandArgs = this.cli.install;
+      const commandToRun = this.runner.rawFullCommand(commandArgs);
+      console.error(
+        chalk.red(
+          MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED(
+            chalk.bold(commandToRun),
+          ),
+        ),
+      );
     }
   }
 

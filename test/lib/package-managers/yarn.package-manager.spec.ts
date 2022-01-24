@@ -29,6 +29,7 @@ describe('YarnPackageManager', () => {
       remove: 'remove',
       saveFlag: '',
       saveDevFlag: '-D',
+      silentFlag: '--silent',
     };
     expect(packageManager.cli).toMatchObject(expectedValues);
   });
