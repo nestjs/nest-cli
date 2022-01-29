@@ -42,7 +42,7 @@ describe('Nest Collection', () => {
   [
     { name: 'application', alias: 'application' },
     { name: 'class', alias: 'cl' },
-    { name: 'configuration', alias: 'cl' },
+    { name: 'configuration', alias: 'config' },
     { name: 'controller', alias: 'co' },
     { name: 'decorator', alias: 'd' },
     { name: 'library', alias: 'lib' },
