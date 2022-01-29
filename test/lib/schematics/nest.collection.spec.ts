@@ -18,6 +18,7 @@ describe('Nest Collection', () => {
     'provider',
     'service',
     'sub-app',
+    'resource',
   ].forEach((schematic) => {
     it(`should call runner with ${schematic} schematic name`, async () => {
       const mock = jest.fn();
@@ -51,6 +52,7 @@ describe('Nest Collection', () => {
     { name: 'provider', alias: 'pr' },
     { name: 'service', alias: 's' },
     { name: 'sub-app', alias: 'app' },
+    { name: 'resource', alias: 'res' },
   ].forEach((schematic) => {
     it(`should call runner with schematic ${schematic.name} name when use ${schematic.alias} alias`, async () => {
       const mock = jest.fn();
