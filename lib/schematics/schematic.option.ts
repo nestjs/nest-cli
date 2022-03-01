@@ -1,5 +1,3 @@
-import { strings } from '@angular-devkit/core';
-
 export class SchematicOption {
   constructor(private name: string, private value: boolean | string) {}
 
@@ -13,16 +11,15 @@ export class SchematicOption {
         return `--${this.name}="${this.value}"`;
       }
     } else if (typeof this.value === 'boolean') {
-      const str = strings.dasherize(this.name);
+      const str = this.dasherize(this.name);
       return this.value ? `--${str}` : `--no-${str}`;
     } else {
-      return `--${strings.dasherize(this.name)}=${this.value}`;
+      return `--${this.dasherize(this.name)}=${this.value}`;
     }
   }
 
   private format() {
-    return strings
-      .dasherize(this.value as string)
+    return this.dasherize(this.value as string)
       .split('')
       .reduce((content, char) => {
         if (char === '(' || char === ')' || char === '[' || char === ']') {
@@ -30,5 +27,14 @@ export class SchematicOption {
         }
         return `${content}${char}`;
       }, '');
+  }
+
+  private dasherize(str: string) {
+    const STRING_DASHERIZE_REGEXP = /[\s]/g;
+    const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
+    return str
+      .replace(STRING_DECAMELIZE_REGEXP, '$1-$2')
+      .toLowerCase()
+      .replace(STRING_DASHERIZE_REGEXP, '-');
   }
 }
