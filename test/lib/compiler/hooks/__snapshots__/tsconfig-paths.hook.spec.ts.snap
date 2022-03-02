@@ -55,9 +55,9 @@ exports.Qux = Qux;
   "dist/main.js" => "\\"use strict\\";
 Object.defineProperty(exports, \\"__esModule\\", { value: true });
 const foo_1 = require(\\"./foo\\");
-const bar_1 = require(\\"~/bar\\");
+const bar_1 = require(\\"./bar\\");
 const baz_1 = require(\\"./baz\\");
-const qux_1 = require(\\"~/qux\\");
+const qux_1 = require(\\"./qux\\");
 // use the imports so they do not get eliminated
 console.log(foo_1.Foo);
 console.log(bar_1.Bar);
