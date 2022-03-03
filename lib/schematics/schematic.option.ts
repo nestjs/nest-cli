@@ -1,4 +1,4 @@
-import { dasherize } from '../utils/formatting';
+import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
 
 export class SchematicOption {
   constructor(private name: string, private value: boolean | string) {}
@@ -13,15 +13,15 @@ export class SchematicOption {
         return `--${this.name}="${this.value}"`;
       }
     } else if (typeof this.value === 'boolean') {
-      const str = dasherize(this.name);
+      const str = normalizeToKebabOrSnakeCase(this.name);
       return this.value ? `--${str}` : `--no-${str}`;
     } else {
-      return `--${dasherize(this.name)}=${this.value}`;
+      return `--${normalizeToKebabOrSnakeCase(this.name)}=${this.value}`;
     }
   }
 
   private format() {
-    return dasherize(this.value as string)
+    return normalizeToKebabOrSnakeCase(this.value as string)
       .split('')
       .reduce((content, char) => {
         if (char === '(' || char === ')' || char === '[' || char === ']') {
