@@ -1,13 +1,19 @@
 import * as path from 'path';
 import * as ts from 'typescript';
+import { JsxEmit } from 'typescript';
 import { tsconfigPathsBeforeHookFactory } from '../../../../lib/compiler/hooks/tsconfig-paths.hook';
 
-function createSpec(baseUrl: string, fileNames: string[]) {
+function createSpec(
+  baseUrl: string,
+  fileNames: string[],
+  compilerOptions?: ts.CompilerOptions,
+) {
   const options: ts.CompilerOptions = {
     baseUrl,
     outDir: path.join(baseUrl, 'dist'),
     target: ts.ScriptTarget.ESNext,
     module: ts.ModuleKind.CommonJS,
+    ...compilerOptions,
   };
 
   const program = ts.createProgram({
@@ -49,6 +55,15 @@ describe('tsconfig paths hooks', () => {
     const output = createSpec(
       path.join(__dirname, './fixtures/unused-imports'),
       ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+    );
+    expect(output).toMatchSnapshot();
+  });
+
+  it('should replace path of every import using a path alias by its relative path', async () => {
+    const output = createSpec(
+      path.join(__dirname, './fixtures/aliased-imports'),
+      ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+      { paths: { '~/*': ['./src/*'] }, jsx: JsxEmit.Preserve, allowJs: true },
     );
     expect(output).toMatchSnapshot();
   });

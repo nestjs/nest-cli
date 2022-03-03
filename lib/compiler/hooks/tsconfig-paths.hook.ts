@@ -54,7 +54,12 @@ function getNotAliasedPath(
   matcher: tsPaths.MatchPath,
   text: string,
 ) {
-  let result = matcher(text, undefined, undefined, ['.ts', '.js']);
+  let result = matcher(text, undefined, undefined, [
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+  ]);
   if (!result) {
     return;
   }
