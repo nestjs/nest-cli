@@ -23,11 +23,11 @@ export abstract class AbstractPackageManager {
     try {
       const commandArgs = `${this.cli.install} ${this.cli.silentFlag}`;
       const collect = true;
-      const dasherizedDirectory = normalizeToKebabOrSnakeCase(directory);
+      const normalizedDirectory = normalizeToKebabOrSnakeCase(directory);
       await this.runner.run(
         commandArgs,
         collect,
-        join(process.cwd(), dasherizedDirectory),
+        join(process.cwd(), normalizedDirectory),
       );
       spinner.succeed();
       console.info();
