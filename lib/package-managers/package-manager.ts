@@ -1,5 +1,6 @@
 export enum PackageManager {
   NPM = 'npm',
   YARN = 'yarn',
-  PNPM = 'pnpm'
+  PNPM = 'pnpm',
+  NONE = 'none (skip installing packages)',
 }
