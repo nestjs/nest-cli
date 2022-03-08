@@ -16,12 +16,8 @@ export class GenerateCommand extends AbstractCommand {
         'Report actions that would be taken without writing out results.',
       )
       .option('-p, --project [project]', 'Project in which to generate files.')
-      .option('--flat', 'Enforce flat structure of generated element.', () => {
-          return true;
-      })
-      .option( '--no-flat', 'Enforce that directories are generated.', () => {
-          return false;
-      })
+      .option('--flat', 'Enforce flat structure of generated element.', () => true)
+      .option( '--no-flat', 'Enforce that directories are generated.', () => false)
       .option(
         '--spec',
         'Enforce spec files generation.',
