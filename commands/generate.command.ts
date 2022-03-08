@@ -19,7 +19,7 @@ export class GenerateCommand extends AbstractCommand {
       .option('--flat', 'Enforce flat structure of generated element.', () => {
           return true;
       })
-      .option( '--no-flat', 'No flat description TODO', () => {
+      .option( '--no-flat', 'Enforce that directories are generated.', () => {
           return false;
       })
       .option(
