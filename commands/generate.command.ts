@@ -16,7 +16,12 @@ export class GenerateCommand extends AbstractCommand {
         'Report actions that would be taken without writing out results.',
       )
       .option('-p, --project [project]', 'Project in which to generate files.')
-      .option('--flat', 'Enforce flat structure of generated element.')
+      .option('--flat', 'Enforce flat structure of generated element.', () => {
+          return true;
+      })
+      .option( '--no-flat', 'No flat description TODO', () => {
+          return false;
+      })
       .option(
         '--spec',
         'Enforce spec files generation.',
@@ -41,7 +46,9 @@ export class GenerateCommand extends AbstractCommand {
         ) => {
           const options: Input[] = [];
           options.push({ name: 'dry-run', value: !!command.dryRun });
-          options.push({ name: 'flat', value: command.flat });
+          if(command.flat !== undefined) {
+            options.push({ name: 'flat', value: command.flat });
+          }
           options.push({
             name: 'spec',
             value:
