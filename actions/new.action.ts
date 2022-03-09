@@ -1,4 +1,3 @@
-import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import * as chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
@@ -11,7 +10,7 @@ import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
   PackageManager,
-  PackageManagerFactory,
+  PackageManagerFactory
 } from '../lib/package-managers';
 import { generateInput, generateSelect } from '../lib/questions/questions';
 import { GitRunner } from '../lib/runners/git.runner';
@@ -19,9 +18,10 @@ import {
   AbstractCollection,
   Collection,
   CollectionFactory,
-  SchematicOption,
+  SchematicOption
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
+import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -74,7 +74,7 @@ const getProjectDirectory = (
 ): string => {
   return (
     (directoryOption && (directoryOption.value as string)) ||
-    dasherize(applicationName.value as string)
+    normalizeToKebabOrSnakeCase(applicationName.value as string)
   );
 };
 
@@ -176,7 +176,7 @@ const askForPackageManager = async (): Promise<Answers> => {
     generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
-      PackageManager.PNPM
+      PackageManager.PNPM,
     ]),
   ];
   const prompt = inquirer.createPromptModule();
@@ -225,16 +225,18 @@ const printCollective = () => {
   emptyLine();
 };
 
-const print = (color: string | null = null) => (str = '') => {
-  const terminalCols = retrieveCols();
-  const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
-  const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
-  const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
-  if (color) {
-    str = (chalk as any)[color](str);
-  }
-  console.log(leftPadding, str);
-};
+const print =
+  (color: string | null = null) =>
+  (str = '') => {
+    const terminalCols = retrieveCols();
+    const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
+    const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
+    const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
+    if (color) {
+      str = (chalk as any)[color](str);
+    }
+    console.log(leftPadding, str);
+  };
 
 export const retrieveCols = () => {
   const defaultCols = 80;
