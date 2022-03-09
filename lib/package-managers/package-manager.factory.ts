@@ -28,7 +28,7 @@ export class PackageManagerFactory {
           if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
             resolve(this.create(PackageManager.YARN));
           } else if (
-              files.findIndex((filename) => filename === 'pnpm-lock.yaml') > -1
+            files.findIndex((filename) => filename === 'pnpm-lock.yaml') > -1
           ) {
             resolve(this.create(PackageManager.PNPM));
           } else {

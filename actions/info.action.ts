@@ -47,9 +47,17 @@ export class InfoAction extends AbstractAction {
   async displayPackageManagerVersion() {
     try {
       const version: string = await this.manager.version();
-      console.info(`${this.manager.name} Version    :`, chalk.blue(version), '\n');
+      console.info(
+        `${this.manager.name} Version    :`,
+        chalk.blue(version),
+        '\n',
+      );
     } catch {
-      console.error(`${this.manager.name} Version    :`, chalk.red('Unknown'), '\n');
+      console.error(
+        `${this.manager.name} Version    :`,
+        chalk.red('Unknown'),
+        '\n',
+      );
     }
   }
 
@@ -61,7 +69,8 @@ export class InfoAction extends AbstractAction {
 
   async displayNestInformationFromPackage(): Promise<void> {
     try {
-      const dependencies: PackageJsonDependencies = this.readProjectPackageDependencies();
+      const dependencies: PackageJsonDependencies =
+        this.readProjectPackageDependencies();
       this.displayNestVersions(dependencies);
     } catch (err) {
       console.error(
@@ -74,7 +83,10 @@ export class InfoAction extends AbstractAction {
     console.info(chalk.green('[Nest CLI]'));
     console.info(
       'Nest CLI Version :',
-      chalk.blue(JSON.parse(readFileSync(join(__dirname, '../package.json')).toString()).version),
+      chalk.blue(
+        JSON.parse(readFileSync(join(__dirname, '../package.json')).toString())
+          .version,
+      ),
       '\n',
     );
   }
@@ -85,8 +97,8 @@ export class InfoAction extends AbstractAction {
     const dependencies = { ...pack.dependencies, ...pack.devDependencies };
     Object.keys(dependencies).forEach((key) => {
       dependencies[key] = {
-        version: dependencies[key]
-      }
+        version: dependencies[key],
+      };
     });
     return dependencies;
   }
@@ -110,7 +122,9 @@ export class InfoAction extends AbstractAction {
     const nestDependencies: NestDependency[] = [];
     Object.keys(dependencies).forEach((key) => {
       if (key.indexOf('@nestjs') > -1) {
-        const depPackagePath = require.resolve(key + '/package.json', { paths: [process.cwd()]});
+        const depPackagePath = require.resolve(key + '/package.json', {
+          paths: [process.cwd()],
+        });
         const depPackage = readFileSync(depPackagePath).toString();
         const value = JSON.parse(depPackage).version;
         nestDependencies.push({

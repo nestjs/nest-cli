@@ -16,7 +16,7 @@ export class TsConfigProvider {
     const parsedCmd = tsBinary.getParsedCommandLineOfConfigFile(
       configPath,
       undefined!,
-      (tsBinary.sys as unknown) as ts.ParseConfigFileHost,
+      tsBinary.sys as unknown as ts.ParseConfigFileHost,
     );
     const { options, fileNames, projectReferences } = parsedCmd!;
     return { options, fileNames, projectReferences };

@@ -86,9 +86,8 @@ export class BuildAction extends AbstractAction {
       'path',
       options,
     );
-    const { options: tsOptions } = this.tsConfigProvider.getByConfigFilename(
-      pathToTsconfig,
-    );
+    const { options: tsOptions } =
+      this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
     const outDir = tsOptions.outDir || defaultOutDir;
     const isWebpackEnabled = getValueOrDefault<boolean>(
       configuration,
