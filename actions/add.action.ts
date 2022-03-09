@@ -128,9 +128,8 @@ export class AddAction extends AbstractAction {
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
 
     try {
-      const collection: AbstractCollection = CollectionFactory.create(
-        collectionName,
-      );
+      const collection: AbstractCollection =
+        CollectionFactory.create(collectionName);
       await collection.execute(
         schematicName,
         schematicOptions,

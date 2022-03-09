@@ -6,7 +6,8 @@ export class NestDependencyManager {
   constructor(private packageManager: AbstractPackageManager) {}
 
   public async read(): Promise<string[]> {
-    const production: ProjectDependency[] = await this.packageManager.getProduction();
+    const production: ProjectDependency[] =
+      await this.packageManager.getProduction();
     return production
       .filter((dependency) => dependency.name.indexOf('@nestjs') > -1)
       .map((dependency) => dependency.name);

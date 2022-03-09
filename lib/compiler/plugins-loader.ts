@@ -57,7 +57,8 @@ export class PluginsLoader {
     });
     const beforeHooks: MultiNestCompilerPlugins['afterHooks'] = [];
     const afterHooks: MultiNestCompilerPlugins['beforeHooks'] = [];
-    const afterDeclarationsHooks: MultiNestCompilerPlugins['afterDeclarationsHooks'] = [];
+    const afterDeclarationsHooks: MultiNestCompilerPlugins['afterDeclarationsHooks'] =
+      [];
     pluginRefs.forEach((plugin, index) => {
       if (!plugin.before && !plugin.after && !plugin.afterDeclarations) {
         throw new Error(CLI_ERRORS.WRONG_PLUGIN(pluginNames[index]));

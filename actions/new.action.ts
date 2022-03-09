@@ -10,7 +10,7 @@ import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
   PackageManager,
-  PackageManagerFactory
+  PackageManagerFactory,
 } from '../lib/package-managers';
 import { generateInput, generateSelect } from '../lib/questions/questions';
 import { GitRunner } from '../lib/runners/git.runner';
@@ -18,7 +18,7 @@ import {
   AbstractCollection,
   Collection,
   CollectionFactory,
-  SchematicOption
+  SchematicOption,
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
