@@ -76,7 +76,7 @@ export class WebpackCompiler {
     const compiler = webpack(webpackConfiguration);
 
     const afterCallback = (
-      err: Error | undefined,
+      err: Error | null | undefined,
       stats: webpack.Stats | undefined,
     ) => {
       if (err && stats === undefined) {
