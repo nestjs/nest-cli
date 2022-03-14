@@ -44,7 +44,7 @@ export class AddAction extends AbstractAction {
           MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
         ),
       );
-      throw new Error();
+      throw new Error(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName));
     }
   }
 
