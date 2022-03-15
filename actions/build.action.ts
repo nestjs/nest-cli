@@ -13,7 +13,7 @@ import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
 import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
 import {
   ConfigurationLoader,
-  NestConfigurationLoader,
+  NestConfigurationLoader
 } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
@@ -62,6 +62,7 @@ export class BuildAction extends AbstractAction {
       } else {
         console.error(`\n${chalk.red(err)}\n`);
       }
+      process.exit(1);
     }
   }
 

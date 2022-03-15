@@ -30,7 +30,7 @@ export class AddCommand extends AbstractCommand {
         try {
           await this.action.handle(inputs, options, flags);
         } catch (err) {
-          process.exit(0);
+          process.exit(1);
         }
       });
   }
