@@ -5,9 +5,8 @@ import { TypeScriptBinaryLoader } from '../typescript-loader';
 import tsPaths = require('tsconfig-paths');
 
 export function tsconfigPathsBeforeHookFactory(
-  compilerOptions?: ts.CompilerOptions,
+  compilerOptions: ts.CompilerOptions,
 ) {
-  if (!compilerOptions) return
   const tsBinary = new TypeScriptBinaryLoader().load();
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
