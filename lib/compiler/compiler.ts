@@ -58,7 +58,7 @@ export class Compiler {
       undefined,
       undefined,
       {
-        before: before.concat(tsconfigPathsPlugin),
+        before: before.concat(tsconfigPathsPlugin ?? []),
         after,
         afterDeclarations,
       },

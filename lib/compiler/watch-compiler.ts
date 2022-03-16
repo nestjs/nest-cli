@@ -94,7 +94,7 @@ export class WatchCompiler {
         const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
           hook(program.getProgram()),
         );
-        before.unshift(tsconfigPathsPlugin);
+        tsconfigPathsPlugin && before.unshift(tsconfigPathsPlugin);
 
         transforms.before = before.concat(transforms.before || []);
         transforms.after = after.concat(transforms.after || []);
