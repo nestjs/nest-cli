@@ -60,12 +60,12 @@ export class WatchCompiler {
     const origCreateProgram = host.createProgram;
     (host as any).createProgram = (
       rootNames: ReadonlyArray<string>,
-      options: ts.CompilerOptions,
+      options: ts.CompilerOptions | undefined,
       // tslint:disable-next-line:no-shadowed-variable
       host: ts.CompilerHost,
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
-      const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
+      const tsconfigPathsPlugin = options ? tsconfigPathsBeforeHookFactory(options) : null;
       const program = origCreateProgram(
         rootNames,
         options,
@@ -94,7 +94,9 @@ export class WatchCompiler {
         const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
           hook(program.getProgram()),
         );
-        before.unshift(tsconfigPathsPlugin);
+        if (tsconfigPathsPlugin) {
+          before.unshift(tsconfigPathsPlugin);
+        }
 
         transforms.before = before.concat(transforms.before || []);
         transforms.after = after.concat(transforms.after || []);
