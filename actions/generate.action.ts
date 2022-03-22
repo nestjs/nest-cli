@@ -121,7 +121,10 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
-      options.push(new SchematicOption(input.name, input.value));
+      const keepInputName = input.options
+        ? 'keepInputNameFormat' in input.options
+        : false;
+      options.push(new SchematicOption(input.name, input.value, keepInputName));
     }
   });
   return options;

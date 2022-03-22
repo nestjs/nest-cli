@@ -120,4 +120,12 @@ describe('Schematic Option', () => {
     const option = new SchematicOption('dry-run', false);
     expect(option.toCommandString()).toEqual('--no-dry-run');
   });
+
+  it('should keep input name boolean option', () => {
+    const keepNameOption = new SchematicOption('noDryRunABcdEfg', true, true);
+    expect(keepNameOption.toCommandString()).toEqual('--noDryRunABcdEfg');
+
+    const disableKeepNameOption = new SchematicOption('dry-run', true, false);
+    expect(disableKeepNameOption.toCommandString()).toEqual('--dry-run');
+  });
 });
