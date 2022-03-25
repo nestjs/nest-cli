@@ -144,9 +144,7 @@ const installPackages = async (
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager: string = options.find(
-    (option) => option.name === 'packageManager',
-  )!.value as string;
+  const inputPackageManager = getPackageManagerInput(options)!.value as string;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
@@ -155,27 +153,14 @@ const installPackages = async (
     console.info();
     return;
   }
-  if (inputPackageManager !== undefined) {
-    try {
-      packageManager = PackageManagerFactory.create(inputPackageManager);
-      await packageManager.install(installDirectory, inputPackageManager);
-    } catch (error) {
-      if (error && error.message) {
-        console.error(chalk.red(error.message));
-      }
+  try {
+    packageManager = PackageManagerFactory.create(inputPackageManager);
+    await packageManager.install(installDirectory, inputPackageManager);
+  } catch (error) {
+    if (error && error.message) {
+      console.error(chalk.red(error.message));
     }
-  } else {
-    packageManager = await selectPackageManager();
-    await packageManager.install(
-      installDirectory,
-      packageManager.name.toLowerCase(),
-    );
   }
-};
-
-const selectPackageManager = async (): Promise<AbstractPackageManager> => {
-  const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers['packageManager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
