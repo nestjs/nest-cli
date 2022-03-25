@@ -32,7 +32,7 @@ export class NewAction extends AbstractAction {
     const dryRunOption = options.find((option) => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
-    await askForMissingInformation(inputs);
+    await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
@@ -68,6 +68,9 @@ export class NewAction extends AbstractAction {
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
+const getPackageManagerInput = (inputs: Input[]) =>
+  inputs.find((options) => options.name === 'packageManager');
+
 const getProjectDirectory = (
   applicationName: Input,
   directoryOption?: Input,
@@ -78,17 +81,24 @@ const getProjectDirectory = (
   );
 };
 
-const askForMissingInformation = async (inputs: Input[]) => {
+const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
+
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
     const message = 'What name would you like to use for the new project?';
     const questions = [generateInput('name', message)('nest-app')];
     const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
     replaceInputMissingInformation(inputs, answers);
+  }
+
+  const packageManagerInput = getPackageManagerInput(options);
+  if (!packageManagerInput!.value) {
+    const answers = await askForPackageManager();
+    replaceInputMissingInformation(options, answers);
   }
 };
 
