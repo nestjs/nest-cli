@@ -150,7 +150,7 @@ export class StartAction extends BuildAction {
       processArgs.unshift('-r source-map-support/register');
     }
     return spawn(binaryToRun, processArgs, {
-      stdio: 'inherit',
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       shell: true,
     });
   }
