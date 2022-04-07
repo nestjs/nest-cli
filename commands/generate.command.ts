@@ -34,6 +34,7 @@ export class GenerateCommand extends AbstractCommand {
         },
         true,
       )
+      .option('--skip-import', 'Skip importing', () => true, false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
       })
@@ -75,6 +76,14 @@ export class GenerateCommand extends AbstractCommand {
           options.push({
             name: 'project',
             value: command.project,
+          });
+
+          options.push({
+            name: 'skipImport',
+            value: command.skipImport,
+            options: {
+              keepInputNameFormat: true,
+            },
           });
 
           const inputs: Input[] = [];
