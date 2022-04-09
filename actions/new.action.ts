@@ -120,10 +120,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
-      if (
-        option.name !== 'skip-install' &&
-        option.value !== 'package-manager'
-      ) {
+      if (option.name !== 'skip-install') {
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
@@ -138,7 +135,7 @@ const installPackages = async (
   installDirectory: string,
 ) => {
   const inputPackageManager: string = options.find(
-    (option) => option.name === 'package-manager',
+    (option) => option.name === 'packageManager',
   )!.value as string;
 
   let packageManager: AbstractPackageManager;
@@ -168,12 +165,12 @@ const installPackages = async (
 
 const selectPackageManager = async (): Promise<AbstractPackageManager> => {
   const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers['package-manager']);
+  return PackageManagerFactory.create(answers['packageManager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
   const questions: Question[] = [
-    generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
       PackageManager.PNPM,
