@@ -42,6 +42,11 @@ export class WatchCompiler {
       tsBin.sys,
       true,
     );
+    const tsWatchOptions = getValueOrDefault<ts.WatchOptions>(
+        configuration,
+        'compilerOptions.watchOptions',
+        appName,
+    );
     const host = tsBin.createWatchCompilerHost(
       configPath,
       tsCompilerOptions,
@@ -49,6 +54,7 @@ export class WatchCompiler {
       createProgram,
       this.createDiagnosticReporter(origDiagnosticReporter),
       this.createWatchStatusChanged(origWatchStatusReporter, onSuccess),
+      tsWatchOptions,
     );
 
     const pluginsConfig = getValueOrDefault(
