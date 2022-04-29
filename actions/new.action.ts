@@ -203,7 +203,12 @@ const initializeGitRepository = async (dir: string) => {
 const createGitIgnoreFile = (dir: string, content?: string) => {
   const fileContent = content || defaultGitIgnore;
   const filePath = join(process.cwd(), dir, '.gitignore');
-  return promisify(fs.writeFile)(filePath, fileContent);
+  return fileExists(filePath).then(exists => {
+    if (!exists) {
+      return promisify(fs.writeFile)(filePath, fileContent);
+    }
+    return;
+  });
 };
 
 const printCollective = () => {
@@ -249,5 +254,15 @@ export const retrieveCols = () => {
     return defaultCols;
   }
 };
+
+const fileExists = (path: string) => {
+  return promisify(fs.access)(path).then(() => true).catch((err: any) => {
+    if (err.code === 'ENOENT') {
+      return false;
+    }
+
+    return Promise.reject(err);
+  });
+}
 
 export const exit = () => process.exit(1);
