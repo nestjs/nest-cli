@@ -255,7 +255,7 @@ export const retrieveCols = () => {
 };
 
 const fileExists = (path: string) => {
-  try{
+  try {
     fs.accessSync(path);
     return true;
   } catch (err: any) {
@@ -265,6 +265,6 @@ const fileExists = (path: string) => {
 
     throw err;
   }
-}
+};
 
 export const exit = () => process.exit(1);
