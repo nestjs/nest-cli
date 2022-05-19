@@ -22,6 +22,9 @@ export const defaultGitIgnore = `# compiled output
 /dist
 /node_modules
 
+# Dotenv environment variables file
+.env
+
 # Logs
 logs
 *.log
