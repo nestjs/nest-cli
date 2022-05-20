@@ -26,7 +26,8 @@
     "test": "jest --config test/jest-config.json",
     "test:dev": "npm run clean && jest --config test/jest-config.json --watchAll",
     "prerelease": "npm run build",
-    "release": "release-it"
+    "release": "release-it",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -94,10 +95,5 @@
     "ts-jest": "28.0.2",
     "ts-loader": "9.3.0",
     "ts-node": "10.7.0"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -c .commitlintrc.json -E HUSKY_GIT_PARAMS"
-    }
   }
 }
