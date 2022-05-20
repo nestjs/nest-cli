@@ -95,5 +95,8 @@
     "ts-jest": "28.0.2",
     "ts-loader": "9.3.0",
     "ts-node": "10.7.0"
+  },
+  "lint-staged": {
+    "packages/**/*.{ts,json}": []
   }
 }
