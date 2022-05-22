@@ -83,7 +83,7 @@
     "@typescript-eslint/eslint-plugin": "5.25.0",
     "@typescript-eslint/parser": "5.25.0",
     "delete-empty": "3.0.0",
-    "eslint": "8.15.0",
+    "eslint": "8.16.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
     "gulp": "4.0.2",
@@ -94,7 +94,7 @@
     "release-it": "15.0.0",
     "ts-jest": "28.0.2",
     "ts-loader": "9.3.0",
-    "ts-node": "10.7.0"
+    "ts-node": "10.8.0"
   },
   "lint-staged": {
     "**/*.{ts,json}": []
