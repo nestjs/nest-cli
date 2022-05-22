@@ -97,6 +97,6 @@
     "ts-node": "10.7.0"
   },
   "lint-staged": {
-    "packages/**/*.{ts,json}": []
+    "**/*.{ts,json}": []
   }
 }
