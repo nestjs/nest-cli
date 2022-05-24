@@ -92,7 +92,7 @@
     "jest": "28.1.0",
     "prettier": "2.6.2",
     "release-it": "15.0.0",
-    "ts-jest": "28.0.2",
+    "ts-jest": "28.0.3",
     "ts-loader": "9.3.0",
     "ts-node": "10.8.0"
   },
