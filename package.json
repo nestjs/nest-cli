@@ -72,7 +72,7 @@
     "@commitlint/config-angular": "17.0.0",
     "@types/copyfiles": "2.4.1",
     "@types/inquirer": "7.3.3",
-    "@types/jest": "28.1.1",
+    "@types/jest": "28.1.2",
     "@types/node": "16.11.41",
     "@types/node-emoji": "1.8.1",
     "@types/ora": "3.2.0",
