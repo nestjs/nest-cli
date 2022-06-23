@@ -6,8 +6,10 @@ import * as killProcess from 'tree-kill';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
-import { Configuration } from '../lib/configuration';
-import { defaultOutDir } from '../lib/configuration/defaults';
+import {
+  defaultConfiguration,
+  defaultOutDir,
+} from '../lib/configuration/defaults';
 import { ERROR_PREFIX } from '../lib/ui';
 import { BuildAction } from './build.action';
 
@@ -47,9 +49,31 @@ export class StartAction extends BuildAction {
       const { options: tsOptions } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
+      const entryFile =
+        (options.find((option) => option.name === 'entryFile')
+          ?.value as string) ||
+        getValueOrDefault(
+          configuration,
+          'entryFile',
+          appName,
+          undefined,
+          undefined,
+          defaultConfiguration.entryFile,
+        );
+      const sourceRoot =
+        (options.find((option) => option.name === 'sourceRoot')
+          ?.value as string) ||
+        getValueOrDefault(
+          configuration,
+          'sourceRoot',
+          appName,
+          undefined,
+          undefined,
+          defaultConfiguration.sourceRoot,
+        );
       const onSuccess = this.createOnSuccessHook(
-        configuration,
-        appName,
+        entryFile,
+        sourceRoot,
         debugFlag,
         outDir,
         binaryToRun,
@@ -73,15 +97,12 @@ export class StartAction extends BuildAction {
   }
 
   public createOnSuccessHook(
-    configuration: Required<Configuration>,
-    appName: string,
+    entryFile: string,
+    sourceRoot: string,
     debugFlag: boolean | string | undefined,
     outDirName: string,
     binaryToRun = 'node',
   ) {
-    const sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
-    const entryFile = getValueOrDefault(configuration, 'entryFile', appName);
-
     let childProcessRef: any;
     process.on(
       'exit',

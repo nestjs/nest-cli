@@ -17,6 +17,14 @@ export class StartCommand extends AbstractCommand {
       .option('--webpack', 'Use webpack for compilation.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use tsc for compilation.')
+      .option(
+        '--sourceRoot [sourceRoot]',
+        'Points at the root of the source code for the single project in standard mode structures, or the default project in monorepo mode structures.',
+      )
+      .option(
+        '--entryFile [entryFile]',
+        "Path to the entry file where this command will work with. Defaults to the one defined at your Nest's CLI config file.",
+      )
       .option('-e, --exec [binary]', 'Binary to run (default: "node").')
       .option(
         '--preserveWatchOutput',
@@ -47,6 +55,14 @@ export class StartCommand extends AbstractCommand {
         options.push({
           name: 'exec',
           value: command.exec,
+        });
+        options.push({
+          name: 'sourceRoot',
+          value: command.sourceRoot,
+        });
+        options.push({
+          name: 'entryFile',
+          value: command.entryFile,
         });
         options.push({
           name: 'preserveWatchOutput',
