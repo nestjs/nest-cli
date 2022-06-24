@@ -81,9 +81,6 @@ export class GenerateCommand extends AbstractCommand {
           options.push({
             name: 'skipImport',
             value: command.skipImport,
-            options: {
-              keepInputNameFormat: true,
-            },
           });
 
           const inputs: Input[] = [];
