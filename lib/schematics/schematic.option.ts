@@ -1,28 +1,26 @@
 import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
 
 export class SchematicOption {
-  constructor(
-    private name: string,
-    private value: boolean | string,
-    private keepInputNameFormat: boolean = false,
-  ) {}
+  constructor(private name: string, private value: boolean | string) {}
+
+  get normalizedName() {
+    return normalizeToKebabOrSnakeCase(this.name);
+  }
 
   public toCommandString(): string {
     if (typeof this.value === 'string') {
       if (this.name === 'name') {
-        return `--${this.name}=${this.format()}`;
+        return `--${this.normalizedName}=${this.format()}`;
       } else if (this.name === 'version' || this.name === 'path') {
-        return `--${this.name}=${this.value}`;
+        return `--${this.normalizedName}=${this.value}`;
       } else {
-        return `--${this.name}="${this.value}"`;
+        return `--${this.normalizedName}="${this.value}"`;
       }
     } else if (typeof this.value === 'boolean') {
-      const str = this.keepInputNameFormat
-        ? this.name
-        : normalizeToKebabOrSnakeCase(this.name);
+      const str = this.normalizedName;
       return this.value ? `--${str}` : `--no-${str}`;
     } else {
-      return `--${normalizeToKebabOrSnakeCase(this.name)}=${this.value}`;
+      return `--${this.normalizedName}=${this.value}`;
     }
   }
 
