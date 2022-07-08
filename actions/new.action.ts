@@ -203,6 +203,10 @@ const initializeGitRepository = async (dir: string) => {
 const createGitIgnoreFile = (dir: string, content?: string) => {
   const fileContent = content || defaultGitIgnore;
   const filePath = join(process.cwd(), dir, '.gitignore');
+
+  if (fileExists(filePath)) {
+    return;
+  }
   return promisify(fs.writeFile)(filePath, fileContent);
 };
 
@@ -247,6 +251,19 @@ export const retrieveCols = () => {
     return parseInt(terminalCols.toString(), 10) || defaultCols;
   } catch {
     return defaultCols;
+  }
+};
+
+const fileExists = (path: string) => {
+  try {
+    fs.accessSync(path);
+    return true;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      return false;
+    }
+
+    throw err;
   }
 };
 
