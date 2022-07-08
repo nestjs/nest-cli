@@ -6,8 +6,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">= 10.13.0",
-    "npm": ">= 6.11.0"
+    "node": ">= 12.9.0"
   },
   "bin": {
     "nest": "bin/nest.js"
@@ -33,11 +32,6 @@
     "type": "git",
     "url": "git+https://github.com/nestjs/nest-cli.git"
   },
-  "contributors": [
-    "Kamil Mysliwiec <mail@kamilmysliwiec.com>",
-    "Mark Pieszak <mark@trilon.io>",
-    "ThomRick"
-  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nestjs/nest-cli/issues"
@@ -47,7 +41,7 @@
     "@angular-devkit/core": "14.0.5",
     "@angular-devkit/schematics": "14.0.5",
     "@angular-devkit/schematics-cli": "14.0.5",
-    "@nestjs/schematics": "^8.0.3",
+    "@nestjs/schematics": "^9.0.0",
     "chalk": "3.0.0",
     "chokidar": "3.5.3",
     "cli-table3": "0.6.2",
