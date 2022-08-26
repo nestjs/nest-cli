@@ -11,6 +11,10 @@ export function tsconfigPathsBeforeHookFactory(
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
 
+  if (Object.keys(paths).length === 0) {
+    return undefined;
+  }
+
   return (ctx: ts.TransformationContext): ts.Transformer<any> => {
     return (sf: ts.SourceFile) => {
       const visitNode = (node: ts.Node): ts.Node => {
@@ -19,27 +23,46 @@ export function tsconfigPathsBeforeHookFactory(
           (tsBinary.isExportDeclaration(node) && node.moduleSpecifier)
         ) {
           try {
-            const newNode = tsBinary.getMutableClone(node);
             const importPathWithQuotes =
               node.moduleSpecifier && node.moduleSpecifier.getText();
 
             if (!importPathWithQuotes) {
               return node;
             }
-            const text = importPathWithQuotes.substr(
+            const text = importPathWithQuotes.substring(
               1,
-              importPathWithQuotes.length - 2,
+              importPathWithQuotes.length - 1,
             );
             const result = getNotAliasedPath(sf, matcher, text);
             if (!result) {
               return node;
             }
-            (newNode as any).moduleSpecifier = tsBinary.createLiteral(result);
-            (newNode as any).moduleSpecifier.parent = (
+            const moduleSpecifier =
+              tsBinary.factory.createStringLiteral(result);
+            (moduleSpecifier as any).parent = (
               node as any
             ).moduleSpecifier.parent;
-            (newNode as any).flags = node.flags;
-            return newNode;
+
+            if (tsBinary.isImportDeclaration(node)) {
+              return tsBinary.factory.updateImportDeclaration(
+                node,
+                node.decorators,
+                node.modifiers,
+                node.importClause,
+                moduleSpecifier,
+                node.assertClause,
+              );
+            } else {
+              return tsBinary.factory.updateExportDeclaration(
+                node,
+                node.decorators,
+                node.modifiers,
+                node.isTypeOnly,
+                node.exportClause,
+                moduleSpecifier,
+                node.assertClause,
+              );
+            }
           } catch {
             return node;
           }
