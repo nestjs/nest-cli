@@ -29,7 +29,7 @@ function createSpec(
     undefined,
     undefined,
     {
-      before: [tsconfigPathsBeforeHookFactory(options)],
+      before: [tsconfigPathsBeforeHookFactory(options)!],
     },
   );
   return output;
