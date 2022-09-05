@@ -46,7 +46,7 @@ export function tsconfigPathsBeforeHookFactory(
 
             if (tsBinary.isImportDeclaration(node)) {
               return isInUpdatedAstContext
-                ? tsBinary.factory.updateImportDeclaration(
+                ? (tsBinary.factory as any).updateImportDeclaration(
                     node,
                     node.modifiers,
                     node.importClause,
@@ -63,7 +63,7 @@ export function tsconfigPathsBeforeHookFactory(
                   );
             } else {
               return isInUpdatedAstContext
-                ? tsBinary.factory.updateExportDeclaration(
+                ? (tsBinary.factory as any).updateExportDeclaration(
                     node,
                     node.modifiers,
                     node.isTypeOnly,
