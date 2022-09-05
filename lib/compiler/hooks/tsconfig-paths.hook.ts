@@ -8,12 +8,13 @@ export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
   const tsBinary = new TypeScriptBinaryLoader().load();
+  const [tsVersionMajor, tsVersionMinor] = tsBinary.versionMajorMinor
+    ?.split('.')
+    .map((x) => +x);
+  const isInUpdatedAstContext = tsVersionMinor >= 8 || tsVersionMajor > 4;
+
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
-
-  if (Object.keys(paths).length === 0) {
-    return undefined;
-  }
 
   return (ctx: ts.TransformationContext): ts.Transformer<any> => {
     return (sf: ts.SourceFile) => {
@@ -44,24 +45,41 @@ export function tsconfigPathsBeforeHookFactory(
             ).moduleSpecifier.parent;
 
             if (tsBinary.isImportDeclaration(node)) {
-              return tsBinary.factory.updateImportDeclaration(
-                node,
-                node.decorators,
-                node.modifiers,
-                node.importClause,
-                moduleSpecifier,
-                node.assertClause,
-              );
+              return isInUpdatedAstContext
+                ? tsBinary.factory.updateImportDeclaration(
+                    node,
+                    node.modifiers,
+                    node.importClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  )
+                : tsBinary.factory.updateImportDeclaration(
+                    node,
+                    node.decorators,
+                    node.modifiers,
+                    node.importClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  );
             } else {
-              return tsBinary.factory.updateExportDeclaration(
-                node,
-                node.decorators,
-                node.modifiers,
-                node.isTypeOnly,
-                node.exportClause,
-                moduleSpecifier,
-                node.assertClause,
-              );
+              return isInUpdatedAstContext
+                ? tsBinary.factory.updateExportDeclaration(
+                    node,
+                    node.modifiers,
+                    node.isTypeOnly,
+                    node.exportClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  )
+                : tsBinary.factory.updateExportDeclaration(
+                    node,
+                    node.decorators,
+                    node.modifiers,
+                    node.isTypeOnly,
+                    node.exportClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  );
             }
           } catch {
             return node;
