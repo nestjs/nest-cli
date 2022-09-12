@@ -48,7 +48,7 @@ describe('Nest Configuration Loader', () => {
       compilerOptions: {
         assets: [],
         plugins: [],
-        tsConfigPath: 'tsconfig.build.json',
+        tsConfigPath: 'tsconfig.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
@@ -71,7 +71,7 @@ describe('Nest Configuration Loader', () => {
       compilerOptions: {
         assets: [],
         plugins: [],
-        tsConfigPath: 'tsconfig.build.json',
+        tsConfigPath: 'tsconfig.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
