@@ -7,7 +7,7 @@ jest.mock('fs', () => {
   };
 });
 
-describe('get default tsconfig path', () => {
+describe('getDefaultTsconfigPath', () => {
   afterAll(() => {
     jest.clearAllMocks();
   });

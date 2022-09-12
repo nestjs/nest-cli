@@ -1,7 +1,6 @@
 import { Configuration, ConfigurationLoader } from '../../../lib/configuration';
 import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader';
 import { Reader } from '../../../lib/readers';
-import { getDefaultTsconfigPath } from '../../../lib/utils/get-default-tsconfig-path';
 
 describe('Nest Configuration Loader', () => {
   let reader: Reader;
@@ -49,7 +48,7 @@ describe('Nest Configuration Loader', () => {
       compilerOptions: {
         assets: [],
         plugins: [],
-        tsConfigPath: getDefaultTsconfigPath(),
+        tsConfigPath: 'tsconfig.build.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
@@ -72,7 +71,7 @@ describe('Nest Configuration Loader', () => {
       compilerOptions: {
         assets: [],
         plugins: [],
-        tsConfigPath: getDefaultTsconfigPath(),
+        tsConfigPath: 'tsconfig.build.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
       },
