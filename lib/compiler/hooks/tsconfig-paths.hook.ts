@@ -45,7 +45,7 @@ export function tsconfigPathsBeforeHookFactory(
             ).moduleSpecifier.parent;
 
             if (tsBinary.isImportDeclaration(node)) {
-              return isInUpdatedAstContext
+              const updatedNode = isInUpdatedAstContext
                 ? (tsBinary.factory as any).updateImportDeclaration(
                     node,
                     node.modifiers,
@@ -61,8 +61,10 @@ export function tsconfigPathsBeforeHookFactory(
                     moduleSpecifier,
                     node.assertClause,
                   );
+              (updatedNode as any).flags = node.flags;
+              return updatedNode;
             } else {
-              return isInUpdatedAstContext
+              const updatedNode = isInUpdatedAstContext
                 ? (tsBinary.factory as any).updateExportDeclaration(
                     node,
                     node.modifiers,
@@ -80,6 +82,8 @@ export function tsconfigPathsBeforeHookFactory(
                     moduleSpecifier,
                     node.assertClause,
                   );
+              (updatedNode as any).flags = node.flags;
+              return updatedNode;
             }
           } catch {
             return node;
