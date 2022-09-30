@@ -1,7 +1,7 @@
 import * as chalk from 'chalk';
 import { readFileSync } from 'fs';
 import { platform, release } from 'os';
-import osName = require('os-name');
+import osName from 'os-name';
 import { join } from 'path';
 import {
   AbstractPackageManager,
