@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import { readFile } from 'fs';
-import * as ora from 'ora';
+import ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
 import { MESSAGES } from '../ui';

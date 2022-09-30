@@ -1,4 +1,4 @@
-import * as ora from 'ora';
+import ora from 'ora';
 import { AbstractPackageManager, ProjectDependency } from '../package-managers';
 import { MESSAGES } from '../ui';
 
