@@ -1,8 +1,8 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
-import * as killProcess from 'tree-kill';
+import killProcess from 'tree-kill';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';

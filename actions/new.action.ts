@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as inquirer from 'inquirer';

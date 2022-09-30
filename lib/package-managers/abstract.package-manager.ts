@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { readFile } from 'fs';
 import ora from 'ora';
 import { join } from 'path';

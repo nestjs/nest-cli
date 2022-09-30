@@ -1,4 +1,4 @@
-import * as rimraf from 'rimraf';
+import rimraf from 'rimraf';
 import { Configuration } from '../configuration';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 

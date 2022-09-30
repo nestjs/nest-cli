@@ -1,5 +1,5 @@
-import * as chalk from 'chalk';
-import * as Table from 'cli-table3';
+import chalk from 'chalk';
+import Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
 import { NestCollection } from '../lib/schematics/nest.collection';
 import { AbstractCommand } from './abstract.command';
