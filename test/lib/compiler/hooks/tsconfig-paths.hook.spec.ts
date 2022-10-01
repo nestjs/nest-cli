@@ -21,6 +21,7 @@ function createSpec(
     options,
   });
   const output = new Map<string, string>();
+  const transformer = tsconfigPathsBeforeHookFactory(options);
   program.emit(
     undefined,
     (fileName, data) => {
@@ -29,7 +30,7 @@ function createSpec(
     undefined,
     undefined,
     {
-      before: [tsconfigPathsBeforeHookFactory(options)],
+      before: transformer ? [transformer] : [],
     },
   );
   return output;

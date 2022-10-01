@@ -1,4 +1,5 @@
 import { Configuration } from './configuration';
+import { getDefaultTsconfigPath } from '../utils/get-default-tsconfig-path';
 
 export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
@@ -8,7 +9,7 @@ export const defaultConfiguration: Required<Configuration> = {
   projects: {},
   monorepo: false,
   compilerOptions: {
-    tsConfigPath: 'tsconfig.build.json',
+    tsConfigPath: getDefaultTsconfigPath(),
     webpack: false,
     webpackConfigPath: 'webpack.config.js',
     plugins: [],
