@@ -1,6 +1,4 @@
-import * as fs from 'fs';
 import * as path from 'path';
-import { SchematicRunner } from '../../../lib/runners/schematic.runner';
 
 const withSep = (route: string) =>
   path.resolve(route.split('/').join(path.sep));
