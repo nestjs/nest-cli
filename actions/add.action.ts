@@ -3,19 +3,19 @@ import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
-  PackageManagerFactory
+  PackageManagerFactory,
 } from '../lib/package-managers';
 import {
   AbstractCollection,
   CollectionFactory,
-  SchematicOption
+  SchematicOption,
 } from '../lib/schematics';
 import { MESSAGES } from '../lib/ui';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import {
   askForProjectName,
   moveDefaultProjectToStart,
-  shouldAskForProject
+  shouldAskForProject,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
@@ -44,7 +44,9 @@ export class AddAction extends AbstractAction {
           MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
         ),
       );
-      throw new Error(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName));
+      throw new Error(
+        MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
+      );
     }
   }
 

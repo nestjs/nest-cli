@@ -54,4 +54,10 @@ export interface Configuration {
   projects?: {
     [key: string]: ProjectConfiguration;
   };
+  hooks: string[];
+}
+
+export interface HooksOptions {
+  beforeCompile: (() => any)[];
+  afterCompile: (() => any)[];
 }

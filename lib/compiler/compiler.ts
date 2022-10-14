@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { Configuration } from '../configuration';
+import { Configuration, HooksOptions } from '../configuration';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
@@ -17,6 +17,7 @@ export class Compiler {
     configuration: Required<Configuration>,
     configFilename: string,
     appName: string,
+    hooks: HooksOptions,
     onSuccess?: () => void,
   ) {
     const tsBinary = this.typescriptLoader.load();
@@ -28,6 +29,8 @@ export class Compiler {
 
     const { options, fileNames, projectReferences } =
       this.tsConfigProvider.getByConfigFilename(configFilename);
+
+    hooks.beforeCompile.forEach((beforeCompileHook) => beforeCompileHook());
 
     const createProgram =
       tsBinary.createIncrementalProgram || tsBinary.createProgram;
@@ -77,6 +80,8 @@ export class Compiler {
     } else if (!errorsCount && onSuccess) {
       onSuccess();
     }
+
+    hooks.afterCompile.forEach((afterCompileHook) => afterCompileHook());
   }
 
   private reportAfterCompilationDiagnostic(

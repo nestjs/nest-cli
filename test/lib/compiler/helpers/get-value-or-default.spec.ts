@@ -12,6 +12,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     let value = getValueOrDefault(configuration, 'monorepo', '');
     expect(value).toEqual(true);
@@ -25,6 +26,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     value = getValueOrDefault(configuration, 'monorepo', '');
     expect(value).toEqual(false);
@@ -49,6 +51,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     let value = getValueOrDefault(
       configuration,
@@ -72,6 +75,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     value = getValueOrDefault(
       configuration,
@@ -93,6 +97,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     value = getValueOrDefault(
       configuration,
@@ -118,6 +123,7 @@ describe('Get Value or Default', () => {
         webpack: true,
       },
       generateOptions: {},
+      hooks: [],
     };
     let value = getValueOrDefault(
       configuration,
@@ -141,6 +147,7 @@ describe('Get Value or Default', () => {
         webpack: false,
       },
       generateOptions: {},
+      hooks: [],
     };
     value = getValueOrDefault(
       configuration,
@@ -162,6 +169,7 @@ describe('Get Value or Default', () => {
       collection: '',
       compilerOptions: {},
       generateOptions: {},
+      hooks: [],
     };
     value = getValueOrDefault(
       configuration,
@@ -190,6 +198,7 @@ describe('Get Value or Default', () => {
         webpack: true,
       },
       generateOptions: {},
+      hooks: [],
     };
     const sourceRoot = getValueOrDefault(
       configuration,

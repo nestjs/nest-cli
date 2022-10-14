@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { Configuration } from '../configuration';
+import { Configuration, HooksOptions } from '../configuration';
 import { CLI_ERRORS } from '../ui/errors';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
@@ -19,6 +19,7 @@ export class WatchCompiler {
     configFilename: string,
     appName: string,
     tsCompilerOptions: ts.CompilerOptions,
+    hooks: HooksOptions,
     onSuccess?: () => void,
   ) {
     const tsBin = this.typescriptLoader.load();
@@ -65,7 +66,10 @@ export class WatchCompiler {
       host: ts.CompilerHost,
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
-      const tsconfigPathsPlugin = options ? tsconfigPathsBeforeHookFactory(options) : null;
+      const tsconfigPathsPlugin = options
+        ? tsconfigPathsBeforeHookFactory(options)
+        : null;
+      hooks.beforeCompile.forEach((beforeCompileHook) => beforeCompileHook());
       const program = origCreateProgram(
         rootNames,
         options,
@@ -113,6 +117,16 @@ export class WatchCompiler {
         );
       };
       return program as any;
+    };
+
+    const origAfterProgramCreate = host.afterProgramCreate;
+    (host as any).afterProgramCreate = (
+      program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+    ) => {
+      if (origAfterProgramCreate) {
+        origAfterProgramCreate(program);
+      }
+      hooks.afterCompile.forEach((afterCompileHook) => afterCompileHook());
     };
 
     tsBin.createWatchProgram(host);

@@ -13,13 +13,13 @@ export class NewCommand extends AbstractCommand {
       .option(
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
-        false
+        false,
       )
       .option('-g, --skip-git', 'Skip git repository initialization.', false)
       .option('-s, --skip-install', 'Skip package installation.', false)
       .option(
         '-p, --package-manager [package-manager]',
-        'Specify package manager.'
+        'Specify package manager.',
       )
       .option(
         '-l, --language [language]',

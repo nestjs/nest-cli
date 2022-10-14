@@ -16,6 +16,7 @@ export const defaultConfiguration: Required<Configuration> = {
     assets: [],
   },
   generateOptions: {},
+  hooks: [],
 };
 
 export const defaultOutDir = 'dist';

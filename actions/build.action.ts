@@ -1,6 +1,12 @@
 import * as chalk from 'chalk';
 import { join } from 'path';
-import { CompilerOptions } from 'typescript';
+import {
+  CompilerOptions,
+  createProgram,
+  flattenDiagnosticMessageText,
+  getLineAndCharacterOfPosition,
+  getPreEmitDiagnostics,
+} from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
@@ -13,7 +19,8 @@ import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
 import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
 import {
   ConfigurationLoader,
-  NestConfigurationLoader
+  HooksOptions,
+  NestConfigurationLoader,
 } from '../lib/configuration';
 import { defaultOutDir } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
@@ -134,6 +141,57 @@ export class BuildAction extends AbstractAction {
       );
     }
 
+    const hooksCompileProgram = createProgram(configuration.hooks, {
+      ...tsOptions,
+      noEmitOnError: true,
+      outDir: './hooks',
+    });
+    const emitResult = hooksCompileProgram.emit();
+
+    const allDiagnostics = getPreEmitDiagnostics(hooksCompileProgram).concat(
+      emitResult.diagnostics,
+    );
+
+    allDiagnostics.forEach((diagnostic) => {
+      if (diagnostic.file) {
+        const { line, character } = getLineAndCharacterOfPosition(
+          diagnostic.file,
+          diagnostic.start!,
+        );
+        const message = flattenDiagnosticMessageText(
+          diagnostic.messageText,
+          '\n',
+        );
+        console.log(
+          `${diagnostic.file.fileName} (${line + 1},${
+            character + 1
+          }): ${message}`,
+        );
+      } else {
+        console.log(flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+      }
+    });
+
+    const hooksOptions: HooksOptions = {
+      beforeCompile: [],
+      afterCompile: [],
+    };
+
+    const hooksModules = configuration.hooks.map((name) =>
+      name.endsWith('.ts') ? name.substring(0, name.lastIndexOf('.')) : name,
+    );
+    for (const hooksModule of hooksModules) {
+      const { beforeCompile, afterCompile } = await import(
+        join(tsOptions.baseUrl ?? __dirname, hooksModule)
+      );
+      if (beforeCompile) {
+        hooksOptions.beforeCompile.push(beforeCompile);
+      }
+      if (afterCompile) {
+        hooksOptions.afterCompile.push(afterCompile);
+      }
+    }
+
     if (watchMode) {
       const tsCompilerOptions: CompilerOptions = {};
       const isPreserveWatchOutputEnabled = options.find(
@@ -148,10 +206,17 @@ export class BuildAction extends AbstractAction {
         pathToTsconfig,
         appName,
         tsCompilerOptions,
+        hooksOptions,
         onSuccess,
       );
     } else {
-      this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      this.compiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        hooksOptions,
+        onSuccess,
+      );
       this.assetsManager.closeWatchers();
     }
   }
