@@ -13,11 +13,13 @@ export class AddCommand extends AbstractCommand {
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
       )
+      .option('-s, --skip-install', 'Skip package installation.', false)
       .option('-p, --project [project]', 'Project in which to generate files.')
       .usage('<library> [options] [library-specific-options]')
       .action(async (library: string, command: Command) => {
         const options: Input[] = [];
         options.push({ name: 'dry-run', value: !!command.dryRun });
+        options.push({ name: 'skip-install', value: command.skipInstall });
         options.push({
           name: 'project',
           value: command.project,
