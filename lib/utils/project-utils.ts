@@ -68,6 +68,27 @@ export function shouldGenerateSpec(
   return specValue;
 }
 
+export function shouldGenerateFlat(
+    configuration: Required<Configuration>,
+    appName: string,
+    flatValue: boolean,
+): boolean {
+  // CLI parameters have the highest priority
+  if (flatValue === true) {
+    return flatValue;
+  }
+
+  const flatConfiguration = getValueOrDefault(
+      configuration,
+      'generateOptions.flat',
+      appName || '',
+  );
+  if (typeof flatConfiguration === 'boolean') {
+    return flatConfiguration;
+  }
+  return flatValue;
+}
+
 export async function askForProjectName(
   promptQuestion: string,
   projects: string[],
