@@ -14,6 +14,7 @@ import { MESSAGES } from '../lib/ui';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import {
   askForProjectName,
+  hasValidOptionFlag,
   moveDefaultProjectToStart,
   shouldAskForProject
 } from '../lib/utils/project-utils';
@@ -27,7 +28,8 @@ export class AddAction extends AbstractAction {
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
-    const packageInstallSuccess = await this.installPackage(
+    const skipInstall = hasValidOptionFlag('skip-install', options);
+    const packageInstallSuccess = skipInstall || await this.installPackage(
       collectionName,
       tagName,
     );

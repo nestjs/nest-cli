@@ -1,5 +1,6 @@
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
+import { Input } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
@@ -92,4 +93,10 @@ export function moveDefaultProjectToStart(
   }
   projects.unshift(defaultProjectName);
   return projects;
+}
+
+export function hasValidOptionFlag(queriedOptionName: string, options: Input[], queriedValue: string|number|boolean = true): boolean {
+  return options.some(
+    (option: Input) => option.name === queriedOptionName && option.value === queriedValue
+  );
 }
