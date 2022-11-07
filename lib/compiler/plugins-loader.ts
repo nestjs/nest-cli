@@ -30,9 +30,7 @@ export interface MultiNestCompilerPlugins {
 export class PluginsLoader {
   public load(plugins: PluginEntry[] = []): MultiNestCompilerPlugins {
     const pluginNames = plugins.map((entry) =>
-      entry !== null && typeof entry === 'object'
-        ? (entry as PluginAndOptions).name
-        : (entry as string),
+      entry ? (entry as PluginAndOptions)?.name : (entry as string)
     );
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
