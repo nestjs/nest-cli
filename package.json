@@ -50,7 +50,7 @@
     "inquirer": "7.3.3",
     "node-emoji": "1.11.0",
     "ora": "5.4.1",
-    "os-name": "4.0.1",
+    "os-name": "5.1.0",
     "rimraf": "3.0.2",
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
