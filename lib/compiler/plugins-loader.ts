@@ -1,6 +1,5 @@
 import { join } from 'path';
 import * as ts from 'typescript';
-import { isObject } from 'util';
 import { CLI_ERRORS } from '../ui';
 
 const PLUGIN_ENTRY_FILENAME = 'plugin';
@@ -31,7 +30,7 @@ export interface MultiNestCompilerPlugins {
 export class PluginsLoader {
   public load(plugins: PluginEntry[] = []): MultiNestCompilerPlugins {
     const pluginNames = plugins.map((entry) =>
-      isObject(entry) ? (entry as PluginAndOptions).name : (entry as string),
+      entry ? (entry as PluginAndOptions)?.name : (entry as string)
     );
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
@@ -63,9 +62,7 @@ export class PluginsLoader {
       if (!plugin.before && !plugin.after && !plugin.afterDeclarations) {
         throw new Error(CLI_ERRORS.WRONG_PLUGIN(pluginNames[index]));
       }
-      const options = isObject(plugins[index])
-        ? (plugins[index] as PluginAndOptions).options || {}
-        : {};
+      const options = plugins[index]?.options || {};
       plugin.before &&
         beforeHooks.push(plugin.before.bind(plugin.before, options));
       plugin.after && afterHooks.push(plugin.after.bind(plugin.after, options));
