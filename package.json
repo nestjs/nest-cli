@@ -38,9 +38,9 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
-    "@angular-devkit/core": "14.2.2",
-    "@angular-devkit/schematics": "14.2.2",
-    "@angular-devkit/schematics-cli": "14.2.2",
+    "@angular-devkit/core": "14.2.10",
+    "@angular-devkit/schematics": "14.2.10",
+    "@angular-devkit/schematics-cli": "14.2.10",
     "@nestjs/schematics": "^9.0.0",
     "chalk": "3.0.0",
     "chokidar": "3.5.3",
