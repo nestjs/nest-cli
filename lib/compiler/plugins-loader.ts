@@ -62,10 +62,7 @@ export class PluginsLoader {
       if (!plugin.before && !plugin.after && !plugin.afterDeclarations) {
         throw new Error(CLI_ERRORS.WRONG_PLUGIN(pluginNames[index]));
       }
-      const options =
-        plugins[index] !== null && typeof plugins[index] === 'object'
-          ? (plugins[index] as PluginAndOptions).options || {}
-          : {};
+      const options = plugins[index]?.options || {};
       plugin.before &&
         beforeHooks.push(plugin.before.bind(plugin.before, options));
       plugin.after && afterHooks.push(plugin.after.bind(plugin.after, options));
