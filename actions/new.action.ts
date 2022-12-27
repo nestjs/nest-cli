@@ -32,7 +32,7 @@ export class NewAction extends AbstractAction {
     const dryRunOption = options.find((option) => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
-    await askForMissingInformation(inputs);
+    await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
@@ -68,6 +68,9 @@ export class NewAction extends AbstractAction {
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
+const getPackageManagerInput = (inputs: Input[]) =>
+  inputs.find((options) => options.name === 'packageManager');
+
 const getProjectDirectory = (
   applicationName: Input,
   directoryOption?: Input,
@@ -78,17 +81,24 @@ const getProjectDirectory = (
   );
 };
 
-const askForMissingInformation = async (inputs: Input[]) => {
+const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
+
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
     const message = 'What name would you like to use for the new project?';
     const questions = [generateInput('name', message)('nest-app')];
     const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
     replaceInputMissingInformation(inputs, answers);
+  }
+
+  const packageManagerInput = getPackageManagerInput(options);
+  if (!packageManagerInput!.value) {
+    const answers = await askForPackageManager();
+    replaceInputMissingInformation(options, answers);
   }
 };
 
@@ -120,10 +130,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
-      if (
-        option.name !== 'skip-install' &&
-        option.value !== 'package-manager'
-      ) {
+      if (option.name !== 'skip-install') {
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
@@ -137,9 +144,7 @@ const installPackages = async (
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager: string = options.find(
-    (option) => option.name === 'package-manager',
-  )!.value as string;
+  const inputPackageManager = getPackageManagerInput(options)!.value as string;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
@@ -148,32 +153,19 @@ const installPackages = async (
     console.info();
     return;
   }
-  if (inputPackageManager !== undefined) {
-    try {
-      packageManager = PackageManagerFactory.create(inputPackageManager);
-      await packageManager.install(installDirectory, inputPackageManager);
-    } catch (error) {
-      if (error && error.message) {
-        console.error(chalk.red(error.message));
-      }
+  try {
+    packageManager = PackageManagerFactory.create(inputPackageManager);
+    await packageManager.install(installDirectory, inputPackageManager);
+  } catch (error) {
+    if (error && error.message) {
+      console.error(chalk.red(error.message));
     }
-  } else {
-    packageManager = await selectPackageManager();
-    await packageManager.install(
-      installDirectory,
-      packageManager.name.toLowerCase(),
-    );
   }
-};
-
-const selectPackageManager = async (): Promise<AbstractPackageManager> => {
-  const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers['package-manager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
   const questions: Question[] = [
-    generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
       PackageManager.PNPM,

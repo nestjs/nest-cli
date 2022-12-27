@@ -1,4 +1,5 @@
 import { Command, CommanderStatic } from 'commander';
+import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
@@ -74,7 +75,13 @@ export class StartCommand extends AbstractCommand {
 
         const inputs: Input[] = [];
         inputs.push({ name: 'app', value: app });
-        await this.action.handle(inputs, options);
+        const flags = getRemainingFlags(program);
+
+        try {
+          await this.action.handle(inputs, options, flags);
+        } catch (err) {
+          process.exit(1);
+        }
       });
   }
 }
