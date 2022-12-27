@@ -2,5 +2,4 @@
   "singleQuote": true,
   "trailingComma": "all",
   "quoteProps": "preserve",
-  "endOfLine": "crlf"
 }
