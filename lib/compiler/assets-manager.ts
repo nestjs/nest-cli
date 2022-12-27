@@ -13,27 +13,9 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
-  private actionInProgress = false;
 
-  /**
-   * Using on `nest build` to close file watch or the build process will not end
-   * Interval like process
-   * If no action has been taken recently close watchers
-   * If action has been taken recently flag and try again
-   */
   public closeWatchers() {
-    // Consider adjusting this for larger files
-    const timeoutMs = 500;
-    const closeFn = () => {
-      if (this.actionInProgress) {
-        this.actionInProgress = false;
-        setTimeout(closeFn, timeoutMs);
-      } else {
-        this.watchers.forEach((watcher) => watcher.close());
-      }
-    };
-
-    setTimeout(closeFn, timeoutMs);
+    this.watchers.forEach((watcher) => watcher.close());
   }
 
   public copyAssets(
@@ -96,6 +78,10 @@ export class AssetsManager {
           .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
           .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
 
+        if (!isWatchEnabled) {
+          watcher.on('ready', () => watcher.close());
+        }
+
         this.watchers.push(watcher);
       }
     } catch (err) {
@@ -115,8 +101,6 @@ export class AssetsManager {
     }
     // Set path value to true for watching the first time
     this.watchAssetsKeyValue[path] = true;
-    // Set action to true to avoid watches getting cutoff
-    this.actionInProgress = true;
 
     const dest = copyPathResolve(
       path,
