@@ -84,7 +84,7 @@
     "gulp-clean": "0.4.0",
     "husky": "8.0.2",
     "jest": "28.1.3",
-    "lint-staged": "13.0.3",
+    "lint-staged": "13.1.0",
     "prettier": "2.7.1",
     "release-it": "15.5.1",
     "ts-jest": "28.0.8",
