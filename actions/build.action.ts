@@ -152,6 +152,7 @@ export class BuildAction extends AbstractAction {
       );
     } else {
       this.compiler.run(configuration, pathToTsconfig, appName, onSuccess);
+      this.assetsManager.closeWatchers();
     }
   }
 
