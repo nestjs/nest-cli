@@ -30,7 +30,7 @@ export class WatchCompiler {
     if (!configPath) {
       throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
     }
-    const { projectReferences } =
+    const { options, projectReferences } =
       this.tsConfigProvider.getByConfigFilename(configFilename);
 
     const createProgram = tsBin.createEmitAndSemanticDiagnosticsBuilderProgram;
@@ -44,7 +44,10 @@ export class WatchCompiler {
     );
     const host = tsBin.createWatchCompilerHost(
       configPath,
-      tsCompilerOptions,
+      {
+        ...options,
+        ...tsCompilerOptions,
+      },
       tsBin.sys,
       createProgram,
       this.createDiagnosticReporter(origDiagnosticReporter),
