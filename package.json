@@ -79,7 +79,7 @@
     "delete-empty": "3.0.0",
     "eslint": "8.31.0",
     "eslint-config-prettier": "8.6.0",
-    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-import": "2.27.4",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "husky": "8.0.3",
