@@ -26,11 +26,8 @@ export class Compiler {
       getNewLine: () => tsBinary.sys.newLine,
     };
 
-    const {
-      options,
-      fileNames,
-      projectReferences,
-    } = this.tsConfigProvider.getByConfigFilename(configFilename);
+    const { options, fileNames, projectReferences } =
+      this.tsConfigProvider.getByConfigFilename(configFilename);
 
     const createProgram =
       tsBinary.createIncrementalProgram || tsBinary.createProgram;
@@ -49,7 +46,7 @@ export class Compiler {
     const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
     const programRef = program.getProgram
       ? program.getProgram()
-      : ((program as any) as ts.Program);
+      : (program as any as ts.Program);
     const before = plugins.beforeHooks.map((hook) => hook(programRef));
     const after = plugins.afterHooks.map((hook) => hook(programRef));
     const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
@@ -61,7 +58,9 @@ export class Compiler {
       undefined,
       undefined,
       {
-        before: before.concat(tsconfigPathsPlugin),
+        before: tsconfigPathsPlugin
+          ? before.concat(tsconfigPathsPlugin)
+          : before,
         after,
         afterDeclarations,
       },
@@ -87,7 +86,7 @@ export class Compiler {
     formatHost: ts.FormatDiagnosticsHost,
   ): number {
     const diagnostics = tsBinary
-      .getPreEmitDiagnostics((program as unknown) as ts.Program)
+      .getPreEmitDiagnostics(program as unknown as ts.Program)
       .concat(emitResult.diagnostics);
 
     if (diagnostics.length > 0) {

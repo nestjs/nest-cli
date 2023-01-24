@@ -57,12 +57,12 @@ export class NestCollection extends AbstractCollection {
     },
     {
       name: 'interceptor',
-      alias: 'in',
+      alias: 'itc',
       description: 'Generate an interceptor declaration',
     },
     {
       name: 'interface',
-      alias: 'interface',
+      alias: 'itf',
       description: 'Generate an interface',
     },
     {

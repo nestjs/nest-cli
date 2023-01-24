@@ -18,7 +18,7 @@ We would love for you to contribute to Nest and help make it even better than it
 
 To save your and our time, we will systematically close all issues that are requests for general support and redirect people to Stack Overflow.
 
-If you would like to chat about the question in real-time, you can reach out via our [gitter](https://gitter.im/nestjs/nest-cli) channel.
+If you would like to chat about the question in real-time, you can reach out via [our discord channel][discord].
 
 ## <a name="issue"></a> Found a Bug?
 
@@ -48,7 +48,7 @@ We want to fix all the issues as soon as possible, but before fixing a bug we ne
 - version of NestJS-CLI used (`nest info`)
 - and most importantly - a use-case that fails
 
-Unfortunately, we are not able to investigate / fix bugs without a minimal reproduction, so if we don't hear back from you we are going to close an issue that don't have enough info to be reproduced.
+Unfortunately, we are not able to investigate / fix bugs without a minimal reproduction, so if we don't hear back from you we are going to close an issue that doesn't have enough info to be reproduced.
 
 You can file new issues by filling out our [new issue form](https://github.com/nestjs/nest/issues/new).
 
@@ -149,7 +149,7 @@ format that includes a **type**, a **scope** and a **subject**:
 
 The **header** is mandatory and the **scope** of the header is optional.
 
-Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
+Any line of the commit message cannot be longer than 100 characters! This allows the message to be easier
 to read on GitHub as well as in various git tools.
 
 Footer should contain a [closing reference to an issue](https://help.github.com/articles/closing-issues-via-commit-messages/) if any.
@@ -217,7 +217,7 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 [corporate-cla]: http://code.google.com/legal/corporate-cla-v1.0.html
 [github]: https://github.com/nestjs/nest
-[gitter]: https://gitter.im/nestjs/nest
+[discord]: https://discord.gg/nestjs
 [individual-cla]: http://code.google.com/legal/individual-cla-v1.0.html
 [js-style-guide]: https://google.github.io/styleguide/jsguide.html
 [jsfiddle]: http://jsfiddle.net

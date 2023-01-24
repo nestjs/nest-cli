@@ -32,6 +32,7 @@ interface PluginOptions {
 
 interface GenerateOptions {
   spec?: boolean | Record<string, boolean>;
+  flat?: boolean;
 }
 
 export interface ProjectConfiguration {

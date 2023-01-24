@@ -16,12 +16,13 @@ export class PnpmPackageManager extends AbstractPackageManager {
   // As of PNPM v5.3, all commands are shared with NPM v6.14.5. See: https://pnpm.js.org/en/pnpm-vs-npm
   get cli(): PackageManagerCommands {
     return {
-      install: 'install',
-      add: 'install',
+      install: 'install --strict-peer-dependencies=false',
+      add: 'install --strict-peer-dependencies=false',
       update: 'update',
       remove: 'uninstall',
       saveFlag: '--save',
       saveDevFlag: '--save-dev',
+      silentFlag: '--reporter=silent',
     };
   }
 }

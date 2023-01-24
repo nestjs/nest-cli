@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tsconfig paths hooks should remove unused imports 1`] = `
+Map {
+  "dist/foo.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Foo = void 0;
+class Foo {
+}
+exports.Foo = Foo;
+",
+  "dist/bar.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Bar = void 0;
+class Bar {
+}
+exports.Bar = Bar;
+",
+  "dist/main.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+",
+}
+`;
+
+exports[`tsconfig paths hooks should replace path of every import using a path alias by its relative path 1`] = `
+Map {
+  "dist/foo.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Foo = void 0;
+class Foo {
+}
+exports.Foo = Foo;
+",
+  "dist/bar.jsx" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Bar = void 0;
+class Bar {
+}
+exports.Bar = Bar;
+",
+  "dist/baz.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Baz = void 0;
+class Baz {
+}
+exports.Baz = Baz;
+",
+  "dist/qux.jsx" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Qux = void 0;
+class Qux {
+}
+exports.Qux = Qux;
+",
+  "dist/main.js" => ""use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const foo_1 = require("./foo");
+const bar_1 = require("./bar");
+const baz_1 = require("./baz");
+const qux_1 = require("./qux");
+// use the imports so they do not get eliminated
+console.log(foo_1.Foo);
+console.log(bar_1.Bar);
+console.log(baz_1.Baz);
+console.log(qux_1.Qux);
+",
+}
+`;

@@ -3,19 +3,20 @@ import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
-  PackageManagerFactory,
+  PackageManagerFactory
 } from '../lib/package-managers';
 import {
   AbstractCollection,
   CollectionFactory,
-  SchematicOption,
+  SchematicOption
 } from '../lib/schematics';
 import { MESSAGES } from '../lib/ui';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import {
   askForProjectName,
+  hasValidOptionFlag,
   moveDefaultProjectToStart,
-  shouldAskForProject,
+  shouldAskForProject
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
@@ -27,7 +28,8 @@ export class AddAction extends AbstractAction {
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
-    const packageInstallSuccess = await this.installPackage(
+    const skipInstall = hasValidOptionFlag('skip-install', options);
+    const packageInstallSuccess = skipInstall || await this.installPackage(
       collectionName,
       tagName,
     );
@@ -44,6 +46,7 @@ export class AddAction extends AbstractAction {
           MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
         ),
       );
+      throw new Error(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName));
     }
   }
 
@@ -128,9 +131,8 @@ export class AddAction extends AbstractAction {
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
 
     try {
-      const collection: AbstractCollection = CollectionFactory.create(
-        collectionName,
-      );
+      const collection: AbstractCollection =
+        CollectionFactory.create(collectionName);
       await collection.execute(
         schematicName,
         schematicOptions,

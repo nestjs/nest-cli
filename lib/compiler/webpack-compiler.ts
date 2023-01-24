@@ -114,7 +114,7 @@ export class WebpackCompiler {
     }
 
     const afterCallback = (
-      err: Error | undefined,
+      err: Error | null | undefined,
       stats: webpack.Stats | webpack.MultiStats | undefined,
     ) => {
       if (err && stats === undefined) {
@@ -128,7 +128,6 @@ export class WebpackCompiler {
         colors: true,
         modules: false,
         assets: false,
-        warningsFilter: /^(?!CriticalDependenciesWarning$)/,
       });
       if (!err && !stats!.hasErrors()) {
         if (!onSuccess) {

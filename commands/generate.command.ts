@@ -16,7 +16,16 @@ export class GenerateCommand extends AbstractCommand {
         'Report actions that would be taken without writing out results.',
       )
       .option('-p, --project [project]', 'Project in which to generate files.')
-      .option('--flat', 'Enforce flat structure of generated element.')
+      .option(
+        '--flat',
+        'Enforce flat structure of generated element.',
+        () => true,
+      )
+      .option(
+        '--no-flat',
+        'Enforce that directories are generated.',
+        () => false,
+      )
       .option(
         '--spec',
         'Enforce spec files generation.',
@@ -25,6 +34,7 @@ export class GenerateCommand extends AbstractCommand {
         },
         true,
       )
+      .option('--skip-import', 'Skip importing', () => true, false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
       })
@@ -41,7 +51,11 @@ export class GenerateCommand extends AbstractCommand {
         ) => {
           const options: Input[] = [];
           options.push({ name: 'dry-run', value: !!command.dryRun });
-          options.push({ name: 'flat', value: command.flat });
+
+          if (command.flat !== undefined) {
+            options.push({ name: 'flat', value: command.flat });
+          }
+
           options.push({
             name: 'spec',
             value:
@@ -64,6 +78,11 @@ export class GenerateCommand extends AbstractCommand {
             value: command.project,
           });
 
+          options.push({
+            name: 'skipImport',
+            value: command.skipImport,
+          });
+
           const inputs: Input[] = [];
           inputs.push({ name: 'schematic', value: schematic });
           inputs.push({ name: 'name', value: name });
@@ -77,7 +96,9 @@ export class GenerateCommand extends AbstractCommand {
   private buildDescription(): string {
     return (
       'Generate a Nest element.\n' +
-      '  Available schematics:\n' +
+      `  Schematics available on ${chalk.bold(
+        '@nestjs/schematics',
+      )} collection:\n` +
       this.buildSchematicsListAsTable()
     );
   }

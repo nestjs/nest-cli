@@ -10,7 +10,7 @@ export function getValueOrDefault<T = any>(
   defaultValue?: T,
 ): T {
   const item = options.find((option) => option.name === key);
-  const origValue = item && ((item.value as unknown) as T);
+  const origValue = item && (item.value as unknown as T);
   if (origValue !== undefined && origValue !== null) {
     return origValue as T;
   }

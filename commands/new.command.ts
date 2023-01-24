@@ -13,34 +13,38 @@ export class NewCommand extends AbstractCommand {
       .option(
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
+        false
       )
-      .option('-g, --skip-git', 'Skip git repository initialization.')
-      .option('-s, --skip-install', 'Skip package installation.')
+      .option('-g, --skip-git', 'Skip git repository initialization.', false)
+      .option('-s, --skip-install', 'Skip package installation.', false)
       .option(
-        '-p, --package-manager [package-manager]',
+        '-p, --package-manager [packageManager]',
         'Specify package manager.',
       )
       .option(
         '-l, --language [language]',
-        'Programming language to be used (TypeScript or JavaScript).',
+        'Programming language to be used (TypeScript or JavaScript)',
+        'TypeScript',
       )
       .option(
         '-c, --collection [collectionName]',
-        'Schematics collection to use.',
+        'Schematics collection to use',
+        Collection.NESTJS,
       )
-      .option('--strict', 'Enables strict mode in TypeScript.')
+      .option('--strict', 'Enables strict mode in TypeScript.', false)
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
         options.push({ name: 'directory', value: command.directory });
-        options.push({ name: 'dry-run', value: !!command.dryRun });
-        options.push({ name: 'skip-git', value: !!command.skipGit });
-        options.push({ name: 'skip-install', value: !!command.skipInstall });
-        options.push({ name: 'strict', value: !!command.strict });
+        options.push({ name: 'dry-run', value: command.dryRun });
+        options.push({ name: 'skip-git', value: command.skipGit });
+        options.push({ name: 'skip-install', value: command.skipInstall });
+        options.push({ name: 'strict', value: command.strict });
         options.push({
-          name: 'package-manager',
+          name: 'packageManager',
           value: command.packageManager,
         });
+        options.push({ name: 'collection', value: command.collection });
 
         if (!!command.language) {
           const lowercasedLanguage = command.language.toLowerCase();
@@ -64,11 +68,7 @@ export class NewCommand extends AbstractCommand {
         }
         options.push({
           name: 'language',
-          value: !!command.language ? command.language : 'ts',
-        });
-        options.push({
-          name: 'collection',
-          value: command.collection || Collection.NESTJS,
+          value: command.language,
         });
 
         const inputs: Input[] = [];

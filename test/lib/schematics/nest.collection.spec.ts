@@ -5,6 +5,7 @@ describe('Nest Collection', () => {
   [
     'application',
     'class',
+    'configuration',
     'controller',
     'decorator',
     'library',
@@ -12,12 +13,15 @@ describe('Nest Collection', () => {
     'gateway',
     'guard',
     'interceptor',
+    'interface',
     'middleware',
     'module',
     'pipe',
     'provider',
+    'resolver',
     'service',
     'sub-app',
+    'resource',
   ].forEach((schematic) => {
     it(`should call runner with ${schematic} schematic name`, async () => {
       const mock = jest.fn();
@@ -38,19 +42,23 @@ describe('Nest Collection', () => {
   [
     { name: 'application', alias: 'application' },
     { name: 'class', alias: 'cl' },
+    { name: 'configuration', alias: 'config' },
     { name: 'controller', alias: 'co' },
     { name: 'decorator', alias: 'd' },
     { name: 'library', alias: 'lib' },
     { name: 'filter', alias: 'f' },
     { name: 'gateway', alias: 'ga' },
     { name: 'guard', alias: 'gu' },
-    { name: 'interceptor', alias: 'in' },
+    { name: 'interceptor', alias: 'itc' },
+    { name: 'interface', alias: 'itf' },
     { name: 'middleware', alias: 'mi' },
     { name: 'module', alias: 'mo' },
     { name: 'pipe', alias: 'pi' },
     { name: 'provider', alias: 'pr' },
+    { name: 'resolver', alias: 'r' },
     { name: 'service', alias: 's' },
     { name: 'sub-app', alias: 'app' },
+    { name: 'resource', alias: 'res' },
   ].forEach((schematic) => {
     it(`should call runner with schematic ${schematic.name} name when use ${schematic.alias} alias`, async () => {
       const mock = jest.fn();

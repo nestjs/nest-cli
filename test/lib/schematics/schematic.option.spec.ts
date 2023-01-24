@@ -39,6 +39,12 @@ describe('Schematic Option', () => {
       expected: 'my-app',
     },
     {
+      description: 'should allow underscore string option value name',
+      option: 'name',
+      input: 'my_app',
+      expected: 'my_app',
+    },
+    {
       description: 'should manage classified string option value name',
       option: 'name',
       input: 'MyApp',
@@ -110,7 +116,7 @@ describe('Schematic Option', () => {
     });
   });
 
-  it('should should manage boolean option', () => {
+  it('should manage boolean option', () => {
     const option = new SchematicOption('dry-run', false);
     expect(option.toCommandString()).toEqual('--no-dry-run');
   });

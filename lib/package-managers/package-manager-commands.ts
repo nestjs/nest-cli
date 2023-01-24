@@ -5,4 +5,5 @@ export interface PackageManagerCommands {
   remove: string;
   saveFlag: string;
   saveDevFlag: string;
+  silentFlag: string;
 }

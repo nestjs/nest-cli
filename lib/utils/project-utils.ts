@@ -1,5 +1,6 @@
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
+import { Input } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
@@ -67,6 +68,27 @@ export function shouldGenerateSpec(
   return specValue;
 }
 
+export function shouldGenerateFlat(
+    configuration: Required<Configuration>,
+    appName: string,
+    flatValue: boolean,
+): boolean {
+  // CLI parameters have the highest priority
+  if (flatValue === true) {
+    return flatValue;
+  }
+
+  const flatConfiguration = getValueOrDefault(
+      configuration,
+      'generateOptions.flat',
+      appName || '',
+  );
+  if (typeof flatConfiguration === 'boolean') {
+    return flatConfiguration;
+  }
+  return flatValue;
+}
+
 export async function askForProjectName(
   promptQuestion: string,
   projects: string[],
@@ -83,7 +105,8 @@ export function moveDefaultProjectToStart(
   defaultProjectName: string,
   defaultLabel: string,
 ) {
-  let projects: string[] = Object.keys(configuration.projects as {});
+  let projects: string[] =
+    configuration.projects != null ? Object.keys(configuration.projects) : [];
   if (configuration.sourceRoot !== 'src') {
     projects = projects.filter(
       (p) => p !== defaultProjectName.replace(defaultLabel, ''),
@@ -91,4 +114,10 @@ export function moveDefaultProjectToStart(
   }
   projects.unshift(defaultProjectName);
   return projects;
+}
+
+export function hasValidOptionFlag(queriedOptionName: string, options: Input[], queriedValue: string|number|boolean = true): boolean {
+  return options.some(
+    (option: Input) => option.name === queriedOptionName && option.value === queriedValue
+  );
 }

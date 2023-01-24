@@ -1,4 +1,3 @@
-import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import * as chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
@@ -22,6 +21,7 @@ import {
   SchematicOption,
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
+import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -32,7 +32,7 @@ export class NewAction extends AbstractAction {
     const dryRunOption = options.find((option) => option.name === 'dry-run');
     const isDryRunEnabled = dryRunOption && dryRunOption.value;
 
-    await askForMissingInformation(inputs);
+    await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall = options.some(
@@ -68,27 +68,37 @@ export class NewAction extends AbstractAction {
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
+const getPackageManagerInput = (inputs: Input[]) =>
+  inputs.find((options) => options.name === 'packageManager');
+
 const getProjectDirectory = (
   applicationName: Input,
   directoryOption?: Input,
 ): string => {
   return (
     (directoryOption && (directoryOption.value as string)) ||
-    dasherize(applicationName.value as string)
+    normalizeToKebabOrSnakeCase(applicationName.value as string)
   );
 };
 
-const askForMissingInformation = async (inputs: Input[]) => {
+const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
+
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
     const message = 'What name would you like to use for the new project?';
     const questions = [generateInput('name', message)('nest-app')];
     const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
     replaceInputMissingInformation(inputs, answers);
+  }
+
+  const packageManagerInput = getPackageManagerInput(options);
+  if (!packageManagerInput!.value) {
+    const answers = await askForPackageManager();
+    replaceInputMissingInformation(options, answers);
   }
 };
 
@@ -120,10 +130,7 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
 const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
-      if (
-        option.name !== 'skip-install' &&
-        option.value !== 'package-manager'
-      ) {
+      if (option.name !== 'skip-install') {
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
@@ -137,9 +144,7 @@ const installPackages = async (
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager: string = options.find(
-    (option) => option.name === 'package-manager',
-  )!.value as string;
+  const inputPackageManager = getPackageManagerInput(options)!.value as string;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
@@ -148,35 +153,22 @@ const installPackages = async (
     console.info();
     return;
   }
-  if (inputPackageManager !== undefined) {
-    try {
-      packageManager = PackageManagerFactory.create(inputPackageManager);
-      await packageManager.install(installDirectory, inputPackageManager);
-    } catch (error) {
-      if (error && error.message) {
-        console.error(chalk.red(error.message));
-      }
+  try {
+    packageManager = PackageManagerFactory.create(inputPackageManager);
+    await packageManager.install(installDirectory, inputPackageManager);
+  } catch (error) {
+    if (error && error.message) {
+      console.error(chalk.red(error.message));
     }
-  } else {
-    packageManager = await selectPackageManager();
-    await packageManager.install(
-      installDirectory,
-      packageManager.name.toLowerCase(),
-    );
   }
-};
-
-const selectPackageManager = async (): Promise<AbstractPackageManager> => {
-  const answers: Answers = await askForPackageManager();
-  return PackageManagerFactory.create(answers['package-manager']);
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
   const questions: Question[] = [
-    generateSelect('package-manager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
       PackageManager.NPM,
       PackageManager.YARN,
-      PackageManager.PNPM
+      PackageManager.PNPM,
     ]),
   ];
   const prompt = inquirer.createPromptModule();
@@ -203,6 +195,10 @@ const initializeGitRepository = async (dir: string) => {
 const createGitIgnoreFile = (dir: string, content?: string) => {
   const fileContent = content || defaultGitIgnore;
   const filePath = join(process.cwd(), dir, '.gitignore');
+
+  if (fileExists(filePath)) {
+    return;
+  }
   return promisify(fs.writeFile)(filePath, fileContent);
 };
 
@@ -225,16 +221,18 @@ const printCollective = () => {
   emptyLine();
 };
 
-const print = (color: string | null = null) => (str = '') => {
-  const terminalCols = retrieveCols();
-  const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
-  const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
-  const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
-  if (color) {
-    str = (chalk as any)[color](str);
-  }
-  console.log(leftPadding, str);
-};
+const print =
+  (color: string | null = null) =>
+  (str = '') => {
+    const terminalCols = retrieveCols();
+    const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
+    const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
+    const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
+    if (color) {
+      str = (chalk as any)[color](str);
+    }
+    console.log(leftPadding, str);
+  };
 
 export const retrieveCols = () => {
   const defaultCols = 80;
@@ -245,6 +243,19 @@ export const retrieveCols = () => {
     return parseInt(terminalCols.toString(), 10) || defaultCols;
   } catch {
     return defaultCols;
+  }
+};
+
+const fileExists = (path: string) => {
+  try {
+    fs.accessSync(path);
+    return true;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      return false;
+    }
+
+    throw err;
   }
 };
 

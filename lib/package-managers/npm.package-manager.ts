@@ -21,6 +21,7 @@ export class NpmPackageManager extends AbstractPackageManager {
       remove: 'uninstall',
       saveFlag: '--save',
       saveDevFlag: '--save-dev',
+      silentFlag: '--silent',
     };
   }
 }

@@ -1,10 +1,10 @@
-import { dasherize } from '@angular-devkit/core/src/utils/strings';
 import * as chalk from 'chalk';
 import { readFile } from 'fs';
 import * as ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner';
 import { MESSAGES } from '../ui';
+import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
 import { PackageManagerCommands } from './package-manager-commands';
 import { ProjectDependency } from './project.dependency';
 
@@ -21,13 +21,13 @@ export abstract class AbstractPackageManager {
     });
     spinner.start();
     try {
-      const commandArguments = `${this.cli.install} --silent`;
+      const commandArgs = `${this.cli.install} ${this.cli.silentFlag}`;
       const collect = true;
-      const dasherizedDirectory: string = dasherize(directory);
+      const normalizedDirectory = normalizeToKebabOrSnakeCase(directory);
       await this.runner.run(
-        commandArguments,
+        commandArgs,
         collect,
-        join(process.cwd(), dasherizedDirectory),
+        join(process.cwd(), normalizedDirectory),
       );
       spinner.succeed();
       console.info();
@@ -39,7 +39,15 @@ export abstract class AbstractPackageManager {
       console.info();
     } catch {
       spinner.fail();
-      console.error(chalk.red(MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED));
+      const commandArgs = this.cli.install;
+      const commandToRun = this.runner.rawFullCommand(commandArgs);
+      console.error(
+        chalk.red(
+          MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED(
+            chalk.bold(commandToRun),
+          ),
+        ),
+      );
     }
   }
 

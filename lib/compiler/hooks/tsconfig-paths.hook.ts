@@ -8,6 +8,11 @@ export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
   const tsBinary = new TypeScriptBinaryLoader().load();
+  const [tsVersionMajor, tsVersionMinor] = tsBinary.versionMajorMinor
+    ?.split('.')
+    .map((x) => +x);
+  const isInUpdatedAstContext = tsVersionMinor >= 8 || tsVersionMajor > 4;
+
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
 
@@ -19,24 +24,67 @@ export function tsconfigPathsBeforeHookFactory(
           (tsBinary.isExportDeclaration(node) && node.moduleSpecifier)
         ) {
           try {
-            const newNode = tsBinary.getMutableClone(node);
             const importPathWithQuotes =
               node.moduleSpecifier && node.moduleSpecifier.getText();
 
             if (!importPathWithQuotes) {
               return node;
             }
-            const text = importPathWithQuotes.substr(
+            const text = importPathWithQuotes.substring(
               1,
-              importPathWithQuotes.length - 2,
+              importPathWithQuotes.length - 1,
             );
             const result = getNotAliasedPath(sf, matcher, text);
             if (!result) {
               return node;
             }
-            (newNode as any).moduleSpecifier = tsBinary.createLiteral(result);
-            (newNode as any).moduleSpecifier.parent = (node as any).moduleSpecifier.parent;
-            return newNode;
+            const moduleSpecifier =
+              tsBinary.factory.createStringLiteral(result);
+            (moduleSpecifier as any).parent = (
+              node as any
+            ).moduleSpecifier.parent;
+
+            if (tsBinary.isImportDeclaration(node)) {
+              const updatedNode = isInUpdatedAstContext
+                ? (tsBinary.factory as any).updateImportDeclaration(
+                    node,
+                    node.modifiers,
+                    node.importClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  )
+                : tsBinary.factory.updateImportDeclaration(
+                    node,
+                    node.decorators,
+                    node.modifiers,
+                    node.importClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  );
+              (updatedNode as any).flags = node.flags;
+              return updatedNode;
+            } else {
+              const updatedNode = isInUpdatedAstContext
+                ? (tsBinary.factory as any).updateExportDeclaration(
+                    node,
+                    node.modifiers,
+                    node.isTypeOnly,
+                    node.exportClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  )
+                : tsBinary.factory.updateExportDeclaration(
+                    node,
+                    node.decorators,
+                    node.modifiers,
+                    node.isTypeOnly,
+                    node.exportClause,
+                    moduleSpecifier,
+                    node.assertClause,
+                  );
+              (updatedNode as any).flags = node.flags;
+              return updatedNode;
+            }
           } catch {
             return node;
           }
@@ -53,7 +101,12 @@ function getNotAliasedPath(
   matcher: tsPaths.MatchPath,
   text: string,
 ) {
-  let result = matcher(text, undefined, undefined, ['.ts', '.js']);
+  let result = matcher(text, undefined, undefined, [
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+  ]);
   if (!result) {
     return;
   }
