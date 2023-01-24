@@ -8,15 +8,23 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
 import webpack = require('webpack');
 
+type WebpackConfigFactory = (
+  config: webpack.Configuration,
+  webpackRef: typeof webpack,
+) => webpack.Configuration;
+
+type WebpackConfigFactoryOrConfig =
+  | WebpackConfigFactory
+  | webpack.Configuration;
+
 export class WebpackCompiler {
   constructor(private readonly pluginsLoader: PluginsLoader) {}
 
   public run(
     configuration: Required<Configuration>,
-    webpackConfigFactoryOrConfig: (
-      config: webpack.Configuration,
-      webpackRef: typeof webpack,
-    ) => webpack.Configuration,
+    webpackConfigFactoryOrConfig:
+      | WebpackConfigFactoryOrConfig
+      | WebpackConfigFactoryOrConfig[],
     tsConfigPath: string,
     appName: string,
     isDebugEnabled = false,
@@ -64,20 +72,50 @@ export class WebpackCompiler {
       tsConfigPath,
       plugins,
     );
-    const projectWebpackOptions =
-      typeof webpackConfigFactoryOrConfig !== 'function'
-        ? webpackConfigFactoryOrConfig
-        : webpackConfigFactoryOrConfig(defaultOptions, webpack);
-    const webpackConfiguration = {
-      ...defaultOptions,
-      mode: watchMode ? 'development' : defaultOptions.mode,
-      ...projectWebpackOptions,
-    };
-    const compiler = webpack(webpackConfiguration);
+
+    let compiler: webpack.Compiler | webpack.MultiCompiler;
+    let watchOptions:
+      | Parameters<typeof webpack.MultiCompiler.prototype.watch>[0]
+      | undefined;
+    let watch: boolean | undefined;
+
+    if (Array.isArray(webpackConfigFactoryOrConfig)) {
+      const webpackConfigurations = webpackConfigFactoryOrConfig.map(
+        (configOrFactory) => {
+          const unwrappedConfig =
+            typeof configOrFactory !== 'function'
+              ? configOrFactory
+              : configOrFactory(defaultOptions, webpack);
+          return {
+            ...defaultOptions,
+            mode: watchMode ? 'development' : defaultOptions.mode,
+            ...unwrappedConfig,
+          };
+        },
+      );
+      compiler = webpack(webpackConfigurations);
+      watchOptions = webpackConfigurations.map(
+        (config) => config.watchOptions || {},
+      );
+      watch = webpackConfigurations.some((config) => config.watch);
+    } else {
+      const projectWebpackOptions =
+        typeof webpackConfigFactoryOrConfig !== 'function'
+          ? webpackConfigFactoryOrConfig
+          : webpackConfigFactoryOrConfig(defaultOptions, webpack);
+      const webpackConfiguration = {
+        ...defaultOptions,
+        mode: watchMode ? 'development' : defaultOptions.mode,
+        ...projectWebpackOptions,
+      };
+      compiler = webpack(webpackConfiguration);
+      watchOptions = webpackConfiguration.watchOptions;
+      watch = webpackConfiguration.watch;
+    }
 
     const afterCallback = (
       err: Error | null | undefined,
-      stats: webpack.Stats | undefined,
+      stats: webpack.Stats | webpack.MultiStats | undefined,
     ) => {
       if (err && stats === undefined) {
         // Could not complete the compilation
@@ -97,19 +135,19 @@ export class WebpackCompiler {
         } else {
           onSuccess();
         }
-      } else if (!watchMode && !webpackConfiguration.watch) {
+      } else if (!watchMode && !watch) {
         console.log(statsOutput);
         return process.exit(1);
       }
       console.log(statsOutput);
     };
 
-    if (watchMode || webpackConfiguration.watch) {
+    if (watchMode || watch) {
       compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
         console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
         callback();
       });
-      compiler.watch(webpackConfiguration.watchOptions! || {}, afterCallback);
+      compiler.watch(watchOptions! || {}, afterCallback);
     } else {
       compiler.run(afterCallback);
     }
