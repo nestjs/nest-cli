@@ -16,13 +16,13 @@ import { InfoCommand } from './info.command';
 import { NewCommand } from './new.command';
 import { StartCommand } from './start.command';
 export class CommandLoader {
-  public static load(program: CommanderStatic): void {
+  public static async load(program: CommanderStatic): Promise<void> {
     new NewCommand(new NewAction()).load(program);
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
     new AddCommand(new AddAction()).load(program);
-    new GenerateCommand(new GenerateAction()).load(program);
+    await new GenerateCommand(new GenerateAction()).load(program);
 
     this.handleInvalidCommand(program);
   }

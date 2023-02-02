@@ -121,7 +121,7 @@ export class NestCollection extends AbstractCollection {
     await super.execute(schematic, options);
   }
 
-  public static getSchematics(): Schematic[] {
+  public getSchematics(): Schematic[] {
     return NestCollection.schematics.filter(
       (item) => item.name !== 'angular-app',
     );

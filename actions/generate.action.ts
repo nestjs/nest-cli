@@ -102,7 +102,11 @@ const generateFiles = async (inputs: Input[]) => {
         specValue,
         specOptions.passedAsInput,
       );
-      generateFlat = shouldGenerateFlat(configuration, answers.appNames, flatValue);
+      generateFlat = shouldGenerateFlat(
+        configuration,
+        answers.appNames,
+        flatValue,
+      );
     }
   }
 
