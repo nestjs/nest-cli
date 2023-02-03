@@ -16,8 +16,6 @@ export class WorkspaceUtils {
     if (!isDeleteEnabled) {
       return;
     }
-    await new Promise<void>((resolve, reject) =>
-      rimraf(dirPath, (err) => (err ? reject(err) : resolve())),
-    );
+    await rimraf(dirPath);
   }
 }
