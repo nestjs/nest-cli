@@ -14,7 +14,7 @@ export class CustomCollection extends AbstractCollection {
   public getSchematics(): Schematic[] {
     const collectionPackagePath = dirname(require.resolve(this.collection));
     const collectionPath = join(collectionPackagePath, 'collection.json');
-    const collection = JSON.parse(readFileSync(collectionPath).toString());
+    const collection = JSON.parse(readFileSync(collectionPath, 'utf8'));
     const schematics = Object.entries(collection.schematics).map(
       ([name, value]) => {
         const schematic = value as CollectionSchematic;
