@@ -7,7 +7,7 @@ import {
   localBinExists,
 } from '../lib/utils/local-binaries';
 
-const bootstrap = () => {
+const bootstrap = async () => {
   const program: CommanderStatic = commander;
   program
     .version(
@@ -20,11 +20,11 @@ const bootstrap = () => {
 
   if (localBinExists()) {
     const localCommandLoader = loadLocalBinCommandLoader();
-    localCommandLoader.load(program);
+    await localCommandLoader.load(program);
   } else {
-    CommandLoader.load(program);
+    await CommandLoader.load(program);
   }
-  commander.parse(process.argv);
+  commander.parseAsync(process.argv);
 
   if (!process.argv.slice(2).length) {
     program.outputHelp();

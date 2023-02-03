@@ -1,16 +1,18 @@
 import * as chalk from 'chalk';
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
-import { NestCollection } from '../lib/schematics/nest.collection';
+import { AbstractCollection, CollectionFactory } from '../lib/schematics';
+import { Schematic } from '../lib/schematics/nest.collection';
+import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
 export class GenerateCommand extends AbstractCommand {
-  public load(program: CommanderStatic) {
+  public async load(program: CommanderStatic): Promise<void> {
     program
       .command('generate <schematic> [name] [path]')
       .alias('g')
-      .description(this.buildDescription())
+      .description(await this.buildDescription())
       .option(
         '-d, --dry-run',
         'Report actions that would be taken without writing out results.',
@@ -93,17 +95,18 @@ export class GenerateCommand extends AbstractCommand {
       );
   }
 
-  private buildDescription(): string {
+  private async buildDescription(): Promise<string> {
+    const collection = await this.getCollection();
     return (
       'Generate a Nest element.\n' +
       `  Schematics available on ${chalk.bold(
-        '@nestjs/schematics',
+        collection,
       )} collection:\n` +
-      this.buildSchematicsListAsTable()
+      this.buildSchematicsListAsTable(await this.getSchematics(collection))
     );
   }
 
-  private buildSchematicsListAsTable(): string {
+  private buildSchematicsListAsTable(schematics: Schematic[]): Promise<string> {
     const leftMargin = '    ';
     const tableConfig = {
       head: ['name', 'alias', 'description'],
@@ -118,7 +121,7 @@ export class GenerateCommand extends AbstractCommand {
       },
     };
     const table: any = new Table(tableConfig);
-    for (const schematic of NestCollection.getSchematics()) {
+    for (const schematic of schematics) {
       table.push([
         chalk.green(schematic.name),
         chalk.cyan(schematic.alias),
@@ -126,5 +129,17 @@ export class GenerateCommand extends AbstractCommand {
       ]);
     }
     return table.toString();
+  }
+
+  private async getCollection(): Promise<string> {
+    const configuration = await loadConfiguration();
+    return configuration.collection;
+  }
+
+  private async getSchematics(collection: string): Promise<Schematic[]> {
+    const abstractCollection: AbstractCollection = CollectionFactory.create(
+      collection,
+    );
+    return abstractCollection.getSchematics();
   }
 }
