@@ -122,7 +122,7 @@ export class BuildAction extends AbstractAction {
         webpackPath,
         configuration.compilerOptions!.webpackConfigPath!,
       );
-      return this.webpackCompiler.run(
+      this.webpackCompiler.run(
         configuration,
         webpackConfigFactoryOrConfig,
         pathToTsconfig,
@@ -132,6 +132,12 @@ export class BuildAction extends AbstractAction {
         this.assetsManager,
         onSuccess,
       );
+
+      if (!watchMode) {
+        this.assetsManager.closeWatchers();
+      }
+
+      return;
     }
 
     if (watchMode) {
