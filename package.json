@@ -62,8 +62,8 @@
     "webpack-node-externals": "3.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "17.4.3",
-    "@commitlint/config-angular": "17.4.3",
+    "@commitlint/cli": "17.4.4",
+    "@commitlint/config-angular": "17.4.4",
     "@types/copyfiles": "2.4.1",
     "@types/inquirer": "8.2.6",
     "@types/jest": "29.4.0",
