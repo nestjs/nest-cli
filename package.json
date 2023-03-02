@@ -67,7 +67,7 @@
     "@types/copyfiles": "2.4.1",
     "@types/inquirer": "8.2.6",
     "@types/jest": "29.4.0",
-    "@types/node": "18.14.2",
+    "@types/node": "18.14.4",
     "@types/node-emoji": "1.8.2",
     "@types/ora": "3.2.0",
     "@types/os-name": "3.1.0",
