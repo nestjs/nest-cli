@@ -33,6 +33,7 @@ interface PluginOptions {
 interface GenerateOptions {
   spec?: boolean | Record<string, boolean>;
   flat?: boolean;
+  specFileSuffix?: string;
 }
 
 export interface ProjectConfiguration {

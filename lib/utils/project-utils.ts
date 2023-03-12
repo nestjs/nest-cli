@@ -89,6 +89,31 @@ export function shouldGenerateFlat(
   return flatValue;
 }
 
+export function shouldGenerateSpecFileSuffix(
+    configuration: Required<Configuration>,
+    appName: string,
+    specFileSuffixValue: string,
+): string {
+  // CLI parameters have the highest priority
+  if (specFileSuffixValue) {
+    return specFileSuffixValue;
+  }
+
+  const specFileSuffixConfiguration = getValueOrDefault(
+      configuration,
+      'generateOptions.specFileSuffix',
+      appName || '',
+      undefined,
+      undefined,
+      'spec',
+  );
+  if (typeof specFileSuffixConfiguration === 'string') {
+    return specFileSuffixConfiguration;
+  }
+  return specFileSuffixValue;
+}
+
+
 export async function askForProjectName(
   promptQuestion: string,
   projects: string[],

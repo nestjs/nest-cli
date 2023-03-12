@@ -1,4 +1,3 @@
-import { description } from 'commander';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { AbstractCollection } from './abstract.collection';
