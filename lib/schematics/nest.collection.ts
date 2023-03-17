@@ -66,6 +66,11 @@ export class NestCollection extends AbstractCollection {
       description: 'Generate an interface',
     },
     {
+      name: 'library',
+      alias: 'lib',
+      description: 'Generate a new library within a monorepo',
+    },
+    {
       name: 'middleware',
       alias: 'mi',
       description: 'Generate a middleware declaration',
@@ -91,24 +96,19 @@ export class NestCollection extends AbstractCollection {
       description: 'Generate a GraphQL resolver declaration',
     },
     {
+      name: 'resource',
+      alias: 'res',
+      description: 'Generate a new CRUD resource',
+    },
+    {
       name: 'service',
       alias: 's',
       description: 'Generate a service declaration',
     },
     {
-      name: 'library',
-      alias: 'lib',
-      description: 'Generate a new library within a monorepo',
-    },
-    {
       name: 'sub-app',
       alias: 'app',
       description: 'Generate a new application within a monorepo',
-    },
-    {
-      name: 'resource',
-      alias: 'res',
-      description: 'Generate a new CRUD resource',
     },
   ];
 
