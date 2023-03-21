@@ -140,6 +140,7 @@ export class WebpackCompiler {
         return process.exit(1);
       }
       console.log(statsOutput);
+      compiler.close(() => {});
     };
 
     if (watchMode || watch) {
