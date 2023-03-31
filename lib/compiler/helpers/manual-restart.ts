@@ -6,4 +6,5 @@ export function listenForManualRestart(callback: () => void) {
     }
   };
   process.stdin.on('data', stdinListener);
+  console.log('[@nest/cli] to restart at any time, enter `rs`\n');
 }
