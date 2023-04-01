@@ -1,6 +1,6 @@
 export function listenForManualRestart(callback: () => void) {
   const stdinListener = (data: Buffer) => {
-    if (data.toString().replace('\n', '') === 'rs') {
+    if (data.toString().trim() === 'rs') {
       process.stdin.removeListener('data', stdinListener);
       callback();
     }
