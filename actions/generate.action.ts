@@ -16,7 +16,7 @@ import {
   shouldAskForProject,
   shouldGenerateFlat,
   shouldGenerateSpec,
-  shouldGenerateSpecFileSuffix,
+  getSpecFileSuffix,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
@@ -64,7 +64,7 @@ const generateFiles = async (inputs: Input[]) => {
     specOptions.passedAsInput,
   );
   let generateFlat = shouldGenerateFlat(configuration, appName, flatValue);
-  let generateSpecFileSuffix = shouldGenerateSpecFileSuffix(configuration, appName, specFileSuffixValue)
+  let generateSpecFileSuffix = getSpecFileSuffix(configuration, appName, specFileSuffixValue)
 
   // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects"
   // Ensure we don't run for new app/libs schematics
@@ -111,7 +111,7 @@ const generateFiles = async (inputs: Input[]) => {
         answers.appNames,
         flatValue,
       );
-      generateSpecFileSuffix = shouldGenerateSpecFileSuffix(configuration, appName, specFileSuffixValue)
+      generateSpecFileSuffix = getSpecFileSuffix(configuration, appName, specFileSuffixValue)
     }
   }
 

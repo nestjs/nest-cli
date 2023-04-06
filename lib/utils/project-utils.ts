@@ -89,7 +89,7 @@ export function shouldGenerateFlat(
   return flatValue;
 }
 
-export function shouldGenerateSpecFileSuffix(
+export function getSpecFileSuffix(
     configuration: Required<Configuration>,
     appName: string,
     specFileSuffixValue: string,
