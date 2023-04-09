@@ -55,7 +55,6 @@ export function tsconfigPathsBeforeHookFactory(
                   )
                 : tsBinary.factory.updateImportDeclaration(
                     node,
-                    node.decorators,
                     node.modifiers,
                     node.importClause,
                     moduleSpecifier,
@@ -75,7 +74,6 @@ export function tsconfigPathsBeforeHookFactory(
                   )
                 : tsBinary.factory.updateExportDeclaration(
                     node,
-                    node.decorators,
                     node.modifiers,
                     node.isTypeOnly,
                     node.exportClause,
