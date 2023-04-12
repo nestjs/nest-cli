@@ -6,6 +6,7 @@ export const defaultConfiguration: Required<Configuration> = {
   sourceRoot: 'src',
   collection: '@nestjs/schematics',
   entryFile: 'main',
+  exec: 'node',
   projects: {},
   monorepo: false,
   compilerOptions: {

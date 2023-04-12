@@ -43,6 +43,7 @@ describe('Nest Configuration Loader', () => {
       collection: '@nestjs/schematics',
       sourceRoot: 'src',
       entryFile: 'main',
+      exec: 'node',
       monorepo: false,
       projects: {},
       compilerOptions: {
@@ -66,6 +67,7 @@ describe('Nest Configuration Loader', () => {
       collection: '@nestjs/schematics',
       sourceRoot: 'src',
       entryFile: 'secondary',
+      exec: 'node',
       monorepo: false,
       projects: {},
       compilerOptions: {

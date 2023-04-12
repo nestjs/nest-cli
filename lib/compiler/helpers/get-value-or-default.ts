@@ -5,7 +5,7 @@ export function getValueOrDefault<T = any>(
   configuration: Required<Configuration>,
   propertyPath: string,
   appName: string,
-  key?: 'path' | 'webpack' | 'webpackPath',
+  key?: 'path' | 'webpack' | 'webpackPath' | 'entryFile' | 'sourceRoot' | 'exec',
   options: Input[] = [],
   defaultValue?: T,
 ): T {

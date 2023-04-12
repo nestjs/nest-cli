@@ -30,9 +30,6 @@ export class StartAction extends BuildAction {
         options,
       );
 
-      const binaryToRunOption = options.find(
-        (option) => option.name === 'exec',
-      );
       const debugModeOption = options.find((option) => option.name === 'debug');
       const watchModeOption = options.find((option) => option.name === 'watch');
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
@@ -43,34 +40,34 @@ export class StartAction extends BuildAction {
         watchAssetsModeOption && watchAssetsModeOption.value
       );
       const debugFlag = debugModeOption && debugModeOption.value;
-      const binaryToRun =
-        binaryToRunOption && (binaryToRunOption.value as string | undefined);
+      const binaryToRun = getValueOrDefault(
+        configuration,
+        'exec',
+        appName,
+        'exec',
+        options,
+        defaultConfiguration.exec,
+      );
 
       const { options: tsOptions } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
-      const entryFile =
-        (options.find((option) => option.name === 'entryFile')
-          ?.value as string) ||
-        getValueOrDefault(
-          configuration,
-          'entryFile',
-          appName,
-          undefined,
-          undefined,
-          defaultConfiguration.entryFile,
-        );
-      const sourceRoot =
-        (options.find((option) => option.name === 'sourceRoot')
-          ?.value as string) ||
-        getValueOrDefault(
-          configuration,
-          'sourceRoot',
-          appName,
-          undefined,
-          undefined,
-          defaultConfiguration.sourceRoot,
-        );
+      const entryFile = getValueOrDefault(
+        configuration,
+        'entryFile',
+        appName,
+        'entryFile',
+        options,
+        defaultConfiguration.entryFile,
+      );
+      const sourceRoot = getValueOrDefault(
+        configuration,
+        'sourceRoot',
+        appName,
+        'sourceRoot',
+        options,
+        defaultConfiguration.sourceRoot,
+      );
       const onSuccess = this.createOnSuccessHook(
         entryFile,
         sourceRoot,
@@ -101,7 +98,7 @@ export class StartAction extends BuildAction {
     sourceRoot: string,
     debugFlag: boolean | string | undefined,
     outDirName: string,
-    binaryToRun = 'node',
+    binaryToRun: string,
   ) {
     let childProcessRef: any;
     process.on(
