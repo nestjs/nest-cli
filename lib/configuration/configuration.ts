@@ -39,6 +39,7 @@ export interface ProjectConfiguration {
   type?: string;
   root?: string;
   entryFile?: string;
+  exec?: string;
   sourceRoot?: string;
   compilerOptions?: CompilerOptions;
 }
@@ -49,6 +50,7 @@ export interface Configuration {
   collection?: string;
   sourceRoot?: string;
   entryFile?: string;
+  exec?: string;
   monorepo?: boolean;
   compilerOptions?: CompilerOptions;
   generateOptions?: GenerateOptions;

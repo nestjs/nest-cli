@@ -7,6 +7,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {},
       language: '',
       collection: '',
@@ -20,6 +21,7 @@ describe('Get Value or Default', () => {
       monorepo: false,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {},
       language: '',
       collection: '',
@@ -38,6 +40,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {
@@ -61,6 +64,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {
@@ -84,6 +88,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {},
@@ -107,6 +112,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {},
@@ -130,6 +136,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {},
@@ -153,6 +160,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test-project': {
           compilerOptions: {},
@@ -176,6 +184,7 @@ describe('Get Value or Default', () => {
       monorepo: true,
       sourceRoot: '',
       entryFile: '',
+      exec: '',
       projects: {
         'test.project.v1.api': {
           sourceRoot: 'apps/test.project.v1.api/src',
