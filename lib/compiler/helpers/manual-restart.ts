@@ -9,5 +9,5 @@ export function listenForManualRestart(callback: () => void) {
 }
 
 export function displayManualRestartTip(): void {
-  console.log('[@nest/cli] to restart at any time, enter `rs`\n');
+  console.log('To restart at any time, enter `rs`..\n');
 }
