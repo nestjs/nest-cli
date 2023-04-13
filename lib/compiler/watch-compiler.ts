@@ -2,6 +2,10 @@ import * as ts from 'typescript';
 import { Configuration } from '../configuration';
 import { CLI_ERRORS } from '../ui/errors';
 import { getValueOrDefault } from './helpers/get-value-or-default';
+import {
+  displayManualRestartTip,
+  listenForManualRestart,
+} from './helpers/manual-restart';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
 import { PluginsLoader } from './plugins-loader';
@@ -68,7 +72,11 @@ export class WatchCompiler {
       host: ts.CompilerHost,
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
-      const tsconfigPathsPlugin = options ? tsconfigPathsBeforeHookFactory(options) : null;
+      displayManualRestartTip();
+
+      const tsconfigPathsPlugin = options
+        ? tsconfigPathsBeforeHookFactory(options)
+        : null;
       const program = origCreateProgram(
         rootNames,
         options,
@@ -118,7 +126,18 @@ export class WatchCompiler {
       return program as any;
     };
 
-    tsBin.createWatchProgram(host);
+    const watchProgram = tsBin.createWatchProgram(host);
+
+    listenForManualRestart(() => {
+      watchProgram.close();
+      this.run(
+        configuration,
+        configFilename,
+        appName,
+        tsCompilerOptions,
+        onSuccess,
+      );
+    });
   }
 
   private createDiagnosticReporter(
