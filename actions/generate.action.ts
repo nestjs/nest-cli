@@ -16,6 +16,7 @@ import {
   shouldAskForProject,
   shouldGenerateFlat,
   shouldGenerateSpec,
+  getSpecFileSuffix,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
@@ -36,6 +37,7 @@ const generateFiles = async (inputs: Input[]) => {
     .value as string;
   const spec = inputs.find((option) => option.name === 'spec');
   const flat = inputs.find((option) => option.name === 'flat');
+  const specFileSuffix = inputs.find((option) => option.name === 'specFileSuffix');
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
@@ -52,6 +54,7 @@ const generateFiles = async (inputs: Input[]) => {
 
   const specValue = spec!.value as boolean;
   const flatValue = !!flat as boolean;
+  const specFileSuffixValue = specFileSuffix!.value as string;
   const specOptions = spec!.options as any;
   let generateSpec = shouldGenerateSpec(
     configuration,
@@ -61,6 +64,7 @@ const generateFiles = async (inputs: Input[]) => {
     specOptions.passedAsInput,
   );
   let generateFlat = shouldGenerateFlat(configuration, appName, flatValue);
+  let generateSpecFileSuffix = getSpecFileSuffix(configuration, appName, specFileSuffixValue)
 
   // If you only add a `lib` we actually don't have monorepo: true BUT we do have "projects"
   // Ensure we don't run for new app/libs schematics
@@ -107,12 +111,14 @@ const generateFiles = async (inputs: Input[]) => {
         answers.appNames,
         flatValue,
       );
+      generateSpecFileSuffix = getSpecFileSuffix(configuration, appName, specFileSuffixValue)
     }
   }
 
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
   schematicOptions.push(new SchematicOption('spec', generateSpec));
   schematicOptions.push(new SchematicOption('flat', generateFlat));
+  schematicOptions.push(new SchematicOption('specFileSuffix', generateSpecFileSuffix));
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
     if (!schematicInput) {
@@ -127,7 +133,7 @@ const generateFiles = async (inputs: Input[]) => {
 };
 
 const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
-  const excludedInputNames = ['schematic', 'spec', 'flat'];
+  const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {

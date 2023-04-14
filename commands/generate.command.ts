@@ -36,6 +36,10 @@ export class GenerateCommand extends AbstractCommand {
         },
         true,
       )
+      .option(
+        '--spec-file-suffix [suffix]',
+        'Use a custom suffix for spec files.',
+      )
       .option('--skip-import', 'Skip importing', () => true, false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
@@ -70,6 +74,10 @@ export class GenerateCommand extends AbstractCommand {
                   ? false
                   : command.spec.passedAsInput,
             },
+          });
+          options.push({
+            name: 'specFileSuffix',
+            value: command.specFileSuffix,
           });
           options.push({
             name: 'collection',
