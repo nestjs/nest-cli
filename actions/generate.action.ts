@@ -51,7 +51,7 @@ const generateFiles = async (inputs: Input[]) => {
     : configuration.sourceRoot;
 
   const specValue = spec!.value as boolean;
-  const flatValue = !!flat as boolean;
+  const flatValue = !!flat?.value;
   const specOptions = spec!.options as any;
   let generateSpec = shouldGenerateSpec(
     configuration,
