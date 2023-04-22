@@ -10,9 +10,9 @@ export class NestConfigurationLoader implements ConfigurationLoader {
     const content: string | undefined = name
       ? await this.reader.read(name)
       : await this.reader.readAnyOf([
+          'nest-cli.json',
           '.nestcli.json',
           '.nest-cli.json',
-          'nest-cli.json',
           'nest.json',
         ]);
 
