@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { Reader } from './reader';
 
 export class FileSystemReader implements Reader {
@@ -9,7 +10,7 @@ export class FileSystemReader implements Reader {
   }
 
   public read(name: string): Promise<string> {
-    return fs.promises.readFile(`${this.directory}/${name}`, 'utf8');
+    return fs.promises.readFile(path.join(this.directory, name), 'utf8');
   }
 
   public async readAnyOf(filenames: string[]): Promise<string | undefined> {
