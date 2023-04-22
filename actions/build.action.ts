@@ -124,6 +124,7 @@ export class BuildAction extends AbstractAction {
       );
       return this.webpackCompiler.run(
         configuration,
+        options,
         webpackConfigFactoryOrConfig,
         pathToTsconfig,
         appName,
