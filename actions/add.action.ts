@@ -3,12 +3,12 @@ import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
-  PackageManagerFactory
+  PackageManagerFactory,
 } from '../lib/package-managers';
 import {
   AbstractCollection,
   CollectionFactory,
-  SchematicOption
+  SchematicOption,
 } from '../lib/schematics';
 import { MESSAGES } from '../lib/ui';
 import { loadConfiguration } from '../lib/utils/load-configuration';
@@ -16,7 +16,7 @@ import {
   askForProjectName,
   hasValidOptionFlag,
   moveDefaultProjectToStart,
-  shouldAskForProject
+  shouldAskForProject,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
@@ -29,10 +29,8 @@ export class AddAction extends AbstractAction {
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
     const skipInstall = hasValidOptionFlag('skip-install', options);
-    const packageInstallSuccess = skipInstall || await this.installPackage(
-      collectionName,
-      tagName,
-    );
+    const packageInstallSuccess =
+      skipInstall || (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
       const sourceRootOption: Input = await this.getSourceRoot(
         inputs.concat(options),
@@ -46,7 +44,9 @@ export class AddAction extends AbstractAction {
           MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
         ),
       );
-      throw new Error(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName));
+      throw new Error(
+        MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
+      );
     }
   }
 

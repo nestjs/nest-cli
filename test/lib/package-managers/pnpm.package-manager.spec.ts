@@ -39,7 +39,11 @@ describe('PnpmPackageManager', () => {
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'pnpm');
-      expect(spy).toBeCalledWith('install --strict-peer-dependencies=false --reporter=silent', true, testDir);
+      expect(spy).toBeCalledWith(
+        'install --strict-peer-dependencies=false --reporter=silent',
+        true,
+        testDir,
+      );
     });
   });
   describe('addProduction', () => {

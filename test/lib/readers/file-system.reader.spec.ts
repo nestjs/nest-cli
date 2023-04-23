@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import { FileSystemReader, Reader } from '../../../lib/readers';
 
-jest.mock('fs', () =>
-  ({
-    promises: {
-      readdir: jest.fn().mockResolvedValue([]),
-      readFile: jest.fn().mockResolvedValue('content'),
-    },
-  })
-);
+jest.mock('fs', () => ({
+  promises: {
+    readdir: jest.fn().mockResolvedValue([]),
+    readFile: jest.fn().mockResolvedValue('content'),
+  },
+}));
 
 const dir: string = process.cwd();
 const reader: Reader = new FileSystemReader(dir);

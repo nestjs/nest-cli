@@ -26,10 +26,14 @@ export class PackageManagerFactory {
       const files = await fs.promises.readdir(process.cwd());
 
       const hasYarnLockFile = files.includes('yarn.lock');
-      if (hasYarnLockFile) return this.create(PackageManager.YARN);
+      if (hasYarnLockFile) {
+        return this.create(PackageManager.YARN);
+      }
 
       const hasPnpmLockFile = files.includes('pnpm-lock.yaml');
-      if (hasPnpmLockFile) return this.create(PackageManager.PNPM);
+      if (hasPnpmLockFile) {
+        return this.create(PackageManager.PNPM);
+      }
 
       return this.create(DEFAULT_PACKAGE_MANAGER);
     } catch (error) {
