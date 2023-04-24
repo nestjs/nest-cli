@@ -6,6 +6,7 @@ import { AssetsManager } from './assets-manager';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins-loader';
+import { Input } from '../../commands';
 import webpack = require('webpack');
 
 type WebpackConfigFactory = (
@@ -22,6 +23,7 @@ export class WebpackCompiler {
 
   public run(
     configuration: Required<Configuration>,
+    options: Input[],
     webpackConfigFactoryOrConfig:
       | WebpackConfigFactoryOrConfig
       | WebpackConfigFactoryOrConfig[],
@@ -51,6 +53,8 @@ export class WebpackCompiler {
       configuration,
       'sourceRoot',
       appName,
+      'sourceRoot',
+      options,
     );
     const pathToSource =
       normalize(sourceRoot).indexOf(normalize(relativeRootPath)) >= 0
@@ -61,6 +65,8 @@ export class WebpackCompiler {
       configuration,
       'entryFile',
       appName,
+      'entryFile',
+      options,
     );
     const entryFileRoot =
       getValueOrDefault<string>(configuration, 'root', appName) || '';
