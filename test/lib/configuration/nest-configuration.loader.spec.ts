@@ -29,13 +29,13 @@ describe('Nest Configuration Loader', () => {
     });
     reader = mock();
   });
-  it('should call reader.readAnyOf when load', async () => {
+  it('should call reader.readAnyOf when load taking "nest-cli.json" as preferable', async () => {
     const loader: ConfigurationLoader = new NestConfigurationLoader(reader);
     const configuration: Configuration = await loader.load();
     expect(reader.readAnyOf).toHaveBeenCalledWith([
+      'nest-cli.json',
       '.nestcli.json',
       '.nest-cli.json',
-      'nest-cli.json',
       'nest.json',
     ]);
     expect(configuration).toEqual({
