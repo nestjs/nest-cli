@@ -15,6 +15,7 @@ export const defaultConfiguration: Required<Configuration> = {
     webpackConfigPath: 'webpack.config.js',
     plugins: [],
     assets: [],
+    restartable: true,
   },
   generateOptions: {},
 };
