@@ -163,7 +163,7 @@ export class BuildAction extends AbstractAction {
   ): (
     config: webpack.Configuration,
     webpackRef: typeof webpack,
-  ) => webpack.Configuration | webpack.Configuration {
+  ) => webpack.Configuration {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
     try {
       return require(pathToWebpackFile);
