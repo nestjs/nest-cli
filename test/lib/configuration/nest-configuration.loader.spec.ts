@@ -52,7 +52,7 @@ describe('Nest Configuration Loader', () => {
         tsConfigPath: 'tsconfig.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
-        manualRestart: true,
+        manualRestart: false,
       },
       generateOptions: {},
     });
@@ -77,7 +77,7 @@ describe('Nest Configuration Loader', () => {
         tsConfigPath: 'tsconfig.json',
         webpack: false,
         webpackConfigPath: 'webpack.config.js',
-        manualRestart: true,
+        manualRestart: false,
       },
       generateOptions: {},
     });
