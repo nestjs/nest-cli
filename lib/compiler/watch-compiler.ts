@@ -58,9 +58,9 @@ export class WatchCompiler {
       this.createWatchStatusChanged(origWatchStatusReporter, onSuccess),
     );
 
-    const restartable = getValueOrDefault(
+    const manualRestart = getValueOrDefault(
       configuration,
-      'compilerOptions.restartable',
+      'compilerOptions.manualRestart',
       appName,
     );
 
@@ -78,7 +78,7 @@ export class WatchCompiler {
       host: ts.CompilerHost,
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
-      if (restartable) {
+      if (manualRestart) {
         displayManualRestartTip();
       }
 
@@ -136,7 +136,7 @@ export class WatchCompiler {
 
     const watchProgram = tsBin.createWatchProgram(host);
 
-    if (restartable) {
+    if (manualRestart) {
       listenForManualRestart(() => {
         watchProgram.close();
         this.run(
