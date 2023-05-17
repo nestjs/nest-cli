@@ -23,6 +23,7 @@ interface CompilerOptions {
   plugins?: string[] | PluginOptions[];
   assets?: string[];
   deleteOutDir?: boolean;
+  manualRestart?: boolean;
 }
 
 interface PluginOptions {

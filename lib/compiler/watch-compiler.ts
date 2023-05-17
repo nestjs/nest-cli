@@ -58,6 +58,12 @@ export class WatchCompiler {
       this.createWatchStatusChanged(origWatchStatusReporter, onSuccess),
     );
 
+    const manualRestart = getValueOrDefault(
+      configuration,
+      'compilerOptions.manualRestart',
+      appName,
+    );
+
     const pluginsConfig = getValueOrDefault(
       configuration,
       'compilerOptions.plugins',
@@ -72,7 +78,9 @@ export class WatchCompiler {
       host: ts.CompilerHost,
       oldProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     ) => {
-      displayManualRestartTip();
+      if (manualRestart) {
+        displayManualRestartTip();
+      }
 
       const tsconfigPathsPlugin = options
         ? tsconfigPathsBeforeHookFactory(options)
@@ -128,16 +136,18 @@ export class WatchCompiler {
 
     const watchProgram = tsBin.createWatchProgram(host);
 
-    listenForManualRestart(() => {
-      watchProgram.close();
-      this.run(
-        configuration,
-        configFilename,
-        appName,
-        tsCompilerOptions,
-        onSuccess,
-      );
-    });
+    if (manualRestart) {
+      listenForManualRestart(() => {
+        watchProgram.close();
+        this.run(
+          configuration,
+          configFilename,
+          appName,
+          tsCompilerOptions,
+          onSuccess,
+        );
+      });
+    }
   }
 
   private createDiagnosticReporter(
