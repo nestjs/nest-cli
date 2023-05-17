@@ -107,9 +107,7 @@ export class GenerateCommand extends AbstractCommand {
     const collection = await this.getCollection();
     return (
       'Generate a Nest element.\n' +
-      `  Schematics available on ${chalk.bold(
-        collection,
-      )} collection:\n` +
+      `  Schematics available on ${chalk.bold(collection)} collection:\n` +
       this.buildSchematicsListAsTable(await this.getSchematics(collection))
     );
   }
@@ -145,9 +143,8 @@ export class GenerateCommand extends AbstractCommand {
   }
 
   private async getSchematics(collection: string): Promise<Schematic[]> {
-    const abstractCollection: AbstractCollection = CollectionFactory.create(
-      collection,
-    );
+    const abstractCollection: AbstractCollection =
+      CollectionFactory.create(collection);
     return abstractCollection.getSchematics();
   }
 }

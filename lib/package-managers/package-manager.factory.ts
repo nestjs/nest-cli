@@ -1,4 +1,4 @@
-import { readdir } from 'fs';
+import * as fs from 'fs';
 import { AbstractPackageManager } from './abstract.package-manager';
 import { NpmPackageManager } from './npm.package-manager';
 import { PackageManager } from './package-manager';
@@ -20,22 +20,24 @@ export class PackageManagerFactory {
   }
 
   public static async find(): Promise<AbstractPackageManager> {
-    return new Promise<AbstractPackageManager>((resolve) => {
-      readdir(process.cwd(), (error, files) => {
-        if (error) {
-          resolve(this.create(PackageManager.NPM));
-        } else {
-          if (files.findIndex((filename) => filename === 'yarn.lock') > -1) {
-            resolve(this.create(PackageManager.YARN));
-          } else if (
-            files.findIndex((filename) => filename === 'pnpm-lock.yaml') > -1
-          ) {
-            resolve(this.create(PackageManager.PNPM));
-          } else {
-            resolve(this.create(PackageManager.NPM));
-          }
-        }
-      });
-    });
+    const DEFAULT_PACKAGE_MANAGER = PackageManager.NPM;
+
+    try {
+      const files = await fs.promises.readdir(process.cwd());
+
+      const hasYarnLockFile = files.includes('yarn.lock');
+      if (hasYarnLockFile) {
+        return this.create(PackageManager.YARN);
+      }
+
+      const hasPnpmLockFile = files.includes('pnpm-lock.yaml');
+      if (hasPnpmLockFile) {
+        return this.create(PackageManager.PNPM);
+      }
+
+      return this.create(DEFAULT_PACKAGE_MANAGER);
+    } catch (error) {
+      return this.create(DEFAULT_PACKAGE_MANAGER);
+    }
   }
 }

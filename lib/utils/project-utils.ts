@@ -69,9 +69,9 @@ export function shouldGenerateSpec(
 }
 
 export function shouldGenerateFlat(
-    configuration: Required<Configuration>,
-    appName: string,
-    flatValue: boolean,
+  configuration: Required<Configuration>,
+  appName: string,
+  flatValue: boolean,
 ): boolean {
   // CLI parameters have the highest priority
   if (flatValue === true) {
@@ -79,9 +79,9 @@ export function shouldGenerateFlat(
   }
 
   const flatConfiguration = getValueOrDefault(
-      configuration,
-      'generateOptions.flat',
-      appName || '',
+    configuration,
+    'generateOptions.flat',
+    appName || '',
   );
   if (typeof flatConfiguration === 'boolean') {
     return flatConfiguration;
@@ -90,9 +90,9 @@ export function shouldGenerateFlat(
 }
 
 export function getSpecFileSuffix(
-    configuration: Required<Configuration>,
-    appName: string,
-    specFileSuffixValue: string,
+  configuration: Required<Configuration>,
+  appName: string,
+  specFileSuffixValue: string,
 ): string {
   // CLI parameters have the highest priority
   if (specFileSuffixValue) {
@@ -100,19 +100,18 @@ export function getSpecFileSuffix(
   }
 
   const specFileSuffixConfiguration = getValueOrDefault(
-      configuration,
-      'generateOptions.specFileSuffix',
-      appName || '',
-      undefined,
-      undefined,
-      'spec',
+    configuration,
+    'generateOptions.specFileSuffix',
+    appName || '',
+    undefined,
+    undefined,
+    'spec',
   );
   if (typeof specFileSuffixConfiguration === 'string') {
     return specFileSuffixConfiguration;
   }
   return specFileSuffixValue;
 }
-
 
 export async function askForProjectName(
   promptQuestion: string,
@@ -141,8 +140,13 @@ export function moveDefaultProjectToStart(
   return projects;
 }
 
-export function hasValidOptionFlag(queriedOptionName: string, options: Input[], queriedValue: string|number|boolean = true): boolean {
+export function hasValidOptionFlag(
+  queriedOptionName: string,
+  options: Input[],
+  queriedValue: string | number | boolean = true,
+): boolean {
   return options.some(
-    (option: Input) => option.name === queriedOptionName && option.value === queriedValue
+    (option: Input) =>
+      option.name === queriedOptionName && option.value === queriedValue,
   );
 }

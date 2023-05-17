@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { join } from 'path';
-import { promisify } from 'util';
 import { Input } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
@@ -199,7 +198,7 @@ const createGitIgnoreFile = (dir: string, content?: string) => {
   if (fileExists(filePath)) {
     return;
   }
-  return promisify(fs.writeFile)(filePath, fileContent);
+  return fs.promises.writeFile(filePath, fileContent);
 };
 
 const printCollective = () => {
