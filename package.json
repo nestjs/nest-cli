@@ -48,7 +48,7 @@
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "8.0.0",
     "inquirer": "8.2.5",
-    "node-emoji": "1.11.0",
+    "node-emoji": "2.0.2",
     "ora": "5.4.1",
     "os-name": "4.0.1",
     "rimraf": "4.4.1",
