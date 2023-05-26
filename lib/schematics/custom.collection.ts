@@ -21,7 +21,9 @@ export class CustomCollection extends AbstractCollection {
     for (const collectionDesc of collectionDescs) {
       const schematicsDescs = Object.entries(collectionDesc.schematics);
       for (const [name, { description, aliases = [] }] of schematicsDescs) {
-        if (usedNames.has(name)) continue;
+        if (usedNames.has(name)) {
+            continue;
+        }
         usedNames.add(name);
         const alias = aliases.find((a) => !usedNames.has(a)) ?? name;
         for (const alias of aliases) {
