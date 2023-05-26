@@ -24,7 +24,9 @@ export class CustomCollection extends AbstractCollection {
         if (usedNames.has(name)) continue;
         usedNames.add(name);
         const alias = aliases.find((a) => !usedNames.has(a)) ?? name;
-        for (const alias of aliases) usedNames.add(alias);
+        for (const alias of aliases) {
+           usedNames.add(alias);
+        }
         schematics.push({ name, alias, description });
       }
     }
