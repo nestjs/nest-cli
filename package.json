@@ -65,7 +65,7 @@
     "@commitlint/cli": "17.6.5",
     "@commitlint/config-angular": "17.6.5",
     "@types/inquirer": "8.2.6",
-    "@types/jest": "29.5.1",
+    "@types/jest": "29.5.2",
     "@types/node": "18.16.16",
     "@types/node-emoji": "1.8.2",
     "@types/shelljs": "0.8.12",
