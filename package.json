@@ -64,6 +64,7 @@
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
     "@commitlint/config-angular": "17.6.3",
+    "@swc/cli": "0.1.62",
     "@types/inquirer": "8.2.6",
     "@types/jest": "29.5.1",
     "@types/node": "18.16.12",
@@ -87,5 +88,13 @@
   },
   "lint-staged": {
     "**/*.{ts,json}": []
+  },
+  "peerDependencies": {
+    "@swc/cli": "^0.1.62"
+  },
+  "peerDependenciesMeta": {
+    "@swc/cli": {
+      "optional": true
+    }
   }
 }
