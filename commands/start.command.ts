@@ -22,7 +22,7 @@ export class StartCommand extends AbstractCommand {
         'Use webpack for compilation (deprecated option, use --build instead).',
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
-      .option('--type-check', 'Enable type checking (when SWC is used).', false)
+      .option('--type-check', 'Enable type checking (when SWC is used).')
       .option('--tsc', 'Use tsc for compilation.')
       .option(
         '--sourceRoot [sourceRoot]',
@@ -91,7 +91,7 @@ export class StartCommand extends AbstractCommand {
         }
         options.push({
           name: 'builder',
-          value: command.builder ?? (isWebpackEnabled ? 'webpack' : 'tsc'),
+          value: command.builder,
         });
 
         if (command.typeCheck && command.builder !== 'swc') {

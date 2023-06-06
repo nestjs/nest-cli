@@ -93,7 +93,7 @@ export class SwcCompiler extends BaseCompiler {
         try {
           this.typeCheckerHost.run(tsConfigPath, {
             watch: extras.watch,
-            onSuccess: (program) => {
+            onTypeCheck: (program) => {
               if (!fulfilled) {
                 fulfilled = true;
                 resolve();

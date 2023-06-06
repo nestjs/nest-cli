@@ -96,6 +96,7 @@ export class BuildAction extends AbstractAction {
           appName,
           'builder',
           options,
+          'tsc',
         );
 
     await this.workspaceUtils.deleteOutDirIfEnabled(

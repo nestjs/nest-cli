@@ -16,7 +16,7 @@ export class BuildCommand extends AbstractCommand {
         '--webpack',
         'Use webpack for compilation (deprecated option, use --build instead).',
       )
-      .option('--type-check', 'Enable type checking (when SWC is used).', false)
+      .option('--type-check', 'Enable type checking (when SWC is used).')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use tsc for compilation.')
       .description('Build Nest application.')
@@ -53,7 +53,7 @@ export class BuildCommand extends AbstractCommand {
         }
         options.push({
           name: 'builder',
-          value: command.builder ?? (isWebpackEnabled ? 'webpack' : 'tsc'),
+          value: command.builder,
         });
 
         if (command.typeCheck && command.builder !== 'swc') {

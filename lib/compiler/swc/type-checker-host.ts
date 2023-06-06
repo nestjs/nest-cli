@@ -11,7 +11,8 @@ import {
 
 export interface TypeCheckerHostRunOptions {
   watch?: boolean;
-  onSuccess?: (program: ts.Program) => void;
+  onTypeCheck?: (program: ts.Program) => void;
+  onProgramInit?: (program: ts.Program) => void;
 }
 
 export class TypeCheckerHost {
@@ -70,7 +71,7 @@ export class TypeCheckerHost {
         return;
       }
       const tsProgram = builderProgram.getProgram().getProgram();
-      options.onSuccess?.(tsProgram);
+      options.onTypeCheck?.(tsProgram);
     };
 
     const host = this.createWatchCompilerHost(
@@ -80,6 +81,9 @@ export class TypeCheckerHost {
       reportWatchStatusCallback,
     );
     builderProgram = tsBinary.createWatchProgram(host);
+    process.nextTick(() => {
+      options.onProgramInit?.(builderProgram!.getProgram().getProgram());
+    });
   }
 
   private runOnce(
@@ -123,7 +127,7 @@ export class TypeCheckerHost {
       );
       process.exit(1);
     }
-    options.onSuccess?.(programRef);
+    options.onTypeCheck?.(programRef);
   }
 
   private createWatchCompilerHost(

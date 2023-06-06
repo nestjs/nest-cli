@@ -1,3 +1,4 @@
+import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
 import { BaseCompiler } from '../base-compiler';
@@ -34,21 +35,23 @@ class ForkedTypeChecker extends BaseCompiler {
     );
 
     try {
+      const onTypeCheckOrProgramInit = (program: ts.Program) => {
+        if (readonlyVisitors.length > 0) {
+          console.log(FOUND_NO_ISSUES_GENERATING_METADATA);
+
+          this.pluginMetadataGenerator.generate({
+            outputDir,
+            visitors: readonlyVisitors,
+            tsProgramRef: program,
+          });
+        } else {
+          console.log(FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED);
+        }
+      };
       this.typeCheckerHost.run(tsConfigPath, {
         watch: extras.watch,
-        onSuccess: (program) => {
-          if (readonlyVisitors.length > 0) {
-            console.log(FOUND_NO_ISSUES_GENERATING_METADATA);
-
-            this.pluginMetadataGenerator.generate({
-              outputDir,
-              visitors: readonlyVisitors,
-              tsProgramRef: program,
-            });
-          } else {
-            console.log(FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED);
-          }
-        },
+        onTypeCheck: onTypeCheckOrProgramInit,
+        onProgramInit: onTypeCheckOrProgramInit,
       });
     } catch (err) {
       console.log(ERROR_PREFIX, err.message);

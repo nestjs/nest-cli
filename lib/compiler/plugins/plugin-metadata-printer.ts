@@ -10,9 +10,15 @@ export interface PluginMetadataPrintOptions {
   filename?: string;
 }
 
+/**
+ * Prints the metadata to a file.
+ */
 export class PluginMetadataPrinter {
   print(
-    metadata: Record<string, Array<[ts.CallExpression, DeepPluginMeta]>>,
+    metadata: Record<
+      string,
+      Record<string, Array<[ts.CallExpression, DeepPluginMeta]>>
+    >,
     options: PluginMetadataPrintOptions,
   ) {
     const objectLiteralExpr = ts.factory.createObjectLiteralExpression(
