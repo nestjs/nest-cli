@@ -31,19 +31,10 @@ export class PluginMetadataPrinter {
         ),
       ),
     );
-    const metadataCacheVariableStatement = ts.factory.createVariableStatement(
-      [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
-      ts.factory.createVariableDeclarationList(
-        [
-          ts.factory.createVariableDeclaration(
-            ts.factory.createIdentifier('metadataCache'),
-            undefined,
-            undefined,
-            objectLiteralExpr,
-          ),
-        ],
-        ts.NodeFlags.Const,
-      ),
+    const exportAssignment = ts.factory.createExportAssignment(
+      undefined,
+      undefined,
+      objectLiteralExpr,
     );
 
     const printer = ts.createPrinter({
@@ -67,7 +58,7 @@ export class PluginMetadataPrinter {
       eslintPrefix +
         printer.printNode(
           ts.EmitHint.Unspecified,
-          metadataCacheVariableStatement,
+          exportAssignment,
           resultFile,
         ),
     );
