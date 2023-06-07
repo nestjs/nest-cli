@@ -42,7 +42,7 @@ export interface PluginMetadataGenerateOptions {
 }
 
 /**
- * Generates plugins metdata by traversing the AST of the project.
+ * Generates plugins metadata by traversing the AST of the project.
  * @example
  * ```ts
  * const generator = new PluginMetadataGenerator();
