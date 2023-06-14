@@ -6,7 +6,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">= 12.9.0"
+    "node": ">= 16"
   },
   "bin": {
     "nest": "bin/nest.js"
