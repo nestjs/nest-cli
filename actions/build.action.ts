@@ -122,6 +122,16 @@ export class BuildAction extends AbstractAction {
         webpackPath,
         configuration.compilerOptions!.webpackConfigPath!,
       );
+
+      const onSuccessWrapper = () => {
+        if (onSuccess) {
+          onSuccess();
+        }
+        if (!watchMode) {
+          this.assetsManager.closeWatchers();
+        }
+      }
+
       return this.webpackCompiler.run(
         configuration,
         options,
@@ -130,8 +140,7 @@ export class BuildAction extends AbstractAction {
         appName,
         isDebugEnabled,
         watchMode,
-        this.assetsManager,
-        onSuccess,
+        onSuccessWrapper,
       );
     }
 

@@ -31,7 +31,6 @@ export class WebpackCompiler {
     appName: string,
     isDebugEnabled = false,
     watchMode = false,
-    assetsManager: AssetsManager,
     onSuccess?: () => void,
   ) {
     const cwd = process.cwd();
@@ -136,9 +135,7 @@ export class WebpackCompiler {
         assets: false,
       });
       if (!err && !stats!.hasErrors()) {
-        if (!onSuccess) {
-          assetsManager.closeWatchers();
-        } else {
+        if (onSuccess) {
           onSuccess();
         }
       } else if (!watchMode && !watch) {
