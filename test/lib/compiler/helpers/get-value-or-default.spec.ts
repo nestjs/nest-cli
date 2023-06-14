@@ -1,7 +1,7 @@
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default';
 import { Configuration } from '../../../../lib/configuration';
 
-describe('Get Value or Default', () => {
+describe('getValueOrDefault', () => {
   it('should return assigned configuration value', async () => {
     let configuration: Required<Configuration> = {
       monorepo: true,
