@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
 import { CLI_ERRORS } from '../ui/errors';
+import { BaseCompiler } from './base-compiler';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import {
   displayManualRestartTip,
@@ -8,34 +9,43 @@ import {
 } from './helpers/manual-restart';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
-import { PluginsLoader } from './plugins-loader';
+import {
+  MultiNestCompilerPlugins,
+  PluginsLoader,
+} from './plugins/plugins-loader';
 import { TypeScriptBinaryLoader } from './typescript-loader';
 
-export class WatchCompiler {
+type TypescriptWatchCompilerExtras = {
+  preserveWatchOutput: boolean;
+};
+
+export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
   constructor(
-    private readonly pluginsLoader: PluginsLoader,
+    pluginsLoader: PluginsLoader,
     private readonly tsConfigProvider: TsConfigProvider,
     private readonly typescriptLoader: TypeScriptBinaryLoader,
-  ) {}
+  ) {
+    super(pluginsLoader);
+  }
 
   public run(
     configuration: Required<Configuration>,
-    configFilename: string,
+    tsConfigPath: string,
     appName: string,
-    tsCompilerOptions: ts.CompilerOptions,
+    extras: TypescriptWatchCompilerExtras,
     onSuccess?: () => void,
   ) {
     const tsBin = this.typescriptLoader.load();
     const configPath = tsBin.findConfigFile(
       process.cwd(),
       tsBin.sys.fileExists,
-      configFilename,
+      tsConfigPath,
     );
     if (!configPath) {
-      throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
+      throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(tsConfigPath));
     }
     const { options, projectReferences } =
-      this.tsConfigProvider.getByConfigFilename(configFilename);
+      this.tsConfigProvider.getByConfigFilename(tsConfigPath);
 
     const createProgram = tsBin.createEmitAndSemanticDiagnosticsBuilderProgram;
     const origDiagnosticReporter = (tsBin as any).createDiagnosticReporter(
@@ -50,7 +60,7 @@ export class WatchCompiler {
       configPath,
       {
         ...options,
-        ...tsCompilerOptions,
+        preserveWatchOutput: extras.preserveWatchOutput,
       },
       tsBin.sys,
       createProgram,
@@ -64,12 +74,30 @@ export class WatchCompiler {
       appName,
     );
 
-    const pluginsConfig = getValueOrDefault(
-      configuration,
-      'compilerOptions.plugins',
-      appName,
+    const plugins = this.loadPlugins(configuration, tsConfigPath, appName);
+    this.overrideCreateProgramFn(
+      host,
+      manualRestart,
+      projectReferences,
+      plugins,
     );
-    const plugins = this.pluginsLoader.load(pluginsConfig);
+
+    const watchProgram = tsBin.createWatchProgram(host);
+
+    if (manualRestart) {
+      listenForManualRestart(() => {
+        watchProgram.close();
+        this.run(configuration, tsConfigPath, appName, extras, onSuccess);
+      });
+    }
+  }
+
+  private overrideCreateProgramFn(
+    host: ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram>,
+    manualRestart: any,
+    projectReferences: readonly ts.ProjectReference[] | undefined,
+    plugins: MultiNestCompilerPlugins,
+  ) {
     const origCreateProgram = host.createProgram;
     (host as any).createProgram = (
       rootNames: ReadonlyArray<string>,
@@ -133,21 +161,6 @@ export class WatchCompiler {
       };
       return program as any;
     };
-
-    const watchProgram = tsBin.createWatchProgram(host);
-
-    if (manualRestart) {
-      listenForManualRestart(() => {
-        watchProgram.close();
-        this.run(
-          configuration,
-          configFilename,
-          appName,
-          tsCompilerOptions,
-          onSuccess,
-        );
-      });
-    }
   }
 
   private createDiagnosticReporter(

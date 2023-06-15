@@ -4,14 +4,16 @@ import { Configuration } from '../../configuration';
 export function getValueOrDefault<T = any>(
   configuration: Required<Configuration>,
   propertyPath: string,
-  appName: string,
+  appName: string | undefined,
   key?:
     | 'path'
     | 'webpack'
     | 'webpackPath'
     | 'entryFile'
     | 'sourceRoot'
-    | 'exec',
+    | 'exec'
+    | 'builder'
+    | 'typeCheck',
   options: Input[] = [],
   defaultValue?: T,
 ): T {
@@ -20,7 +22,7 @@ export function getValueOrDefault<T = any>(
   if (origValue !== undefined && origValue !== null) {
     return origValue as T;
   }
-  if (configuration.projects && configuration.projects[appName]) {
+  if (configuration.projects && configuration.projects[appName as string]) {
     // Wrap the application name in double-quotes to prevent splitting it
     // into separate chunks
     appName = appName && !appName.includes('"') ? `"${appName}"` : appName;

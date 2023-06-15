@@ -1,22 +1,25 @@
 import * as ts from 'typescript';
 import { Configuration } from '../configuration';
-import { getValueOrDefault } from './helpers/get-value-or-default';
+import { BaseCompiler } from './base-compiler';
 import { TsConfigProvider } from './helpers/tsconfig-provider';
 import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
-import { PluginsLoader } from './plugins-loader';
+import { PluginsLoader } from './plugins/plugins-loader';
 import { TypeScriptBinaryLoader } from './typescript-loader';
 
-export class Compiler {
+export class Compiler extends BaseCompiler {
   constructor(
-    private readonly pluginsLoader: PluginsLoader,
+    pluginsLoader: PluginsLoader,
     private readonly tsConfigProvider: TsConfigProvider,
     private readonly typescriptLoader: TypeScriptBinaryLoader,
-  ) {}
+  ) {
+    super(pluginsLoader);
+  }
 
   public run(
     configuration: Required<Configuration>,
-    configFilename: string,
+    tsConfigPath: string,
     appName: string,
+    _extras: any,
     onSuccess?: () => void,
   ) {
     const tsBinary = this.typescriptLoader.load();
@@ -27,7 +30,7 @@ export class Compiler {
     };
 
     const { options, fileNames, projectReferences } =
-      this.tsConfigProvider.getByConfigFilename(configFilename);
+      this.tsConfigProvider.getByConfigFilename(tsConfigPath);
 
     const createProgram =
       tsBinary.createIncrementalProgram || tsBinary.createProgram;
@@ -37,21 +40,18 @@ export class Compiler {
       options,
     });
 
-    const pluginsConfig = getValueOrDefault(
-      configuration,
-      'compilerOptions.plugins',
-      appName,
-    );
-    const plugins = this.pluginsLoader.load(pluginsConfig);
+    const plugins = this.loadPlugins(configuration, tsConfigPath, appName);
     const tsconfigPathsPlugin = tsconfigPathsBeforeHookFactory(options);
     const programRef = program.getProgram
       ? program.getProgram()
       : (program as any as ts.Program);
+
     const before = plugins.beforeHooks.map((hook) => hook(programRef));
     const after = plugins.afterHooks.map((hook) => hook(programRef));
     const afterDeclarations = plugins.afterDeclarationsHooks.map((hook) =>
       hook(programRef),
     );
+
     const emitResult = program.emit(
       undefined,
       undefined,

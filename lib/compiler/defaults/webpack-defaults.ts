@@ -3,7 +3,7 @@ import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import { defaultConfiguration } from '../../configuration/defaults';
 import { appendTsExtension } from '../helpers/append-extension';
-import { MultiNestCompilerPlugins } from '../plugins-loader';
+import { MultiNestCompilerPlugins } from '../plugins/plugins-loader';
 import webpack = require('webpack');
 import nodeExternals = require('webpack-node-externals');
 
@@ -37,10 +37,10 @@ export const webpackDefaultsFactory = (
                 transpileOnly: !isPluginRegistered,
                 configFile: tsConfigFile,
                 getCustomTransformers: (program: any) => ({
-                  before: plugins.beforeHooks.map((hook) => hook(program)),
-                  after: plugins.afterHooks.map((hook) => hook(program)),
+                  before: plugins.beforeHooks.map((hook: any) => hook(program)),
+                  after: plugins.afterHooks.map((hook: any) => hook(program)),
                   afterDeclarations: plugins.afterDeclarationsHooks.map(
-                    (hook) => hook(program),
+                    (hook: any) => hook(program),
                   ),
                 }),
               },

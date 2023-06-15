@@ -1,12 +1,13 @@
 import { existsSync } from 'fs';
-import { dirname, join, normalize, relative } from 'path';
+import { join } from 'path';
+import { Input } from '../../commands';
 import { Configuration } from '../configuration';
 import { INFO_PREFIX } from '../ui';
 import { AssetsManager } from './assets-manager';
+import { BaseCompiler } from './base-compiler';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
-import { PluginsLoader } from './plugins-loader';
-import { Input } from '../../commands';
+import { PluginsLoader } from './plugins/plugins-loader';
 import webpack = require('webpack');
 
 type WebpackConfigFactory = (
@@ -18,20 +19,26 @@ type WebpackConfigFactoryOrConfig =
   | WebpackConfigFactory
   | webpack.Configuration;
 
-export class WebpackCompiler {
-  constructor(private readonly pluginsLoader: PluginsLoader) {}
+type WebpackCompilerExtras = {
+  inputs: Input[];
+  assetsManager: AssetsManager;
+  webpackConfigFactoryOrConfig:
+    | WebpackConfigFactoryOrConfig
+    | WebpackConfigFactoryOrConfig[];
+  debug?: boolean;
+  watchMode?: boolean;
+};
+
+export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
+  constructor(pluginsLoader: PluginsLoader) {
+    super(pluginsLoader);
+  }
 
   public run(
     configuration: Required<Configuration>,
-    options: Input[],
-    webpackConfigFactoryOrConfig:
-      | WebpackConfigFactoryOrConfig
-      | WebpackConfigFactoryOrConfig[],
     tsConfigPath: string,
     appName: string,
-    isDebugEnabled = false,
-    watchMode = false,
-    assetsManager: AssetsManager,
+    extras: WebpackCompilerExtras,
     onSuccess?: () => void,
   ) {
     const cwd = process.cwd();
@@ -42,31 +49,19 @@ export class WebpackCompiler {
       );
     }
 
-    const pluginsConfig = getValueOrDefault(
+    const plugins = this.loadPlugins(configuration, tsConfigPath, appName);
+    const pathToSource = this.getPathToSource(
       configuration,
-      'compilerOptions.plugins',
+      tsConfigPath,
       appName,
     );
-    const plugins = this.pluginsLoader.load(pluginsConfig);
-    const relativeRootPath = dirname(relative(cwd, configPath));
-    const sourceRoot = getValueOrDefault<string>(
-      configuration,
-      'sourceRoot',
-      appName,
-      'sourceRoot',
-      options,
-    );
-    const pathToSource =
-      normalize(sourceRoot).indexOf(normalize(relativeRootPath)) >= 0
-        ? join(cwd, sourceRoot)
-        : join(cwd, relativeRootPath, sourceRoot);
 
     const entryFile = getValueOrDefault<string>(
       configuration,
       'entryFile',
       appName,
       'entryFile',
-      options,
+      extras.inputs,
     );
     const entryFileRoot =
       getValueOrDefault<string>(configuration, 'root', appName) || '';
@@ -74,7 +69,7 @@ export class WebpackCompiler {
       pathToSource,
       entryFileRoot,
       entryFile,
-      isDebugEnabled,
+      extras.debug ?? false,
       tsConfigPath,
       plugins,
     );
@@ -85,8 +80,8 @@ export class WebpackCompiler {
       | undefined;
     let watch: boolean | undefined;
 
-    if (Array.isArray(webpackConfigFactoryOrConfig)) {
-      const webpackConfigurations = webpackConfigFactoryOrConfig.map(
+    if (Array.isArray(extras.webpackConfigFactoryOrConfig)) {
+      const webpackConfigurations = extras.webpackConfigFactoryOrConfig.map(
         (configOrFactory) => {
           const unwrappedConfig =
             typeof configOrFactory !== 'function'
@@ -94,7 +89,7 @@ export class WebpackCompiler {
               : configOrFactory(defaultOptions, webpack);
           return {
             ...defaultOptions,
-            mode: watchMode ? 'development' : defaultOptions.mode,
+            mode: extras.watchMode ? 'development' : defaultOptions.mode,
             ...unwrappedConfig,
           };
         },
@@ -106,12 +101,12 @@ export class WebpackCompiler {
       watch = webpackConfigurations.some((config) => config.watch);
     } else {
       const projectWebpackOptions =
-        typeof webpackConfigFactoryOrConfig !== 'function'
-          ? webpackConfigFactoryOrConfig
-          : webpackConfigFactoryOrConfig(defaultOptions, webpack);
+        typeof extras.webpackConfigFactoryOrConfig !== 'function'
+          ? extras.webpackConfigFactoryOrConfig
+          : extras.webpackConfigFactoryOrConfig(defaultOptions, webpack);
       const webpackConfiguration = {
         ...defaultOptions,
-        mode: watchMode ? 'development' : defaultOptions.mode,
+        mode: extras.watchMode ? 'development' : defaultOptions.mode,
         ...projectWebpackOptions,
       };
       compiler = webpack(webpackConfiguration);
@@ -119,7 +114,31 @@ export class WebpackCompiler {
       watch = webpackConfiguration.watch;
     }
 
-    const afterCallback = (
+    const afterCallback = this.createAfterCallback(
+      onSuccess,
+      extras.assetsManager,
+      extras.watchMode ?? false,
+      watch,
+    );
+
+    if (extras.watchMode || watch) {
+      compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
+        console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
+        callback();
+      });
+      compiler.watch(watchOptions! || {}, afterCallback);
+    } else {
+      compiler.run(afterCallback);
+    }
+  }
+
+  private createAfterCallback(
+    onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
+    watchMode: boolean,
+    watch: boolean | undefined,
+  ) {
+    return (
       err: Error | null | undefined,
       stats: webpack.Stats | webpack.MultiStats | undefined,
     ) => {
@@ -147,15 +166,5 @@ export class WebpackCompiler {
       }
       console.log(statsOutput);
     };
-
-    if (watchMode || watch) {
-      compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
-        console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
-        callback();
-      });
-      compiler.watch(watchOptions! || {}, afterCallback);
-    } else {
-      compiler.run(afterCallback);
-    }
   }
 }

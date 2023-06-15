@@ -8,11 +8,6 @@ export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
   const tsBinary = new TypeScriptBinaryLoader().load();
-  const [tsVersionMajor, tsVersionMinor] = tsBinary.versionMajorMinor
-    ?.split('.')
-    .map((x) => +x);
-  const isInUpdatedAstContext = tsVersionMinor >= 8 || tsVersionMajor > 4;
-
   const { paths = {}, baseUrl = './' } = compilerOptions;
   const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
 
@@ -45,43 +40,24 @@ export function tsconfigPathsBeforeHookFactory(
             ).moduleSpecifier.parent;
 
             if (tsBinary.isImportDeclaration(node)) {
-              const updatedNode = isInUpdatedAstContext
-                ? (tsBinary.factory as any).updateImportDeclaration(
-                    node,
-                    node.modifiers,
-                    node.importClause,
-                    moduleSpecifier,
-                    node.assertClause,
-                  )
-                : tsBinary.factory.updateImportDeclaration(
-                    node,
-                    node.decorators,
-                    node.modifiers,
-                    node.importClause,
-                    moduleSpecifier,
-                    node.assertClause,
-                  );
+              const updatedNode = tsBinary.factory.updateImportDeclaration(
+                node,
+                node.modifiers,
+                node.importClause,
+                moduleSpecifier,
+                node.assertClause,
+              );
               (updatedNode as any).flags = node.flags;
               return updatedNode;
             } else {
-              const updatedNode = isInUpdatedAstContext
-                ? (tsBinary.factory as any).updateExportDeclaration(
-                    node,
-                    node.modifiers,
-                    node.isTypeOnly,
-                    node.exportClause,
-                    moduleSpecifier,
-                    node.assertClause,
-                  )
-                : tsBinary.factory.updateExportDeclaration(
-                    node,
-                    node.decorators,
-                    node.modifiers,
-                    node.isTypeOnly,
-                    node.exportClause,
-                    moduleSpecifier,
-                    node.assertClause,
-                  );
+              const updatedNode = tsBinary.factory.updateExportDeclaration(
+                node,
+                node.modifiers,
+                node.isTypeOnly,
+                node.exportClause,
+                moduleSpecifier,
+                node.assertClause,
+              );
               (updatedNode as any).flags = node.flags;
               return updatedNode;
             }
