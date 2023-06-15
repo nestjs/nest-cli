@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
+import { treeKillSync } from '../../utils/tree-kill';
 import { BaseCompiler } from '../base-compiler';
 import { swcDefaultsFactory } from '../defaults/swc-defaults';
 import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator';
@@ -73,9 +74,17 @@ export class SwcCompiler extends BaseCompiler {
         JSON.stringify(configuration.compilerOptions.plugins ?? []),
       ];
 
-      fork(join(__dirname, 'forked-type-checker.js'), args, {
-        cwd: process.cwd(),
-      });
+      const childProcessRef = fork(
+        join(__dirname, 'forked-type-checker.js'),
+        args,
+        {
+          cwd: process.cwd(),
+        },
+      );
+      process.on(
+        'exit',
+        () => childProcessRef && treeKillSync(childProcessRef.pid!),
+      );
     } else {
       const { readonlyVisitors } = this.loadPlugins(
         configuration,
@@ -155,7 +164,7 @@ export class SwcCompiler extends BaseCompiler {
         ERROR_PREFIX +
           ' Failed to load "@swc/cli" and "@swc/core" packages. Please, install them by running "npm i -D @swc/cli @swc/core".',
       );
-      throw err;
+      process.exit(1);
     }
   }
 
