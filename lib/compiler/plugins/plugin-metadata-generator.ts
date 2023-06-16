@@ -129,14 +129,20 @@ export class PluginMetadataGenerator {
       }
     }
 
+    let typeImports: Record<string, string> = {};
     const collectedMetadata: Record<
       string,
       Record<string, Array<[ts.CallExpression, DeepPluginMeta]>>
     > = {};
+
     visitors.forEach((visitor) => {
       collectedMetadata[visitor.key] = visitor.collect();
+      typeImports = {
+        ...typeImports,
+        ...visitor.typeImports,
+      };
     });
-    this.pluginMetadataPrinter.print(collectedMetadata, {
+    this.pluginMetadataPrinter.print(collectedMetadata, typeImports, {
       outputDir,
       filename,
     });

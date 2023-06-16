@@ -8,6 +8,7 @@ export type DeepPluginMeta =
 
 export interface ReadonlyVisitor {
   key: string;
+  typeImports: Record<string, string>;
   visit(program: ts.Program, sf: ts.SourceFile): void;
   collect(): Record<string, Array<[ts.CallExpression, DeepPluginMeta]>>;
 }
