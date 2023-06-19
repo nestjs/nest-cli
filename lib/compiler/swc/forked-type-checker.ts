@@ -21,7 +21,7 @@ class ForkedTypeChecker extends BaseCompiler {
     configuration: Required<Configuration>,
     tsConfigPath: string,
     appName: string | undefined,
-    extras: SwcCompilerExtras,
+    extras: Pick<SwcCompilerExtras, 'typeCheck' | 'watch'>,
   ) {
     const { readonlyVisitors } = this.loadPlugins(
       configuration,

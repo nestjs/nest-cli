@@ -165,6 +165,7 @@ export class BuildAction extends AbstractAction {
           'typeCheck',
           options,
         ),
+        assetsManager: this.assetsManager,
       },
       onSuccess,
     );

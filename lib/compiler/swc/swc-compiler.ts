@@ -6,6 +6,7 @@ import { join } from 'path';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
 import { treeKillSync } from '../../utils/tree-kill';
+import { AssetsManager } from '../assets-manager';
 import { BaseCompiler } from '../base-compiler';
 import { swcDefaultsFactory } from '../defaults/swc-defaults';
 import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator';
@@ -20,6 +21,7 @@ import { TypeCheckerHost } from './type-checker-host';
 export type SwcCompilerExtras = {
   watch: boolean;
   typeCheck: boolean;
+  assetsManager: AssetsManager;
 };
 
 export class SwcCompiler extends BaseCompiler {
@@ -56,7 +58,11 @@ export class SwcCompiler extends BaseCompiler {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
       await this.runSwc(swcOptions, extras);
-      onSuccess?.();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        extras.assetsManager?.closeWatchers();
+      }
     }
   }
 
