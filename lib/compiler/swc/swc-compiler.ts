@@ -3,6 +3,7 @@ import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
 import { treeKillSync } from '../../utils/tree-kill';
@@ -22,6 +23,7 @@ export type SwcCompilerExtras = {
   watch: boolean;
   typeCheck: boolean;
   assetsManager: AssetsManager;
+  tsOptions: ts.CompilerOptions;
 };
 
 export class SwcCompiler extends BaseCompiler {
@@ -39,7 +41,7 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
-    const swcOptions = swcDefaultsFactory();
+    const swcOptions = swcDefaultsFactory(extras.tsOptions);
     if (extras.watch) {
       if (extras.typeCheck) {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);

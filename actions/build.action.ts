@@ -1,5 +1,6 @@
 import * as chalk from 'chalk';
 import { join } from 'path';
+import * as ts from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
@@ -138,6 +139,7 @@ export class BuildAction extends AbstractAction {
           pathToTsconfig,
           watchMode,
           options,
+          tsOptions,
           onSuccess,
         );
     }
@@ -149,6 +151,7 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     watchMode: boolean,
     options: Input[],
+    tsOptions: ts.CompilerOptions,
     onSuccess: (() => void) | undefined,
   ) {
     const swc = new SwcCompiler(this.pluginsLoader);
@@ -165,6 +168,7 @@ export class BuildAction extends AbstractAction {
           'typeCheck',
           options,
         ),
+        tsOptions,
         assetsManager: this.assetsManager,
       },
       onSuccess,

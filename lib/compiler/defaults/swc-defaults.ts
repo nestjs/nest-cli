@@ -1,4 +1,6 @@
-export const swcDefaultsFactory = () => {
+import * as ts from 'typescript';
+
+export const swcDefaultsFactory = (tsOptions: ts.CompilerOptions) => {
   return {
     swcOptions: {
       module: {
@@ -16,7 +18,8 @@ export const swcDefaultsFactory = () => {
           decoratorMetadata: true,
         },
         keepClassNames: true,
-        baseUrl: './',
+        baseUrl: tsOptions.baseUrl,
+        paths: tsOptions.paths,
       },
       minify: false,
       swcrc: true,
