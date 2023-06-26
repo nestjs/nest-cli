@@ -1,4 +1,3 @@
-import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import { defaultConfiguration } from '../../configuration/defaults';
@@ -92,6 +91,9 @@ export const webpackDefaultsFactory = (
   };
 
   if (!isPluginRegistered) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
     webpackConfiguration.plugins!.push(
       new ForkTsCheckerWebpackPlugin({
         typescript: {
