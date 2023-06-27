@@ -16,6 +16,16 @@ export interface ActionOnFile {
   watchAssetsMode: boolean;
 }
 
+export interface SwcCliOptions {
+  outDir?: string;
+  filenames?: string[];
+  sync?: boolean;
+  extensions?: string[];
+  copyFiles?: boolean;
+  includeDotfiles?: boolean;
+  quiet?: boolean;
+}
+
 interface CompilerOptions {
   tsConfigPath?: string;
   webpack?: boolean;
@@ -24,6 +34,7 @@ interface CompilerOptions {
   assets?: string[];
   deleteOutDir?: boolean;
   manualRestart?: boolean;
+  swcCliOptions?: SwcCliOptions;
 }
 
 interface PluginOptions {
