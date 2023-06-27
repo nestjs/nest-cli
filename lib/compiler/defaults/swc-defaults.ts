@@ -33,7 +33,7 @@ export const swcDefaultsFactory = (
       swcrc: true,
     },
     cliOptions: {
-      outDir: tsOptions.outDir || 'dist',
+      outDir: tsOptions.outDir ?? 'dist',
       filenames: ['src'],
       sync: false,
       extensions: ['.js', '.ts'],
