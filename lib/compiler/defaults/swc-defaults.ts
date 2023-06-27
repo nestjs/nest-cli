@@ -1,6 +1,10 @@
 import * as ts from 'typescript';
+import { Configuration } from '../../configuration';
 
-export const swcDefaultsFactory = (tsOptions: ts.CompilerOptions) => {
+export const swcDefaultsFactory = (
+  configuration: Configuration,
+  tsOptions: ts.CompilerOptions,
+) => {
   return {
     swcOptions: {
       module: {
@@ -25,8 +29,8 @@ export const swcDefaultsFactory = (tsOptions: ts.CompilerOptions) => {
       swcrc: true,
     },
     cliOptions: {
-      outDir: 'dist',
-      filenames: ['src'],
+      outDir: tsOptions.outDir ?? 'dist',
+      filenames: [configuration.sourceRoot ?? 'src'],
       sync: false,
       extensions: ['.js', '.ts'],
       watch: false,

@@ -41,7 +41,7 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
-    const swcOptions = swcDefaultsFactory(extras.tsOptions);
+    const swcOptions = swcDefaultsFactory(configuration, extras.tsOptions);
     if (extras.watch) {
       if (extras.typeCheck) {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);
