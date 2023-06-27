@@ -41,8 +41,6 @@ export const swcDefaultsFactory = (
       includeDotfiles: false,
       quiet: false,
       watch: false,
-
-      // Merge swcCliOptions
       ...swcCliOptions,
     },
   };
