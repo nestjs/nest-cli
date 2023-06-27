@@ -43,7 +43,7 @@ export class SwcCompiler extends BaseCompiler {
   ) {
     const swcOptions = swcDefaultsFactory(
       extras.tsOptions,
-      configuration.compilerOptions.swcCliOptions,
+      configuration.compilerOptions.swcCliOptions || {},
     );
     if (extras.watch) {
       if (extras.typeCheck) {

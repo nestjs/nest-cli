@@ -16,7 +16,7 @@ export interface ActionOnFile {
   watchAssetsMode: boolean;
 }
 
-export interface SwcCliOptions {
+interface SwcCliOptions {
   outDir?: string;
   filenames?: string[];
   sync?: boolean;

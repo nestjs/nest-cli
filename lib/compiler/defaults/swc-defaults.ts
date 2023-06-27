@@ -1,9 +1,13 @@
 import * as ts from 'typescript';
-import { SwcCliOptions } from '../../configuration';
+import { Configuration } from '../../configuration';
+
+type SwcCliOptions = Required<
+  Required<Configuration>['compilerOptions']
+>['swcCliOptions'];
 
 export const swcDefaultsFactory = (
   tsOptions: ts.CompilerOptions,
-  swcCliOptions?: SwcCliOptions,
+  swcCliOptions: SwcCliOptions,
 ) => {
   return {
     swcOptions: {
@@ -29,14 +33,17 @@ export const swcDefaultsFactory = (
       swcrc: true,
     },
     cliOptions: {
-      outDir: swcCliOptions?.outDir || tsOptions.outDir || 'dist',
-      filenames: swcCliOptions?.filenames || ['src'],
-      sync: swcCliOptions?.sync || false,
-      extensions: swcCliOptions?.extensions || ['.js', '.ts'],
+      outDir: tsOptions.outDir || 'dist',
+      filenames: ['src'],
+      sync: false,
+      extensions: ['.js', '.ts'],
+      copyFiles: false,
+      includeDotfiles: false,
+      quiet: false,
       watch: false,
-      copyFiles: swcCliOptions?.copyFiles || false,
-      includeDotfiles: swcCliOptions?.includeDotfiles || false,
-      quiet: swcCliOptions?.quiet || false,
+
+      // Merge swcCliOptions
+      ...swcCliOptions,
     },
   };
 };
