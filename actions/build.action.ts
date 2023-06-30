@@ -4,7 +4,10 @@ import * as ts from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
+import { getBuilder } from '../lib/compiler/helpers/get-builder';
+import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
+import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path';
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader';
 import { SwcCompiler } from '../lib/compiler/swc/swc-compiler';
@@ -17,7 +20,10 @@ import {
   ConfigurationLoader,
   NestConfigurationLoader,
 } from '../lib/configuration';
-import { defaultOutDir } from '../lib/configuration/defaults';
+import {
+  defaultOutDir,
+  defaultWebpackConfigFilename,
+} from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
@@ -34,19 +40,26 @@ export class BuildAction extends AbstractAction {
   protected readonly assetsManager = new AssetsManager();
   protected readonly workspaceUtils = new WorkspaceUtils();
 
-  public async handle(inputs: Input[], options: Input[]) {
+  public async handle(commandInputs: Input[], commandOptions: Input[]) {
     try {
-      const watchModeOption = options.find((option) => option.name === 'watch');
+      const watchModeOption = commandOptions.find(
+        (option) => option.name === 'watch',
+      );
       const watchMode = !!(watchModeOption && watchModeOption.value);
 
-      const watchAssetsModeOption = options.find(
+      const watchAssetsModeOption = commandOptions.find(
         (option) => option.name === 'watchAssets',
       );
       const watchAssetsMode = !!(
         watchAssetsModeOption && watchAssetsModeOption.value
       );
 
-      await this.runBuild(inputs, options, watchMode, watchAssetsMode);
+      await this.runBuild(
+        commandInputs,
+        commandOptions,
+        watchMode,
+        watchAssetsMode,
+      );
     } catch (err) {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
@@ -58,25 +71,24 @@ export class BuildAction extends AbstractAction {
   }
 
   public async runBuild(
-    inputs: Input[],
-    options: Input[],
+    commandInputs: Input[],
+    commandOptions: Input[],
     watchMode: boolean,
     watchAssetsMode: boolean,
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = options.find((option) => option.name === 'config')!
-      .value as string;
+    const configFileName = commandOptions.find(
+      (option) => option.name === 'config',
+    )!.value as string;
     const configuration = await this.loader.load(configFileName);
-    const appName = inputs.find((input) => input.name === 'app')!
+    const appName = commandInputs.find((input) => input.name === 'app')!
       .value as string;
 
-    const pathToTsconfig = getValueOrDefault<string>(
+    const pathToTsconfig = getTscConfigPath(
       configuration,
-      'compilerOptions.tsConfigPath',
+      commandOptions,
       appName,
-      'path',
-      options,
     );
     const { options: tsOptions } =
       this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
@@ -87,18 +99,11 @@ export class BuildAction extends AbstractAction {
       'compilerOptions.webpack',
       appName,
       'webpack',
-      options,
+      commandOptions,
     );
     const builder = isWebpackEnabled
-      ? 'webpack'
-      : getValueOrDefault<'tsc' | 'swc' | 'webpack'>(
-          configuration,
-          'compilerOptions.builder',
-          appName,
-          'builder',
-          options,
-          'tsc',
-        );
+      ? { type: 'webpack' }
+      : getBuilder(configuration, commandOptions, appName);
 
     await this.workspaceUtils.deleteOutDirIfEnabled(
       configuration,
@@ -112,11 +117,11 @@ export class BuildAction extends AbstractAction {
       watchAssetsMode,
     );
 
-    switch (builder) {
+    switch (builder.type) {
       case 'tsc':
         return this.runTsc(
           watchMode,
-          options,
+          commandOptions,
           configuration,
           pathToTsconfig,
           appName,
@@ -126,7 +131,7 @@ export class BuildAction extends AbstractAction {
         return this.runWebpack(
           configuration,
           appName,
-          options,
+          commandOptions,
           pathToTsconfig,
           isDebugEnabled,
           watchMode,
@@ -138,7 +143,7 @@ export class BuildAction extends AbstractAction {
           appName,
           pathToTsconfig,
           watchMode,
-          options,
+          commandOptions,
           tsOptions,
           onSuccess,
         );
@@ -178,7 +183,7 @@ export class BuildAction extends AbstractAction {
   private runWebpack(
     configuration: Required<Configuration>,
     appName: string,
-    inputs: Input[],
+    commandOptions: Input[],
     pathToTsconfig: string,
     debug: boolean,
     watchMode: boolean,
@@ -186,24 +191,20 @@ export class BuildAction extends AbstractAction {
   ) {
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
-    const webpackPath = getValueOrDefault<string>(
-      configuration,
-      'compilerOptions.webpackConfigPath',
-      appName,
-      'webpackPath',
-      inputs,
-    );
+    const webpackPath =
+      getWebpackConfigPath(configuration, commandOptions, appName) ??
+      defaultWebpackConfigFilename;
 
     const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
       webpackPath,
-      configuration.compilerOptions!.webpackConfigPath!,
+      defaultWebpackConfigFilename,
     );
     return webpackCompiler.run(
       configuration,
       pathToTsconfig,
       appName,
       {
-        inputs,
+        inputs: commandOptions,
         webpackConfigFactoryOrConfig,
         debug,
         watchMode,

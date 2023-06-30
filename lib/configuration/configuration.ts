@@ -16,7 +16,8 @@ export interface ActionOnFile {
   watchAssetsMode: boolean;
 }
 
-interface SwcCliOptions {
+export interface SwcBuilderOptions {
+  swcrcPath?: string;
   outDir?: string;
   filenames?: string[];
   sync?: boolean;
@@ -26,23 +27,56 @@ interface SwcCliOptions {
   quiet?: boolean;
 }
 
-interface CompilerOptions {
+export interface WebpackBuilderOptions {
+  configPath?: string;
+}
+
+export interface TscBuilderOptions {
+  configPath?: string;
+}
+
+export type BuilderVariant = 'tsc' | 'swc' | 'webpack';
+export type Builder =
+  | BuilderVariant
+  | {
+      type: 'webpack';
+      options?: WebpackBuilderOptions;
+    }
+  | {
+      type: 'swc';
+      options?: SwcBuilderOptions;
+    }
+  | {
+      type: 'tsc';
+      options?: TscBuilderOptions;
+    };
+
+export interface CompilerOptions {
+  /**
+   * @deprecated Use `builder.options.configPath` instead.
+   */
   tsConfigPath?: string;
+  /**
+   * @deprecated Use `builder` instead.
+   */
   webpack?: boolean;
+  /**
+   * @deprecated Use `builder.options.configPath` instead.
+   */
   webpackConfigPath?: string;
   plugins?: string[] | PluginOptions[];
   assets?: string[];
   deleteOutDir?: boolean;
   manualRestart?: boolean;
-  swcCliOptions?: SwcCliOptions;
+  builder?: Builder;
 }
 
-interface PluginOptions {
+export interface PluginOptions {
   name: string;
   options: Record<string, any>[];
 }
 
-interface GenerateOptions {
+export interface GenerateOptions {
   spec?: boolean | Record<string, boolean>;
   flat?: boolean;
   specFileSuffix?: string;

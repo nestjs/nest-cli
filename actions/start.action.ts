@@ -3,37 +3,41 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
-import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { Input } from '../commands';
+import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   defaultConfiguration,
   defaultOutDir,
 } from '../lib/configuration/defaults';
 import { ERROR_PREFIX } from '../lib/ui';
+import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
-  public async handle(inputs: Input[], options: Input[]) {
+  public async handle(commandInputs: Input[], commandOptions: Input[]) {
     try {
-      const configFileName = options.find((option) => option.name === 'config')!
-        .value as string;
+      const configFileName = commandOptions.find(
+        (option) => option.name === 'config',
+      )!.value as string;
       const configuration = await this.loader.load(configFileName);
-      const appName = inputs.find((input) => input.name === 'app')!
+      const appName = commandInputs.find((input) => input.name === 'app')!
         .value as string;
 
-      const pathToTsconfig = getValueOrDefault<string>(
+      const pathToTsconfig = getTscConfigPath(
         configuration,
-        'compilerOptions.tsConfigPath',
+        commandOptions,
         appName,
-        'path',
-        options,
       );
 
-      const debugModeOption = options.find((option) => option.name === 'debug');
-      const watchModeOption = options.find((option) => option.name === 'watch');
+      const debugModeOption = commandOptions.find(
+        (option) => option.name === 'debug',
+      );
+      const watchModeOption = commandOptions.find(
+        (option) => option.name === 'watch',
+      );
       const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
-      const watchAssetsModeOption = options.find(
+      const watchAssetsModeOption = commandOptions.find(
         (option) => option.name === 'watchAssets',
       );
       const isWatchAssetsEnabled = !!(
@@ -45,7 +49,7 @@ export class StartAction extends BuildAction {
         'exec',
         appName,
         'exec',
-        options,
+        commandOptions,
         defaultConfiguration.exec,
       );
 
@@ -57,7 +61,7 @@ export class StartAction extends BuildAction {
         'entryFile',
         appName,
         'entryFile',
-        options,
+        commandOptions,
         defaultConfiguration.entryFile,
       );
       const sourceRoot = getValueOrDefault(
@@ -65,7 +69,7 @@ export class StartAction extends BuildAction {
         'sourceRoot',
         appName,
         'sourceRoot',
-        options,
+        commandOptions,
         defaultConfiguration.sourceRoot,
       );
       const onSuccess = this.createOnSuccessHook(
@@ -77,8 +81,8 @@ export class StartAction extends BuildAction {
       );
 
       await this.runBuild(
-        inputs,
-        options,
+        commandInputs,
+        commandOptions,
         isWatchEnabled,
         isWatchAssetsEnabled,
         !!debugFlag,

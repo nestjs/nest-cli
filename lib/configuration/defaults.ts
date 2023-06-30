@@ -1,5 +1,5 @@
-import { Configuration } from './configuration';
 import { getDefaultTsconfigPath } from '../utils/get-default-tsconfig-path';
+import { Configuration } from './configuration';
 
 export const defaultConfiguration: Required<Configuration> = {
   language: 'ts',
@@ -10,9 +10,13 @@ export const defaultConfiguration: Required<Configuration> = {
   projects: {},
   monorepo: false,
   compilerOptions: {
-    tsConfigPath: getDefaultTsconfigPath(),
+    builder: {
+      type: 'tsc',
+      options: {
+        configPath: getDefaultTsconfigPath(),
+      },
+    },
     webpack: false,
-    webpackConfigPath: 'webpack.config.js',
     plugins: [],
     assets: [],
     manualRestart: false,
@@ -20,6 +24,8 @@ export const defaultConfiguration: Required<Configuration> = {
   generateOptions: {},
 };
 
+export const defaultTsconfigFilename = getDefaultTsconfigPath();
+export const defaultWebpackConfigFilename = 'webpack.config.js';
 export const defaultOutDir = 'dist';
 export const defaultGitIgnore = `# compiled output
 /dist

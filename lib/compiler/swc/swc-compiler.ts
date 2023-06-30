@@ -10,6 +10,7 @@ import { treeKillSync } from '../../utils/tree-kill';
 import { AssetsManager } from '../assets-manager';
 import { BaseCompiler } from '../base-compiler';
 import { swcDefaultsFactory } from '../defaults/swc-defaults';
+import { getValueOrDefault } from '../helpers/get-value-or-default';
 import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator';
 import { PluginsLoader } from '../plugins/plugins-loader';
 import {
@@ -41,15 +42,18 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
-    const swcOptions = swcDefaultsFactory(
-      extras.tsOptions,
-      configuration.compilerOptions.swcCliOptions ?? {},
+    const swcOptions = swcDefaultsFactory(extras.tsOptions, configuration);
+    const swcrcFilePath = getValueOrDefault<string | undefined>(
+      configuration,
+      'compilerOptions.builder.options.swcrcPath',
+      appName,
     );
+
     if (extras.watch) {
       if (extras.typeCheck) {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras);
+      await this.runSwc(swcOptions, extras, swcrcFilePath);
 
       if (onSuccess) {
         onSuccess();
@@ -62,7 +66,7 @@ export class SwcCompiler extends BaseCompiler {
       if (extras.typeCheck) {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras);
+      await this.runSwc(swcOptions, extras, swcrcFilePath);
       if (onSuccess) {
         onSuccess();
       } else {
@@ -148,13 +152,14 @@ export class SwcCompiler extends BaseCompiler {
   private async runSwc(
     options: ReturnType<typeof swcDefaultsFactory>,
     extras: SwcCompilerExtras,
+    swcrcFilePath?: string,
   ) {
     process.nextTick(() =>
       console.log(SWC_LOG_PREFIX, chalk.cyan('Running...')),
     );
 
     const swcCli = this.loadSwcCliBinary();
-    const swcRcFile = await this.getSwcRcFileContentIfExists();
+    const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
     const swcOptions = this.deepMerge(options.swcOptions, swcRcFile);
 
     await swcCli.default({
@@ -179,10 +184,19 @@ export class SwcCompiler extends BaseCompiler {
     }
   }
 
-  private getSwcRcFileContentIfExists() {
+  private getSwcRcFileContentIfExists(swcrcFilePath?: string) {
     try {
-      return JSON.parse(readFileSync(join(process.cwd(), '.swcrc'), 'utf8'));
+      return JSON.parse(
+        readFileSync(join(process.cwd(), swcrcFilePath ?? '.swcrc'), 'utf8'),
+      );
     } catch (err) {
+      if (swcrcFilePath !== undefined) {
+        console.error(
+          ERROR_PREFIX +
+            ` Failed to load "${swcrcFilePath}". Please, check if the file exists and is valid JSON.`,
+        );
+        process.exit(1);
+      }
       return {};
     }
   }

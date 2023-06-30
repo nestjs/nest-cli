@@ -1,14 +1,15 @@
 import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 
-type SwcCliOptions = Required<
-  Required<Configuration>['compilerOptions']
->['swcCliOptions'];
-
 export const swcDefaultsFactory = (
   tsOptions: ts.CompilerOptions,
-  swcCliOptions: SwcCliOptions,
+  configuration: Configuration,
 ) => {
+  const builderOptions =
+    typeof configuration.compilerOptions?.builder !== 'string'
+      ? configuration.compilerOptions?.builder?.options
+      : {};
+
   return {
     swcOptions: {
       module: {
@@ -34,14 +35,14 @@ export const swcDefaultsFactory = (
     },
     cliOptions: {
       outDir: tsOptions.outDir ?? 'dist',
-      filenames: ['src'],
+      filenames: [configuration?.sourceRoot ?? 'src'],
       sync: false,
       extensions: ['.js', '.ts'],
       copyFiles: false,
       includeDotfiles: false,
       quiet: false,
       watch: false,
-      ...swcCliOptions,
+      ...builderOptions,
     },
   };
 };
