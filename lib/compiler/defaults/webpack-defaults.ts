@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import { defaultConfiguration } from '../../configuration/defaults';
+import { defaultTsconfigFilename } from '../../configuration/defaults';
 import { appendTsExtension } from '../helpers/append-extension';
 import { MultiNestCompilerPlugins } from '../plugins/plugins-loader';
 import webpack = require('webpack');
@@ -11,7 +11,7 @@ export const webpackDefaultsFactory = (
   relativeSourceRoot: string,
   entryFilename: string,
   isDebugEnabled = false,
-  tsConfigFile = defaultConfiguration.compilerOptions.tsConfigPath,
+  tsConfigFile = defaultTsconfigFilename,
   plugins: MultiNestCompilerPlugins,
 ): webpack.Configuration => {
   const isPluginRegistered = isAnyPluginRegistered(plugins);

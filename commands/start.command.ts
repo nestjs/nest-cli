@@ -19,7 +19,7 @@ export class StartCommand extends AbstractCommand {
       )
       .option(
         '--webpack',
-        'Use webpack for compilation (deprecated option, use --build instead).',
+        'Use webpack for compilation (deprecated option, use --builder instead).',
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--type-check', 'Enable type checking (when SWC is used).')

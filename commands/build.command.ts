@@ -14,7 +14,7 @@ export class BuildCommand extends AbstractCommand {
       .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option(
         '--webpack',
-        'Use webpack for compilation (deprecated option, use --build instead).',
+        'Use webpack for compilation (deprecated option, use --builder instead).',
       )
       .option('--type-check', 'Enable type checking (when SWC is used).')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
