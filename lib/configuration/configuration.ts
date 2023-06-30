@@ -52,9 +52,6 @@ export type Builder =
     };
 
 export interface CompilerOptions {
-  /**
-   * @deprecated Use `builder.options.configPath` instead.
-   */
   tsConfigPath?: string;
   /**
    * @deprecated Use `builder` instead.
