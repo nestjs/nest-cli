@@ -84,7 +84,7 @@
     "lint-staged": "13.2.3",
     "prettier": "2.8.8",
     "release-it": "15.11.0",
-    "ts-jest": "29.1.0",
+    "ts-jest": "29.1.1",
     "ts-loader": "9.4.3"
   },
   "lint-staged": {
