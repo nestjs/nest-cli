@@ -1,5 +1,5 @@
 import { Input } from '../../../commands';
-import { Configuration, TscBuilderOptions } from '../../configuration';
+import { Builder, Configuration } from '../../configuration';
 import { getDefaultTsconfigPath } from '../../utils/get-default-tsconfig-path';
 import { getValueOrDefault } from './get-value-or-default';
 
@@ -26,11 +26,16 @@ export function getTscConfigPath(
     return tsconfigPath;
   }
 
-  tsconfigPath = getValueOrDefault<TscBuilderOptions['configPath']>(
+  const builder = getValueOrDefault<Builder>(
     configuration,
-    'compilerOptions.builder.options.configPath',
+    'compilerOptions.builder',
     appName,
   );
+
+  tsconfigPath =
+    typeof builder === 'object' && builder?.type === 'tsc'
+      ? builder.options?.configPath
+      : undefined;
 
   return tsconfigPath ?? getDefaultTsconfigPath();
 }

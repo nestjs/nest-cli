@@ -1,5 +1,5 @@
 import { Input } from '../../../commands';
-import { Configuration, WebpackBuilderOptions } from '../../configuration';
+import { Builder, Configuration } from '../../configuration';
 import { getValueOrDefault } from './get-value-or-default';
 
 /**
@@ -25,11 +25,15 @@ export function getWebpackConfigPath(
     return webpackPath;
   }
 
-  webpackPath = getValueOrDefault<WebpackBuilderOptions['configPath']>(
+  const builder = getValueOrDefault<Builder>(
     configuration,
-    'compilerOptions.builder.options.configPath',
+    'compilerOptions.builder',
     appName,
   );
 
+  webpackPath =
+    typeof builder === 'object' && builder?.type === 'webpack'
+      ? builder.options?.configPath
+      : undefined;
   return webpackPath;
 }
