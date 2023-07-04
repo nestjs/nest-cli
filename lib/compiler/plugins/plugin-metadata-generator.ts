@@ -125,7 +125,9 @@ export class PluginMetadataGenerator {
   ) {
     for (const sourceFile of programRef.getSourceFiles()) {
       if (!sourceFile.isDeclarationFile) {
-        visitors.forEach((visitor) => visitor.visit(programRef, sourceFile));
+        visitors.forEach((visitor) =>
+          visitor.visit<ts.Program, ts.SourceFile>(programRef, sourceFile),
+        );
       }
     }
 
