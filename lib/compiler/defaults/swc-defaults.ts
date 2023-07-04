@@ -2,12 +2,12 @@ import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 
 export const swcDefaultsFactory = (
-  tsOptions: ts.CompilerOptions,
-  configuration: Configuration,
+  tsOptions?: ts.CompilerOptions,
+  configuration?: Configuration,
 ) => {
   const builderOptions =
-    typeof configuration.compilerOptions?.builder !== 'string'
-      ? configuration.compilerOptions?.builder?.options
+    typeof configuration?.compilerOptions?.builder !== 'string'
+      ? configuration?.compilerOptions?.builder?.options
       : {};
 
   return {
@@ -27,14 +27,14 @@ export const swcDefaultsFactory = (
           decoratorMetadata: true,
         },
         keepClassNames: true,
-        baseUrl: tsOptions.baseUrl,
-        paths: tsOptions.paths,
+        baseUrl: tsOptions?.baseUrl,
+        paths: tsOptions?.paths,
       },
       minify: false,
       swcrc: true,
     },
     cliOptions: {
-      outDir: tsOptions.outDir ? convertPath(tsOptions.outDir) : 'dist',
+      outDir: tsOptions?.outDir ? convertPath(tsOptions.outDir) : 'dist',
       filenames: [configuration?.sourceRoot ?? 'src'],
       sync: false,
       extensions: ['.js', '.ts'],
