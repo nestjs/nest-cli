@@ -3,6 +3,7 @@ import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { isAbsolute } from 'path/posix';
 import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
@@ -236,8 +237,11 @@ export class SwcCompiler extends BaseCompiler {
     options: ReturnType<typeof swcDefaultsFactory>,
     onChange: () => void,
   ) {
-    const outDir = join(process.cwd(), options.cliOptions.outDir!, '**/*.js');
-    const watcher = chokidar.watch(outDir, {
+    const dir = isAbsolute(options.cliOptions.outDir!)
+      ? options.cliOptions.outDir!
+      : join(process.cwd(), options.cliOptions.outDir!);
+    const paths = join(dir, '**/*.js');
+    const watcher = chokidar.watch(paths, {
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: 50,

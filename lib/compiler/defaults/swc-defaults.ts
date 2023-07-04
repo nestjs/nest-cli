@@ -34,7 +34,7 @@ export const swcDefaultsFactory = (
       swcrc: true,
     },
     cliOptions: {
-      outDir: tsOptions.outDir ?? 'dist',
+      outDir: tsOptions.outDir ? convertPath(tsOptions.outDir) : 'dist',
       filenames: [configuration?.sourceRoot ?? 'src'],
       sync: false,
       extensions: ['.js', '.ts'],
@@ -46,3 +46,14 @@ export const swcDefaultsFactory = (
     },
   };
 };
+
+/**
+ * Converts Windows specific file paths to posix
+ * @param windowsPath
+ */
+function convertPath(windowsPath: string) {
+  return windowsPath
+    .replace(/^\\\\\?\\/, '')
+    .replace(/\\/g, '/')
+    .replace(/\/\/+/g, '/');
+}
