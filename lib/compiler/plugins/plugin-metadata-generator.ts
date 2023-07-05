@@ -125,9 +125,7 @@ export class PluginMetadataGenerator {
   ) {
     for (const sourceFile of programRef.getSourceFiles()) {
       if (!sourceFile.isDeclarationFile) {
-        visitors.forEach((visitor) =>
-          visitor.visit<ts.Program, ts.SourceFile>(programRef, sourceFile),
-        );
+        visitors.forEach((visitor) => visitor.visit(programRef, sourceFile));
       }
     }
 
@@ -138,7 +136,10 @@ export class PluginMetadataGenerator {
     > = {};
 
     visitors.forEach((visitor) => {
-      collectedMetadata[visitor.key] = visitor.collect();
+      collectedMetadata[visitor.key] = visitor.collect() as Record<
+        string,
+        Array<[ts.CallExpression, DeepPluginMeta]>
+      >;
       typeImports = {
         ...typeImports,
         ...visitor.typeImports,

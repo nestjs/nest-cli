@@ -9,9 +9,11 @@ export type DeepPluginMeta =
 export interface ReadonlyVisitor {
   key: string;
   typeImports: Record<string, string>;
-  visit<Program = any, SourceFile = any>(
-    program: Program,
-    sf: SourceFile,
-  ): void;
-  collect<MetaTuple = any>(): Record<string, Array<MetaTuple>>;
+
+  // Using unknown here because of the potential
+  // incompatibility between a locally installed TypeScript version
+  // and the one used by the CLI.
+
+  visit(program: unknown, sf: unknown): unknown;
+  collect(): Record<string, Array<unknown>>;
 }
