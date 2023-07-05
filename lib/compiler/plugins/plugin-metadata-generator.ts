@@ -60,6 +60,11 @@ export class PluginMetadataGenerator {
   private readonly pluginMetadataPrinter = new PluginMetadataPrinter();
   private readonly typeCheckerHost = new TypeCheckerHost();
   private readonly typescriptLoader = new TypeScriptBinaryLoader();
+  private readonly tsBinary: typeof ts;
+
+  constructor() {
+    this.tsBinary = this.typescriptLoader.load();
+  }
 
   generate(options: PluginMetadataGenerateOptions) {
     const {
@@ -145,9 +150,14 @@ export class PluginMetadataGenerator {
         ...visitor.typeImports,
       };
     });
-    this.pluginMetadataPrinter.print(collectedMetadata, typeImports, {
-      outputDir,
-      filename,
-    });
+    this.pluginMetadataPrinter.print(
+      collectedMetadata,
+      typeImports,
+      {
+        outputDir,
+        filename,
+      },
+      this.tsBinary,
+    );
   }
 }

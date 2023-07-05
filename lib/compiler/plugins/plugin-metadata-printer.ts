@@ -24,46 +24,50 @@ export class PluginMetadataPrinter {
     metadata: ComposedPluginMeta,
     typeImports: Record<string, string>,
     options: PluginMetadataPrintOptions,
+    tsBinary: typeof ts,
   ) {
-    const objectLiteralExpr = ts.factory.createObjectLiteralExpression(
+    const objectLiteralExpr = tsBinary.factory.createObjectLiteralExpression(
       Object.keys(metadata).map((key) =>
         this.recursivelyCreatePropertyAssignment(
           key,
           metadata[key] as unknown as Array<
             [ts.CallExpression, DeepPluginMeta]
           >,
+          tsBinary,
         ),
       ),
     );
 
-    const exportAssignment = ts.factory.createExportAssignment(
+    const exportAssignment = tsBinary.factory.createExportAssignment(
       undefined,
       undefined,
-      ts.factory.createArrowFunction(
-        [ts.factory.createToken(ts.SyntaxKind.AsyncKeyword)],
+      tsBinary.factory.createArrowFunction(
+        [tsBinary.factory.createToken(tsBinary.SyntaxKind.AsyncKeyword)],
         undefined,
         [],
         undefined,
-        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-        ts.factory.createBlock(
+        tsBinary.factory.createToken(
+          tsBinary.SyntaxKind.EqualsGreaterThanToken,
+        ),
+        tsBinary.factory.createBlock(
           [
-            this.createTypeImportVariableStatement(typeImports),
-            ts.factory.createReturnStatement(objectLiteralExpr),
+            this.createTypeImportVariableStatement(typeImports, tsBinary),
+            tsBinary.factory.createReturnStatement(objectLiteralExpr),
           ],
           true,
         ),
       ),
     );
 
-    const printer = ts.createPrinter({
-      newLine: ts.NewLineKind.LineFeed,
+    const printer = tsBinary.createPrinter({
+      newLine: tsBinary.NewLineKind.LineFeed,
     });
-    const resultFile = ts.createSourceFile(
+    const resultFile = tsBinary.createSourceFile(
       'file.ts',
       '',
-      ts.ScriptTarget.Latest,
+      tsBinary.ScriptTarget.Latest,
       /*setParentNodes*/ false,
-      ts.ScriptKind.TS,
+      tsBinary.ScriptKind.TS,
     );
 
     const filename = join(
@@ -75,7 +79,7 @@ export class PluginMetadataPrinter {
       filename,
       eslintPrefix +
         printer.printNode(
-          ts.EmitHint.Unspecified,
+          tsBinary.EmitHint.Unspecified,
           exportAssignment,
           resultFile,
         ),
@@ -85,15 +89,16 @@ export class PluginMetadataPrinter {
   private recursivelyCreatePropertyAssignment(
     identifier: string,
     meta: DeepPluginMeta | Array<[ts.CallExpression, DeepPluginMeta]>,
+    tsBinary: typeof ts,
   ): ts.PropertyAssignment {
     if (Array.isArray(meta)) {
-      return ts.factory.createPropertyAssignment(
-        ts.factory.createStringLiteral(identifier),
-        ts.factory.createArrayLiteralExpression(
+      return tsBinary.factory.createPropertyAssignment(
+        tsBinary.factory.createStringLiteral(identifier),
+        tsBinary.factory.createArrayLiteralExpression(
           meta.map(([importExpr, meta]) =>
-            ts.factory.createArrayLiteralExpression([
+            tsBinary.factory.createArrayLiteralExpression([
               importExpr,
-              ts.factory.createObjectLiteralExpression(
+              tsBinary.factory.createObjectLiteralExpression(
                 Object.keys(meta).map((key) =>
                   this.recursivelyCreatePropertyAssignment(
                     key,
@@ -102,6 +107,7 @@ export class PluginMetadataPrinter {
                         [key: string]: DeepPluginMeta;
                       }
                     )[key],
+                    tsBinary,
                   ),
                 ),
               ),
@@ -110,11 +116,11 @@ export class PluginMetadataPrinter {
         ),
       );
     }
-    return ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(identifier),
-      ts.isObjectLiteralExpression(meta as unknown as ts.Node)
+    return tsBinary.factory.createPropertyAssignment(
+      tsBinary.factory.createStringLiteral(identifier),
+      tsBinary.isObjectLiteralExpression(meta as unknown as ts.Node)
         ? (meta as ts.ObjectLiteralExpression)
-        : ts.factory.createObjectLiteralExpression(
+        : tsBinary.factory.createObjectLiteralExpression(
             Object.keys(meta).map((key) =>
               this.recursivelyCreatePropertyAssignment(
                 key,
@@ -123,6 +129,7 @@ export class PluginMetadataPrinter {
                     [key: string]: DeepPluginMeta;
                   }
                 )[key],
+                tsBinary,
               ),
             ),
           ),
@@ -131,37 +138,42 @@ export class PluginMetadataPrinter {
 
   private createTypeImportVariableStatement(
     typeImports: Record<string, string>,
+    tsBinary: typeof ts,
   ): ts.Statement {
-    return ts.factory.createVariableStatement(
+    return tsBinary.factory.createVariableStatement(
       undefined,
-      ts.factory.createVariableDeclarationList(
+      tsBinary.factory.createVariableDeclarationList(
         [
-          ts.factory.createVariableDeclaration(
-            ts.factory.createIdentifier(TYPE_IMPORT_VARIABLE_NAME),
+          tsBinary.factory.createVariableDeclaration(
+            tsBinary.factory.createIdentifier(TYPE_IMPORT_VARIABLE_NAME),
             undefined,
             undefined,
-            ts.factory.createObjectLiteralExpression(
+            tsBinary.factory.createObjectLiteralExpression(
               Object.keys(typeImports).map((ti) =>
-                this.createPropertyAssignment(ti, typeImports[ti]),
+                this.createPropertyAssignment(ti, typeImports[ti], tsBinary),
               ),
               true,
             ),
           ),
         ],
-        ts.NodeFlags.Const |
-          ts.NodeFlags.AwaitContext |
-          ts.NodeFlags.ContextFlags |
-          ts.NodeFlags.TypeExcludesFlags,
+        tsBinary.NodeFlags.Const |
+          tsBinary.NodeFlags.AwaitContext |
+          tsBinary.NodeFlags.ContextFlags |
+          tsBinary.NodeFlags.TypeExcludesFlags,
       ),
     );
   }
 
-  private createPropertyAssignment(identifier: string, target: string) {
-    return ts.factory.createPropertyAssignment(
-      ts.factory.createComputedPropertyName(
-        ts.factory.createStringLiteral(identifier),
+  private createPropertyAssignment(
+    identifier: string,
+    target: string,
+    tsBinary: typeof ts,
+  ) {
+    return tsBinary.factory.createPropertyAssignment(
+      tsBinary.factory.createComputedPropertyName(
+        tsBinary.factory.createStringLiteral(identifier),
       ),
-      ts.factory.createIdentifier(target),
+      tsBinary.factory.createIdentifier(target),
     );
   }
 }
