@@ -212,6 +212,13 @@ export class SwcCompiler extends BaseCompiler {
       return source;
     }
 
+    if (Array.isArray(target) && Array.isArray(source)) {
+      return source.reduce((acc, value, index) => {
+        acc[index] = this.deepMerge(target[index], value);
+        return acc;
+      }, target);
+    }
+
     const merged = { ...target };
     for (const key in source) {
       if (source.hasOwnProperty(key)) {
