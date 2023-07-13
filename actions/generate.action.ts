@@ -41,12 +41,15 @@ const generateFiles = async (inputs: Input[]) => {
     (option) => option.name === 'specFileSuffix',
   );
 
+  const fileNameCase = inputs.find((option) => option.name === 'fileNameCase')
+      ?.value as string ?? 'fileNameCaseNotSet';
+
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs, fileNameCase);
   schematicOptions.push(
-    new SchematicOption('language', configuration.language),
+    new SchematicOption('language', configuration.language, fileNameCase),
   );
   const configurationProjects = configuration.projects;
 
@@ -125,11 +128,11 @@ const generateFiles = async (inputs: Input[]) => {
     }
   }
 
-  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
-  schematicOptions.push(new SchematicOption('spec', generateSpec));
-  schematicOptions.push(new SchematicOption('flat', generateFlat));
+  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot, fileNameCase));
+  schematicOptions.push(new SchematicOption('spec', generateSpec, fileNameCase));
+  schematicOptions.push(new SchematicOption('flat', generateFlat, fileNameCase));
   schematicOptions.push(
-    new SchematicOption('specFileSuffix', generateSpecFileSuffix),
+    new SchematicOption('specFileSuffix', generateSpecFileSuffix, fileNameCase),
   );
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
@@ -144,12 +147,12 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+const mapSchematicOptions = (inputs: Input[], fileNameCase: string): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
-      options.push(new SchematicOption(input.name, input.value));
+      options.push(new SchematicOption(input.name, input.value, fileNameCase));
     }
   });
   return options;

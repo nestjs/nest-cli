@@ -130,7 +130,7 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
       if (option.name !== 'skip-install') {
-        schematicOptions.push(new SchematicOption(option.name, option.value));
+        schematicOptions.push(new SchematicOption(option.name, option.value, 'wrongFileNameCase'));
       }
       return schematicOptions;
     },

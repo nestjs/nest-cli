@@ -48,6 +48,10 @@ export class GenerateCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option(
+      '--fileNameCase [fileNameCase]',
+      'File name case.',
+      )
       .action(
         async (
           schematic: string,
@@ -92,6 +96,13 @@ export class GenerateCommand extends AbstractCommand {
             name: 'skipImport',
             value: command.skipImport,
           });
+
+          options.push({
+            name: 'fileNameCase',
+            value: command.fileNameCase,
+          });
+
+          console.log({ options })
 
           const inputs: Input[] = [];
           inputs.push({ name: 'schematic', value: schematic });

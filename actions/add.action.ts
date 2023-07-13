@@ -126,6 +126,7 @@ export class AddAction extends AbstractAction {
       new SchematicOption(
         'sourceRoot',
         options.find((option) => option.name === 'sourceRoot')!.value as string,
+          'string'
       ),
     );
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
