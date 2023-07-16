@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { Input } from '../commands';
+import { CommandInputsContainer, Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
@@ -23,7 +23,7 @@ import { AbstractAction } from './abstract.action';
 const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[], extraFlags: string[]) {
+  public async handle(inputs: Input[], options: CommandInputsContainer, extraFlags: string[]) {
     const libraryName = this.getLibraryName(inputs);
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
@@ -33,9 +33,11 @@ export class AddAction extends AbstractAction {
       skipInstall || (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
       const sourceRootOption: Input = await this.getSourceRoot(
-        inputs.concat(options),
+        inputs.concat(options.toArray()),
       );
-      options.push(sourceRootOption);
+      if (sourceRootOption) {
+        options.addInput(sourceRootOption)
+      }
 
       await this.addLibrary(collectionName, options, extraFlags);
     } else {
@@ -117,7 +119,7 @@ export class AddAction extends AbstractAction {
 
   private async addLibrary(
     collectionName: string,
-    options: Input[],
+    options: CommandInputsContainer,
     extraFlags: string[],
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
@@ -125,7 +127,7 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string,
+        options.resolveInput<string>('sourceRoot', true).value,
       ),
     );
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;

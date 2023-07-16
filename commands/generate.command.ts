@@ -5,7 +5,7 @@ import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Input, CommandInputsContainer } from './command.input';
 
 export class GenerateCommand extends AbstractCommand {
   public async load(program: CommanderStatic): Promise<void> {
@@ -55,14 +55,15 @@ export class GenerateCommand extends AbstractCommand {
           path: string,
           command: Command,
         ) => {
-          const options: Input[] = [];
-          options.push({ name: 'dry-run', value: !!command.dryRun });
+          const commandOptions = new CommandInputsContainer();
+
+          commandOptions.addInput({ name: 'dry-run', value: !!command.dryRun });
 
           if (command.flat !== undefined) {
-            options.push({ name: 'flat', value: command.flat });
+            commandOptions.addInput({ name: 'flat', value: command.flat });
           }
 
-          options.push({
+          commandOptions.addInput({
             name: 'spec',
             value:
               typeof command.spec === 'boolean'
@@ -75,20 +76,20 @@ export class GenerateCommand extends AbstractCommand {
                   : command.spec.passedAsInput,
             },
           });
-          options.push({
+          commandOptions.addInput({
             name: 'specFileSuffix',
             value: command.specFileSuffix,
           });
-          options.push({
+          commandOptions.addInput({
             name: 'collection',
             value: command.collection,
           });
-          options.push({
+          commandOptions.addInput({
             name: 'project',
             value: command.project,
           });
 
-          options.push({
+          commandOptions.addInput({
             name: 'skipImport',
             value: command.skipImport,
           });
@@ -98,7 +99,7 @@ export class GenerateCommand extends AbstractCommand {
           inputs.push({ name: 'name', value: name });
           inputs.push({ name: 'path', value: path });
 
-          await this.action.handle(inputs, options);
+          await this.action.handle(inputs, commandOptions);
         },
       );
   }

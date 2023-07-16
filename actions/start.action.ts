@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
-import { Input } from '../commands';
+import { Input, CommandInputsContainer } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
@@ -15,11 +15,9 @@ import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
-  public async handle(commandInputs: Input[], commandOptions: Input[]) {
+  public async handle(commandInputs: Input[], commandOptions: CommandInputsContainer) {
     try {
-      const configFileName = commandOptions.find(
-        (option) => option.name === 'config',
-      )!.value as string;
+      const configFileName = commandOptions.resolveInput<string>('config', true).value;
       const configuration = await this.loader.load(configFileName);
       const appName = commandInputs.find((input) => input.name === 'app')!
         .value as string;
@@ -30,20 +28,9 @@ export class StartAction extends BuildAction {
         appName,
       );
 
-      const debugModeOption = commandOptions.find(
-        (option) => option.name === 'debug',
-      );
-      const watchModeOption = commandOptions.find(
-        (option) => option.name === 'watch',
-      );
-      const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
-      const watchAssetsModeOption = commandOptions.find(
-        (option) => option.name === 'watchAssets',
-      );
-      const isWatchAssetsEnabled = !!(
-        watchAssetsModeOption && watchAssetsModeOption.value
-      );
-      const debugFlag = debugModeOption && debugModeOption.value;
+      const isWatchEnabled = !!commandOptions.resolveInput<boolean>('watch')?.value;
+      const isWatchAssetsEnabled = !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
+      const debugFlag = commandOptions.resolveInput<boolean>('debug')?.value;
       const binaryToRun = getValueOrDefault(
         configuration,
         'exec',

@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Input, CommandInputsContainer } from './command.input';
 
 export class NewCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -33,19 +33,20 @@ export class NewCommand extends AbstractCommand {
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
       .action(async (name: string, command: Command) => {
-        const options: Input[] = [];
-        const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
-        options.push({ name: 'directory', value: command.directory });
-        options.push({ name: 'dry-run', value: command.dryRun });
-        options.push({ name: 'skip-git', value: command.skipGit });
-        options.push({ name: 'skip-install', value: command.skipInstall });
-        options.push({ name: 'strict', value: command.strict });
-        options.push({
+        const commandOptions = new CommandInputsContainer();
+
+        commandOptions.addInput({ name: 'directory', value: command.directory });
+        commandOptions.addInput({ name: 'dry-run', value: command.dryRun });
+        commandOptions.addInput({ name: 'skip-git', value: command.skipGit });
+        commandOptions.addInput({ name: 'skip-install', value: command.skipInstall });
+        commandOptions.addInput({ name: 'strict', value: command.strict });
+        commandOptions.addInput({
           name: 'packageManager',
           value: command.packageManager,
         });
-        options.push({ name: 'collection', value: command.collection });
+        commandOptions.addInput({ name: 'collection', value: command.collection });
 
+        const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
         if (!!command.language) {
           const lowercasedLanguage = command.language.toLowerCase();
           const langMatch = availableLanguages.includes(lowercasedLanguage);
@@ -66,7 +67,7 @@ export class NewCommand extends AbstractCommand {
               break;
           }
         }
-        options.push({
+        commandOptions.addInput({
           name: 'language',
           value: command.language,
         });
@@ -74,7 +75,7 @@ export class NewCommand extends AbstractCommand {
         const inputs: Input[] = [];
         inputs.push({ name: 'name', value: name });
 
-        await this.action.handle(inputs, options);
+        await this.action.handle(inputs, commandOptions);
       });
   }
 }

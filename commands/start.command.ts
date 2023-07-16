@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Input, CommandInputsContainer } from './command.input';
 import type { BuilderVariant } from '../lib/configuration';
 
 export class StartCommand extends AbstractCommand {
@@ -40,39 +40,39 @@ export class StartCommand extends AbstractCommand {
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
-        const options: Input[] = [];
+        const commandOptions = new CommandInputsContainer();
 
-        options.push({
+        commandOptions.addInput({
           name: 'config',
           value: command.config,
-        });
+        })
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
-        options.push({ name: 'webpack', value: isWebpackEnabled });
-        options.push({ name: 'debug', value: command.debug });
-        options.push({ name: 'watch', value: !!command.watch });
-        options.push({ name: 'watchAssets', value: !!command.watchAssets });
-        options.push({
+        commandOptions.addInput({ name: 'webpack', value: isWebpackEnabled });
+        commandOptions.addInput({ name: 'debug', value: command.debug });
+        commandOptions.addInput({ name: 'watch', value: !!command.watch });
+        commandOptions.addInput({ name: 'watchAssets', value: !!command.watchAssets });
+        commandOptions.addInput({
           name: 'path',
           value: command.path,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'webpackPath',
           value: command.webpackPath,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'exec',
           value: command.exec,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'sourceRoot',
           value: command.sourceRoot,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'entryFile',
           value: command.entryFile,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'preserveWatchOutput',
           value:
             !!command.preserveWatchOutput &&
@@ -90,7 +90,7 @@ export class StartCommand extends AbstractCommand {
           );
           return;
         }
-        options.push({
+        commandOptions.addInput({
           name: 'builder',
           value: command.builder,
         });
@@ -101,7 +101,7 @@ export class StartCommand extends AbstractCommand {
               ` "typeCheck" will not have any effect when "builder" is not "swc".`,
           );
         }
-        options.push({
+        commandOptions.addInput({
           name: 'typeCheck',
           value: command.typeCheck,
         });
@@ -111,7 +111,7 @@ export class StartCommand extends AbstractCommand {
         const flags = getRemainingFlags(program);
 
         try {
-          await this.action.handle(inputs, options, flags);
+          await this.action.handle(inputs, commandOptions, flags);
         } catch (err) {
           process.exit(1);
         }

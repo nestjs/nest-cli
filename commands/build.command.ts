@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Input, CommandInputsContainer } from './command.input';
 
 export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
@@ -21,22 +21,22 @@ export class BuildCommand extends AbstractCommand {
       .option('--tsc', 'Use tsc for compilation.')
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
-        const options: Input[] = [];
+        const commandOptions = new CommandInputsContainer()
 
-        options.push({
+        commandOptions.addInput({
           name: 'config',
           value: command.config,
         });
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
-        options.push({ name: 'webpack', value: isWebpackEnabled });
-        options.push({ name: 'watch', value: !!command.watch });
-        options.push({ name: 'watchAssets', value: !!command.watchAssets });
-        options.push({
+        commandOptions.addInput({ name: 'webpack', value: isWebpackEnabled });
+        commandOptions.addInput({ name: 'watch', value: !!command.watch });
+        commandOptions.addInput({ name: 'watchAssets', value: !!command.watchAssets });
+        commandOptions.addInput({
           name: 'path',
           value: command.path,
         });
-        options.push({
+        commandOptions.addInput({
           name: 'webpackPath',
           value: command.webpackPath,
         });
@@ -51,7 +51,7 @@ export class BuildCommand extends AbstractCommand {
           );
           return;
         }
-        options.push({
+        commandOptions.addInput({
           name: 'builder',
           value: command.builder,
         });
@@ -62,14 +62,14 @@ export class BuildCommand extends AbstractCommand {
               ` "typeCheck" will not have any effect when "builder" is not "swc".`,
           );
         }
-        options.push({
+        commandOptions.addInput({
           name: 'typeCheck',
           value: command.typeCheck,
         });
 
         const inputs: Input[] = [];
         inputs.push({ name: 'app', value: app });
-        await this.action.handle(inputs, options);
+        await this.action.handle(inputs, commandOptions);
       });
   }
 }
