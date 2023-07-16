@@ -3,6 +3,7 @@ import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
+import type { BuilderVariant } from '../lib/configuration';
 
 export class StartCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
@@ -79,7 +80,7 @@ export class StartCommand extends AbstractCommand {
             !isWebpackEnabled,
         });
 
-        const availableBuilders = ['tsc', 'webpack', 'swc'];
+        const availableBuilders: BuilderVariant[] = ['tsc', 'webpack', 'swc'];
         if (command.builder && !availableBuilders.includes(command.builder)) {
           console.error(
             ERROR_PREFIX +
