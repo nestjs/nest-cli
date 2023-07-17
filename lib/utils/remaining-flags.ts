@@ -20,7 +20,7 @@ export function getRemainingFlags(cli: CommanderStatic) {
       const prevKeyRaw = array[index - 1];
       if (prevKeyRaw) {
         const previousKey = camelCase(
-          prevKeyRaw.replace('--', '').replace('no', ''),
+          prevKeyRaw.replace(/--/g, '').replace('no', ''),
         );
         if (cli[previousKey] === item) {
           return false;
