@@ -19,7 +19,7 @@ export function getValueOrDefault<T = any>(
 ): T {
   const item = Array.isArray(options)
     ? options.find((option) => option.name === key)
-    : key && options.resolveInput(key)
+    : key && options.resolveInput(key);
   const origValue = item?.value as T | undefined;
   if (origValue !== undefined && origValue !== null) {
     return origValue;

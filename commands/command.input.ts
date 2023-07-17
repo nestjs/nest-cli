@@ -8,7 +8,7 @@ export class CommandInputsContainer {
   private readonly inputsByName = new Map<Input['name'], Input>();
 
   toArray(): Input[] {
-    return Array.from(this.inputsByName.values())
+    return Array.from(this.inputsByName.values());
   }
 
   addInput(input: Input) {
@@ -28,7 +28,7 @@ export class CommandInputsContainer {
   ): Input<TValue>;
   resolveInput<TValue extends boolean | string>(
     inputName: Input['name'],
-    errorOnMissing = false
+    errorOnMissing = false,
   ): Input<TValue> | undefined {
     const input = this.inputsByName.get(inputName) as Input<TValue> | undefined;
     if (errorOnMissing) {
@@ -36,6 +36,6 @@ export class CommandInputsContainer {
         throw new Error(`The input ${inputName} is missing!`);
       }
     }
-    return input
+    return input;
   }
 }

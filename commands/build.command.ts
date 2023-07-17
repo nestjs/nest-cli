@@ -21,7 +21,7 @@ export class BuildCommand extends AbstractCommand {
       .option('--tsc', 'Use tsc for compilation.')
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
-        const commandOptions = new CommandInputsContainer()
+        const commandOptions = new CommandInputsContainer();
 
         commandOptions.addInput({
           name: 'config',
@@ -31,7 +31,10 @@ export class BuildCommand extends AbstractCommand {
         const isWebpackEnabled = command.tsc ? false : command.webpack;
         commandOptions.addInput({ name: 'webpack', value: isWebpackEnabled });
         commandOptions.addInput({ name: 'watch', value: !!command.watch });
-        commandOptions.addInput({ name: 'watchAssets', value: !!command.watchAssets });
+        commandOptions.addInput({
+          name: 'watchAssets',
+          value: !!command.watchAssets,
+        });
         commandOptions.addInput({
           name: 'path',
           value: command.path,

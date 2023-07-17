@@ -23,7 +23,11 @@ import { AbstractAction } from './abstract.action';
 const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
-  public async handle(inputs: Input[], options: CommandInputsContainer, extraFlags: string[]) {
+  public async handle(
+    inputs: Input[],
+    options: CommandInputsContainer,
+    extraFlags: string[],
+  ) {
     const libraryName = this.getLibraryName(inputs);
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
@@ -36,7 +40,7 @@ export class AddAction extends AbstractAction {
         inputs.concat(options.toArray()),
       );
       if (sourceRootOption) {
-        options.addInput(sourceRootOption)
+        options.addInput(sourceRootOption);
       }
 
       await this.addLibrary(collectionName, options, extraFlags);

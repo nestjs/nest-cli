@@ -40,10 +40,14 @@ export class BuildAction extends AbstractAction {
   protected readonly assetsManager = new AssetsManager();
   protected readonly workspaceUtils = new WorkspaceUtils();
 
-  public async handle(commandInputs: Input[], commandOptions: CommandInputsContainer) {
+  public async handle(
+    commandInputs: Input[],
+    commandOptions: CommandInputsContainer,
+  ) {
     try {
       const watchMode = !!commandOptions.resolveInput<boolean>('watch')?.value;
-      const watchAssetsMode = !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
+      const watchAssetsMode =
+        !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
 
       await this.runBuild(
         commandInputs,
@@ -69,7 +73,10 @@ export class BuildAction extends AbstractAction {
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = commandOptions.resolveInput<string>('config', true).value
+    const configFileName = commandOptions.resolveInput<string>(
+      'config',
+      true,
+    ).value;
     const configuration = await this.loader.load(configFileName);
     const appName = commandInputs.find((input) => input.name === 'app')!
       .value as string;
@@ -217,7 +224,8 @@ export class BuildAction extends AbstractAction {
         this.tsConfigProvider,
         this.tsLoader,
       );
-      const isPreserveWatchOutputEnabled = options.resolveInput<boolean>('preserveWatchOutput')?.value || false
+      const isPreserveWatchOutputEnabled =
+        options.resolveInput<boolean>('preserveWatchOutput')?.value || false;
       watchCompiler.run(
         configuration,
         pathToTsconfig,

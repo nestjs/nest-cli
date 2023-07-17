@@ -32,7 +32,8 @@ export class NewAction extends AbstractAction {
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
-    const shouldSkipInstall = options.resolveInput<boolean>('skip-install')?.value
+    const shouldSkipInstall =
+      options.resolveInput<boolean>('skip-install')?.value;
     const shouldSkipGit = options.resolveInput<boolean>('skip-git')?.value;
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs)!,
@@ -71,7 +72,10 @@ const getProjectDirectory = (
   );
 };
 
-const askForMissingInformation = async (inputs: Input[], options: CommandInputsContainer) => {
+const askForMissingInformation = async (
+  inputs: Input[],
+  options: CommandInputsContainer,
+) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
@@ -85,7 +89,7 @@ const askForMissingInformation = async (inputs: Input[], options: CommandInputsC
     replaceInputMissingInformation(inputs, answers);
   }
 
-  const packageManagerInput = options.resolveInput<string>('packageManager')
+  const packageManagerInput = options.resolveInput<string>('packageManager');
   if (!packageManagerInput?.value) {
     const answers = await askForPackageManager();
     replaceInputMissingInformation(options, answers);
@@ -97,7 +101,7 @@ const replaceInputMissingInformation = (
   answers: Answers,
 ): Input[] => {
   if (!Array.isArray(inputs)) {
-    inputs = inputs.toArray()
+    inputs = inputs.toArray();
   }
   return inputs.map(
     (input) =>
@@ -106,8 +110,12 @@ const replaceInputMissingInformation = (
   );
 };
 
-const generateApplicationFiles = async (args: Input[], options: CommandInputsContainer) => {
-  const collectionName = options.resolveInput<string>('collection', true)?.value
+const generateApplicationFiles = async (
+  args: Input[],
+  options: CommandInputsContainer,
+) => {
+  const collectionName = options.resolveInput<string>('collection', true)
+    ?.value;
   const collection: AbstractCollection = CollectionFactory.create(
     (collectionName as Collection) || Collection.NESTJS,
   );
@@ -135,7 +143,10 @@ const installPackages = async (
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager = options.resolveInput<string>('packageManager', true).value;
+  const inputPackageManager = options.resolveInput<string>(
+    'packageManager',
+    true,
+  ).value;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {

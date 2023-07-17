@@ -35,16 +35,25 @@ export class NewCommand extends AbstractCommand {
       .action(async (name: string, command: Command) => {
         const commandOptions = new CommandInputsContainer();
 
-        commandOptions.addInput({ name: 'directory', value: command.directory });
+        commandOptions.addInput({
+          name: 'directory',
+          value: command.directory,
+        });
         commandOptions.addInput({ name: 'dry-run', value: command.dryRun });
         commandOptions.addInput({ name: 'skip-git', value: command.skipGit });
-        commandOptions.addInput({ name: 'skip-install', value: command.skipInstall });
+        commandOptions.addInput({
+          name: 'skip-install',
+          value: command.skipInstall,
+        });
         commandOptions.addInput({ name: 'strict', value: command.strict });
         commandOptions.addInput({
           name: 'packageManager',
           value: command.packageManager,
         });
-        commandOptions.addInput({ name: 'collection', value: command.collection });
+        commandOptions.addInput({
+          name: 'collection',
+          value: command.collection,
+        });
 
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
         if (!!command.language) {

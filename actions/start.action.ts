@@ -15,9 +15,15 @@ import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
-  public async handle(commandInputs: Input[], commandOptions: CommandInputsContainer) {
+  public async handle(
+    commandInputs: Input[],
+    commandOptions: CommandInputsContainer,
+  ) {
     try {
-      const configFileName = commandOptions.resolveInput<string>('config', true).value;
+      const configFileName = commandOptions.resolveInput<string>(
+        'config',
+        true,
+      ).value;
       const configuration = await this.loader.load(configFileName);
       const appName = commandInputs.find((input) => input.name === 'app')!
         .value as string;
@@ -28,8 +34,10 @@ export class StartAction extends BuildAction {
         appName,
       );
 
-      const isWatchEnabled = !!commandOptions.resolveInput<boolean>('watch')?.value;
-      const isWatchAssetsEnabled = !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
+      const isWatchEnabled =
+        !!commandOptions.resolveInput<boolean>('watch')?.value;
+      const isWatchAssetsEnabled =
+        !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
       const debugFlag = commandOptions.resolveInput<boolean>('debug')?.value;
       const binaryToRun = getValueOrDefault(
         configuration,

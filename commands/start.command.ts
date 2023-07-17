@@ -45,13 +45,16 @@ export class StartCommand extends AbstractCommand {
         commandOptions.addInput({
           name: 'config',
           value: command.config,
-        })
+        });
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
         commandOptions.addInput({ name: 'webpack', value: isWebpackEnabled });
         commandOptions.addInput({ name: 'debug', value: command.debug });
         commandOptions.addInput({ name: 'watch', value: !!command.watch });
-        commandOptions.addInput({ name: 'watchAssets', value: !!command.watchAssets });
+        commandOptions.addInput({
+          name: 'watchAssets',
+          value: !!command.watchAssets,
+        });
         commandOptions.addInput({
           name: 'path',
           value: command.path,

@@ -20,7 +20,10 @@ export class AddCommand extends AbstractCommand {
         const commandOptions = new CommandInputsContainer();
 
         commandOptions.addInput({ name: 'dry-run', value: !!command.dryRun });
-        commandOptions.addInput({ name: 'skip-install', value: command.skipInstall });
+        commandOptions.addInput({
+          name: 'skip-install',
+          value: command.skipInstall,
+        });
         commandOptions.addInput({
           name: 'project',
           value: command.project,
