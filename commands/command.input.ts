@@ -1,9 +1,9 @@
 export interface CommandStorageEntry<
   TValue extends boolean | string = boolean | string,
 > {
-  name: string;
-  value: TValue;
-  options?: any;
+  readonly name: string;
+  readonly value: TValue;
+  readonly options?: any;
 }
 
 export class CommandStorage {
@@ -12,11 +12,8 @@ export class CommandStorage {
     CommandStorageEntry
   >();
 
-  /**
-   * @returns A new array containing all the inputs.
-   */
-  toArray(): CommandStorageEntry[] {
-    return Array.from(this.inputsByName.values());
+  forEachEntry(callback: (input: CommandStorageEntry) => void): void {
+    this.inputsByName.forEach((input) => callback(input));
   }
 
   /**
@@ -26,6 +23,14 @@ export class CommandStorage {
     if (!this.inputsByName.has(input.name)) {
       this.inputsByName.set(input.name, input);
     }
+  }
+
+  /**
+   * Overwrite a existing input to a new value the storage or create a new entry
+   * if it does not exist yet.
+   */
+  set(input: CommandStorageEntry) {
+    this.inputsByName.set(input.name, input);
   }
 
   get<TValue extends boolean | string>(

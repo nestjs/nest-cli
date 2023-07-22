@@ -91,17 +91,18 @@ const askForMissingInformation = async (
 };
 
 const replaceInputMissingInformation = (
-  inputs: CommandStorageEntry[] | CommandStorage,
+  inputs: CommandStorage,
   answers: Answers,
-): CommandStorageEntry[] => {
-  if (!Array.isArray(inputs)) {
-    inputs = inputs.toArray();
-  }
-  return inputs.map(
-    (input) =>
-      (input.value =
-        input.value !== undefined ? input.value : answers[input.name]),
-  );
+): void => {
+  inputs.forEachEntry((input) => {
+    if (input.value === undefined) {
+      const maybeInputAnswer = answers[input.name];
+      inputs.set({
+        name: input.name,
+        value: maybeInputAnswer,
+      });
+    }
+  });
 };
 
 const generateApplicationFiles = async (
@@ -112,25 +113,34 @@ const generateApplicationFiles = async (
   const collection: AbstractCollection = CollectionFactory.create(
     (collectionName as Collection) || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(
-    args.toArray().concat(options.toArray()),
-  );
+
+  const argsAndOptionStorage = new CommandStorage();
+  argsAndOptionStorage.mergeWith(args);
+  argsAndOptionStorage.mergeWith(options);
+  const schematicOptions: SchematicOption[] =
+    mapSchematicOptions(argsAndOptionStorage);
   await collection.execute('application', schematicOptions);
+
   console.info();
 };
 
-const mapSchematicOptions = (
-  options: CommandStorageEntry[],
-): SchematicOption[] => {
-  return options.reduce(
-    (schematicOptions: SchematicOption[], option: CommandStorageEntry) => {
-      if (option.name !== 'skip-install') {
-        schematicOptions.push(new SchematicOption(option.name, option.value));
-      }
-      return schematicOptions;
-    },
-    [],
-  );
+const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
+  const excludedInputNames = ['skip-install'];
+  const options: SchematicOption[] = [];
+  storage.forEachEntry((commandStorageEntry) => {
+    if (
+      !excludedInputNames.includes(commandStorageEntry.name) &&
+      commandStorageEntry.value !== undefined
+    ) {
+      options.push(
+        new SchematicOption(
+          commandStorageEntry.name,
+          commandStorageEntry.value,
+        ),
+      );
+    }
+  });
+  return options;
 };
 
 const installPackages = async (

@@ -143,9 +143,17 @@ const generateFiles = async (storage: CommandStorage) => {
 const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
-  storage.toArray().forEach((input) => {
-    if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
-      options.push(new SchematicOption(input.name, input.value));
+  storage.forEachEntry((commandStorageEntry) => {
+    if (
+      !excludedInputNames.includes(commandStorageEntry.name) &&
+      commandStorageEntry.value !== undefined
+    ) {
+      options.push(
+        new SchematicOption(
+          commandStorageEntry.name,
+          commandStorageEntry.value,
+        ),
+      );
     }
   });
   return options;
