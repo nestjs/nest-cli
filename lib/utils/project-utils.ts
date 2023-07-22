@@ -8,7 +8,7 @@ import { generateSelect } from '../questions/questions';
 export function shouldAskForProject(
   schematic: string,
   configurationProjects: { [key: string]: ProjectConfiguration },
-  appName: string,
+  appName: string | undefined,
 ) {
   return (
     ['app', 'sub-app', 'library', 'lib'].includes(schematic) === false &&

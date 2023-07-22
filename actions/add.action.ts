@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { CommandStorage, Input } from '../commands';
+import { CommandStorage, CommandStorageEntry } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
@@ -24,7 +24,7 @@ const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
   public async handle(
-    inputs: Input[],
+    inputs: CommandStorage,
     options: CommandStorage,
     extraFlags: string[],
   ) {
@@ -36,9 +36,10 @@ export class AddAction extends AbstractAction {
     const packageInstallSuccess =
       skipInstall || (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
-      const sourceRootOption: Input = await this.getSourceRoot(
-        inputs.concat(options.toArray()),
-      );
+      const sourceRootOption: CommandStorageEntry = await this.getSourceRoot([
+        inputs,
+        options,
+      ]);
       if (sourceRootOption) {
         options.add(sourceRootOption);
       }
@@ -56,12 +57,18 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private async getSourceRoot(inputs: Input[]): Promise<Input> {
+  private async getSourceRoot(storages: CommandStorage[]): Promise<CommandStorageEntry> {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
-    const appName = inputs.find((option) => option.name === 'project')!
-      .value as string;
+    let appName: string | undefined;
+    for (const storage of storages) {
+      const maybeProject = storage.get<string>('project');
+      if (maybeProject) {
+        appName = maybeProject.value;
+        break;
+      }
+    }
 
     let sourceRoot = appName
       ? getValueOrDefault(configuration, 'sourceRoot', appName)
@@ -152,15 +159,13 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private getLibraryName(inputs: Input[]): string {
-    const libraryInput: Input = inputs.find(
-      (input) => input.name === 'library',
-    ) as Input;
+  private getLibraryName(inputs: CommandStorage): string {
+    const libraryInput = inputs.get<string>('library')
 
     if (!libraryInput) {
       throw new Error('No library found in command input');
     }
-    return libraryInput.value as string;
+    return libraryInput.value;
   }
 
   private getPackageName(library: string): string {

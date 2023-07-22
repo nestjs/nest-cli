@@ -1,41 +1,59 @@
-export interface Input<TValue extends boolean | string = boolean | string> {
+export interface CommandStorageEntry<TValue extends boolean | string = boolean | string> {
   name: string;
   value: TValue;
   options?: any;
 }
 
 export class CommandStorage {
-  private readonly inputsByName = new Map<Input['name'], Input>();
+  private readonly inputsByName = new Map<CommandStorageEntry['name'], CommandStorageEntry>();
 
-  toArray(): Input[] {
+  /**
+   * @returns A new array containing all the inputs.
+   */
+  toArray(): CommandStorageEntry[] {
     return Array.from(this.inputsByName.values());
   }
 
-  add(input: Input) {
-    this.inputsByName.set(input.name, input);
+  /**
+   * Add a new input to the storage if it does not exist yet.
+   */
+  add(input: CommandStorageEntry) {
+    if (!this.inputsByName.has(input.name)) {
+      this.inputsByName.set(input.name, input);
+    }
   }
 
   get<TValue extends boolean | string>(
-    inputName: Input['name'],
-  ): Input<TValue> | undefined;
+    inputName: CommandStorageEntry['name'],
+  ): CommandStorageEntry<TValue> | undefined;
   get<TValue extends boolean | string>(
-    inputName: Input['name'],
+    inputName: CommandStorageEntry['name'],
     errorOnMissing: false,
-  ): Input<TValue> | undefined;
+  ): CommandStorageEntry<TValue> | undefined;
   get<TValue extends boolean | string>(
-    inputName: Input['name'],
+    inputName: CommandStorageEntry['name'],
     errorOnMissing: true,
-  ): Input<TValue>;
+  ): CommandStorageEntry<TValue>;
   get<TValue extends boolean | string>(
-    inputName: Input['name'],
+    inputName: CommandStorageEntry['name'],
     errorOnMissing = false,
-  ): Input<TValue> | undefined {
-    const input = this.inputsByName.get(inputName) as Input<TValue> | undefined;
+  ): CommandStorageEntry<TValue> | undefined {
+    const input = this.inputsByName.get(inputName) as CommandStorageEntry<TValue> | undefined;
     if (errorOnMissing) {
       if (!input) {
         throw new Error(`The input ${inputName} is missing!`);
       }
     }
     return input;
+  }
+
+  /**
+   * Copy all inputs of the other command storage with this one.
+   * Note that if an input already exists, it will **not** be overwritten.
+   */
+  mergeWith(otherStorage: CommandStorage): void {
+    for (const input of otherStorage.inputsByName.values()) {
+      this.add(input);
+    }
   }
 }

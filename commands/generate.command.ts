@@ -5,7 +5,7 @@ import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandStorage } from './command.input';
+import { CommandStorage } from './command.input';
 
 export class GenerateCommand extends AbstractCommand {
   public async load(program: CommanderStatic): Promise<void> {
@@ -94,10 +94,10 @@ export class GenerateCommand extends AbstractCommand {
             value: command.skipImport,
           });
 
-          const inputs: Input[] = [];
-          inputs.push({ name: 'schematic', value: schematic });
-          inputs.push({ name: 'name', value: name });
-          inputs.push({ name: 'path', value: path });
+          const inputs = new CommandStorage()
+          inputs.add({ name: 'schematic', value: schematic });
+          inputs.add({ name: 'name', value: name });
+          inputs.add({ name: 'path', value: path });
 
           await this.action.handle(inputs, commandOptions);
         },

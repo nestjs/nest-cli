@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import { Answers } from 'inquirer';
-import { Input, CommandStorage } from '../commands';
+import { CommandStorage } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractCollection,
@@ -21,30 +21,28 @@ import {
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
-  public async handle(inputs: Input[], options: CommandStorage) {
-    await generateFiles(inputs.concat(options.toArray()));
+  public async handle(inputs: CommandStorage, options: CommandStorage) {
+    inputs.mergeWith(options)
+    await generateFiles(
+      inputs
+    );
   }
 }
 
-const generateFiles = async (inputs: Input[]) => {
+const generateFiles = async (storage: CommandStorage) => {
   const configuration = await loadConfiguration();
-  const collectionOption = inputs.find(
-    (option) => option.name === 'collection',
-  )!.value as string;
-  const schematic = inputs.find((option) => option.name === 'schematic')!
-    .value as string;
-  const appName = inputs.find((option) => option.name === 'project')!
-    .value as string;
-  const spec = inputs.find((option) => option.name === 'spec');
-  const flat = inputs.find((option) => option.name === 'flat');
-  const specFileSuffix = inputs.find(
-    (option) => option.name === 'specFileSuffix',
-  );
+
+  const collectionOption = storage.get<string>('collection', true).value
+  const schematic = storage.get<string>('schematic', true).value
+  const appName = storage.get<string>('project', true).value
+  const spec = storage.get<boolean>('spec', true)
+  const flat = storage.get<boolean>('flat', true)
+  const specFileSuffix = storage.get<string>('specFileSuffix', true)
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(storage);
   schematicOptions.push(
     new SchematicOption('language', configuration.language),
   );
@@ -54,10 +52,10 @@ const generateFiles = async (inputs: Input[]) => {
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
 
-  const specValue = spec!.value as boolean;
+  const specValue = spec.value
   const flatValue = !!flat?.value;
-  const specFileSuffixValue = specFileSuffix!.value as string;
-  const specOptions = spec!.options as any;
+  const specFileSuffixValue = specFileSuffix.value
+  const specOptions = spec.options
   let generateSpec = shouldGenerateSpec(
     configuration,
     schematic,
@@ -132,7 +130,7 @@ const generateFiles = async (inputs: Input[]) => {
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
   try {
-    const schematicInput = inputs.find((input) => input.name === 'schematic');
+    const schematicInput = storage.get<string>('schematic')
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }
@@ -144,10 +142,10 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
-  inputs.forEach((input) => {
+  storage.toArray().forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
       options.push(new SchematicOption(input.name, input.value));
     }

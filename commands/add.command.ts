@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandStorage } from './command.input';
+import { CommandStorage } from './command.input';
 
 export class AddCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
@@ -29,8 +29,8 @@ export class AddCommand extends AbstractCommand {
           value: command.project,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'library', value: library });
+        const inputs = new CommandStorage();
+        inputs.add({ name: 'library', value: library });
 
         const flags = getRemainingFlags(program);
         try {

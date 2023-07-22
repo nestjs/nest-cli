@@ -1,7 +1,7 @@
 import * as chalk from 'chalk';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { Input, CommandStorage } from '../commands';
+import { CommandStorage } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
@@ -41,7 +41,7 @@ export class BuildAction extends AbstractAction {
   protected readonly workspaceUtils = new WorkspaceUtils();
 
   public async handle(
-    commandInputs: Input[],
+    commandInputs: CommandStorage,
     commandOptions: CommandStorage,
   ) {
     try {
@@ -66,7 +66,7 @@ export class BuildAction extends AbstractAction {
   }
 
   public async runBuild(
-    commandInputs: Input[],
+    commandInputs: CommandStorage,
     commandOptions: CommandStorage,
     watchMode: boolean,
     watchAssetsMode: boolean,
@@ -78,8 +78,7 @@ export class BuildAction extends AbstractAction {
       true,
     ).value;
     const configuration = await this.loader.load(configFileName);
-    const appName = commandInputs.find((input) => input.name === 'app')!
-      .value as string;
+    const appName = commandInputs.get<string>('app', true).value;
 
     const pathToTsconfig = getTscConfigPath(
       configuration,

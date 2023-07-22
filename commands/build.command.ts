@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandStorage } from './command.input';
+import { CommandStorage } from './command.input';
 
 export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
@@ -70,8 +70,8 @@ export class BuildCommand extends AbstractCommand {
           value: command.typeCheck,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'app', value: app });
+        const inputs = new CommandStorage()
+        inputs.add({ name: 'app', value: app });
         await this.action.handle(inputs, commandOptions);
       });
   }

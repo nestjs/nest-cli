@@ -1,5 +1,5 @@
 import { Question } from 'inquirer';
-import { Input } from '../../../commands/command.input';
+import { CommandStorageEntry } from '../../../commands/command.input';
 import {
   generateInput,
   generateSelect,
@@ -8,7 +8,7 @@ import {
 describe('Questions', () => {
   describe('generateInput', () => {
     it('should return an input question', () => {
-      const input: Input = {
+      const input: CommandStorageEntry = {
         name: 'name',
         value: 'test',
       };

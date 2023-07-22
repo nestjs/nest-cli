@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandStorage } from './command.input';
+import { CommandStorage } from './command.input';
 import type { BuilderVariant } from '../lib/configuration';
 
 export class StartCommand extends AbstractCommand {
@@ -109,8 +109,8 @@ export class StartCommand extends AbstractCommand {
           value: command.typeCheck,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'app', value: app });
+        const inputs = new CommandStorage()
+        inputs.add({ name: 'app', value: app });
         const flags = getRemainingFlags(program);
 
         try {

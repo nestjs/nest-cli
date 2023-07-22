@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandStorage } from './command.input';
+import { CommandStorage } from './command.input';
 
 export class NewCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -81,8 +81,8 @@ export class NewCommand extends AbstractCommand {
           value: command.language,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'name', value: name });
+        const inputs = new CommandStorage()
+        inputs.add({ name: 'name', value: name });
 
         await this.action.handle(inputs, commandOptions);
       });

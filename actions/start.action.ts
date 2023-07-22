@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
-import { Input, CommandStorage } from '../commands';
+import { CommandStorage } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
@@ -16,7 +16,7 @@ import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
   public async handle(
-    commandInputs: Input[],
+    commandInputs: CommandStorage,
     commandOptions: CommandStorage,
   ) {
     try {
@@ -25,8 +25,7 @@ export class StartAction extends BuildAction {
         true,
       ).value;
       const configuration = await this.loader.load(configFileName);
-      const appName = commandInputs.find((input) => input.name === 'app')!
-        .value as string;
+      const appName = commandInputs.get<string>('app', true).value;
 
       const pathToTsconfig = getTscConfigPath(
         configuration,
