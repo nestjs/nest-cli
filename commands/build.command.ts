@@ -1,9 +1,10 @@
 import { Command, CommanderStatic } from 'commander';
+import type { BuildAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
 import { CommandStorage } from './command.input';
 
-export class BuildCommand extends AbstractCommand {
+export class BuildCommand extends AbstractCommand<BuildAction> {
   public load(program: CommanderStatic): void {
     program
       .command('build [app]')

@@ -1,13 +1,14 @@
 import * as chalk from 'chalk';
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
+import type { GenerateAction } from '../actions';
 import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
 import { CommandStorage } from './command.input';
 
-export class GenerateCommand extends AbstractCommand {
+export class GenerateCommand extends AbstractCommand<GenerateAction> {
   public async load(program: CommanderStatic): Promise<void> {
     program
       .command('generate <schematic> [name] [path]')

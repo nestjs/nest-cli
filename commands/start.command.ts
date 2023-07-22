@@ -1,11 +1,11 @@
 import { Command, CommanderStatic } from 'commander';
+import type { StartAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
-import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
 import { CommandStorage } from './command.input';
 import type { BuilderVariant } from '../lib/configuration';
 
-export class StartCommand extends AbstractCommand {
+export class StartCommand extends AbstractCommand<StartAction> {
   public load(program: CommanderStatic): void {
     program
       .command('start [app]')
@@ -111,10 +111,9 @@ export class StartCommand extends AbstractCommand {
 
         const inputs = new CommandStorage();
         inputs.add({ name: 'app', value: app });
-        const flags = getRemainingFlags(program);
 
         try {
-          await this.action.handle(inputs, commandOptions, flags);
+          await this.action.handle(inputs, commandOptions);
         } catch (err) {
           process.exit(1);
         }
