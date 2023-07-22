@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import * as killProcess from 'tree-kill';
-import { Input, CommandInputsContainer } from '../commands';
+import { Input, CommandStorage } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
@@ -17,10 +17,10 @@ import { BuildAction } from './build.action';
 export class StartAction extends BuildAction {
   public async handle(
     commandInputs: Input[],
-    commandOptions: CommandInputsContainer,
+    commandOptions: CommandStorage,
   ) {
     try {
-      const configFileName = commandOptions.resolveInput<string>(
+      const configFileName = commandOptions.get<string>(
         'config',
         true,
       ).value;
@@ -35,10 +35,10 @@ export class StartAction extends BuildAction {
       );
 
       const isWatchEnabled =
-        !!commandOptions.resolveInput<boolean>('watch')?.value;
+        !!commandOptions.get<boolean>('watch')?.value;
       const isWatchAssetsEnabled =
-        !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
-      const debugFlag = commandOptions.resolveInput<boolean>('debug')?.value;
+        !!commandOptions.get<boolean>('watchAssets')?.value;
+      const debugFlag = commandOptions.get<boolean>('debug')?.value;
       const binaryToRun = getValueOrDefault(
         configuration,
         'exec',

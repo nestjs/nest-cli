@@ -1,7 +1,7 @@
 import * as chalk from 'chalk';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { Input, CommandInputsContainer } from '../commands';
+import { Input, CommandStorage } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { Compiler } from '../lib/compiler/compiler';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
@@ -42,12 +42,12 @@ export class BuildAction extends AbstractAction {
 
   public async handle(
     commandInputs: Input[],
-    commandOptions: CommandInputsContainer,
+    commandOptions: CommandStorage,
   ) {
     try {
-      const watchMode = !!commandOptions.resolveInput<boolean>('watch')?.value;
+      const watchMode = !!commandOptions.get<boolean>('watch')?.value;
       const watchAssetsMode =
-        !!commandOptions.resolveInput<boolean>('watchAssets')?.value;
+        !!commandOptions.get<boolean>('watchAssets')?.value;
 
       await this.runBuild(
         commandInputs,
@@ -67,13 +67,13 @@ export class BuildAction extends AbstractAction {
 
   public async runBuild(
     commandInputs: Input[],
-    commandOptions: CommandInputsContainer,
+    commandOptions: CommandStorage,
     watchMode: boolean,
     watchAssetsMode: boolean,
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = commandOptions.resolveInput<string>(
+    const configFileName = commandOptions.get<string>(
       'config',
       true,
     ).value;
@@ -151,7 +151,7 @@ export class BuildAction extends AbstractAction {
     appName: string,
     pathToTsconfig: string,
     watchMode: boolean,
-    options: CommandInputsContainer,
+    options: CommandStorage,
     tsOptions: ts.CompilerOptions,
     onSuccess: (() => void) | undefined,
   ) {
@@ -179,7 +179,7 @@ export class BuildAction extends AbstractAction {
   private runWebpack(
     configuration: Required<Configuration>,
     appName: string,
-    commandOptions: CommandInputsContainer,
+    commandOptions: CommandStorage,
     pathToTsconfig: string,
     debug: boolean,
     watchMode: boolean,
@@ -212,7 +212,7 @@ export class BuildAction extends AbstractAction {
 
   private runTsc(
     watchMode: boolean,
-    options: CommandInputsContainer,
+    options: CommandStorage,
     configuration: Required<Configuration>,
     pathToTsconfig: string,
     appName: string,
@@ -225,7 +225,7 @@ export class BuildAction extends AbstractAction {
         this.tsLoader,
       );
       const isPreserveWatchOutputEnabled =
-        options.resolveInput<boolean>('preserveWatchOutput')?.value || false;
+        options.get<boolean>('preserveWatchOutput')?.value || false;
       watchCompiler.run(
         configuration,
         pathToTsconfig,

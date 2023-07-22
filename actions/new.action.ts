@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { join } from 'path';
-import { CommandInputsContainer, Input } from '../commands';
+import { CommandStorage, Input } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
@@ -24,17 +24,17 @@ import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
-  public async handle(inputs: Input[], options: CommandInputsContainer) {
-    const directoryOption = options.resolveInput<string>('directory');
-    const dryRunOption = options.resolveInput<boolean>('dry-run');
+  public async handle(inputs: Input[], options: CommandStorage) {
+    const directoryOption = options.get<string>('directory');
+    const dryRunOption = options.get<boolean>('dry-run');
     const isDryRunEnabled = !!dryRunOption?.value;
 
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
     const shouldSkipInstall =
-      options.resolveInput<boolean>('skip-install')?.value;
-    const shouldSkipGit = options.resolveInput<boolean>('skip-git')?.value;
+      options.get<boolean>('skip-install')?.value;
+    const shouldSkipGit = options.get<boolean>('skip-git')?.value;
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs)!,
       directoryOption,
@@ -74,7 +74,7 @@ const getProjectDirectory = (
 
 const askForMissingInformation = async (
   inputs: Input[],
-  options: CommandInputsContainer,
+  options: CommandStorage,
 ) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
@@ -89,7 +89,7 @@ const askForMissingInformation = async (
     replaceInputMissingInformation(inputs, answers);
   }
 
-  const packageManagerInput = options.resolveInput<string>('packageManager');
+  const packageManagerInput = options.get<string>('packageManager');
   if (!packageManagerInput?.value) {
     const answers = await askForPackageManager();
     replaceInputMissingInformation(options, answers);
@@ -97,7 +97,7 @@ const askForMissingInformation = async (
 };
 
 const replaceInputMissingInformation = (
-  inputs: Input[] | CommandInputsContainer,
+  inputs: Input[] | CommandStorage,
   answers: Answers,
 ): Input[] => {
   if (!Array.isArray(inputs)) {
@@ -112,9 +112,9 @@ const replaceInputMissingInformation = (
 
 const generateApplicationFiles = async (
   args: Input[],
-  options: CommandInputsContainer,
+  options: CommandStorage,
 ) => {
-  const collectionName = options.resolveInput<string>('collection', true)
+  const collectionName = options.get<string>('collection', true)
     ?.value;
   const collection: AbstractCollection = CollectionFactory.create(
     (collectionName as Collection) || Collection.NESTJS,
@@ -139,11 +139,11 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
 };
 
 const installPackages = async (
-  options: CommandInputsContainer,
+  options: CommandStorage,
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager = options.resolveInput<string>(
+  const inputPackageManager = options.get<string>(
     'packageManager',
     true,
   ).value;

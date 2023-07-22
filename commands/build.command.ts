@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandInputsContainer } from './command.input';
+import { Input, CommandStorage } from './command.input';
 
 export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
@@ -21,25 +21,25 @@ export class BuildCommand extends AbstractCommand {
       .option('--tsc', 'Use tsc for compilation.')
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
-        const commandOptions = new CommandInputsContainer();
+        const commandOptions = new CommandStorage();
 
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'config',
           value: command.config,
         });
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
-        commandOptions.addInput({ name: 'webpack', value: isWebpackEnabled });
-        commandOptions.addInput({ name: 'watch', value: !!command.watch });
-        commandOptions.addInput({
+        commandOptions.add({ name: 'webpack', value: isWebpackEnabled });
+        commandOptions.add({ name: 'watch', value: !!command.watch });
+        commandOptions.add({
           name: 'watchAssets',
           value: !!command.watchAssets,
         });
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'path',
           value: command.path,
         });
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'webpackPath',
           value: command.webpackPath,
         });
@@ -54,7 +54,7 @@ export class BuildCommand extends AbstractCommand {
           );
           return;
         }
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'builder',
           value: command.builder,
         });
@@ -65,7 +65,7 @@ export class BuildCommand extends AbstractCommand {
               ` "typeCheck" will not have any effect when "builder" is not "swc".`,
           );
         }
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'typeCheck',
           value: command.typeCheck,
         });

@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { CommandInputsContainer, Input } from '../commands';
+import { CommandStorage, Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
@@ -25,7 +25,7 @@ const schematicName = 'nest-add';
 export class AddAction extends AbstractAction {
   public async handle(
     inputs: Input[],
-    options: CommandInputsContainer,
+    options: CommandStorage,
     extraFlags: string[],
   ) {
     const libraryName = this.getLibraryName(inputs);
@@ -40,7 +40,7 @@ export class AddAction extends AbstractAction {
         inputs.concat(options.toArray()),
       );
       if (sourceRootOption) {
-        options.addInput(sourceRootOption);
+        options.add(sourceRootOption);
       }
 
       await this.addLibrary(collectionName, options, extraFlags);
@@ -123,7 +123,7 @@ export class AddAction extends AbstractAction {
 
   private async addLibrary(
     collectionName: string,
-    options: CommandInputsContainer,
+    options: CommandStorage,
     extraFlags: string[],
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
@@ -131,7 +131,7 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.resolveInput<string>('sourceRoot', true).value,
+        options.get<string>('sourceRoot', true).value,
       ),
     );
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;

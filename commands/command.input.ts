@@ -4,29 +4,29 @@ export interface Input<TValue extends boolean | string = boolean | string> {
   options?: any;
 }
 
-export class CommandInputsContainer {
+export class CommandStorage {
   private readonly inputsByName = new Map<Input['name'], Input>();
 
   toArray(): Input[] {
     return Array.from(this.inputsByName.values());
   }
 
-  addInput(input: Input) {
+  add(input: Input) {
     this.inputsByName.set(input.name, input);
   }
 
-  resolveInput<TValue extends boolean | string>(
+  get<TValue extends boolean | string>(
     inputName: Input['name'],
   ): Input<TValue> | undefined;
-  resolveInput<TValue extends boolean | string>(
+  get<TValue extends boolean | string>(
     inputName: Input['name'],
     errorOnMissing: false,
   ): Input<TValue> | undefined;
-  resolveInput<TValue extends boolean | string>(
+  get<TValue extends boolean | string>(
     inputName: Input['name'],
     errorOnMissing: true,
   ): Input<TValue>;
-  resolveInput<TValue extends boolean | string>(
+  get<TValue extends boolean | string>(
     inputName: Input['name'],
     errorOnMissing = false,
   ): Input<TValue> | undefined {

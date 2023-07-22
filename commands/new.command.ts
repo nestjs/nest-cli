@@ -1,7 +1,7 @@
 import { Command, CommanderStatic } from 'commander';
 import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandInputsContainer } from './command.input';
+import { Input, CommandStorage } from './command.input';
 
 export class NewCommand extends AbstractCommand {
   public load(program: CommanderStatic) {
@@ -33,24 +33,24 @@ export class NewCommand extends AbstractCommand {
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
       .action(async (name: string, command: Command) => {
-        const commandOptions = new CommandInputsContainer();
+        const commandOptions = new CommandStorage();
 
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'directory',
           value: command.directory,
         });
-        commandOptions.addInput({ name: 'dry-run', value: command.dryRun });
-        commandOptions.addInput({ name: 'skip-git', value: command.skipGit });
-        commandOptions.addInput({
+        commandOptions.add({ name: 'dry-run', value: command.dryRun });
+        commandOptions.add({ name: 'skip-git', value: command.skipGit });
+        commandOptions.add({
           name: 'skip-install',
           value: command.skipInstall,
         });
-        commandOptions.addInput({ name: 'strict', value: command.strict });
-        commandOptions.addInput({
+        commandOptions.add({ name: 'strict', value: command.strict });
+        commandOptions.add({
           name: 'packageManager',
           value: command.packageManager,
         });
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'collection',
           value: command.collection,
         });
@@ -76,7 +76,7 @@ export class NewCommand extends AbstractCommand {
               break;
           }
         }
-        commandOptions.addInput({
+        commandOptions.add({
           name: 'language',
           value: command.language,
         });

@@ -5,7 +5,7 @@ import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { Input, CommandInputsContainer } from './command.input';
+import { Input, CommandStorage } from './command.input';
 
 export class GenerateCommand extends AbstractCommand {
   public async load(program: CommanderStatic): Promise<void> {
@@ -55,15 +55,15 @@ export class GenerateCommand extends AbstractCommand {
           path: string,
           command: Command,
         ) => {
-          const commandOptions = new CommandInputsContainer();
+          const commandOptions = new CommandStorage();
 
-          commandOptions.addInput({ name: 'dry-run', value: !!command.dryRun });
+          commandOptions.add({ name: 'dry-run', value: !!command.dryRun });
 
           if (command.flat !== undefined) {
-            commandOptions.addInput({ name: 'flat', value: command.flat });
+            commandOptions.add({ name: 'flat', value: command.flat });
           }
 
-          commandOptions.addInput({
+          commandOptions.add({
             name: 'spec',
             value:
               typeof command.spec === 'boolean'
@@ -76,20 +76,20 @@ export class GenerateCommand extends AbstractCommand {
                   : command.spec.passedAsInput,
             },
           });
-          commandOptions.addInput({
+          commandOptions.add({
             name: 'specFileSuffix',
             value: command.specFileSuffix,
           });
-          commandOptions.addInput({
+          commandOptions.add({
             name: 'collection',
             value: command.collection,
           });
-          commandOptions.addInput({
+          commandOptions.add({
             name: 'project',
             value: command.project,
           });
 
-          commandOptions.addInput({
+          commandOptions.add({
             name: 'skipImport',
             value: command.skipImport,
           });

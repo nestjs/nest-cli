@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import { Answers } from 'inquirer';
-import { Input, CommandInputsContainer } from '../commands';
+import { Input, CommandStorage } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractCollection,
@@ -21,7 +21,7 @@ import {
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
-  public async handle(inputs: Input[], options: CommandInputsContainer) {
+  public async handle(inputs: Input[], options: CommandStorage) {
     await generateFiles(inputs.concat(options.toArray()));
   }
 }

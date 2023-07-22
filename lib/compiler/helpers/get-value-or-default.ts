@@ -1,4 +1,4 @@
-import { Input, CommandInputsContainer } from '../../../commands';
+import { Input, CommandStorage } from '../../../commands';
 import { Configuration } from '../../configuration';
 
 export function getValueOrDefault<T = any>(
@@ -14,12 +14,12 @@ export function getValueOrDefault<T = any>(
     | 'exec'
     | 'builder'
     | 'typeCheck',
-  options: Input[] | CommandInputsContainer = [],
+  options: Input[] | CommandStorage = [],
   defaultValue?: T,
 ): T {
   const item = Array.isArray(options)
     ? options.find((option) => option.name === key)
-    : key && options.resolveInput(key);
+    : key && options.get(key);
   const origValue = item?.value as T | undefined;
   if (origValue !== undefined && origValue !== null) {
     return origValue;
