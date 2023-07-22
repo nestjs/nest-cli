@@ -57,7 +57,9 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private async getSourceRoot(storages: CommandStorage[]): Promise<CommandStorageEntry> {
+  private async getSourceRoot(
+    storages: CommandStorage[],
+  ): Promise<CommandStorageEntry> {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
@@ -160,7 +162,7 @@ export class AddAction extends AbstractAction {
   }
 
   private getLibraryName(inputs: CommandStorage): string {
-    const libraryInput = inputs.get<string>('library')
+    const libraryInput = inputs.get<string>('library');
 
     if (!libraryInput) {
       throw new Error('No library found in command input');

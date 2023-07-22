@@ -94,7 +94,7 @@ export class GenerateCommand extends AbstractCommand {
             value: command.skipImport,
           });
 
-          const inputs = new CommandStorage()
+          const inputs = new CommandStorage();
           inputs.add({ name: 'schematic', value: schematic });
           inputs.add({ name: 'name', value: name });
           inputs.add({ name: 'path', value: path });

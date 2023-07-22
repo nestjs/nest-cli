@@ -81,7 +81,7 @@ export class NewCommand extends AbstractCommand {
           value: command.language,
         });
 
-        const inputs = new CommandStorage()
+        const inputs = new CommandStorage();
         inputs.add({ name: 'name', value: name });
 
         await this.action.handle(inputs, commandOptions);

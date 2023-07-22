@@ -73,10 +73,7 @@ export class BuildAction extends AbstractAction {
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = commandOptions.get<string>(
-      'config',
-      true,
-    ).value;
+    const configFileName = commandOptions.get<string>('config', true).value;
     const configuration = await this.loader.load(configFileName);
     const appName = commandInputs.get<string>('app', true).value;
 

@@ -109,7 +109,7 @@ export class StartCommand extends AbstractCommand {
           value: command.typeCheck,
         });
 
-        const inputs = new CommandStorage()
+        const inputs = new CommandStorage();
         inputs.add({ name: 'app', value: app });
         const flags = getRemainingFlags(program);
 

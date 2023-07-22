@@ -1,11 +1,16 @@
-export interface CommandStorageEntry<TValue extends boolean | string = boolean | string> {
+export interface CommandStorageEntry<
+  TValue extends boolean | string = boolean | string,
+> {
   name: string;
   value: TValue;
   options?: any;
 }
 
 export class CommandStorage {
-  private readonly inputsByName = new Map<CommandStorageEntry['name'], CommandStorageEntry>();
+  private readonly inputsByName = new Map<
+    CommandStorageEntry['name'],
+    CommandStorageEntry
+  >();
 
   /**
    * @returns A new array containing all the inputs.
@@ -38,7 +43,9 @@ export class CommandStorage {
     inputName: CommandStorageEntry['name'],
     errorOnMissing = false,
   ): CommandStorageEntry<TValue> | undefined {
-    const input = this.inputsByName.get(inputName) as CommandStorageEntry<TValue> | undefined;
+    const input = this.inputsByName.get(inputName) as
+      | CommandStorageEntry<TValue>
+      | undefined;
     if (errorOnMissing) {
       if (!input) {
         throw new Error(`The input ${inputName} is missing!`);

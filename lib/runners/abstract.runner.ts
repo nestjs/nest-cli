@@ -3,7 +3,10 @@ import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { MESSAGES } from '../ui';
 
 export class AbstractRunner {
-  constructor(protected binary: string, protected args: string[] = []) {}
+  constructor(
+    protected binary: string,
+    protected args: string[] = [],
+  ) {}
 
   public async run(
     command: string,

@@ -20,10 +20,7 @@ export class StartAction extends BuildAction {
     commandOptions: CommandStorage,
   ) {
     try {
-      const configFileName = commandOptions.get<string>(
-        'config',
-        true,
-      ).value;
+      const configFileName = commandOptions.get<string>('config', true).value;
       const configuration = await this.loader.load(configFileName);
       const appName = commandInputs.get<string>('app', true).value;
 
@@ -33,8 +30,7 @@ export class StartAction extends BuildAction {
         appName,
       );
 
-      const isWatchEnabled =
-        !!commandOptions.get<boolean>('watch')?.value;
+      const isWatchEnabled = !!commandOptions.get<boolean>('watch')?.value;
       const isWatchAssetsEnabled =
         !!commandOptions.get<boolean>('watchAssets')?.value;
       const debugFlag = commandOptions.get<boolean>('debug')?.value;

@@ -32,8 +32,7 @@ export class NewAction extends AbstractAction {
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
-    const shouldSkipInstall =
-      options.get<boolean>('skip-install')?.value;
+    const shouldSkipInstall = options.get<boolean>('skip-install')?.value;
     const shouldSkipGit = !!options.get<boolean>('skip-git')?.value;
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs),
@@ -67,8 +66,7 @@ const getProjectDirectory = (
   directoryOption: CommandStorageEntry<string> | undefined,
 ): string => {
   return (
-    (directoryOption?.value) ||
-    normalizeToKebabOrSnakeCase(applicationName.value)
+    directoryOption?.value || normalizeToKebabOrSnakeCase(applicationName.value)
   );
 };
 
@@ -114,8 +112,7 @@ const generateApplicationFiles = async (
   args: CommandStorage,
   options: CommandStorage,
 ) => {
-  const collectionName = options.get<string>('collection', true)
-    ?.value;
+  const collectionName = options.get<string>('collection', true)?.value;
   const collection: AbstractCollection = CollectionFactory.create(
     (collectionName as Collection) || Collection.NESTJS,
   );
@@ -126,7 +123,9 @@ const generateApplicationFiles = async (
   console.info();
 };
 
-const mapSchematicOptions = (options: CommandStorageEntry[]): SchematicOption[] => {
+const mapSchematicOptions = (
+  options: CommandStorageEntry[],
+): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: CommandStorageEntry) => {
       if (option.name !== 'skip-install') {
@@ -143,10 +142,7 @@ const installPackages = async (
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager = options.get<string>(
-    'packageManager',
-    true,
-  ).value;
+  const inputPackageManager = options.get<string>('packageManager', true).value;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {

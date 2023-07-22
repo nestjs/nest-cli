@@ -3,7 +3,10 @@ import { Schematic } from './nest.collection';
 import { SchematicOption } from './schematic.option';
 
 export abstract class AbstractCollection {
-  constructor(protected collection: string, protected runner: AbstractRunner) {}
+  constructor(
+    protected collection: string,
+    protected runner: AbstractRunner,
+  ) {}
 
   public async execute(
     name: string,

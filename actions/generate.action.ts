@@ -22,22 +22,20 @@ import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: CommandStorage, options: CommandStorage) {
-    inputs.mergeWith(options)
-    await generateFiles(
-      inputs
-    );
+    inputs.mergeWith(options);
+    await generateFiles(inputs);
   }
 }
 
 const generateFiles = async (storage: CommandStorage) => {
   const configuration = await loadConfiguration();
 
-  const collectionOption = storage.get<string>('collection', true).value
-  const schematic = storage.get<string>('schematic', true).value
-  const appName = storage.get<string>('project', true).value
-  const spec = storage.get<boolean>('spec', true)
-  const flat = storage.get<boolean>('flat', true)
-  const specFileSuffix = storage.get<string>('specFileSuffix', true)
+  const collectionOption = storage.get<string>('collection', true).value;
+  const schematic = storage.get<string>('schematic', true).value;
+  const appName = storage.get<string>('project', true).value;
+  const spec = storage.get<boolean>('spec', true);
+  const flat = storage.get<boolean>('flat', true);
+  const specFileSuffix = storage.get<string>('specFileSuffix', true);
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
@@ -52,10 +50,10 @@ const generateFiles = async (storage: CommandStorage) => {
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
 
-  const specValue = spec.value
+  const specValue = spec.value;
   const flatValue = !!flat?.value;
-  const specFileSuffixValue = specFileSuffix.value
-  const specOptions = spec.options
+  const specFileSuffixValue = specFileSuffix.value;
+  const specOptions = spec.options;
   let generateSpec = shouldGenerateSpec(
     configuration,
     schematic,
@@ -130,7 +128,7 @@ const generateFiles = async (storage: CommandStorage) => {
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
   try {
-    const schematicInput = storage.get<string>('schematic')
+    const schematicInput = storage.get<string>('schematic');
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }

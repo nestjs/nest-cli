@@ -70,7 +70,7 @@ export class BuildCommand extends AbstractCommand {
           value: command.typeCheck,
         });
 
-        const inputs = new CommandStorage()
+        const inputs = new CommandStorage();
         inputs.add({ name: 'app', value: app });
         await this.action.handle(inputs, commandOptions);
       });
