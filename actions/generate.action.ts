@@ -21,8 +21,7 @@ import {
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
-  public async handle(inputs: CommandStorage, options: CommandStorage) {
-    inputs.mergeWith(options);
+  public async handle(inputs: CommandStorage) {
     await generateFiles(inputs);
   }
 }

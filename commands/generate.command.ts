@@ -56,15 +56,15 @@ export class GenerateCommand extends AbstractCommand<GenerateAction> {
           path: string,
           command: Command,
         ) => {
-          const commandOptions = new CommandStorage();
+          const commandInputs = new CommandStorage();
 
-          commandOptions.add({ name: 'dry-run', value: !!command.dryRun });
+          commandInputs.add({ name: 'dry-run', value: !!command.dryRun });
 
           if (command.flat !== undefined) {
-            commandOptions.add({ name: 'flat', value: command.flat });
+            commandInputs.add({ name: 'flat', value: command.flat });
           }
 
-          commandOptions.add({
+          commandInputs.add({
             name: 'spec',
             value:
               typeof command.spec === 'boolean'
@@ -77,30 +77,29 @@ export class GenerateCommand extends AbstractCommand<GenerateAction> {
                   : command.spec.passedAsInput,
             },
           });
-          commandOptions.add({
+          commandInputs.add({
             name: 'specFileSuffix',
             value: command.specFileSuffix,
           });
-          commandOptions.add({
+          commandInputs.add({
             name: 'collection',
             value: command.collection,
           });
-          commandOptions.add({
+          commandInputs.add({
             name: 'project',
             value: command.project,
           });
 
-          commandOptions.add({
+          commandInputs.add({
             name: 'skipImport',
             value: command.skipImport,
           });
 
-          const inputs = new CommandStorage();
-          inputs.add({ name: 'schematic', value: schematic });
-          inputs.add({ name: 'name', value: name });
-          inputs.add({ name: 'path', value: path });
+          commandInputs.add({ name: 'schematic', value: schematic });
+          commandInputs.add({ name: 'name', value: name });
+          commandInputs.add({ name: 'path', value: path });
 
-          await this.action.handle(inputs, commandOptions);
+          await this.action.handle(commandInputs);
         },
       );
   }
