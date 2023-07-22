@@ -29,12 +29,12 @@ export class GenerateAction extends AbstractAction {
 const generateFiles = async (storage: CommandStorage) => {
   const configuration = await loadConfiguration();
 
-  const collectionOption = storage.get<string>('collection', true).value;
+  const collectionOption = storage.get<Collection>('collection')?.value;
   const schematic = storage.get<string>('schematic', true).value;
-  const appName = storage.get<string>('project', true).value;
+  const appName = storage.get<string>('project')?.value;
   const spec = storage.get<boolean>('spec', true);
-  const flat = storage.get<boolean>('flat', true);
-  const specFileSuffix = storage.get<string>('specFileSuffix', true);
+  const flat = storage.get<boolean>('flat');
+  const specFileSuffix = storage.get<string>('specFileSuffix');
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
@@ -51,7 +51,7 @@ const generateFiles = async (storage: CommandStorage) => {
 
   const specValue = spec.value;
   const flatValue = !!flat?.value;
-  const specFileSuffixValue = specFileSuffix.value;
+  const specFileSuffixValue = specFileSuffix?.value;
   const specOptions = spec.options;
   let generateSpec = shouldGenerateSpec(
     configuration,

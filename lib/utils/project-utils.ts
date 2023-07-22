@@ -21,7 +21,7 @@ export function shouldAskForProject(
 export function shouldGenerateSpec(
   configuration: Required<Configuration>,
   schematic: string,
-  appName: string,
+  appName: string | undefined,
   specValue: boolean,
   specPassedAsInput?: boolean,
 ) {
@@ -70,7 +70,7 @@ export function shouldGenerateSpec(
 
 export function shouldGenerateFlat(
   configuration: Required<Configuration>,
-  appName: string,
+  appName: string | undefined,
   flatValue: boolean,
 ): boolean {
   // CLI parameters have the highest priority
@@ -91,8 +91,8 @@ export function shouldGenerateFlat(
 
 export function getSpecFileSuffix(
   configuration: Required<Configuration>,
-  appName: string,
-  specFileSuffixValue: string,
+  appName: string | undefined,
+  specFileSuffixValue: string | undefined,
 ): string {
   // CLI parameters have the highest priority
   if (specFileSuffixValue) {
@@ -110,7 +110,7 @@ export function getSpecFileSuffix(
   if (typeof specFileSuffixConfiguration === 'string') {
     return specFileSuffixConfiguration;
   }
-  return specFileSuffixValue;
+  throw new Error('No spec file suffix was defined!');
 }
 
 export async function askForProjectName(

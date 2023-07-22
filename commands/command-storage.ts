@@ -52,7 +52,7 @@ export class CommandStorage {
       | CommandStorageEntry<TValue>
       | undefined;
     if (errorOnMissing) {
-      if (!input) {
+      if (!input || input.value === undefined) {
         throw new Error(`The input ${inputName} is missing!`);
       }
     }
