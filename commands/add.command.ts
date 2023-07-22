@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { AddAction } from '../actions';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command.input';
+import { CommandStorage } from './command-storage';
 
 export class AddCommand extends AbstractCommand<AddAction> {
   public load(program: CommanderStatic): void {

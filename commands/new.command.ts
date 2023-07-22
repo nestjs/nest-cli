@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { NewAction } from '../actions';
 import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command.input';
+import { CommandStorage } from './command-storage';
 
 export class NewCommand extends AbstractCommand<NewAction> {
   public load(program: CommanderStatic) {

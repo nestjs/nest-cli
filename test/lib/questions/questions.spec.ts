@@ -1,5 +1,5 @@
 import { Question } from 'inquirer';
-import { CommandStorageEntry } from '../../../commands/command.input';
+import { CommandStorageEntry } from '../../../commands/command-storage';
 import {
   generateInput,
   generateSelect,

@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { StartAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command.input';
+import { CommandStorage } from './command-storage';
 import type { BuilderVariant } from '../lib/configuration';
 
 export class StartCommand extends AbstractCommand<StartAction> {

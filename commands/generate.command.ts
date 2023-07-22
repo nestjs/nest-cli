@@ -6,7 +6,7 @@ import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command.input';
+import { CommandStorage } from './command-storage';
 
 export class GenerateCommand extends AbstractCommand<GenerateAction> {
   public async load(program: CommanderStatic): Promise<void> {
