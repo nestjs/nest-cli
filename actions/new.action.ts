@@ -109,10 +109,10 @@ const generateApplicationFiles = async (
   args: CommandStorage,
   options: CommandStorage,
 ) => {
-  const collectionName = options.get<string>('collection', true)?.value;
-  const collection: AbstractCollection = CollectionFactory.create(
-    (collectionName as Collection) || Collection.NESTJS,
-  );
+  const collectionName =
+    options.get<Collection>('collection')?.value || Collection.NESTJS;
+  const collection: AbstractCollection =
+    CollectionFactory.create(collectionName);
 
   const argsAndOptionStorage = new CommandStorage();
   argsAndOptionStorage.mergeWith(args);
