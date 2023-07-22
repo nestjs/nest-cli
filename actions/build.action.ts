@@ -3,17 +3,13 @@ import { join } from 'path';
 import * as ts from 'typescript';
 import { CommandStorage } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
-import { Compiler } from '../lib/compiler/compiler';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path';
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader';
-import { SwcCompiler } from '../lib/compiler/swc/swc-compiler';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
-import { WatchCompiler } from '../lib/compiler/watch-compiler';
-import { WebpackCompiler } from '../lib/compiler/webpack-compiler';
 import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
 import {
   Configuration,
@@ -151,6 +147,7 @@ export class BuildAction extends AbstractAction {
     tsOptions: ts.CompilerOptions,
     onSuccess: (() => void) | undefined,
   ) {
+    const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler');
     const swc = new SwcCompiler(this.pluginsLoader);
     await swc.run(
       configuration,
@@ -172,7 +169,7 @@ export class BuildAction extends AbstractAction {
     );
   }
 
-  private runWebpack(
+  private async runWebpack(
     configuration: Required<Configuration>,
     appName: string,
     commandOptions: CommandStorage,
@@ -181,6 +178,7 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
   ) {
+    const { WebpackCompiler } = await import('../lib/compiler/webpack-compiler')
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
     const webpackPath =
@@ -206,7 +204,7 @@ export class BuildAction extends AbstractAction {
     );
   }
 
-  private runTsc(
+  private async runTsc(
     watchMode: boolean,
     options: CommandStorage,
     configuration: Required<Configuration>,
@@ -215,6 +213,7 @@ export class BuildAction extends AbstractAction {
     onSuccess: (() => void) | undefined,
   ) {
     if (watchMode) {
+      const { WatchCompiler } = await import('../lib/compiler/watch-compiler');
       const watchCompiler = new WatchCompiler(
         this.pluginsLoader,
         this.tsConfigProvider,
@@ -230,6 +229,7 @@ export class BuildAction extends AbstractAction {
         onSuccess,
       );
     } else {
+      const { Compiler } = await import('../lib/compiler/compiler');
       const compiler = new Compiler(
         this.pluginsLoader,
         this.tsConfigProvider,
