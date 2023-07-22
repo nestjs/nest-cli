@@ -76,7 +76,7 @@ const askForMissingInformation = async (
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
 
   const nameInput = getApplicationNameInput(inputs);
-  if (!nameInput!.value) {
+  if (!nameInput.value) {
     const message = 'What name would you like to use for the new project?';
     const questions = [generateInput('name', message)('nest-app')];
     const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
