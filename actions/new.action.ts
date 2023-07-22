@@ -40,11 +40,7 @@ export class NewAction extends AbstractAction {
     );
 
     if (!shouldSkipInstall) {
-      await installPackages(
-        options,
-        isDryRunEnabled as boolean,
-        projectDirectory,
-      );
+      await installPackages(options, isDryRunEnabled, projectDirectory);
     }
     if (!isDryRunEnabled) {
       if (!shouldSkipGit) {
