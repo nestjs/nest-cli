@@ -232,12 +232,12 @@ export class BuildAction extends AbstractAction {
       const isPreserveWatchOutputEnabled = options.find(
         (option) =>
           option.name === 'preserveWatchOutput' && option.value === true,
-      );
+      )?.value as boolean | undefined;
       watchCompiler.run(
         configuration,
         pathToTsconfig,
         appName,
-        { preserveWatchOutput: !!isPreserveWatchOutputEnabled },
+        { preserveWatchOutput: isPreserveWatchOutputEnabled },
         onSuccess,
       );
     } else {
