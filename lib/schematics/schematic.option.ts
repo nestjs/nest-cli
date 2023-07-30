@@ -1,7 +1,10 @@
 import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
 
 export class SchematicOption {
-  constructor(private name: string, private value: boolean | string) {}
+  constructor(
+    private name: string,
+    private value: boolean | string,
+  ) {}
 
   get normalizedName() {
     return normalizeToKebabOrSnakeCase(this.name);
