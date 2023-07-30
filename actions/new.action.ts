@@ -26,14 +26,14 @@ import { AbstractAction } from './abstract.action';
 export class NewAction extends AbstractAction {
   public async handle(inputs: CommandStorage, options: CommandStorage) {
     const directoryOption = options.get<string>('directory');
-    const dryRunOption = options.get<boolean>('dry-run');
-    const isDryRunEnabled = !!dryRunOption?.value;
+    const isDryRunEnabled = options.get<boolean>('dry-run')?.value ?? false;
 
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
-    const shouldSkipInstall = options.get<boolean>('skip-install')?.value;
-    const shouldSkipGit = !!options.get<boolean>('skip-git')?.value;
+    const shouldSkipInstall =
+      options.get<boolean>('skip-install')?.value ?? false;
+    const shouldSkipGit = options.get<boolean>('skip-git')?.value ?? false;
     const projectDirectory = getProjectDirectory(
       getApplicationNameInput(inputs),
       directoryOption,

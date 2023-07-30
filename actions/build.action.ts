@@ -41,9 +41,9 @@ export class BuildAction extends AbstractAction {
     commandOptions: CommandStorage,
   ) {
     try {
-      const watchMode = !!commandOptions.get<boolean>('watch')?.value;
+      const watchMode = commandOptions.get<boolean>('watch')?.value ?? false;
       const watchAssetsMode =
-        !!commandOptions.get<boolean>('watchAssets')?.value;
+        commandOptions.get<boolean>('watchAssets')?.value ?? false;
 
       await this.runBuild(
         commandInputs,
@@ -222,7 +222,7 @@ export class BuildAction extends AbstractAction {
         this.tsLoader,
       );
       const isPreserveWatchOutputEnabled =
-        options.get<boolean>('preserveWatchOutput')?.value || false;
+        options.get<boolean>('preserveWatchOutput')?.value ?? false;
       watchCompiler.run(
         configuration,
         pathToTsconfig,

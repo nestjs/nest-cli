@@ -30,10 +30,11 @@ export class StartAction extends BuildAction {
         appName,
       );
 
-      const isWatchEnabled = !!commandOptions.get<boolean>('watch')?.value;
+      const isWatchEnabled =
+        commandOptions.get<boolean>('watch')?.value ?? false;
       const isWatchAssetsEnabled =
-        !!commandOptions.get<boolean>('watchAssets')?.value;
-      const debugFlag = commandOptions.get<boolean>('debug')?.value;
+        commandOptions.get<boolean>('watchAssets')?.value ?? false;
+      const debugFlag = commandOptions.get<boolean>('debug')?.value ?? false;
       const binaryToRun = getValueOrDefault(
         configuration,
         'exec',
@@ -75,7 +76,7 @@ export class StartAction extends BuildAction {
         commandOptions,
         isWatchEnabled,
         isWatchAssetsEnabled,
-        !!debugFlag,
+        debugFlag,
         onSuccess,
       );
     } catch (err) {

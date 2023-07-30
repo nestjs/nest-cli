@@ -26,20 +26,17 @@ export class GenerateAction extends AbstractAction {
   }
 }
 
-const generateFiles = async (storage: CommandStorage) => {
+const generateFiles = async (inputs: CommandStorage) => {
   const configuration = await loadConfiguration();
 
-  const collectionOption = storage.get<Collection>('collection')?.value;
-  const schematic = storage.get<string>('schematic', true).value;
-  const appName = storage.get<string>('project')?.value;
-  const spec = storage.get<boolean>('spec', true);
-  const flat = storage.get<boolean>('flat');
-  const specFileSuffix = storage.get<string>('specFileSuffix');
+  const collectionOption = inputs.get<Collection>('collection')?.value;
+  const schematic = inputs.get<string>('schematic', true).value;
+  const appName = inputs.get<string>('project')?.value;
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(storage);
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
   schematicOptions.push(
     new SchematicOption('language', configuration.language),
   );
@@ -49,9 +46,10 @@ const generateFiles = async (storage: CommandStorage) => {
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
 
+  const spec = inputs.get<boolean>('spec', true);
+  const flatValue = inputs.get<boolean>('flat')?.value ?? false;
   const specValue = spec.value;
-  const flatValue = !!flat?.value;
-  const specFileSuffixValue = specFileSuffix?.value;
+  const specFileSuffixValue = inputs.get<string>('specFileSuffix')?.value;
   const specOptions = spec.options;
   let generateSpec = shouldGenerateSpec(
     configuration,
@@ -127,7 +125,7 @@ const generateFiles = async (storage: CommandStorage) => {
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
   try {
-    const schematicInput = storage.get<string>('schematic');
+    const schematicInput = inputs.get<string>('schematic');
     if (!schematicInput) {
       throw new Error('Unable to find a schematic for this configuration');
     }
