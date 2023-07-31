@@ -21,7 +21,6 @@ import {
 import { AbstractAction } from './abstract.action';
 import { CaseType } from '../lib/utils/formatting';
 
-
 const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
@@ -124,13 +123,13 @@ export class AddAction extends AbstractAction {
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
     const schematicOptions: SchematicOption[] = [];
-    const caseType = options
-        .find((option) => option.name === 'caseNaming')?.value as CaseType
+    const caseType = options.find((option) => option.name === 'caseNaming')
+      ?.value as CaseType;
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
         options.find((option) => option.name === 'sourceRoot')!.value as string,
-        { caseType }
+        { caseType },
       ),
     );
 

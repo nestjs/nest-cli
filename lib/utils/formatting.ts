@@ -1,6 +1,18 @@
-import { camelCase, kebabCase, pascalCase, snakeCase, capitalCase } from 'case-anything'
+import {
+  camelCase,
+  kebabCase,
+  pascalCase,
+  snakeCase,
+  capitalCase,
+} from 'case-anything';
 
-export type CaseType = 'kebab' | 'snake' | 'camel' | 'pascal' | 'capital' | 'kebab-or-snake';
+export type CaseType =
+  | 'kebab'
+  | 'snake'
+  | 'camel'
+  | 'pascal'
+  | 'capital'
+  | 'kebab-or-snake';
 
 /**
  *
@@ -10,13 +22,15 @@ export type CaseType = 'kebab' | 'snake' | 'camel' | 'pascal' | 'capital' | 'keb
  * @description normalizes input to supported path and file name format.
  * Changes camelCase strings to kebab-case, replaces spaces with dash and keeps underscores.
  */
-export const normalizeToCase = (str: string, caseType: CaseType = 'kebab-or-snake') => {
-
+export const normalizeToCase = (
+  str: string,
+  caseType: CaseType = 'kebab-or-snake',
+) => {
   switch (caseType) {
     case 'kebab':
       return kebabCase(str);
     case 'snake':
-      return kebabCase(str);
+      return snakeCase(str);
     case 'camel':
       return camelCase(str);
     case 'pascal':
@@ -27,20 +41,18 @@ export const normalizeToCase = (str: string, caseType: CaseType = 'kebab-or-snak
     case 'kebab-or-snake':
       return normalizeToKebabOrSnakeCase(str);
     default:
-      throw new Error(`Error! case type ${caseType} is not supported.`)
+      throw new Error(`Error! case type ${caseType} is not supported.`);
   }
-
-}
+};
 
 export const formatString = (str: string) => {
-  return str.split('')
-      .reduce((content, char) => {
-        if (char === '(' || char === ')' || char === '[' || char === ']') {
-          return `${content}\\${char}`;
-        }
-        return `${content}${char}`;
-      }, '')
-}
+  return str.split('').reduce((content, char) => {
+    if (char === '(' || char === ')' || char === '[' || char === ']') {
+      return `${content}\\${char}`;
+    }
+    return `${content}${char}`;
+  }, '');
+};
 
 /**
  *

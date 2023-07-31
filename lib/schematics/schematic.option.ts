@@ -2,13 +2,13 @@ import { normalizeToCase, formatString, CaseType } from '../utils/formatting';
 
 export type SchematicOptionConfig = {
   caseType?: CaseType;
-}
+};
 
 export class SchematicOption {
   constructor(
     private name: string,
     private value: boolean | string,
-    private schematicOptionConfig: SchematicOptionConfig
+    private schematicOptionConfig: SchematicOptionConfig,
   ) {}
 
   get normalizedName() {
@@ -34,10 +34,10 @@ export class SchematicOption {
 
   private format() {
     return formatString(
-        normalizeToCase(
-            this.value as string,
-            this.schematicOptionConfig.caseType || 'kebab-or-snake'
-        )
+      normalizeToCase(
+        this.value as string,
+        this.schematicOptionConfig.caseType || 'kebab-or-snake',
+      ),
     );
   }
 }
