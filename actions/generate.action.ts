@@ -6,7 +6,7 @@ import {
   AbstractCollection,
   Collection,
   CollectionFactory,
-  SchematicOption,
+  SchematicOption, SchematicOptionConfig,
 } from '../lib/schematics';
 import { MESSAGES } from '../lib/ui';
 import { loadConfiguration } from '../lib/utils/load-configuration';
@@ -19,6 +19,8 @@ import {
   shouldGenerateSpec,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
+import { CaseType } from '../lib/utils/formatting';
+
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -44,9 +46,12 @@ const generateFiles = async (inputs: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
+
+  const caseType = inputs.find((option) => option.name === 'case')!.value as CaseType;
+
+  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs, { caseType });
   schematicOptions.push(
-    new SchematicOption('language', configuration.language),
+    new SchematicOption('language', configuration.language, {caseType}),
   );
   const configurationProjects = configuration.projects;
 
@@ -125,11 +130,11 @@ const generateFiles = async (inputs: Input[]) => {
     }
   }
 
-  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
-  schematicOptions.push(new SchematicOption('spec', generateSpec));
-  schematicOptions.push(new SchematicOption('flat', generateFlat));
+  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot, { caseType }));
+  schematicOptions.push(new SchematicOption('spec', generateSpec, { caseType }));
+  schematicOptions.push(new SchematicOption('flat', generateFlat, { caseType }));
   schematicOptions.push(
-    new SchematicOption('specFileSuffix', generateSpecFileSuffix),
+    new SchematicOption('specFileSuffix', generateSpecFileSuffix, { caseType }),
   );
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
@@ -144,12 +149,12 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
+const mapSchematicOptions = (inputs: Input[], config: SchematicOptionConfig): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
-      options.push(new SchematicOption(input.name, input.value));
+      options.push(new SchematicOption(input.name, input.value, config));
     }
   });
   return options;

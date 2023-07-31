@@ -1,4 +1,4 @@
-import { SchematicOption } from '../../../lib/schematics';
+import {SchematicOption, SchematicOptionConfig} from '../../../lib/schematics';
 
 interface TestOption {
   input: string;
@@ -100,7 +100,10 @@ describe('Schematic Option', () => {
 
   tests.forEach((test) => {
     it(test.description, () => {
-      const option = new SchematicOption(test.option, test.input);
+      const config = {
+        caseType: 'kebab-or-snake',
+      } as SchematicOptionConfig
+      const option = new SchematicOption(test.option, test.input, config);
 
       if (isFlagTest(test)) {
         if (test.input) {
@@ -117,7 +120,10 @@ describe('Schematic Option', () => {
   });
 
   it('should manage boolean option', () => {
-    const option = new SchematicOption('dry-run', false);
+    const config = {
+      caseType: 'kebab-or-snake',
+    } as SchematicOptionConfig
+    const option = new SchematicOption('dry-run', false, config);
     expect(option.toCommandString()).toEqual('--no-dry-run');
   });
 });
