@@ -4,11 +4,15 @@ export type SchematicOptionConfig = {
   caseType?: CaseType;
 };
 
+const defaultSchematicOptionConfig: SchematicOptionConfig = {
+  caseType: 'kebab-or-snake',
+};
+
 export class SchematicOption {
   constructor(
     private name: string,
     private value: boolean | string,
-    private schematicOptionConfig: SchematicOptionConfig,
+    private schematicOptionConfig = defaultSchematicOptionConfig,
   ) {}
 
   get normalizedName() {

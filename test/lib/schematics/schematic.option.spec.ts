@@ -103,10 +103,7 @@ describe('Schematic Option', () => {
 
   tests.forEach((test) => {
     it(test.description, () => {
-      const config = {
-        caseType: 'kebab-or-snake',
-      } as SchematicOptionConfig;
-      const option = new SchematicOption(test.option, test.input, config);
+      const option = new SchematicOption(test.option, test.input);
 
       if (isFlagTest(test)) {
         if (test.input) {
@@ -123,10 +120,7 @@ describe('Schematic Option', () => {
   });
 
   it('should manage boolean option', () => {
-    const config = {
-      caseType: 'kebab-or-snake',
-    } as SchematicOptionConfig;
-    const option = new SchematicOption('dry-run', false, config);
+    const option = new SchematicOption('dry-run', false);
     expect(option.toCommandString()).toEqual('--no-dry-run');
   });
 });
