@@ -19,8 +19,8 @@ export type CaseType =
  * @param str
  * @param caseType
  * @returns formatted string
- * @description normalizes input to supported path and file name format.
- * Changes camelCase strings to kebab-case, replaces spaces with dash and keeps underscores.
+ * @description normalizes input to a given case format.
+ * Available formats are: 'kebab' | 'snake' | 'camel' | 'pascal' | 'capital'.
  */
 export const normalizeToCase = (
   str: string,
