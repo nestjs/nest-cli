@@ -25,7 +25,7 @@ export const swcDefaultsFactory = (
         transform: {
           legacyDecorator: true,
           decoratorMetadata: true,
-          useDefineForClassFields: false
+          useDefineForClassFields: false,
         },
         keepClassNames: true,
         baseUrl: tsOptions?.baseUrl,

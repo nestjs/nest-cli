@@ -186,7 +186,9 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
   ) {
-    const { WebpackCompiler } = await import('../lib/compiler/webpack-compiler')
+    const { WebpackCompiler } = await import(
+      '../lib/compiler/webpack-compiler'
+    );
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
     const webpackPath =
@@ -230,12 +232,12 @@ export class BuildAction extends AbstractAction {
       const isPreserveWatchOutputEnabled = options.find(
         (option) =>
           option.name === 'preserveWatchOutput' && option.value === true,
-      );
+      )?.value as boolean | undefined;
       watchCompiler.run(
         configuration,
         pathToTsconfig,
         appName,
-        { preserveWatchOutput: !!isPreserveWatchOutputEnabled },
+        { preserveWatchOutput: isPreserveWatchOutputEnabled },
         onSuccess,
       );
     } else {

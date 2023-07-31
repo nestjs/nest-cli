@@ -16,7 +16,11 @@ import {
 import { TypeScriptBinaryLoader } from './typescript-loader';
 
 type TypescriptWatchCompilerExtras = {
-  preserveWatchOutput: boolean;
+  /**
+   * If `undefined`, the value of 'preserveWatchOutput' option from tsconfig
+   * file will be used instead.
+   */
+  preserveWatchOutput: boolean | undefined;
 };
 
 export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
@@ -60,7 +64,8 @@ export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
       configPath,
       {
         ...options,
-        preserveWatchOutput: extras.preserveWatchOutput,
+        preserveWatchOutput:
+          extras.preserveWatchOutput ?? options.preserveWatchOutput,
       },
       tsBin.sys,
       createProgram,
