@@ -47,7 +47,7 @@ const generateFiles = async (inputs: Input[]) => {
     collectionOption || configuration.collection || Collection.NESTJS,
   );
 
-  const caseType = inputs.find((option) => option.name === 'case')!
+  const caseType = inputs.find((option) => option.name === 'caseNaming')!
     .value as CaseType;
 
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs, {
