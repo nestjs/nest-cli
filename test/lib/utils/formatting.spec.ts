@@ -10,7 +10,7 @@ type TestSuite = {
 describe('Format strings', () => {
   const tests: TestSuite[] = [
     {
-      description: 'From kebap to camel',
+      description: 'From kebab to camel',
       input: 'my-app',
       caseType: 'camel',
       expected: 'myApp',

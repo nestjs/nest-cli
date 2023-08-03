@@ -50,7 +50,7 @@ export class GenerateCommand extends AbstractCommand {
       )
       .option(
         '--caseNaming [caseType]',
-        `Casing type for generated elements. Available options: "pascal", "camel", "snake-or-kebap" (default).`,
+        `Casing type for generated elements. Available options: "pascal", "camel", "kebab-or-snake" (default).`,
       )
       .action(
         async (
