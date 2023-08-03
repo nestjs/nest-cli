@@ -23,7 +23,7 @@ export type CaseType =
  */
 export const normalizeToCase = (
   str: string,
-  caseType: CaseType = 'kebab-or-snake',
+  caseType: CaseType,
 ) => {
   switch (caseType) {
     case 'kebab':
@@ -38,9 +38,8 @@ export const normalizeToCase = (
       return capitalCase(str);
     // For legacy purposes
     case 'kebab-or-snake':
-      return normalizeToKebabOrSnakeCase(str);
     default:
-      throw new Error(`Error! case type ${caseType} is not supported.`);
+      return normalizeToKebabOrSnakeCase(str);
   }
 };
 
