@@ -76,7 +76,7 @@
     "@typescript-eslint/parser": "6.2.1",
     "delete-empty": "3.0.0",
     "eslint": "8.46.0",
-    "eslint-config-prettier": "8.10.0",
+    "eslint-config-prettier": "9.0.0",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "husky": "8.0.3",
