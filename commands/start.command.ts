@@ -24,7 +24,7 @@ export class StartCommand extends AbstractCommand<StartAction> {
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--type-check', 'Enable type checking (when SWC is used).')
-      .option('--tsc', 'Use tsc for compilation.')
+      .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
         '--sourceRoot [sourceRoot]',
         'Points at the root of the source code for the single project in standard mode structures, or the default project in monorepo mode structures.',
@@ -36,7 +36,7 @@ export class StartCommand extends AbstractCommand<StartAction> {
       .option('-e, --exec [binary]', 'Binary to run (default: "node").')
       .option(
         '--preserveWatchOutput',
-        'Use "preserveWatchOutput" option when tsc watch mode.',
+        'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {

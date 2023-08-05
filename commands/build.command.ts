@@ -19,7 +19,11 @@ export class BuildCommand extends AbstractCommand<BuildAction> {
       )
       .option('--type-check', 'Enable type checking (when SWC is used).')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
-      .option('--tsc', 'Use tsc for compilation.')
+      .option('--tsc', 'Use typescript compiler for compilation.')
+      .option(
+        '--preserveWatchOutput',
+        'Use "preserveWatchOutput" option when using tsc watch mode.',
+      )
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
         const commandOptions = new CommandStorage();
@@ -69,6 +73,14 @@ export class BuildCommand extends AbstractCommand<BuildAction> {
         commandOptions.add({
           name: 'typeCheck',
           value: command.typeCheck,
+        });
+
+        commandOptions.add({
+          name: 'preserveWatchOutput',
+          value:
+            !!command.preserveWatchOutput &&
+            !!command.watch &&
+            !isWebpackEnabled,
         });
 
         const inputs = new CommandStorage();
