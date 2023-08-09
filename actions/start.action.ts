@@ -154,6 +154,9 @@ export class StartAction extends BuildAction {
       outputFilePath = join(outDirName, entryFile);
     }
 
+    // resolve to real file path
+    outputFilePath = require.resolve(outputFilePath);
+
     let childProcessArgs: string[] = [];
     const argsStartIndex = process.argv.indexOf('--');
     if (argsStartIndex >= 0) {
