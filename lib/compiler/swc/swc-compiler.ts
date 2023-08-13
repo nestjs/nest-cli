@@ -69,9 +69,9 @@ export class SwcCompiler extends BaseCompiler {
       await this.runSwc(swcOptions, extras, swcrcFilePath);
       if (onSuccess) {
         onSuccess();
-      } else {
-        extras.assetsManager?.closeWatchers();
       }
+
+      extras.assetsManager?.closeWatchers();
     }
   }
 
