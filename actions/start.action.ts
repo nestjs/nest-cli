@@ -160,7 +160,13 @@ export class StartAction extends BuildAction {
     let childProcessArgs: string[] = [];
     const argsStartIndex = process.argv.indexOf('--');
     if (argsStartIndex >= 0) {
-      childProcessArgs = process.argv.slice(argsStartIndex + 1);
+      // Prevents the need for users to double escape strings
+      // i.e. I can run the more natural
+      //   nest start -- '{"foo": "bar"}'
+      // instead of
+      //   nest start -- '\'{"foo": "bar"}\''
+      childProcessArgs = process.argv.slice(argsStartIndex + 1)
+        .map(arg => JSON.stringify(arg));
     }
     outputFilePath =
       outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
