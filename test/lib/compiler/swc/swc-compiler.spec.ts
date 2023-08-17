@@ -161,6 +161,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
+        {},
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
@@ -172,6 +173,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
+        {},
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
