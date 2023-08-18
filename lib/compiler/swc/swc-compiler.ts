@@ -1,4 +1,5 @@
 import * as chalk from 'chalk';
+import * as path from 'path';
 import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
@@ -53,7 +54,7 @@ export class SwcCompiler extends BaseCompiler {
       if (extras.typeCheck) {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras, swcrcFilePath);
+      await this.runSwc(configuration, swcOptions, extras, swcrcFilePath);
 
       if (onSuccess) {
         onSuccess();
@@ -66,7 +67,7 @@ export class SwcCompiler extends BaseCompiler {
       if (extras.typeCheck) {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras, swcrcFilePath);
+      await this.runSwc(configuration, swcOptions, extras, swcrcFilePath);
       if (onSuccess) {
         onSuccess();
       }
@@ -150,6 +151,7 @@ export class SwcCompiler extends BaseCompiler {
   }
 
   private async runSwc(
+    configuration: Required<Configuration>,
     options: ReturnType<typeof swcDefaultsFactory>,
     extras: SwcCompilerExtras,
     swcrcFilePath?: string,
@@ -161,6 +163,17 @@ export class SwcCompiler extends BaseCompiler {
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
     const swcOptions = this.deepMerge(options.swcOptions, swcRcFile);
+
+    // jsc.baseUrl should be resolved by the caller, if it's passed as an object.
+    // https://github.com/swc-project/swc/pull/7827
+    if (swcOptions?.jsc?.baseUrl) {
+      if (swcrcFilePath) {
+        swcOptions.jsc.baseUrl = path.join(path.dirname(swcrcFilePath), swcOptions.jsc.baseUrl)
+      } else {
+        swcOptions.jsc.baseUrl = path.join(path.dirname(configuration.sourceRoot), swcOptions.jsc.baseUrl)
+      }
+
+    }
 
     await swcCli.default({
       ...options,
@@ -178,7 +191,7 @@ export class SwcCompiler extends BaseCompiler {
     } catch (err) {
       console.error(
         ERROR_PREFIX +
-          ' Failed to load "@swc/cli" and "@swc/core" packages. Please, install them by running "npm i -D @swc/cli @swc/core".',
+        ' Failed to load "@swc/cli" and "@swc/core" packages. Please, install them by running "npm i -D @swc/cli @swc/core".',
       );
       process.exit(1);
     }
@@ -193,7 +206,7 @@ export class SwcCompiler extends BaseCompiler {
       if (swcrcFilePath !== undefined) {
         console.error(
           ERROR_PREFIX +
-            ` Failed to load "${swcrcFilePath}". Please, check if the file exists and is valid JSON.`,
+          ` Failed to load "${swcrcFilePath}". Please, check if the file exists and is valid JSON.`,
         );
         process.exit(1);
       }
