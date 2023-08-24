@@ -1,5 +1,5 @@
-import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader';
+import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
 
 import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
 import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
@@ -161,7 +161,6 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        {},
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
@@ -173,7 +172,6 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        {},
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
