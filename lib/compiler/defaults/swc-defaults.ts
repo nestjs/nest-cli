@@ -1,3 +1,4 @@
+import { platform } from 'process';
 import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 
@@ -9,6 +10,15 @@ export const swcDefaultsFactory = (
     typeof configuration?.compilerOptions?.builder !== 'string'
       ? configuration?.compilerOptions?.builder?.options
       : {};
+
+  // swc does not currently support paths mapping on Windows
+  // see https://github.com/nestjs/nest-cli/issues/2211
+  const pathsMappingOptions = platform?.startsWith('win')
+    ? {}
+    : {
+        baseUrl: tsOptions?.baseUrl,
+        paths: tsOptions?.paths,
+      };
 
   return {
     swcOptions: {
@@ -28,8 +38,7 @@ export const swcDefaultsFactory = (
           useDefineForClassFields: false,
         },
         keepClassNames: true,
-        baseUrl: tsOptions?.baseUrl,
-        paths: tsOptions?.paths,
+        ...pathsMappingOptions,
       },
       minify: false,
       swcrc: true,
