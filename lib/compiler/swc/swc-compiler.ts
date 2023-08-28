@@ -20,6 +20,7 @@ import {
   SWC_LOG_PREFIX,
 } from './constants';
 import { TypeCheckerHost } from './type-checker-host';
+import { platform } from 'process';
 
 export type SwcCompilerExtras = {
   watch: boolean;
@@ -161,13 +162,28 @@ export class SwcCompiler extends BaseCompiler {
 
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
-    const swcOptions = this.deepMerge(options.swcOptions, swcRcFile);
+    let swcOptions = this.deepMerge(options.swcOptions, swcRcFile);
 
     if (swcOptions?.jsc?.baseUrl && !isAbsolute(swcOptions?.jsc?.baseUrl)) {
       // jsc.baseUrl should be resolved by the caller, if it's passed as an object.
       // https://github.com/swc-project/swc/pull/7827
       const rootDir = process.cwd();
       swcOptions.jsc.baseUrl = path.join(rootDir, swcOptions.jsc.baseUrl);
+    }
+
+    if (swcOptions?.jsc?.paths) {
+      // if swcOptions is passed as an object on Windows, it temporarily breaks the baseUrl and paths.
+      if (platform?.startsWith('win')) {
+        if (!swcRcFile?.jsc?.paths) {
+          console.error(
+              ERROR_PREFIX +
+              ' jsc.paths and jsc.baseUrl should be defined in .swcrc file on Windows devices.'
+          );
+          process.exit(1);
+        } else {
+          swcOptions = undefined;
+        }
+      }
     }
 
     await swcCli.default({
