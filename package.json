@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "10.1.16",
+  "version": "10.1.17",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
     "access": "public"
