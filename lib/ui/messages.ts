@@ -6,10 +6,10 @@ export const MESSAGES = {
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
   DRY_RUN_MODE: 'Command has been executed in dry run mode, nothing changed!',
-  PROJECT_INFORMATION_START: `${EMOJIS.ZAP}  We will scaffold your app in a few seconds..`,
+  PROJECT_INFORMATION_START: `${EMOJIS.ZAP}  We will scaffold your app in a few seconds...`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
-  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
+  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART} to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
@@ -25,7 +25,7 @@ export const MESSAGES = {
   PACKAGE_MANAGER_INSTALLATION_FAILED: (commandToRunManually: string) =>
     `${EMOJIS.SCREAM}  Packages installation failed!\nIn case you don't see any errors above, consider manually running the failed command ${commandToRunManually} to see more details on why it errored out.`,
   // tslint:disable-next-line:max-line-length
-  NEST_INFORMATION_PACKAGE_MANAGER_FAILED: `${EMOJIS.SMIRK}  cannot read your project package.json file, are you inside your project directory?`,
+  NEST_INFORMATION_PACKAGE_MANAGER_FAILED: `${EMOJIS.SMIRK} cannot read your project package.json file, are you inside your project directory?`,
   LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE: (name: string) =>
     `Unable to install library ${name} because package did not install. Please check package name.`,
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
