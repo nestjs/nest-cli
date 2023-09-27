@@ -20,7 +20,7 @@ import {
   SchematicOption,
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
-import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
+import {CaseType, normalizeToKebabOrSnakeCase} from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -113,6 +113,11 @@ const replaceInputMissingInformation = (
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
+
+  console.log({ options, args })
+  const caseNaming = (options
+      .find(({ name }) => name === 'caseNaming')
+      ?.value || 'kebab-or-snake') as CaseType;
   const collectionName = options.find(
     (option) => option.name === 'collection' && option.value != null,
   )!.value;
@@ -121,18 +126,19 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   );
   const schematicOptions: SchematicOption[] = mapSchematicOptions(
     args.concat(options),
+    caseNaming
   );
   await collection.execute('application', schematicOptions);
   console.info();
 };
 
-const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
+const mapSchematicOptions = (options: Input[], caseNaming: CaseType): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
       if (option.name !== 'skip-install') {
         schematicOptions.push(
           new SchematicOption(option.name, option.value, {
-            caseType: 'kebab-or-snake',
+            caseType: caseNaming,
           }),
         );
       }
