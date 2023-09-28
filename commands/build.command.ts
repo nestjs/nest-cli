@@ -23,6 +23,7 @@ export class BuildCommand extends AbstractCommand {
         '--preserveWatchOutput',
         'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
+      .option('--all', 'Build all projects in a monorepo')
       .description('Build Nest application.')
       .action(async (apps: string[], command: Command) => {
         const options: Input[] = [];
@@ -78,6 +79,8 @@ export class BuildCommand extends AbstractCommand {
             !!command.watch &&
             !isWebpackEnabled,
         });
+
+        options.push({ name: 'all', value: !!command.all });
 
         const inputs: Input[] = apps.map((app) => ({
           name: 'app',

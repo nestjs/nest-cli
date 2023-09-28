@@ -79,9 +79,21 @@ export class BuildAction extends AbstractAction {
     )!.value as string;
     const configuration = await this.loader.load(configFileName);
 
-    const appNames = commandInputs
-      .filter((input) => input.name === 'app')
-      .map((input) => input.value) as string[];
+    const buildAll = commandOptions.find((opt) => opt.name === 'all')!
+      .value as boolean;
+
+    let appNames: string[];
+    if (buildAll) {
+      appNames = [undefined!]; // always include the default project
+
+      if (configuration.projects) {
+        appNames.push(...Object.keys(configuration.projects));
+      }
+    } else {
+      appNames = commandInputs
+        .filter((input) => input.name === 'app')
+        .map((input) => input.value) as string[];
+    }
 
     for (const appName of appNames) {
       const pathToTsconfig = getTscConfigPath(
