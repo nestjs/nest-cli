@@ -78,64 +78,72 @@ export class BuildAction extends AbstractAction {
       (option) => option.name === 'config',
     )!.value as string;
     const configuration = await this.loader.load(configFileName);
-    const appName = commandInputs.find((input) => input.name === 'app')!
-      .value as string;
 
-    const pathToTsconfig = getTscConfigPath(
-      configuration,
-      commandOptions,
-      appName,
-    );
-    const { options: tsOptions } =
-      this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
-    const outDir = tsOptions.outDir || defaultOutDir;
+    const appNames = commandInputs
+      .filter((input) => input.name === 'app')
+      .map((input) => input.value) as string[];
 
-    const isWebpackEnabled = getValueOrDefault<boolean>(
-      configuration,
-      'compilerOptions.webpack',
-      appName,
-      'webpack',
-      commandOptions,
-    );
-    const builder = isWebpackEnabled
-      ? { type: 'webpack' }
-      : getBuilder(configuration, commandOptions, appName);
+    for (const appName of appNames) {
+      const pathToTsconfig = getTscConfigPath(
+        configuration,
+        commandOptions,
+        appName,
+      );
+      const { options: tsOptions } =
+        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
+      const outDir = tsOptions.outDir || defaultOutDir;
 
-    await deleteOutDirIfEnabled(configuration, appName, outDir);
-    this.assetsManager.copyAssets(
-      configuration,
-      appName,
-      outDir,
-      watchAssetsMode,
-    );
+      const isWebpackEnabled = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.webpack',
+        appName,
+        'webpack',
+        commandOptions,
+      );
+      const builder = isWebpackEnabled
+        ? { type: 'webpack' }
+        : getBuilder(configuration, commandOptions, appName);
 
-    switch (builder.type) {
-      case 'tsc':
-        await this.runTsc(
-          watchMode,
-          commandOptions,
-          configuration,
-          pathToTsconfig,
-          appName,
-        );
-      case 'webpack':
-        await this.runWebpack(
-          configuration,
-          appName,
-          commandOptions,
-          pathToTsconfig,
-          isDebugEnabled,
-          watchMode,
-        );
-      case 'swc':
-        await this.runSwc(
-          configuration,
-          appName,
-          pathToTsconfig,
-          watchMode,
-          commandOptions,
-          tsOptions,
-        );
+      await deleteOutDirIfEnabled(
+        configuration,
+        appName,
+        outDir,
+      );
+      this.assetsManager.copyAssets(
+        configuration,
+        appName,
+        outDir,
+        watchAssetsMode,
+      );
+
+      switch (builder.type) {
+        case 'tsc':
+          await this.runTsc(
+            watchMode,
+            commandOptions,
+            configuration,
+            pathToTsconfig,
+            appName,
+          );
+        case 'webpack':
+          await this.runWebpack(
+            configuration,
+            appName,
+            commandOptions,
+            pathToTsconfig,
+            isDebugEnabled,
+            watchMode,
+          );
+        case 'swc':
+          await this.runSwc(
+            configuration,
+            appName,
+            pathToTsconfig,
+            watchMode,
+            commandOptions,
+            tsOptions,
+          );
+      }
     }
 
     onSuccess?.();
