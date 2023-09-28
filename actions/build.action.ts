@@ -96,6 +96,18 @@ export class BuildAction extends AbstractAction {
     }
 
     for (const appName of appNames) {
+      // if we just always print the project name,
+      // it will change the output compared to previous version,
+      // and some clients may rely on that
+      // TODO: always print in next major version
+      if (appNames.length > 1) {
+        if (appName === undefined) {
+          console.log(`Building default project...`);
+        } else {
+          console.log(`Building project ${appName}`);
+        }
+      }
+
       const pathToTsconfig = getTscConfigPath(
         configuration,
         commandOptions,
