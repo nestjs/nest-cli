@@ -6,7 +6,7 @@ import { Input } from './command.input';
 export class BuildCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
     program
-      .command('build [app]')
+      .command('build [apps...]')
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
@@ -24,7 +24,7 @@ export class BuildCommand extends AbstractCommand {
         'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
       .description('Build Nest application.')
-      .action(async (app: string, command: Command) => {
+      .action(async (apps: string[], command: Command) => {
         const options: Input[] = [];
 
         options.push({
@@ -79,8 +79,16 @@ export class BuildCommand extends AbstractCommand {
             !isWebpackEnabled,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'app', value: app });
+        const inputs: Input[] = apps.map((app) => ({
+          name: 'app',
+          value: app,
+        }));
+
+        // handle the default project for `nest build` with no args
+        if (inputs.length === 0) {
+          inputs.push({ name: 'app', value: undefined! });
+        }
+
         await this.action.handle(inputs, options);
       });
   }
