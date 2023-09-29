@@ -30,7 +30,6 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration = await loadConfiguration();
-  console.log({ configuration });
   const collectionOption = inputs.find(
     (option) => option.name === 'collection',
   )!.value as string;

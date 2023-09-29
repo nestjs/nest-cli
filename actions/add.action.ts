@@ -123,9 +123,11 @@ export class AddAction extends AbstractAction {
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
     const schematicOptions: SchematicOption[] = [];
-    const caseType = options.find((option) => option.name === 'caseNaming')
-      ?.value as CaseType;
-    schematicOptions.push(
+    const configuration = await loadConfiguration();
+    const caseType = (
+        configuration?.generateOptions?.caseNaming
+        || 'kebab-or-snake'
+    ) as CaseType;    schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
         options.find((option) => option.name === 'sourceRoot')!.value as string,
