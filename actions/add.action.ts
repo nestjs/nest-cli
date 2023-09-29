@@ -123,16 +123,10 @@ export class AddAction extends AbstractAction {
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
     const schematicOptions: SchematicOption[] = [];
-    const configuration = await loadConfiguration();
-    const caseType = (
-        configuration?.generateOptions?.caseNaming
-        || 'kebab-or-snake'
-    ) as CaseType;    schematicOptions.push(
+    schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string,
-        { caseType },
-      ),
+        options.find((option) => option.name === 'sourceRoot')!.value as string),
     );
 
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
