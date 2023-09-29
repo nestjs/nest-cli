@@ -125,7 +125,7 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string
+        options.find((option) => option.name === 'sourceRoot')!.value as string,
       ),
     );
 

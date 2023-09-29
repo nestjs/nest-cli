@@ -46,31 +46,21 @@ const generateFiles = async (inputs: Input[]) => {
     collectionOption || configuration.collection || Collection.NESTJS,
   );
 
-
   const optionsCaseType = (
       inputs.find((option) => option.name === 'caseNaming')?.value
   ) as CaseType | undefined;
-
   const configCaseType = (
       configuration?.generateOptions?.caseNaming
   ) as CaseType | undefined;
-
   const caseType = optionsCaseType || configCaseType || 'kebab-or-snake';
 
   const inputName = inputs.find((option) => option.name === 'name');
   const name = normalizeToCase(inputName?.value as string, caseType);
-  console.log({ caseType, name })
 
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
-  schematicOptions.push(
-      new SchematicOption('name', name),
-  );
-  schematicOptions.push(
-      new SchematicOption('caseNaming', caseType),
-  );
-  schematicOptions.push(
-    new SchematicOption('language', configuration.language),
-  );
+  schematicOptions.push(new SchematicOption('name', name));
+  schematicOptions.push(new SchematicOption('caseNaming', caseType));
+  schematicOptions.push(new SchematicOption('language', configuration.language));
   const configurationProjects = configuration.projects;
 
   let sourceRoot = appName
@@ -148,19 +138,10 @@ const generateFiles = async (inputs: Input[]) => {
     }
   }
 
-  schematicOptions.push(
-    new SchematicOption('sourceRoot', sourceRoot),
-  );
-  schematicOptions.push(
-    new SchematicOption('spec', generateSpec),
-  );
-  schematicOptions.push(
-    new SchematicOption('flat', generateFlat),
-  );
-  schematicOptions.push(
-    new SchematicOption('specFileSuffix', generateSpecFileSuffix),
-  );
-  console.log({ schematicOptions, specFileSuffix, inputs })
+  schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
+  schematicOptions.push(new SchematicOption('spec', generateSpec));
+  schematicOptions.push(new SchematicOption('flat', generateFlat));
+  schematicOptions.push(new SchematicOption('specFileSuffix', generateSpecFileSuffix));
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
     if (!schematicInput) {
