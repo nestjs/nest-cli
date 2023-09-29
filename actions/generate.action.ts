@@ -30,6 +30,7 @@ export class GenerateAction extends AbstractAction {
 
 const generateFiles = async (inputs: Input[]) => {
   const configuration = await loadConfiguration();
+  console.log({ configuration });
   const collectionOption = inputs.find(
     (option) => option.name === 'collection',
   )!.value as string;
@@ -47,8 +48,10 @@ const generateFiles = async (inputs: Input[]) => {
     collectionOption || configuration.collection || Collection.NESTJS,
   );
 
-  const caseType = inputs.find((option) => option.name === 'caseNaming')!
-    .value as CaseType;
+  const caseType = (
+      configuration?.generateOptions?.caseNaming
+      || 'kebab-or-snake'
+  ) as CaseType;
 
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs, {
     caseType,
