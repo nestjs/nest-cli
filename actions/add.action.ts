@@ -19,7 +19,6 @@ import {
   shouldAskForProject,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
-import { CaseType } from '../lib/utils/formatting';
 
 const schematicName = 'nest-add';
 
@@ -126,7 +125,8 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string),
+        options.find((option) => option.name === 'sourceRoot')!.value as string
+      ),
     );
 
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
