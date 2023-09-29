@@ -128,7 +128,6 @@ export class AddAction extends AbstractAction {
         options.find((option) => option.name === 'sourceRoot')!.value as string,
       ),
     );
-
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
 
     try {
