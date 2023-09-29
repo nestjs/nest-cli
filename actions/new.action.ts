@@ -116,7 +116,6 @@ const generateApplicationFiles = async (args: Input[], options: Input[]) => {
   const caseNaming = (options
       .find(({ name }) => name === 'caseNaming')
       ?.value || 'kebab-or-snake') as CaseType;
-  console.log({ options, args, caseNaming })
 
   const collectionName = options.find(
     (option) => option.name === 'collection' && option.value != null,
