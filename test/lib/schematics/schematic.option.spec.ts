@@ -1,7 +1,4 @@
-import {
-  SchematicOption,
-  SchematicOptionConfig,
-} from '../../../lib/schematics';
+import { SchematicOption } from '../../../lib/schematics';
 
 interface TestOption {
   input: string;
