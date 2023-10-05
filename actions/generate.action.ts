@@ -45,14 +45,11 @@ const generateFiles = async (inputs: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-
-  const optionsCaseType = (
-      inputs.find((option) => option.name === 'caseNaming')?.value
-  ) as CaseType | undefined;
-  const configCaseType = (
+  
+  const caseType = (
       configuration?.generateOptions?.caseNaming
-  ) as CaseType | undefined;
-  const caseType = optionsCaseType || configCaseType || 'kebab-or-snake';
+      || 'kebab-or-snake'
+  ) as CaseType;
 
   const inputName = inputs.find((option) => option.name === 'name');
   const name = normalizeToCase(inputName?.value as string, caseType);
