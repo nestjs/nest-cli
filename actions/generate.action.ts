@@ -45,7 +45,7 @@ const generateFiles = async (inputs: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  
+
   const caseType = (
       configuration?.generateOptions?.caseNaming
       || 'kebab-or-snake'
