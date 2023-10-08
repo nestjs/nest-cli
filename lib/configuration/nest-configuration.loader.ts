@@ -18,7 +18,7 @@ export class NestConfigurationLoader implements ConfigurationLoader {
     const cacheEntryKey = `${this.reader.constructor.name}:${name}`;
     const cachedConfig = loadedConfigsCache.get(cacheEntryKey);
     if (cachedConfig) {
-       return cachedConfig;
+      return cachedConfig;
     }
 
     let loadedConfig: Required<Configuration> | undefined;
