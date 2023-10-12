@@ -174,8 +174,9 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
-    if (this.isSourceMapSupportPkgAvailable()) {
-      processArgs.unshift('-r source-map-support/register');
+    const sourceMapsRegisterPath = this.getSourceMapSupportPkg();
+    if (sourceMapsRegisterPath !== undefined) {
+      processArgs.unshift(`-r ${sourceMapsRegisterPath}`);
     }
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
@@ -183,12 +184,11 @@ export class StartAction extends BuildAction {
     });
   }
 
-  private isSourceMapSupportPkgAvailable() {
+  private getSourceMapSupportPkg() {
     try {
-      require.resolve('source-map-support');
-      return true;
+      return require.resolve('source-map-support/register');
     } catch {
-      return false;
+      return undefined;
     }
   }
 }
