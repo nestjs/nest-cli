@@ -2,11 +2,13 @@ import {
   camelCase,
   kebabCase,
   pascalCase,
+  snakeCase
 } from 'case-anything';
 
 export type CaseType =
     | 'camel'
     | 'kebab'
+    | 'snake'
     | 'pascal'
     | 'kebab-or-snake';
 
@@ -28,6 +30,8 @@ export const normalizeToCase = (
       return kebabCase(str);
     case 'pascal':
       return pascalCase(str);
+    case 'snake':
+      return snakeCase(str);
     // For legacy purposes
     case 'kebab-or-snake':
     default:

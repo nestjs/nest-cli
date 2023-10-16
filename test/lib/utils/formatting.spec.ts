@@ -106,6 +106,55 @@ describe('Testing string formatting function', () => {
     });
   });
 
+  describe('should format to snake_case', () => {
+
+    const tests: TestSuite[] = [
+      {
+        description: 'From camel to snake',
+        input: 'myApp',
+        caseType: 'snake',
+        expected: 'my_app',
+      },
+      {
+        description: 'From camel to snake with special character',
+        input: '$myApp',
+        caseType: 'snake',
+        expected: 'my_app',
+      },
+      {
+        description: 'From Pascal to snake',
+        input: 'PascalCase',
+        caseType: 'snake',
+        expected: 'pascal_case',
+      },
+      {
+        description: 'From Pascal to snake with special character',
+        input: '$PascalCase',
+        caseType: 'snake',
+        expected: 'pascal_case',
+      },
+      {
+        description: 'snake special character',
+        input: '$cat-dog',
+        caseType: 'snake',
+        expected: 'cat_dog',
+      },
+      {
+        description: 'kebab special character',
+        input: 'Cats? & Dogs!',
+        caseType: 'snake',
+        expected: 'cats_dogs',
+      },
+    ];
+
+    tests.forEach((test) => {
+      it(test.description, () => {
+        expect(normalizeToCase(test.input, test.caseType)).toEqual(test.expected);
+      });
+    });
+  });
+
+
   describe('should format to PascalCase', () => {
     const tests: TestSuite[] = [
       {
