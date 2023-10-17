@@ -20,7 +20,7 @@ import {
   SchematicOption,
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
-import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
+import { normalizeToCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -76,7 +76,7 @@ const getProjectDirectory = (
 ): string => {
   return (
     (directoryOption && (directoryOption.value as string)) ||
-    normalizeToKebabOrSnakeCase(applicationName.value as string)
+    normalizeToCase(applicationName.value as string, 'kebab')
   );
 };
 

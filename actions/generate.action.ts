@@ -48,7 +48,7 @@ const generateFiles = async (inputs: Input[]) => {
 
   const caseType = (
       configuration?.generateOptions?.caseNaming
-      || 'kebab-or-snake'
+      || 'snake'
   ) as CaseType;
 
   const inputName = inputs.find((option) => option.name === 'name');

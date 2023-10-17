@@ -7,7 +7,7 @@ export class SchematicOption {
   ) {}
 
   get normalizedName() {
-    return normalizeToCase(this.name, 'kebab-or-snake');
+    return normalizeToCase(this.name, 'kebab');
   }
 
   public toCommandString(): string {
@@ -31,7 +31,7 @@ export class SchematicOption {
     return formatString(
       normalizeToCase(
         this.value as string,
-        'kebab-or-snake',
+        'kebab',
       ),
     );
   }
