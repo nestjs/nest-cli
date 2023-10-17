@@ -9,7 +9,8 @@ export type CaseType =
     | 'camel'
     | 'kebab'
     | 'snake'
-    | 'pascal';
+    | 'pascal'
+    | 'kebab-or-snake';
 
 /**
  *
@@ -31,6 +32,8 @@ export const normalizeToCase = (
       return pascalCase(str);
     case 'snake':
       return snakeCase(str);
+    case 'kebab-or-snake':
+      return kebabCase(str, { keep: ['_', '@', '/', '.'] })
     default:
       throw new Error(`Case type ${caseType} is not supported.`);
   }
