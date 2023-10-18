@@ -18,6 +18,7 @@ export type CaseType =
  * @param caseType CaseType
  * @returns formatted string
  * @description normalizes input to a given case format.
+ * Options are: "camel" | "kebab" | "snake" | "pascal" | "kebab-or-snake"
  */
 export const normalizeToCase = (
   str: string,

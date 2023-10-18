@@ -34,7 +34,7 @@ export class NewCommand extends AbstractCommand {
       .option('--strict', 'Enables strict mode in TypeScript.', false)
       .option(
             '--caseNaming [caseType]',
-            `Casing type for generated files. Available options: "pascal", "camel", "kebab" (default).`,
+            `Casing type for generated files. Available options: "camel", "kebab" (default), "snake", "pascal", "snake-or-kebab".`,
       )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
