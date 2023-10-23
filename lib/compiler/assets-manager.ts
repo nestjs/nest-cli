@@ -1,5 +1,7 @@
 import * as chokidar from 'chokidar';
 import { dirname, join, sep } from 'path';
+import { statSync } from 'fs';
+import { sync } from 'glob';
 import * as shell from 'shelljs';
 import {
   ActionOnFile,
@@ -89,14 +91,22 @@ export class AssetsManager {
           watchAssetsMode: isWatchEnabled,
         };
 
-        // prettier-ignore
-        const watcher = chokidar
+        if (isWatchEnabled || item.watchAssets) {
+          // prettier-ignore
+          const watcher = chokidar
           .watch(item.glob, { ignored: item.exclude })
           .on('add', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
           .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
           .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
 
-        this.watchers.push(watcher);
+          this.watchers.push(watcher);
+        } else {
+          const files = sync(item.glob, { ignore: item.exclude })
+            .filter((matched) => statSync(matched).isFile());
+          for (const path of files) {
+            this.actionOnFile({ ...option, path, action: 'change' });
+          }
+        }
       }
     } catch (err) {
       throw new Error(
