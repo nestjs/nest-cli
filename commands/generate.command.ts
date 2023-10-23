@@ -112,7 +112,7 @@ export class GenerateCommand extends AbstractCommand {
     );
   }
 
-  private buildSchematicsListAsTable(schematics: Schematic[]): Promise<string> {
+  private buildSchematicsListAsTable(schematics: Schematic[]): string {
     const leftMargin = '    ';
     const tableConfig = {
       head: ['name', 'alias', 'description'],

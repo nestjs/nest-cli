@@ -162,8 +162,9 @@ export class StartAction extends BuildAction {
       //   nest start -- '{"foo": "bar"}'
       // instead of
       //   nest start -- '\'{"foo": "bar"}\''
-      childProcessArgs = process.argv.slice(argsStartIndex + 1)
-        .map(arg => JSON.stringify(arg));
+      childProcessArgs = process.argv
+        .slice(argsStartIndex + 1)
+        .map((arg) => JSON.stringify(arg));
     }
     outputFilePath =
       outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
