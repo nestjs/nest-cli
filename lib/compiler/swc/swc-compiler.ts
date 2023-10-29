@@ -2,7 +2,8 @@ import * as chalk from 'chalk';
 import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
-import { join, isAbsolute } from 'path';
+import * as path from 'path';
+import { isAbsolute, join } from 'path';
 import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
@@ -69,9 +70,9 @@ export class SwcCompiler extends BaseCompiler {
       await this.runSwc(swcOptions, extras, swcrcFilePath);
       if (onSuccess) {
         onSuccess();
-      } else {
-        extras.assetsManager?.closeWatchers();
       }
+
+      extras.assetsManager?.closeWatchers();
     }
   }
 
@@ -161,6 +162,13 @@ export class SwcCompiler extends BaseCompiler {
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
     const swcOptions = this.deepMerge(options.swcOptions, swcRcFile);
+
+    if (swcOptions?.jsc?.baseUrl && !isAbsolute(swcOptions?.jsc?.baseUrl)) {
+      // jsc.baseUrl should be resolved by the caller, if it's passed as an object.
+      // https://github.com/swc-project/swc/pull/7827
+      const rootDir = process.cwd();
+      swcOptions.jsc.baseUrl = path.join(rootDir, swcOptions.jsc.baseUrl);
+    }
 
     await swcCli.default({
       ...options,
