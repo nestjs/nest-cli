@@ -1,4 +1,4 @@
-import { CommandStorage } from '../../../commands';
+import { CommandContext } from '../../../commands';
 import { Builder, Configuration } from '../../configuration';
 import { getDefaultTsconfigPath } from '../../utils/get-default-tsconfig-path';
 import { getValueOrDefault } from './get-value-or-default';
@@ -12,7 +12,7 @@ import { getValueOrDefault } from './get-value-or-default';
  */
 export function getTscConfigPath(
   configuration: Required<Configuration>,
-  cmdOptions: CommandStorage,
+  cmdOptions: CommandContext,
   appName: string,
 ) {
   let tsconfigPath = getValueOrDefault<string | undefined>(

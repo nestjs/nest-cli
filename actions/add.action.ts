@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { CommandStorage, CommandStorageEntry } from '../commands';
+import { CommandContext, CommandContextEntry } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
@@ -24,8 +24,8 @@ const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
   public async handle(
-    inputs: CommandStorage,
-    options: CommandStorage,
+    inputs: CommandContext,
+    options: CommandContext,
     extraFlags: string[],
   ) {
     const libraryName = this.getLibraryName(inputs);
@@ -36,7 +36,7 @@ export class AddAction extends AbstractAction {
     const packageInstallSuccess =
       skipInstall || (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
-      const sourceRootOption: CommandStorageEntry = await this.getSourceRoot([
+      const sourceRootOption: CommandContextEntry = await this.getSourceRoot([
         inputs,
         options,
       ]);
@@ -58,8 +58,8 @@ export class AddAction extends AbstractAction {
   }
 
   private async getSourceRoot(
-    storages: CommandStorage[],
-  ): Promise<CommandStorageEntry> {
+    storages: CommandContext[],
+  ): Promise<CommandContextEntry> {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
@@ -132,7 +132,7 @@ export class AddAction extends AbstractAction {
 
   private async addLibrary(
     collectionName: string,
-    options: CommandStorage,
+    options: CommandContext,
     extraFlags: string[],
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
@@ -161,7 +161,7 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private getLibraryName(inputs: CommandStorage): string {
+  private getLibraryName(inputs: CommandContext): string {
     const libraryInput = inputs.get<string>('library');
 
     if (!libraryInput) {

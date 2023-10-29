@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { StartAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command-storage';
+import { CommandContext } from './command-context';
 import type { BuilderVariant } from '../lib/configuration';
 
 export class StartCommand extends AbstractCommand<StartAction> {
@@ -40,7 +40,7 @@ export class StartCommand extends AbstractCommand<StartAction> {
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
-        const commandOptions = new CommandStorage();
+        const commandOptions = new CommandContext();
 
         commandOptions.add({
           name: 'config',
@@ -109,7 +109,7 @@ export class StartCommand extends AbstractCommand<StartAction> {
           value: command.typeCheck,
         });
 
-        const inputs = new CommandStorage();
+        const inputs = new CommandContext();
         inputs.add({ name: 'app', value: app });
 
         try {

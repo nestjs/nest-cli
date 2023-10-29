@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { AddAction } from '../actions';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command-storage';
+import { CommandContext } from './command-context';
 
 export class AddCommand extends AbstractCommand<AddAction> {
   public load(program: CommanderStatic): void {
@@ -18,7 +18,7 @@ export class AddCommand extends AbstractCommand<AddAction> {
       .option('-p, --project [project]', 'Project in which to generate files.')
       .usage('<library> [options] [library-specific-options]')
       .action(async (library: string, command: Command) => {
-        const commandOptions = new CommandStorage();
+        const commandOptions = new CommandContext();
 
         commandOptions.add({ name: 'dry-run', value: !!command.dryRun });
         commandOptions.add({
@@ -30,7 +30,7 @@ export class AddCommand extends AbstractCommand<AddAction> {
           value: command.project,
         });
 
-        const inputs = new CommandStorage();
+        const inputs = new CommandContext();
         inputs.add({ name: 'library', value: library });
 
         const flags = getRemainingFlags(program);

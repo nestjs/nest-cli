@@ -1,2 +1,2 @@
 export * from './command.loader';
-export * from './command-storage';
+export * from './command-context';

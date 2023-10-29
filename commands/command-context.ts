@@ -1,4 +1,4 @@
-export interface CommandStorageEntry<
+export interface CommandContextEntry<
   TValue extends boolean | string = boolean | string,
 > {
   readonly name: string;
@@ -6,20 +6,20 @@ export interface CommandStorageEntry<
   readonly options?: any;
 }
 
-export class CommandStorage {
+export class CommandContext {
   private readonly inputsByName = new Map<
-    CommandStorageEntry['name'],
-    CommandStorageEntry
+    CommandContextEntry['name'],
+    CommandContextEntry
   >();
 
-  forEachEntry(callback: (input: CommandStorageEntry) => void): void {
+  forEachEntry(callback: (input: CommandContextEntry) => void): void {
     this.inputsByName.forEach((input) => callback(input));
   }
 
   /**
    * Add a new input to the storage if it does not exist yet.
    */
-  add(input: CommandStorageEntry) {
+  add(input: CommandContextEntry) {
     if (!this.inputsByName.has(input.name)) {
       this.inputsByName.set(input.name, input);
     }
@@ -29,27 +29,27 @@ export class CommandStorage {
    * Overwrite a existing input to a new value the storage or create a new entry
    * if it does not exist yet.
    */
-  set(input: CommandStorageEntry) {
+  set(input: CommandContextEntry) {
     this.inputsByName.set(input.name, input);
   }
 
   get<TValue extends boolean | string>(
-    inputName: CommandStorageEntry['name'],
-  ): CommandStorageEntry<TValue> | undefined;
+    inputName: CommandContextEntry['name'],
+  ): CommandContextEntry<TValue> | undefined;
   get<TValue extends boolean | string>(
-    inputName: CommandStorageEntry['name'],
+    inputName: CommandContextEntry['name'],
     errorOnMissing: false,
-  ): CommandStorageEntry<TValue> | undefined;
+  ): CommandContextEntry<TValue> | undefined;
   get<TValue extends boolean | string>(
-    inputName: CommandStorageEntry['name'],
+    inputName: CommandContextEntry['name'],
     errorOnMissing: true,
-  ): CommandStorageEntry<TValue>;
+  ): CommandContextEntry<TValue>;
   get<TValue extends boolean | string>(
-    inputName: CommandStorageEntry['name'],
+    inputName: CommandContextEntry['name'],
     errorOnMissing = false,
-  ): CommandStorageEntry<TValue> | undefined {
+  ): CommandContextEntry<TValue> | undefined {
     const input = this.inputsByName.get(inputName) as
-      | CommandStorageEntry<TValue>
+      | CommandContextEntry<TValue>
       | undefined;
     if (errorOnMissing) {
       if (!input || input.value === undefined) {
@@ -63,7 +63,7 @@ export class CommandStorage {
    * Copy all inputs of the other command storage with this one.
    * Note that if an input already exists, it will **not** be overwritten.
    */
-  mergeWith(otherStorage: CommandStorage): void {
+  mergeWith(otherStorage: CommandContext): void {
     for (const input of otherStorage.inputsByName.values()) {
       this.add(input);
     }

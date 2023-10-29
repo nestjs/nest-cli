@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { CommandStorage } from '../../commands';
+import { CommandContext } from '../../commands';
 import { Configuration } from '../configuration';
 import { INFO_PREFIX } from '../ui';
 import { AssetsManager } from './assets-manager';
@@ -20,7 +20,7 @@ type WebpackConfigFactoryOrConfig =
   | webpack.Configuration;
 
 type WebpackCompilerExtras = {
-  inputs: CommandStorage;
+  inputs: CommandContext;
   assetsManager: AssetsManager;
   webpackConfigFactoryOrConfig:
     | WebpackConfigFactoryOrConfig

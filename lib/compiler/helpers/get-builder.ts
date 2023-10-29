@@ -1,4 +1,4 @@
-import { CommandStorage } from '../../../commands';
+import { CommandContext } from '../../../commands';
 import { Builder, Configuration } from '../../configuration';
 import { getValueOrDefault } from './get-value-or-default';
 
@@ -11,7 +11,7 @@ import { getValueOrDefault } from './get-value-or-default';
  */
 export function getBuilder(
   configuration: Required<Configuration>,
-  cmdOptions: CommandStorage,
+  cmdOptions: CommandContext,
   appName: string,
 ) {
   const builderValue = getValueOrDefault<Builder>(

@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { NewAction } from '../actions';
 import { Collection } from '../lib/schematics';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command-storage';
+import { CommandContext } from './command-context';
 
 export class NewCommand extends AbstractCommand<NewAction> {
   public load(program: CommanderStatic) {
@@ -34,7 +34,7 @@ export class NewCommand extends AbstractCommand<NewAction> {
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
       .action(async (name: string, command: Command) => {
-        const commandOptions = new CommandStorage();
+        const commandOptions = new CommandContext();
 
         commandOptions.add({
           name: 'directory',
@@ -82,7 +82,7 @@ export class NewCommand extends AbstractCommand<NewAction> {
           value: command.language,
         });
 
-        const inputs = new CommandStorage();
+        const inputs = new CommandContext();
         inputs.add({ name: 'name', value: name });
 
         await this.action.handle(inputs, commandOptions);

@@ -1,6 +1,6 @@
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
-import { CommandStorage } from '../../commands';
+import { CommandContext } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
@@ -142,7 +142,7 @@ export function moveDefaultProjectToStart(
 
 export function hasValidOptionFlag(
   queriedOptionName: string,
-  options: CommandStorage,
+  options: CommandContext,
   queriedValue: string | number | boolean = true,
 ): boolean {
   const option = options.get(queriedOptionName);

@@ -1,9 +1,9 @@
-import { CommandStorage } from '../commands';
+import { CommandContext } from '../commands';
 
 export abstract class AbstractAction {
   public abstract handle(
-    inputs?: CommandStorage,
-    options?: CommandStorage,
+    inputs?: CommandContext,
+    options?: CommandContext,
     extraFlags?: string[],
   ): Promise<void>;
 }

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { join } from 'path';
-import { CommandStorage, CommandStorageEntry } from '../commands';
+import { CommandContext, CommandContextEntry } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
@@ -24,7 +24,7 @@ import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
-  public async handle(inputs: CommandStorage, options: CommandStorage) {
+  public async handle(inputs: CommandContext, options: CommandContext) {
     const directoryOption = options.get<string>('directory');
     const isDryRunEnabled = options.get<boolean>('dry-run')?.value ?? false;
 
@@ -54,12 +54,12 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const getApplicationNameInput = (inputs: CommandStorage) =>
+const getApplicationNameInput = (inputs: CommandContext) =>
   inputs.get<string>('name', true);
 
 const getProjectDirectory = (
-  applicationName: CommandStorageEntry<string>,
-  directoryOption: CommandStorageEntry<string> | undefined,
+  applicationName: CommandContextEntry<string>,
+  directoryOption: CommandContextEntry<string> | undefined,
 ): string => {
   return (
     directoryOption?.value || normalizeToKebabOrSnakeCase(applicationName.value)
@@ -67,8 +67,8 @@ const getProjectDirectory = (
 };
 
 const askForMissingInformation = async (
-  inputs: CommandStorage,
-  options: CommandStorage,
+  inputs: CommandContext,
+  options: CommandContext,
 ) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
@@ -91,7 +91,7 @@ const askForMissingInformation = async (
 };
 
 const replaceInputMissingInformation = (
-  inputs: CommandStorage,
+  inputs: CommandContext,
   answers: Answers,
 ): void => {
   inputs.forEachEntry((input) => {
@@ -106,15 +106,15 @@ const replaceInputMissingInformation = (
 };
 
 const generateApplicationFiles = async (
-  args: CommandStorage,
-  options: CommandStorage,
+  args: CommandContext,
+  options: CommandContext,
 ) => {
   const collectionName =
     options.get<Collection>('collection')?.value || Collection.NESTJS;
   const collection: AbstractCollection =
     CollectionFactory.create(collectionName);
 
-  const argsAndOptionStorage = new CommandStorage();
+  const argsAndOptionStorage = new CommandContext();
   argsAndOptionStorage.mergeWith(args);
   argsAndOptionStorage.mergeWith(options);
   const schematicOptions: SchematicOption[] =
@@ -124,7 +124,7 @@ const generateApplicationFiles = async (
   console.info();
 };
 
-const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
+const mapSchematicOptions = (storage: CommandContext): SchematicOption[] => {
   const excludedInputNames = ['skip-install'];
   const options: SchematicOption[] = [];
   storage.forEachEntry((commandStorageEntry) => {
@@ -144,7 +144,7 @@ const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
 };
 
 const installPackages = async (
-  options: CommandStorage,
+  options: CommandContext,
   dryRunMode: boolean,
   installDirectory: string,
 ) => {

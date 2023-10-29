@@ -1,4 +1,4 @@
-import { CommandStorageEntry, CommandStorage } from '../../../commands';
+import { CommandContextEntry, CommandContext } from '../../../commands';
 import { Configuration } from '../../configuration';
 
 export function getValueOrDefault<T = any>(
@@ -14,7 +14,7 @@ export function getValueOrDefault<T = any>(
     | 'exec'
     | 'builder'
     | 'typeCheck',
-  options: CommandStorageEntry[] | CommandStorage = [],
+  options: CommandContextEntry[] | CommandContext = [],
   defaultValue?: T,
 ): T {
   const item = Array.isArray(options)

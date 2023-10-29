@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import { Answers } from 'inquirer';
-import { CommandStorage } from '../commands';
+import { CommandContext } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractCollection,
@@ -21,7 +21,7 @@ import {
 import { AbstractAction } from './abstract.action';
 
 export class GenerateAction extends AbstractAction {
-  public async handle(inputs: CommandStorage) {
+  public async handle(inputs: CommandContext) {
     const configuration = await loadConfiguration();
 
     const collectionOption = inputs.get<Collection>('collection')?.value;
@@ -134,7 +134,7 @@ export class GenerateAction extends AbstractAction {
   }
 }
 
-const mapSchematicOptions = (storage: CommandStorage): SchematicOption[] => {
+const mapSchematicOptions = (storage: CommandContext): SchematicOption[] => {
   const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
   storage.forEachEntry((commandStorageEntry) => {

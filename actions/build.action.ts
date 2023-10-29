@@ -1,7 +1,7 @@
 import * as chalk from 'chalk';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { CommandStorage } from '../commands';
+import { CommandContext } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
@@ -37,8 +37,8 @@ export class BuildAction extends AbstractAction {
   protected readonly workspaceUtils = new WorkspaceUtils();
 
   public async handle(
-    commandInputs: CommandStorage,
-    commandOptions: CommandStorage,
+    commandInputs: CommandContext,
+    commandOptions: CommandContext,
   ) {
     try {
       const watchMode = commandOptions.get<boolean>('watch')?.value ?? false;
@@ -62,8 +62,8 @@ export class BuildAction extends AbstractAction {
   }
 
   public async runBuild(
-    commandInputs: CommandStorage,
-    commandOptions: CommandStorage,
+    commandInputs: CommandContext,
+    commandOptions: CommandContext,
     watchMode: boolean,
     watchAssetsMode: boolean,
     isDebugEnabled = false,
@@ -143,7 +143,7 @@ export class BuildAction extends AbstractAction {
     appName: string,
     pathToTsconfig: string,
     watchMode: boolean,
-    options: CommandStorage,
+    options: CommandContext,
     tsOptions: ts.CompilerOptions,
     onSuccess: (() => void) | undefined,
   ) {
@@ -172,7 +172,7 @@ export class BuildAction extends AbstractAction {
   private async runWebpack(
     configuration: Required<Configuration>,
     appName: string,
-    commandOptions: CommandStorage,
+    commandOptions: CommandContext,
     pathToTsconfig: string,
     debug: boolean,
     watchMode: boolean,
@@ -208,7 +208,7 @@ export class BuildAction extends AbstractAction {
 
   private async runTsc(
     watchMode: boolean,
-    options: CommandStorage,
+    options: CommandContext,
     configuration: Required<Configuration>,
     pathToTsconfig: string,
     appName: string,

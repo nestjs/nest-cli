@@ -2,7 +2,7 @@ import { Command, CommanderStatic } from 'commander';
 import type { BuildAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command-storage';
+import { CommandContext } from './command-context';
 
 export class BuildCommand extends AbstractCommand<BuildAction> {
   public load(program: CommanderStatic): void {
@@ -26,7 +26,7 @@ export class BuildCommand extends AbstractCommand<BuildAction> {
       )
       .description('Build Nest application.')
       .action(async (app: string, command: Command) => {
-        const commandOptions = new CommandStorage();
+        const commandOptions = new CommandContext();
 
         commandOptions.add({
           name: 'config',
@@ -83,7 +83,7 @@ export class BuildCommand extends AbstractCommand<BuildAction> {
             !isWebpackEnabled,
         });
 
-        const inputs = new CommandStorage();
+        const inputs = new CommandContext();
         inputs.add({ name: 'app', value: app });
         await this.action.handle(inputs, commandOptions);
       });

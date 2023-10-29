@@ -6,7 +6,7 @@ import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { CommandStorage } from './command-storage';
+import { CommandContext } from './command-context';
 
 export class GenerateCommand extends AbstractCommand<GenerateAction> {
   public async load(program: CommanderStatic): Promise<void> {
@@ -56,7 +56,7 @@ export class GenerateCommand extends AbstractCommand<GenerateAction> {
           path: string,
           command: Command,
         ) => {
-          const commandInputs = new CommandStorage();
+          const commandInputs = new CommandContext();
 
           commandInputs.add({ name: 'dry-run', value: !!command.dryRun });
 
