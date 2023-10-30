@@ -177,7 +177,7 @@ export class StartAction extends BuildAction {
     }
     const sourceMapsRegisterPath = this.getSourceMapSupportPkg();
     if (sourceMapsRegisterPath !== undefined) {
-      processArgs.unshift(`-r ${sourceMapsRegisterPath}`);
+      processArgs.unshift(`-r "${sourceMapsRegisterPath}"`);
     }
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
