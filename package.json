@@ -46,7 +46,7 @@
     "chokidar": "3.5.3",
     "cli-table3": "0.6.3",
     "commander": "4.1.1",
-    "fork-ts-checker-webpack-plugin": "9.0.0",
+    "fork-ts-checker-webpack-plugin": "9.0.2",
     "glob": "10.3.10",
     "inquirer": "8.2.6",
     "node-emoji": "1.11.0",
