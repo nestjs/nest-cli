@@ -24,7 +24,7 @@ const bootstrap = async () => {
   } else {
     await CommandLoader.load(program);
   }
-  commander.parseAsync(process.argv);
+  await commander.parseAsync(process.argv);
 
   if (!process.argv.slice(2).length) {
     program.outputHelp();
