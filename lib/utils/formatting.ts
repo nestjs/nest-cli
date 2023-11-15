@@ -40,6 +40,12 @@ export const normalizeToCase = (
   }
 };
 
+/**
+    * @param str
+    * @returns formatted string
+    * @description escapes parenthesis and brackets in a string
+ **/
+
 export const formatString = (str: string) => {
   return str.split('').reduce((content, char) => {
     if (char === '(' || char === ')' || char === '[' || char === ']') {
