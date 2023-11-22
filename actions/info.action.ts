@@ -21,6 +21,11 @@ interface PackageJsonDependencies {
 interface NestDependency {
   name: string;
   value: string;
+  fullName: string;
+}
+
+interface NestDependencyWarnings {
+  [key: string]: Array<NestDependency>;
 }
 
 export class InfoAction extends AbstractAction {
@@ -104,9 +109,74 @@ export class InfoAction extends AbstractAction {
   }
 
   displayNestVersions(dependencies: PackageJsonDependencies) {
-    this.buildNestVersionsMessage(dependencies).forEach((dependency) =>
+    const nestDependencies = this.buildNestVersionsMessage(dependencies);
+    nestDependencies.forEach((dependency) =>
       console.info(dependency.name, chalk.blue(dependency.value)),
     );
+
+    this.displayWarningMessage(nestDependencies);
+  }
+
+  displayWarningMessage(nestDependencies: NestDependency[]) {
+    const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
+    const minorVersions = Object.keys(warnings);
+    if (minorVersions.length > 0) {
+      console.info('\r');
+
+      console.info(chalk.yellow('[Warnings]'));
+      console.info('The following packages are not in the same minor version');
+      console.info('This could lead to runtime errors');
+      minorVersions.forEach(version => {
+        console.info(chalk.bold(`* Under version ${version}`));
+        warnings[version].forEach(({ fullName, value }) => {
+          console.info((`- ${fullName} ${value}`));
+        });
+      })
+    }
+  }
+
+  buildNestVersionsWarningMessage(
+    nestDependencies: NestDependency[],
+  ): NestDependencyWarnings {
+
+    const dependenciesWhiteList = [
+      '@nestjs/core',
+      '@nestjs/common',
+      '@nestjs/schematics',
+      '@nestjs/platform-express',
+      '@nestjs/platform-fastify',
+      '@nestjs/platform-socket.io',
+      '@nestjs/platform-ws',
+      '@nestjs/websockets',
+    ];
+
+    const unsortedWarnings: NestDependencyWarnings = nestDependencies.reduce<NestDependencyWarnings>(
+      (acc, { name, fullName, value }) => {
+        if (!dependenciesWhiteList.includes(fullName)) {
+          return acc;
+        }
+
+        const [major, minor] = value.split('.').map(parseFloat);
+        const minorVersion = `${major}.${minor}`;
+        acc[minorVersion] = [...(acc[minorVersion] || []), { name, fullName, value }];
+        return acc;
+      },
+      {}
+    );
+
+    const unsortedMinorVersions = Object.keys(unsortedWarnings);
+    if (unsortedMinorVersions.length <= 1) {
+      return {};
+    }
+
+    const sortedMinorVersions = unsortedMinorVersions.sort(
+      (versionA, versionB) => parseFloat(versionB) - parseFloat(versionA)
+    );
+
+    return sortedMinorVersions.reduce<NestDependencyWarnings>((warnings, minorVersion) => {
+      warnings[minorVersion] = unsortedWarnings[minorVersion];
+      return warnings;
+    }, {});
   }
 
   buildNestVersionsMessage(
@@ -130,9 +200,11 @@ export class InfoAction extends AbstractAction {
         nestDependencies.push({
           name: `${key.replace(/@nestjs\//, '').replace(/@.*/, '')} version`,
           value: value || dependencies[key].version,
+          fullName: key,
         });
       }
     });
+
     return nestDependencies;
   }
 
