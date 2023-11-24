@@ -30,6 +30,17 @@ interface NestDependencyWarnings {
 
 export class InfoAction extends AbstractAction {
   private manager!: AbstractPackageManager;
+  // Nest dependencies whitelist used to compare minor version
+  private warningMessageDependenciesWhiteList = [
+    '@nestjs/core',
+    '@nestjs/common',
+    '@nestjs/schematics',
+    '@nestjs/platform-express',
+    '@nestjs/platform-fastify',
+    '@nestjs/platform-socket.io',
+    '@nestjs/platform-ws',
+    '@nestjs/websockets',
+  ];
 
   public async handle() {
     this.manager = await PackageManagerFactory.find();
@@ -118,41 +129,42 @@ export class InfoAction extends AbstractAction {
   }
 
   displayWarningMessage(nestDependencies: NestDependency[]) {
-    const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
-    const minorVersions = Object.keys(warnings);
-    if (minorVersions.length > 0) {
-      console.info('\r');
-
-      console.info(chalk.yellow('[Warnings]'));
-      console.info('The following packages are not in the same minor version');
-      console.info('This could lead to runtime errors');
-      minorVersions.forEach((version) => {
-        console.info(chalk.bold(`* Under version ${version}`));
-        warnings[version].forEach(({ packageName, value }) => {
-          console.info(`- ${packageName} ${value}`);
+    try {
+      const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
+      const minorVersions = Object.keys(warnings);
+      if (minorVersions.length > 0) {
+        console.info('\r');
+        console.info(chalk.yellow('[Warnings]'));
+        console.info(
+          'The following packages are not in the same minor version',
+        );
+        console.info('This could lead to runtime errors');
+        minorVersions.forEach((version) => {
+          console.info(chalk.bold(`* Under version ${version}`));
+          warnings[version].forEach(({ packageName, value }) => {
+            console.info(`- ${packageName} ${value}`);
+          });
         });
-      });
+      }
+    } catch {
+      console.info('\t');
+      console.error(
+        chalk.red(
+          MESSAGES.NEST_INFORMATION_PACKAGE_WARNING_FAILED(
+            this.warningMessageDependenciesWhiteList,
+          ),
+        ),
+      );
     }
   }
 
   buildNestVersionsWarningMessage(
     nestDependencies: NestDependency[],
   ): NestDependencyWarnings {
-    const dependenciesWhiteList = [
-      '@nestjs/core',
-      '@nestjs/common',
-      '@nestjs/schematics',
-      '@nestjs/platform-express',
-      '@nestjs/platform-fastify',
-      '@nestjs/platform-socket.io',
-      '@nestjs/platform-ws',
-      '@nestjs/websockets',
-    ];
-
     const unsortedWarnings: NestDependencyWarnings =
       nestDependencies.reduce<NestDependencyWarnings>(
         (acc, { name, packageName, value }) => {
-          if (!dependenciesWhiteList.includes(packageName)) {
+          if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
             return acc;
           }
 

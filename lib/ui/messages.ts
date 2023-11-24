@@ -26,6 +26,13 @@ export const MESSAGES = {
     `${EMOJIS.SCREAM}  Packages installation failed!\nIn case you don't see any errors above, consider manually running the failed command ${commandToRunManually} to see more details on why it errored out.`,
   // tslint:disable-next-line:max-line-length
   NEST_INFORMATION_PACKAGE_MANAGER_FAILED: `${EMOJIS.SMIRK}  cannot read your project package.json file, are you inside your project directory?`,
+  NEST_INFORMATION_PACKAGE_WARNING_FAILED: (nestDependencies: string[]) =>
+    `${
+      EMOJIS.SMIRK
+    }  failed to compare dependencies versions, please check that following packages are in the same minor version : \n ${nestDependencies.join(
+      '\n',
+    )}`,
+
   LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE: (name: string) =>
     `Unable to install library ${name} because package did not install. Please check package name.`,
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
