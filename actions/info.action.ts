@@ -1,7 +1,6 @@
 import * as chalk from 'chalk';
 import { readFileSync } from 'fs';
 import { platform, release } from 'os';
-import osName = require('os-name');
 import { join } from 'path';
 import {
   AbstractPackageManager,
@@ -38,6 +37,9 @@ export class InfoAction extends AbstractAction {
   }
 
   private async displaySystemInformation(): Promise<void> {
+    // NOTE: We are using eval here due to typescript compiler limitation for ESM-only packages. See: https://stackoverflow.com/a/67849293
+    const osName: typeof import('os-name').default = await eval("import('os-name').then(m => m.default)")
+
     console.info(chalk.green('[System Information]'));
     console.info('OS Version     :', chalk.blue(osName(platform(), release())));
     console.info('NodeJS Version :', chalk.blue(process.version));
