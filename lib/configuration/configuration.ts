@@ -34,6 +34,7 @@ interface GenerateOptions {
   spec?: boolean | Record<string, boolean>;
   flat?: boolean;
   specFileSuffix?: string;
+  baseDir?: string;
 }
 
 export interface ProjectConfiguration {
