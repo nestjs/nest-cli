@@ -6,6 +6,7 @@ import {
   GenerateAction,
   InfoAction,
   NewAction,
+  RemoveAction,
   StartAction,
 } from '../actions';
 import { ERROR_PREFIX } from '../lib/ui';
@@ -15,9 +16,11 @@ import { GenerateCommand } from './generate.command';
 import { InfoCommand } from './info.command';
 import { NewCommand } from './new.command';
 import { StartCommand } from './start.command';
+import { RemoveCommand } from './remove.command';
 export class CommandLoader {
   public static async load(program: CommanderStatic): Promise<void> {
     new NewCommand(new NewAction()).load(program);
+    new RemoveCommand(new RemoveAction()).load(program);
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);

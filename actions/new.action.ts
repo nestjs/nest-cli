@@ -20,8 +20,8 @@ import {
   SchematicOption,
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
-import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
+import { getProjectDirectory } from '../lib/utils/project-utils';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -69,16 +69,6 @@ const getApplicationNameInput = (inputs: Input[]) =>
 
 const getPackageManagerInput = (inputs: Input[]) =>
   inputs.find((options) => options.name === 'packageManager');
-
-const getProjectDirectory = (
-  applicationName: Input,
-  directoryOption?: Input,
-): string => {
-  return (
-    (directoryOption && (directoryOption.value as string)) ||
-    normalizeToKebabOrSnakeCase(applicationName.value as string)
-  );
-};
 
 const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);

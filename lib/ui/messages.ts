@@ -30,4 +30,6 @@ export const MESSAGES = {
     `Unable to install library ${name} because package did not install. Please check package name.`,
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
   LIBRARY_INSTALLATION_STARTS: 'Starting library setup...',
+  PROJECT_REMOVE_CONFIRMATION:
+    'Are you sure you want to permanently delete this project? This action cannot be undone.',
 };

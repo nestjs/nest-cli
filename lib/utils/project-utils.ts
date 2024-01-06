@@ -4,6 +4,7 @@ import { Input } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
+import { normalizeToKebabOrSnakeCase } from './formatting';
 
 export function shouldAskForProject(
   schematic: string,
@@ -150,3 +151,13 @@ export function hasValidOptionFlag(
       option.name === queriedOptionName && option.value === queriedValue,
   );
 }
+
+export const getProjectDirectory = (
+  applicationName: Input,
+  directoryOption?: Input,
+): string => {
+  return (
+    (directoryOption && (directoryOption.value as string)) ||
+    normalizeToKebabOrSnakeCase(applicationName.value as string)
+  );
+};
