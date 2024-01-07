@@ -14,7 +14,7 @@ const loadedConfigsCache = new Map<string, Required<Configuration>>();
 export class NestConfigurationLoader implements ConfigurationLoader {
   constructor(private readonly reader: Reader) {}
 
-  public async load(name?: string): Promise<Required<Configuration>> {
+  public load(name?: string): Required<Configuration> {
     const cacheEntryKey = `${this.reader.constructor.name}:${name}`;
     const cachedConfig = loadedConfigsCache.get(cacheEntryKey);
     if (cachedConfig) {
@@ -24,8 +24,8 @@ export class NestConfigurationLoader implements ConfigurationLoader {
     let loadedConfig: Required<Configuration> | undefined;
 
     const content: string | undefined = name
-      ? await this.reader.read(name)
-      : await this.reader.readAnyOf([
+      ? this.reader.read(name)
+      : this.reader.readAnyOf([
           'nest-cli.json',
           '.nestcli.json',
           '.nest-cli.json',
