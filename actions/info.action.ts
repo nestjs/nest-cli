@@ -1,7 +1,6 @@
 import * as chalk from 'chalk';
 import { readFileSync } from 'fs';
 import { platform, release } from 'os';
-import osName = require('os-name');
 import { join } from 'path';
 import {
   AbstractPackageManager,
@@ -9,6 +8,7 @@ import {
 } from '../lib/package-managers';
 import { BANNER, MESSAGES } from '../lib/ui';
 import { AbstractAction } from './abstract.action';
+import osName from '../lib/utils/os-info.utils';
 
 interface LockfileDependency {
   version: string;
@@ -39,7 +39,7 @@ export class InfoAction extends AbstractAction {
 
   private async displaySystemInformation(): Promise<void> {
     console.info(chalk.green('[System Information]'));
-    console.info('OS Version     :', chalk.blue(osName(platform(), release())));
+    console.info('OS Version     :', chalk.blue(osName(platform(), release()), release()));
     console.info('NodeJS Version :', chalk.blue(process.version));
     await this.displayPackageManagerVersion();
   }
