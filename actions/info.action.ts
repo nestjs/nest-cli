@@ -21,10 +21,26 @@ interface PackageJsonDependencies {
 interface NestDependency {
   name: string;
   value: string;
+  packageName: string;
+}
+
+interface NestDependencyWarnings {
+  [key: string]: Array<NestDependency>;
 }
 
 export class InfoAction extends AbstractAction {
   private manager!: AbstractPackageManager;
+  // Nest dependencies whitelist used to compare minor version
+  private warningMessageDependenciesWhiteList = [
+    '@nestjs/core',
+    '@nestjs/common',
+    '@nestjs/schematics',
+    '@nestjs/platform-express',
+    '@nestjs/platform-fastify',
+    '@nestjs/platform-socket.io',
+    '@nestjs/platform-ws',
+    '@nestjs/websockets',
+  ];
 
   public async handle() {
     this.manager = await PackageManagerFactory.find();
@@ -104,8 +120,93 @@ export class InfoAction extends AbstractAction {
   }
 
   displayNestVersions(dependencies: PackageJsonDependencies) {
-    this.buildNestVersionsMessage(dependencies).forEach((dependency) =>
+    const nestDependencies = this.buildNestVersionsMessage(dependencies);
+    nestDependencies.forEach((dependency) =>
       console.info(dependency.name, chalk.blue(dependency.value)),
+    );
+
+    this.displayWarningMessage(nestDependencies);
+  }
+
+  displayWarningMessage(nestDependencies: NestDependency[]) {
+    try {
+      const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
+      const minorVersions = Object.keys(warnings);
+      if (minorVersions.length > 0) {
+        console.info('\r');
+        console.info(chalk.yellow('[Warnings]'));
+        console.info(
+          'The following packages are not in the same minor version',
+        );
+        console.info('This could lead to runtime errors');
+        minorVersions.forEach((version) => {
+          console.info(chalk.bold(`* Under version ${version}`));
+          warnings[version].forEach(({ packageName, value }) => {
+            console.info(`- ${packageName} ${value}`);
+          });
+        });
+      }
+    } catch {
+      console.info('\t');
+      console.error(
+        chalk.red(
+          MESSAGES.NEST_INFORMATION_PACKAGE_WARNING_FAILED(
+            this.warningMessageDependenciesWhiteList,
+          ),
+        ),
+      );
+    }
+  }
+
+  buildNestVersionsWarningMessage(
+    nestDependencies: NestDependency[],
+  ): NestDependencyWarnings {
+    const unsortedWarnings: NestDependencyWarnings =
+      nestDependencies.reduce<NestDependencyWarnings>(
+        (acc, { name, packageName, value }) => {
+          if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
+            return acc;
+          }
+
+          const cleanedValue = value.replace(/[^\d.]/g, '');
+          const [major, minor] = cleanedValue.split('.');
+          const minorVersion = `${major}.${minor}`;
+          acc[minorVersion] = [
+            ...(acc[minorVersion] || []),
+            { name, packageName, value },
+          ];
+
+          return acc;
+        },
+        {},
+      );
+
+    const unsortedMinorVersions = Object.keys(unsortedWarnings);
+    if (unsortedMinorVersions.length <= 1) {
+      return {};
+    }
+
+    const sortedMinorVersions = unsortedMinorVersions.sort(
+      (versionA, versionB) => {
+        const numA = parseFloat(versionA);
+        const numB = parseFloat(versionB);
+
+        if (isNaN(numA) && isNaN(numB)) {
+          // If both are not valid numbers, maintain the current order.
+          return 0;
+        }
+
+        // NaN is considered greater than any number, so if numA is NaN, place it later.
+        return isNaN(numA) ? 1 : isNaN(numB) ? -1 : numB - numA;
+      },
+    );
+
+    return sortedMinorVersions.reduce<NestDependencyWarnings>(
+      (warnings, minorVersion) => {
+        warnings[minorVersion] = unsortedWarnings[minorVersion];
+        return warnings;
+      },
+      {},
     );
   }
 
@@ -130,9 +231,11 @@ export class InfoAction extends AbstractAction {
         nestDependencies.push({
           name: `${key.replace(/@nestjs\//, '').replace(/@.*/, '')} version`,
           value: value || dependencies[key].version,
+          packageName: key,
         });
       }
     });
+
     return nestDependencies;
   }
 
