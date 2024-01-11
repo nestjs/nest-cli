@@ -18,7 +18,7 @@ export class Compiler extends BaseCompiler {
   public run(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     _extras: any,
     onSuccess?: () => void,
   ) {

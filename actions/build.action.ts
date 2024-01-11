@@ -82,9 +82,9 @@ export class BuildAction extends AbstractAction {
     const buildAll = commandOptions.find((opt) => opt.name === 'all')!
       .value as boolean;
 
-    let appNames: string[];
+    let appNames: (string | undefined)[];
     if (buildAll) {
-      appNames = [undefined!]; // always include the default project
+      appNames = [undefined]; // always include the default project
 
       if (configuration.projects) {
         appNames.push(...Object.keys(configuration.projects));
@@ -175,7 +175,7 @@ export class BuildAction extends AbstractAction {
 
   private async runSwc(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     pathToTsconfig: string,
     watchMode: boolean,
     options: Input[],
@@ -212,7 +212,7 @@ export class BuildAction extends AbstractAction {
 
   private async runWebpack(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     commandOptions: Input[],
     pathToTsconfig: string,
     debug: boolean,
@@ -258,7 +258,7 @@ export class BuildAction extends AbstractAction {
     options: Input[],
     configuration: Required<Configuration>,
     pathToTsconfig: string,
-    appName: string,
+    appName: string | undefined,
   ) {
     if (watchMode) {
       const { WatchCompiler } = await import('../lib/compiler/watch-compiler');

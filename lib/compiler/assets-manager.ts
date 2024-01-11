@@ -38,7 +38,7 @@ export class AssetsManager {
 
   public copyAssets(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     outDir: string,
     watchAssetsMode: boolean,
   ) {
