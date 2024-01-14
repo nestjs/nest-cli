@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Reader } from './reader';
+import { Reader, ReaderFileLackPersmissionsError } from './reader';
 
 export class FileSystemReader implements Reader {
   constructor(private readonly directory: string) {}
@@ -13,15 +13,40 @@ export class FileSystemReader implements Reader {
     return fs.readFileSync(path.join(this.directory, name), 'utf8');
   }
 
-  public readAnyOf(filenames: string[]): string | undefined {
-    try {
-      for (const file of filenames) {
+  public readAnyOf(
+    filenames: string[],
+  ): string | undefined | ReaderFileLackPersmissionsError {
+    let firstFilePathFoundButWithInsufficientPermissions: string | undefined;
+
+    for (let idx=0; idx < filenames.length; idx++) {
+      const file = filenames[idx];
+
+      try {
         return this.read(file);
+      } catch (readErr) {
+        if (
+          !firstFilePathFoundButWithInsufficientPermissions &&
+          typeof readErr?.code === 'string'
+        ) {
+          const isInsufficientPermissionsError =
+            readErr.code === 'EACCES' || readErr.code === 'EPERM';
+          if (isInsufficientPermissionsError) {
+            firstFilePathFoundButWithInsufficientPermissions = readErr.path;
+          }
+        }
+
+        const isLastFileToLookFor = idx === filenames.length - 1;
+        if (!isLastFileToLookFor) continue;
+
+        if (firstFilePathFoundButWithInsufficientPermissions) {
+          return new ReaderFileLackPersmissionsError(
+            firstFilePathFoundButWithInsufficientPermissions,
+            readErr.code,
+          );
+        } else {
+          return undefined;
+        }
       }
-    } catch (err) {
-      return filenames.length > 0
-        ? this.readAnyOf(filenames.slice(1, filenames.length))
-        : undefined;
     }
   }
 }

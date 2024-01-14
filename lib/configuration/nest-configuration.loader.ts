@@ -1,4 +1,4 @@
-import { Reader } from '../readers';
+import { Reader, ReaderFileLackPersmissionsError } from '../readers';
 import { Configuration } from './configuration';
 import { ConfigurationLoader } from './configuration.loader';
 import { defaultConfiguration } from './defaults';
@@ -23,7 +23,7 @@ export class NestConfigurationLoader implements ConfigurationLoader {
 
     let loadedConfig: Required<Configuration> | undefined;
 
-    const content: string | undefined = name
+    const contentOrError = name
       ? this.reader.read(name)
       : this.reader.readAnyOf([
           'nest-cli.json',
@@ -32,8 +32,14 @@ export class NestConfigurationLoader implements ConfigurationLoader {
           'nest.json',
         ]);
 
-    if (content) {
-      const fileConfig = JSON.parse(content);
+    if (contentOrError) {
+      const isMissingPersmissionsError = contentOrError instanceof ReaderFileLackPersmissionsError;
+      if (isMissingPersmissionsError) {
+        console.error(contentOrError.message);
+        process.exit(1);
+      }
+
+      const fileConfig = JSON.parse(contentOrError);
       if (fileConfig.compilerOptions) {
         loadedConfig = {
           ...defaultConfiguration,
