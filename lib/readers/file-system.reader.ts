@@ -18,8 +18,8 @@ export class FileSystemReader implements Reader {
   ): string | undefined | ReaderFileLackPersmissionsError {
     let firstFilePathFoundButWithInsufficientPermissions: string | undefined;
 
-    for (let idx=0; idx < filenames.length; idx++) {
-      const file = filenames[idx];
+    for (let id = 0; id < filenames.length; id++) {
+      const file = filenames[id];
 
       try {
         return this.read(file);
@@ -35,8 +35,10 @@ export class FileSystemReader implements Reader {
           }
         }
 
-        const isLastFileToLookFor = idx === filenames.length - 1;
-        if (!isLastFileToLookFor) continue;
+        const isLastFileToLookFor = id === filenames.length - 1;
+        if (!isLastFileToLookFor) {
+          continue;
+        }
 
         if (firstFilePathFoundButWithInsufficientPermissions) {
           return new ReaderFileLackPersmissionsError(

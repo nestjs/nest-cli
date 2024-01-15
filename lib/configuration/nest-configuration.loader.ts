@@ -33,7 +33,8 @@ export class NestConfigurationLoader implements ConfigurationLoader {
         ]);
 
     if (contentOrError) {
-      const isMissingPersmissionsError = contentOrError instanceof ReaderFileLackPersmissionsError;
+      const isMissingPersmissionsError =
+        contentOrError instanceof ReaderFileLackPersmissionsError;
       if (isMissingPersmissionsError) {
         console.error(contentOrError.message);
         process.exit(1);
