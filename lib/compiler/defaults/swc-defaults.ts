@@ -43,6 +43,7 @@ export const swcDefaultsFactory = (
       includeDotfiles: false,
       quiet: false,
       watch: false,
+      stripLeadingPaths: true,
       ...builderOptions,
     },
   };
