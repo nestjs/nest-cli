@@ -64,6 +64,33 @@ export class NewAction extends AbstractAction {
   }
 }
 
+const isNpmInstalled = () => {
+  try {
+    execSync('which npm');
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const isYarnInstalled = () => {
+  try {
+    execSync('which yarn');
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const isPnpmInstalled = () => {
+  try {
+    execSync('which pnpm');
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
@@ -163,12 +190,14 @@ const installPackages = async (
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
+  const installedPackageManagers = [];
+  if (isNpmInstalled()) installedPackageManagers.push(PackageManager.NPM);
+  if (isYarnInstalled()) installedPackageManagers.push(PackageManager.YARN);
+  if (isPnpmInstalled()) installedPackageManagers.push(PackageManager.PNPM);
   const questions: Question[] = [
-    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
-      PackageManager.NPM,
-      PackageManager.YARN,
-      PackageManager.PNPM,
-    ]),
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)(
+      installedPackageManagers,
+    ),
   ];
   const prompt = inquirer.createPromptModule();
   return await prompt(questions);
