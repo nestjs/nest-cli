@@ -64,27 +64,11 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const isNpmInstalled = () => {
+const isThisPackageManagerInstalled = (packageManager: string) => {
   try {
-    execSync('npm -v');
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-const isYarnInstalled = () => {
-  try {
-    execSync('yarn -v');
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-const isPnpmInstalled = () => {
-  try {
-    execSync('pnpm -v');
+    execSync(`${packageManager} -v`, {
+      stdio: 'ignore',
+    });
     return true;
   } catch (error) {
     return false;
@@ -191,9 +175,12 @@ const installPackages = async (
 
 const askForPackageManager = async (): Promise<Answers> => {
   const installedPackageManagers = [];
-  if (isNpmInstalled()) installedPackageManagers.push(PackageManager.NPM);
-  if (isYarnInstalled()) installedPackageManagers.push(PackageManager.YARN);
-  if (isPnpmInstalled()) installedPackageManagers.push(PackageManager.PNPM);
+  if (isThisPackageManagerInstalled('npm'))
+    installedPackageManagers.push(PackageManager.NPM);
+  if (isThisPackageManagerInstalled('yarn'))
+    installedPackageManagers.push(PackageManager.YARN);
+  if (isThisPackageManagerInstalled('pnpm'))
+    installedPackageManagers.push(PackageManager.PNPM);
   const questions: Question[] = [
     generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)(
       installedPackageManagers,
