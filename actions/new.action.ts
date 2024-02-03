@@ -66,7 +66,7 @@ export class NewAction extends AbstractAction {
 
 const isNpmInstalled = () => {
   try {
-    execSync('which npm');
+    execSync('npm -v');
     return true;
   } catch (error) {
     return false;
@@ -75,7 +75,7 @@ const isNpmInstalled = () => {
 
 const isYarnInstalled = () => {
   try {
-    execSync('which yarn');
+    execSync('yarn -v');
     return true;
   } catch (error) {
     return false;
@@ -84,7 +84,7 @@ const isYarnInstalled = () => {
 
 const isPnpmInstalled = () => {
   try {
-    execSync('which pnpm');
+    execSync('pnpm -v');
     return true;
   } catch (error) {
     return false;
