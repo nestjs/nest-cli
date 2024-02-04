@@ -194,6 +194,12 @@ const askForPackageManager = async (): Promise<Answers> => {
       installedPackageManagers.push(entry.packageManager);
     }
   });
+  if (installedPackageManagers.length == 0) {
+    console.error();
+    console.error(chalk.red(MESSAGES.NO_PACKAGE_MANAGER_WAS_FOUND));
+    console.error();
+    exit();
+  }
   const questions: Question[] = [
     generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)(
       installedPackageManagers,
