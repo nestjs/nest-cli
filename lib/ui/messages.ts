@@ -10,6 +10,8 @@ export const MESSAGES = {
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
+  NO_PACKAGE_MANAGER_WAS_FOUND:
+    'No package manager was found installed on your system.',
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
