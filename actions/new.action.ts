@@ -174,13 +174,26 @@ const installPackages = async (
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
-  const installedPackageManagers = [];
-  if (isThisPackageManagerInstalled('npm'))
-    installedPackageManagers.push(PackageManager.NPM);
-  if (isThisPackageManagerInstalled('yarn'))
-    installedPackageManagers.push(PackageManager.YARN);
-  if (isThisPackageManagerInstalled('pnpm'))
-    installedPackageManagers.push(PackageManager.PNPM);
+  const possiblePackageManagers = [
+    {
+      id: 'npm',
+      packageManager: PackageManager.NPM,
+    },
+    {
+      id: 'yarn',
+      packageManager: PackageManager.YARN,
+    },
+    {
+      id: 'pnpm',
+      packageManager: PackageManager.PNPM,
+    },
+  ];
+  const installedPackageManagers: string[] = [];
+  possiblePackageManagers.forEach((entry) => {
+    if (isThisPackageManagerInstalled(entry.id)) {
+      installedPackageManagers.push(entry.packageManager);
+    }
+  });
   const questions: Question[] = [
     generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)(
       installedPackageManagers,
