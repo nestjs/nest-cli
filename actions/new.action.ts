@@ -70,7 +70,7 @@ const isThisPackageManagerInstalled = (packageManager: string) => {
       stdio: 'ignore',
     });
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
