@@ -1,5 +1,16 @@
+export class ReaderFileLackPersmissionsError extends Error {
+  constructor(
+    public readonly filePath: string,
+    public readonly fsErrorCode: string,
+  ) {
+    super(`File ${filePath} lacks read permissions!`);
+  }
+}
+
 export interface Reader {
-  list(): string[] | Promise<string[]>;
-  read(name: string): string | Promise<string>;
-  readAnyOf(filenames: string[]): string | Promise<string | undefined>;
+  list(): string[];
+  read(name: string): string;
+  readAnyOf(
+    filenames: string[],
+  ): string | undefined | ReaderFileLackPersmissionsError;
 }

@@ -2,10 +2,8 @@ import * as fs from 'fs';
 import { FileSystemReader, Reader } from '../../../lib/readers';
 
 jest.mock('fs', () => ({
-  promises: {
-    readdir: jest.fn().mockResolvedValue([]),
-    readFile: jest.fn().mockResolvedValue('content'),
-  },
+  readdirSync: jest.fn().mockResolvedValue([]),
+  readFileSync: jest.fn().mockResolvedValue('content'),
 }));
 
 const dir: string = process.cwd();
@@ -15,25 +13,25 @@ describe('File System Reader', () => {
   afterAll(() => {
     jest.clearAllMocks();
   });
-  it('should use fs.promises.readdir when list', async () => {
-    await reader.list();
-    expect(fs.promises.readdir).toHaveBeenCalled();
+  it('should use fs.readdirSync when list (for performance reasons)', async () => {
+    reader.list();
+    expect(fs.readdirSync).toHaveBeenCalled();
   });
-  it('should use fs.promises.readFile when read', async () => {
-    await reader.read('filename');
-    expect(fs.promises.readFile).toHaveBeenCalled();
+  it('should use fs.readFileSync when read (for performance reasons)', async () => {
+    reader.read('filename');
+    expect(fs.readFileSync).toHaveBeenCalled();
   });
 
   describe('readAnyOf tests', () => {
-    it('should call readFile when running readAnyOf fn', async () => {
+    it('should call readFileSync when running readAnyOf fn', async () => {
       const filenames: string[] = ['file1', 'file2', 'file3'];
-      await reader.readAnyOf(filenames);
+      reader.readAnyOf(filenames);
 
-      expect(fs.promises.readFile).toHaveBeenCalled();
+      expect(fs.readFileSync).toHaveBeenCalled();
     });
 
     it('should return undefined when no file is passed', async () => {
-      const content = await reader.readAnyOf([]);
+      const content = reader.readAnyOf([]);
       expect(content).toEqual(undefined);
     });
   });

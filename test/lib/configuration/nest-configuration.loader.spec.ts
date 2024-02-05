@@ -9,21 +9,17 @@ describe('Nest Configuration Loader', () => {
     mock.mockImplementation(() => {
       return {
         readAnyOf: jest.fn(() =>
-          Promise.resolve(
-            JSON.stringify({
-              language: 'ts',
-              collection: '@nestjs/schematics',
-            }),
-          ),
+          JSON.stringify({
+            language: 'ts',
+            collection: '@nestjs/schematics',
+          }),
         ),
         read: jest.fn(() =>
-          Promise.resolve(
-            JSON.stringify({
-              language: 'ts',
-              collection: '@nestjs/schematics',
-              entryFile: 'secondary',
-            }),
-          ),
+          JSON.stringify({
+            language: 'ts',
+            collection: '@nestjs/schematics',
+            entryFile: 'secondary',
+          }),
         ),
       };
     });

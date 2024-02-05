@@ -1,27 +1,54 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Reader } from './reader';
+import { Reader, ReaderFileLackPersmissionsError } from './reader';
 
 export class FileSystemReader implements Reader {
   constructor(private readonly directory: string) {}
 
-  public list(): Promise<string[]> {
-    return fs.promises.readdir(this.directory);
+  public list(): string[] {
+    return fs.readdirSync(this.directory);
   }
 
-  public read(name: string): Promise<string> {
-    return fs.promises.readFile(path.join(this.directory, name), 'utf8');
+  public read(name: string): string {
+    return fs.readFileSync(path.join(this.directory, name), 'utf8');
   }
 
-  public async readAnyOf(filenames: string[]): Promise<string | undefined> {
-    try {
-      for (const file of filenames) {
-        return await this.read(file);
+  public readAnyOf(
+    filenames: string[],
+  ): string | undefined | ReaderFileLackPersmissionsError {
+    let firstFilePathFoundButWithInsufficientPermissions: string | undefined;
+
+    for (let id = 0; id < filenames.length; id++) {
+      const file = filenames[id];
+
+      try {
+        return this.read(file);
+      } catch (readErr) {
+        if (
+          !firstFilePathFoundButWithInsufficientPermissions &&
+          typeof readErr?.code === 'string'
+        ) {
+          const isInsufficientPermissionsError =
+            readErr.code === 'EACCES' || readErr.code === 'EPERM';
+          if (isInsufficientPermissionsError) {
+            firstFilePathFoundButWithInsufficientPermissions = readErr.path;
+          }
+        }
+
+        const isLastFileToLookFor = id === filenames.length - 1;
+        if (!isLastFileToLookFor) {
+          continue;
+        }
+
+        if (firstFilePathFoundButWithInsufficientPermissions) {
+          return new ReaderFileLackPersmissionsError(
+            firstFilePathFoundButWithInsufficientPermissions,
+            readErr.code,
+          );
+        } else {
+          return undefined;
+        }
       }
-    } catch (err) {
-      return filenames.length > 0
-        ? await this.readAnyOf(filenames.slice(1, filenames.length))
-        : undefined;
     }
   }
 }

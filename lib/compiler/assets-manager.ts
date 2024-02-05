@@ -101,8 +101,9 @@ export class AssetsManager {
 
           this.watchers.push(watcher);
         } else {
-          const files = sync(item.glob, { ignore: item.exclude })
-            .filter((matched) => statSync(matched).isFile());
+          const files = sync(item.glob, { ignore: item.exclude }).filter(
+            (matched) => statSync(matched).isFile(),
+          );
           for (const path of files) {
             this.actionOnFile({ ...option, path, action: 'change' });
           }
