@@ -69,7 +69,7 @@ describe('InfoAction', () => {
       ];
       const result = infoAction.buildNestVersionsWarningMessage(dependencies);
       const expected = {
-        '1.2': [
+        '1': [
           { packageName: '@nestjs/core', name: 'core', value: '1.2.3' },
           { packageName: '@nestjs/common', name: 'common', value: '1.2.4' },
           {
@@ -93,7 +93,7 @@ describe('InfoAction', () => {
             value: '1.2.4',
           },
         ],
-        '2.1': [
+        '2': [
           {
             packageName: '@nestjs/platform-ws',
             name: 'platform-ws',
@@ -132,20 +132,21 @@ describe('InfoAction', () => {
           value: '1.2$$.4',
         },
         {
-          name: 'platform-socket.io',
-          packageName: '@nestjs/platform-socket.io',
-          value: '2.0.1',
-        },
-        {
           packageName: '@nestjs/websockets',
           name: 'websockets',
           value: '^2.*&1.0',
+        },
+
+        {
+          name: 'platform-socket.io',
+          packageName: '@nestjs/platform-socket.io',
+          value: '2.0.1',
         },
       ];
 
       const result = infoAction.buildNestVersionsWarningMessage(dependencies);
       const expected = {
-        '2.1': [
+        '2': [
           {
             name: 'platform-fastify',
             packageName: '@nestjs/platform-fastify',
@@ -156,15 +157,13 @@ describe('InfoAction', () => {
             name: 'websockets',
             value: '^2.*&1.0',
           },
-        ],
-        '2.0': [
           {
             name: 'platform-socket.io',
             packageName: '@nestjs/platform-socket.io',
             value: '2.0.1',
           },
         ],
-        '1.2': [
+        '1': [
           {
             name: 'schematics',
             packageName: '@nestjs/schematics',
