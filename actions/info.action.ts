@@ -55,7 +55,10 @@ export class InfoAction extends AbstractAction {
 
   private async displaySystemInformation(): Promise<void> {
     console.info(chalk.green('[System Information]'));
-    console.info('OS Version     :', chalk.blue(osName(platform(), release()), release()));
+    console.info(
+      'OS Version     :',
+      chalk.blue(osName(platform(), release()), release()),
+    );
     console.info('NodeJS Version :', chalk.blue(process.version));
     await this.displayPackageManagerVersion();
   }
@@ -161,24 +164,23 @@ export class InfoAction extends AbstractAction {
   buildNestVersionsWarningMessage(
     nestDependencies: NestDependency[],
   ): NestDependencyWarnings {
-    const unsortedWarnings =
-      nestDependencies.reduce(
-        (depWarningsGroup, { name, packageName, value }) => {
-          if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
-            return depWarningsGroup;
-          }
-
-          const [major,] = value.replace(/[^\d.]/g, '').split('.', 1);
-          const minimumVersion = major;
-          depWarningsGroup[minimumVersion] = [
-            ...(depWarningsGroup[minimumVersion] || []),
-            { name, packageName, value },
-          ];
-
+    const unsortedWarnings = nestDependencies.reduce(
+      (depWarningsGroup, { name, packageName, value }) => {
+        if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
           return depWarningsGroup;
-        },
-        Object.create(null) as NestDependencyWarnings,
-      );
+        }
+
+        const [major] = value.replace(/[^\d.]/g, '').split('.', 1);
+        const minimumVersion = major;
+        depWarningsGroup[minimumVersion] = [
+          ...(depWarningsGroup[minimumVersion] || []),
+          { name, packageName, value },
+        ];
+
+        return depWarningsGroup;
+      },
+      Object.create(null) as NestDependencyWarnings,
+    );
 
     const unsortedMinorVersions = Object.keys(unsortedWarnings);
     if (unsortedMinorVersions.length <= 1) {

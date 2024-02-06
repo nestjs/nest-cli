@@ -12,7 +12,8 @@ export const swcDefaultsFactory = (
 
   return {
     swcOptions: {
-      sourceMaps: tsOptions?.sourceMap || (tsOptions?.inlineSourceMap && 'inline'),
+      sourceMaps:
+        tsOptions?.sourceMap || (tsOptions?.inlineSourceMap && 'inline'),
       module: {
         type: 'commonjs',
       },

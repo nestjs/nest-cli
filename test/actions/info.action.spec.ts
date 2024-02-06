@@ -136,7 +136,6 @@ describe('InfoAction', () => {
           name: 'websockets',
           value: '^2.*&1.0',
         },
-
         {
           name: 'platform-socket.io',
           packageName: '@nestjs/platform-socket.io',
