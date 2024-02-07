@@ -30,7 +30,7 @@ interface NestDependencyWarnings {
 
 export class InfoAction extends AbstractAction {
   private manager!: AbstractPackageManager;
-  // Nest dependencies whitelist used to compare minor version
+  // Nest dependencies whitelist used to compare the major version
   private warningMessageDependenciesWhiteList = [
     '@nestjs/core',
     '@nestjs/common',
@@ -55,7 +55,10 @@ export class InfoAction extends AbstractAction {
 
   private async displaySystemInformation(): Promise<void> {
     console.info(chalk.green('[System Information]'));
-    console.info('OS Version     :', chalk.blue(osName(platform(), release()), release()));
+    console.info(
+      'OS Version     :',
+      chalk.blue(osName(platform(), release()), release()),
+    );
     console.info('NodeJS Version :', chalk.blue(process.version));
     await this.displayPackageManagerVersion();
   }
@@ -131,15 +134,15 @@ export class InfoAction extends AbstractAction {
   displayWarningMessage(nestDependencies: NestDependency[]) {
     try {
       const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
-      const minorVersions = Object.keys(warnings);
-      if (minorVersions.length > 0) {
+      const majorVersions = Object.keys(warnings);
+      if (majorVersions.length > 0) {
         console.info('\r');
         console.info(chalk.yellow('[Warnings]'));
         console.info(
-          'The following packages are not in the same minor version',
+          'The following packages are not in the same major version',
         );
         console.info('This could lead to runtime errors');
-        minorVersions.forEach((version) => {
+        majorVersions.forEach((version) => {
           console.info(chalk.bold(`* Under version ${version}`));
           warnings[version].forEach(({ packageName, value }) => {
             console.info(`- ${packageName} ${value}`);
@@ -161,25 +164,23 @@ export class InfoAction extends AbstractAction {
   buildNestVersionsWarningMessage(
     nestDependencies: NestDependency[],
   ): NestDependencyWarnings {
-    const unsortedWarnings: NestDependencyWarnings =
-      nestDependencies.reduce<NestDependencyWarnings>(
-        (acc, { name, packageName, value }) => {
-          if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
-            return acc;
-          }
+    const unsortedWarnings = nestDependencies.reduce(
+      (depWarningsGroup, { name, packageName, value }) => {
+        if (!this.warningMessageDependenciesWhiteList.includes(packageName)) {
+          return depWarningsGroup;
+        }
 
-          const cleanedValue = value.replace(/[^\d.]/g, '');
-          const [major, minor] = cleanedValue.split('.');
-          const minorVersion = `${major}.${minor}`;
-          acc[minorVersion] = [
-            ...(acc[minorVersion] || []),
-            { name, packageName, value },
-          ];
+        const [major] = value.replace(/[^\d.]/g, '').split('.', 1);
+        const minimumVersion = major;
+        depWarningsGroup[minimumVersion] = [
+          ...(depWarningsGroup[minimumVersion] || []),
+          { name, packageName, value },
+        ];
 
-          return acc;
-        },
-        {},
-      );
+        return depWarningsGroup;
+      },
+      Object.create(null) as NestDependencyWarnings,
+    );
 
     const unsortedMinorVersions = Object.keys(unsortedWarnings);
     if (unsortedMinorVersions.length <= 1) {
@@ -201,12 +202,12 @@ export class InfoAction extends AbstractAction {
       },
     );
 
-    return sortedMinorVersions.reduce<NestDependencyWarnings>(
+    return sortedMinorVersions.reduce(
       (warnings, minorVersion) => {
         warnings[minorVersion] = unsortedWarnings[minorVersion];
         return warnings;
       },
-      {},
+      Object.create(null) as NestDependencyWarnings,
     );
   }
 

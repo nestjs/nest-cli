@@ -15,6 +15,6 @@ export default function osName(platform: string, release: string): string {
     case 'android':
       return 'Android';
     default:
-        return platform;
+      return platform;
   }
 }
