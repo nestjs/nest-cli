@@ -1,8 +1,7 @@
 import * as chokidar from 'chokidar';
-import { statSync } from 'fs';
+import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
 import { sync } from 'glob';
 import { dirname, join, sep } from 'path';
-import * as shell from 'shelljs';
 import {
   ActionOnFile,
   Asset,
@@ -137,11 +136,11 @@ export class AssetsManager {
 
     // Copy to output dir if file is changed or added
     if (action === 'change') {
-      shell.mkdir('-p', dirname(dest));
-      shell.cp(path, dest);
+      mkdirSync(dirname(dest), { recursive: true });
+      copyFileSync(path, dest);
     } else if (action === 'unlink') {
       // Remove from output dir if file is deleted
-      shell.rm(dest);
+      rmSync(dest, { force: true });
     }
   }
 }
