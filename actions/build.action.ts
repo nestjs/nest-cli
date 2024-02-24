@@ -10,7 +10,7 @@ import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
-import { WorkspaceUtils } from '../lib/compiler/workspace-utils';
+import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
 import {
   Configuration,
   ConfigurationLoader,
@@ -34,7 +34,6 @@ export class BuildAction extends AbstractAction {
     this.fileSystemReader,
   );
   protected readonly assetsManager = new AssetsManager();
-  protected readonly workspaceUtils = new WorkspaceUtils();
 
   public async handle(commandInputs: Input[], commandOptions: Input[]) {
     try {
@@ -101,11 +100,7 @@ export class BuildAction extends AbstractAction {
       ? { type: 'webpack' }
       : getBuilder(configuration, commandOptions, appName);
 
-    await this.workspaceUtils.deleteOutDirIfEnabled(
-      configuration,
-      appName,
-      outDir,
-    );
+    await deleteOutDirIfEnabled(configuration, appName, outDir);
     this.assetsManager.copyAssets(
       configuration,
       appName,
