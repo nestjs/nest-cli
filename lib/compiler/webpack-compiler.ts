@@ -165,6 +165,9 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
         return process.exit(1);
       }
       console.log(statsOutput);
+      if (!watchMode && !watch) {
+        compiler.close(() => {});
+      }
     };
   }
 }
