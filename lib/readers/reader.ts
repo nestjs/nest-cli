@@ -1,4 +1,4 @@
-export class ReaderFileLackPersmissionsError extends Error {
+export class ReaderFileLackPermissionsError extends Error {
   constructor(
     public readonly filePath: string,
     public readonly fsErrorCode: string,
@@ -12,5 +12,5 @@ export interface Reader {
   read(name: string): string;
   readAnyOf(
     filenames: string[],
-  ): string | undefined | ReaderFileLackPersmissionsError;
+  ): string | undefined | ReaderFileLackPermissionsError;
 }
