@@ -1,4 +1,4 @@
-import { Reader, ReaderFileLackPersmissionsError } from '../readers';
+import { Reader, ReaderFileLackPermissionsError } from '../readers';
 import { Configuration } from './configuration';
 import { ConfigurationLoader } from './configuration.loader';
 import { defaultConfiguration } from './defaults';
@@ -33,9 +33,9 @@ export class NestConfigurationLoader implements ConfigurationLoader {
         ]);
 
     if (contentOrError) {
-      const isMissingPersmissionsError =
-        contentOrError instanceof ReaderFileLackPersmissionsError;
-      if (isMissingPersmissionsError) {
+      const isMissingPermissionsError =
+        contentOrError instanceof ReaderFileLackPermissionsError;
+      if (isMissingPermissionsError) {
         console.error(contentOrError.message);
         process.exit(1);
       }

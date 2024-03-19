@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Reader, ReaderFileLackPersmissionsError } from './reader';
+import { Reader, ReaderFileLackPermissionsError } from './reader';
 
 export class FileSystemReader implements Reader {
   constructor(private readonly directory: string) {}
@@ -15,7 +15,7 @@ export class FileSystemReader implements Reader {
 
   public readAnyOf(
     filenames: string[],
-  ): string | undefined | ReaderFileLackPersmissionsError {
+  ): string | undefined | ReaderFileLackPermissionsError {
     let firstFilePathFoundButWithInsufficientPermissions: string | undefined;
 
     for (let id = 0; id < filenames.length; id++) {
@@ -41,7 +41,7 @@ export class FileSystemReader implements Reader {
         }
 
         if (firstFilePathFoundButWithInsufficientPermissions) {
-          return new ReaderFileLackPersmissionsError(
+          return new ReaderFileLackPermissionsError(
             firstFilePathFoundButWithInsufficientPermissions,
             readErr.code,
           );
