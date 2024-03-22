@@ -64,6 +64,17 @@ export class NewAction extends AbstractAction {
   }
 }
 
+const isThisPackageManagerInstalled = (packageManager: string) => {
+  try {
+    execSync(`${packageManager} -v`, {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
@@ -163,12 +174,36 @@ const installPackages = async (
 };
 
 const askForPackageManager = async (): Promise<Answers> => {
+  const possiblePackageManagers = [
+    {
+      id: 'npm',
+      packageManager: PackageManager.NPM,
+    },
+    {
+      id: 'yarn',
+      packageManager: PackageManager.YARN,
+    },
+    {
+      id: 'pnpm',
+      packageManager: PackageManager.PNPM,
+    },
+  ];
+  const installedPackageManagers: string[] = [];
+  possiblePackageManagers.forEach((entry) => {
+    if (isThisPackageManagerInstalled(entry.id)) {
+      installedPackageManagers.push(entry.packageManager);
+    }
+  });
+  if (installedPackageManagers.length == 0) {
+    console.error();
+    console.error(chalk.red(MESSAGES.NO_PACKAGE_MANAGER_WAS_FOUND));
+    console.error();
+    exit();
+  }
   const questions: Question[] = [
-    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
-      PackageManager.NPM,
-      PackageManager.YARN,
-      PackageManager.PNPM,
-    ]),
+    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)(
+      installedPackageManagers,
+    ),
   ];
   const prompt = inquirer.createPromptModule();
   return await prompt(questions);
