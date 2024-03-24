@@ -1,4 +1,4 @@
-import * as   chokidar from 'chokidar';
+import * as chokidar from 'chokidar';
 import { statSync } from 'fs';
 import { sync } from 'glob';
 import { dirname, join, sep } from 'path';
@@ -104,7 +104,6 @@ export class AssetsManager {
           const files = sync(item.glob, { ignore: item.exclude }).filter(
             (matched) => statSync(matched).isFile(),
           );
-
           for (const path of files) {
             this.actionOnFile({ ...option, path, action: 'change' });
           }
