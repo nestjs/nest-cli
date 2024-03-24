@@ -1,4 +1,4 @@
-import * as chokidar from 'chokidar';
+import * as   chokidar from 'chokidar';
 import { statSync } from 'fs';
 import { sync } from 'glob';
 import { dirname, join, sep } from 'path';
@@ -60,18 +60,18 @@ export class AssetsManager {
       sourceRoot = join(process.cwd(), sourceRoot);
 
       const filesToCopy = assets.map<AssetEntry>((item) => {
-        if (typeof item === 'string') {
-          return {
-            glob: join(sourceRoot, item),
-            outDir,
-          };
-        }
+        let includePath = typeof item === 'string' ? item : item.include!;
+        let excludePath = typeof item !== 'string' && item.exclude ? item.exclude : undefined;
+
+        includePath = join(sourceRoot, includePath).replace(/\\/g, '/');
+        excludePath = excludePath ? join(sourceRoot, excludePath).replace(/\\/g, '/') : undefined;
+
         return {
-          outDir: item.outDir || outDir,
-          glob: join(sourceRoot, item.include!),
-          exclude: item.exclude ? join(sourceRoot, item.exclude) : undefined,
-          flat: item.flat, // deprecated field
-          watchAssets: item.watchAssets,
+          outDir: typeof item !== 'string' ? item.outDir || outDir : outDir,
+          glob: includePath,
+          exclude: excludePath,
+          flat: typeof item !== 'string' ? item.flat : undefined, // deprecated field
+          watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
         };
       });
 
@@ -104,6 +104,7 @@ export class AssetsManager {
           const files = sync(item.glob, { ignore: item.exclude }).filter(
             (matched) => statSync(matched).isFile(),
           );
+
           for (const path of files) {
             this.actionOnFile({ ...option, path, action: 'change' });
           }
