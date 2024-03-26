@@ -13,7 +13,7 @@ import { getValueOrDefault } from './get-value-or-default';
 export function getTscConfigPath(
   configuration: Required<Configuration>,
   cmdOptions: Input[],
-  appName: string,
+  appName: string | undefined,
 ) {
   let tsconfigPath = getValueOrDefault<string | undefined>(
     configuration,

@@ -12,7 +12,7 @@ import { getValueOrDefault } from './get-value-or-default';
 export function getWebpackConfigPath(
   configuration: Required<Configuration>,
   cmdOptions: Input[],
-  appName: string,
+  appName: string | undefined,
 ) {
   let webpackPath = getValueOrDefault<string | undefined>(
     configuration,

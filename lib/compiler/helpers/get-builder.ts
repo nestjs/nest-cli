@@ -12,7 +12,7 @@ import { getValueOrDefault } from './get-value-or-default';
 export function getBuilder(
   configuration: Required<Configuration>,
   cmdOptions: Input[],
-  appName: string,
+  appName: string | undefined,
 ) {
   const builderValue = getValueOrDefault<Builder>(
     configuration,
