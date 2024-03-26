@@ -51,7 +51,6 @@
     "inquirer": "8.2.6",
     "node-emoji": "1.11.0",
     "ora": "5.4.1",
-    "rimraf": "4.4.1",
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
     "tree-kill": "1.2.2",
