@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "package1": {
+      "factory": "factory",
+      "description": "Package schematic 1",
+      "aliases": ["pkg1"]
+    }
+  }
+}
