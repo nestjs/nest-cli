@@ -1,4 +1,4 @@
-import { Input } from '../../../commands';
+import { CommandContextEntry, CommandContext } from '../../../commands';
 import { Configuration } from '../../configuration';
 
 export function getValueOrDefault<T = any>(
@@ -14,13 +14,15 @@ export function getValueOrDefault<T = any>(
     | 'exec'
     | 'builder'
     | 'typeCheck',
-  options: Input[] = [],
+  options: CommandContextEntry[] | CommandContext = [],
   defaultValue?: T,
 ): T {
-  const item = options.find((option) => option.name === key);
-  const origValue = item && (item.value as unknown as T);
+  const item = Array.isArray(options)
+    ? options.find((option) => option.name === key)
+    : key && options.get(key);
+  const origValue = item?.value as T | undefined;
   if (origValue !== undefined && origValue !== null) {
-    return origValue as T;
+    return origValue;
   }
   if (configuration.projects && configuration.projects[appName as string]) {
     // Wrap the application name in double-quotes to prevent splitting it

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
 import { join } from 'path';
-import { Input } from '../commands';
+import { CommandContext, CommandContextEntry } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
 import {
   AbstractPackageManager,
@@ -24,33 +24,23 @@ import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[]) {
-    const directoryOption = options.find(
-      (option) => option.name === 'directory',
-    );
-    const dryRunOption = options.find((option) => option.name === 'dry-run');
-    const isDryRunEnabled = dryRunOption && dryRunOption.value;
+  public async handle(inputs: CommandContext, options: CommandContext) {
+    const directoryOption = options.get<string>('directory');
+    const isDryRunEnabled = options.get<boolean>('dry-run')?.value ?? false;
 
     await askForMissingInformation(inputs, options);
     await generateApplicationFiles(inputs, options).catch(exit);
 
-    const shouldSkipInstall = options.some(
-      (option) => option.name === 'skip-install' && option.value === true,
-    );
-    const shouldSkipGit = options.some(
-      (option) => option.name === 'skip-git' && option.value === true,
-    );
+    const shouldSkipInstall =
+      options.get<boolean>('skip-install')?.value ?? false;
+    const shouldSkipGit = options.get<boolean>('skip-git')?.value ?? false;
     const projectDirectory = getProjectDirectory(
-      getApplicationNameInput(inputs)!,
+      getApplicationNameInput(inputs),
       directoryOption,
     );
 
     if (!shouldSkipInstall) {
-      await installPackages(
-        options,
-        isDryRunEnabled as boolean,
-        projectDirectory,
-      );
+      await installPackages(options, isDryRunEnabled, projectDirectory);
     }
     if (!isDryRunEnabled) {
       if (!shouldSkipGit) {
@@ -64,86 +54,101 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const getApplicationNameInput = (inputs: Input[]) =>
-  inputs.find((input) => input.name === 'name');
-
-const getPackageManagerInput = (inputs: Input[]) =>
-  inputs.find((options) => options.name === 'packageManager');
+const getApplicationNameInput = (inputs: CommandContext) =>
+  inputs.get<string>('name', true);
 
 const getProjectDirectory = (
-  applicationName: Input,
-  directoryOption?: Input,
+  applicationName: CommandContextEntry<string>,
+  directoryOption: CommandContextEntry<string> | undefined,
 ): string => {
   return (
-    (directoryOption && (directoryOption.value as string)) ||
-    normalizeToKebabOrSnakeCase(applicationName.value as string)
+    directoryOption?.value || normalizeToKebabOrSnakeCase(applicationName.value)
   );
 };
 
-const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
+const askForMissingInformation = async (
+  inputs: CommandContext,
+  options: CommandContext,
+) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
   const prompt: inquirer.PromptModule = inquirer.createPromptModule();
 
   const nameInput = getApplicationNameInput(inputs);
-  if (!nameInput!.value) {
+  if (!nameInput.value) {
     const message = 'What name would you like to use for the new project?';
     const questions = [generateInput('name', message)('nest-app')];
     const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
     replaceInputMissingInformation(inputs, answers);
   }
 
-  const packageManagerInput = getPackageManagerInput(options);
-  if (!packageManagerInput!.value) {
+  const packageManagerInput = options.get<string>('packageManager');
+  if (!packageManagerInput?.value) {
     const answers = await askForPackageManager();
     replaceInputMissingInformation(options, answers);
   }
 };
 
 const replaceInputMissingInformation = (
-  inputs: Input[],
+  inputs: CommandContext,
   answers: Answers,
-): Input[] => {
-  return inputs.map(
-    (input) =>
-      (input.value =
-        input.value !== undefined ? input.value : answers[input.name]),
-  );
+): void => {
+  inputs.forEachEntry((input) => {
+    if (input.value === undefined) {
+      const maybeInputAnswer = answers[input.name];
+      inputs.set({
+        name: input.name,
+        value: maybeInputAnswer,
+      });
+    }
+  });
 };
 
-const generateApplicationFiles = async (args: Input[], options: Input[]) => {
-  const collectionName = options.find(
-    (option) => option.name === 'collection' && option.value != null,
-  )!.value;
-  const collection: AbstractCollection = CollectionFactory.create(
-    (collectionName as Collection) || Collection.NESTJS,
-  );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(
-    args.concat(options),
-  );
+const generateApplicationFiles = async (
+  args: CommandContext,
+  options: CommandContext,
+) => {
+  const collectionName =
+    options.get<Collection>('collection')?.value || Collection.NESTJS;
+  const collection: AbstractCollection =
+    CollectionFactory.create(collectionName);
+
+  const argsAndOptionStorage = new CommandContext();
+  argsAndOptionStorage.mergeWith(args);
+  argsAndOptionStorage.mergeWith(options);
+  const schematicOptions: SchematicOption[] =
+    mapSchematicOptions(argsAndOptionStorage);
   await collection.execute('application', schematicOptions);
+
   console.info();
 };
 
-const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
-  return options.reduce(
-    (schematicOptions: SchematicOption[], option: Input) => {
-      if (option.name !== 'skip-install') {
-        schematicOptions.push(new SchematicOption(option.name, option.value));
-      }
-      return schematicOptions;
-    },
-    [],
-  );
+const mapSchematicOptions = (storage: CommandContext): SchematicOption[] => {
+  const excludedInputNames = ['skip-install'];
+  const options: SchematicOption[] = [];
+  storage.forEachEntry((commandStorageEntry) => {
+    if (
+      !excludedInputNames.includes(commandStorageEntry.name) &&
+      commandStorageEntry.value !== undefined
+    ) {
+      options.push(
+        new SchematicOption(
+          commandStorageEntry.name,
+          commandStorageEntry.value,
+        ),
+      );
+    }
+  });
+  return options;
 };
 
 const installPackages = async (
-  options: Input[],
+  options: CommandContext,
   dryRunMode: boolean,
   installDirectory: string,
 ) => {
-  const inputPackageManager = getPackageManagerInput(options)!.value as string;
+  const inputPackageManager = options.get<string>('packageManager', true).value;
 
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {

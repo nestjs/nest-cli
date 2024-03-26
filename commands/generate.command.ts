@@ -1,13 +1,14 @@
 import * as chalk from 'chalk';
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
+import type { GenerateAction } from '../actions';
 import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { CommandContext } from './command-context';
 
-export class GenerateCommand extends AbstractCommand {
+export class GenerateCommand extends AbstractCommand<GenerateAction> {
   public async load(program: CommanderStatic): Promise<void> {
     program
       .command('generate <schematic> [name] [path]')
@@ -55,14 +56,15 @@ export class GenerateCommand extends AbstractCommand {
           path: string,
           command: Command,
         ) => {
-          const options: Input[] = [];
-          options.push({ name: 'dry-run', value: !!command.dryRun });
+          const commandInputs = new CommandContext();
+
+          commandInputs.add({ name: 'dry-run', value: !!command.dryRun });
 
           if (command.flat !== undefined) {
-            options.push({ name: 'flat', value: command.flat });
+            commandInputs.add({ name: 'flat', value: command.flat });
           }
 
-          options.push({
+          commandInputs.add({
             name: 'spec',
             value:
               typeof command.spec === 'boolean'
@@ -75,30 +77,29 @@ export class GenerateCommand extends AbstractCommand {
                   : command.spec.passedAsInput,
             },
           });
-          options.push({
+          commandInputs.add({
             name: 'specFileSuffix',
             value: command.specFileSuffix,
           });
-          options.push({
+          commandInputs.add({
             name: 'collection',
             value: command.collection,
           });
-          options.push({
+          commandInputs.add({
             name: 'project',
             value: command.project,
           });
 
-          options.push({
+          commandInputs.add({
             name: 'skipImport',
             value: command.skipImport,
           });
 
-          const inputs: Input[] = [];
-          inputs.push({ name: 'schematic', value: schematic });
-          inputs.push({ name: 'name', value: name });
-          inputs.push({ name: 'path', value: path });
+          commandInputs.add({ name: 'schematic', value: schematic });
+          commandInputs.add({ name: 'name', value: name });
+          commandInputs.add({ name: 'path', value: path });
 
-          await this.action.handle(inputs, options);
+          await this.action.handle(commandInputs);
         },
       );
   }
