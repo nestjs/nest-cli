@@ -1,4 +1,5 @@
 import * as chalk from 'chalk';
+import * as path from 'path';
 import { Answers } from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
@@ -123,6 +124,10 @@ const generateFiles = async (inputs: Input[]) => {
         specFileSuffixValue,
       );
     }
+  }
+
+  if (configuration.generateOptions?.baseDir) {
+    sourceRoot = path.join(sourceRoot, configuration.generateOptions.baseDir);
   }
 
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
