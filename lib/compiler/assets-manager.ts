@@ -101,7 +101,12 @@ export class AssetsManager {
 
           this.watchers.push(watcher);
         } else {
-          const files = sync(item.glob, { ignore: item.exclude }).filter(
+          // Glob patterns should always use / as a path separator, even on
+          // Windows systems, as \ is used to escape glob characters.
+          const reg = /\\/g;
+          const glob = item.glob.replace(reg, '/');
+          const exclude = item.exclude && item.exclude.replace(reg, '/');
+          const files = sync(glob, { ignore: exclude }).filter(
             (matched) => statSync(matched).isFile(),
           );
           for (const path of files) {
