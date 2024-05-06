@@ -68,7 +68,7 @@
     "@swc/core": "1.5.3",
     "@types/inquirer": "9.0.3",
     "@types/jest": "29.5.12",
-    "@types/node": "20.12.8",
+    "@types/node": "20.12.10",
     "@types/node-emoji": "1.8.2",
     "@types/shelljs": "0.8.15",
     "@types/webpack-node-externals": "3.0.4",
