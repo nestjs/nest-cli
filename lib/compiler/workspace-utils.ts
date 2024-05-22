@@ -5,7 +5,7 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 export class WorkspaceUtils {
   public async deleteOutDirIfEnabled(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     dirPath: string,
   ) {
     const isDeleteEnabled = getValueOrDefault<boolean>(
