@@ -186,7 +186,7 @@ export class SwcCompiler extends BaseCompiler {
     } catch (err) {
       console.error(
         ERROR_PREFIX +
-          ' Failed to load "@swc/cli" and "@swc/core" packages. Please, install them by running "npm i -D @swc/cli @swc/core".',
+          ' Failed to load "@swc/cli" and/or "@swc/core" required packages. Please, make sure to install them as development dependencies.',
       );
       process.exit(1);
     }
