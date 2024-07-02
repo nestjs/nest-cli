@@ -58,7 +58,7 @@
     "tsconfig-paths": "4.2.0",
     "tsconfig-paths-webpack-plugin": "4.1.0",
     "typescript": "5.5.3",
-    "webpack": "5.90.1",
+    "webpack": "5.92.1",
     "webpack-node-externals": "3.0.0"
   },
   "devDependencies": {
