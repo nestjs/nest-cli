@@ -59,18 +59,18 @@ export class AssetsManager {
       sourceRoot = join(process.cwd(), sourceRoot);
 
       const filesToCopy = assets.map<AssetEntry>((item) => {
-        if (typeof item === 'string') {
-          return {
-            glob: join(sourceRoot, item),
-            outDir,
-          };
-        }
+        let includePath = typeof item === 'string' ? item : item.include!;
+        let excludePath = typeof item !== 'string' && item.exclude ? item.exclude : undefined;
+
+        includePath = join(sourceRoot, includePath).replace(/\\/g, '/');
+        excludePath = excludePath ? join(sourceRoot, excludePath).replace(/\\/g, '/') : undefined;
+
         return {
-          outDir: item.outDir || outDir,
-          glob: join(sourceRoot, item.include!),
-          exclude: item.exclude ? join(sourceRoot, item.exclude) : undefined,
-          flat: item.flat, // deprecated field
-          watchAssets: item.watchAssets,
+          outDir: typeof item !== 'string' ? item.outDir || outDir : outDir,
+          glob: includePath,
+          exclude: excludePath,
+          flat: typeof item !== 'string' ? item.flat : undefined, // deprecated field
+          watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
         };
       });
 
