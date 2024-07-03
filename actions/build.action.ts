@@ -266,11 +266,6 @@ export class BuildAction extends AbstractAction {
     if (!isWebpackFileAvailable && webpackPath === defaultPath) {
       return ({}) => ({});
     }
-
-    try {
-      return require(pathToWebpackFile);
-    } catch (err) {
-      throw err;
-    }
+    return require(pathToWebpackFile);
   }
 }
