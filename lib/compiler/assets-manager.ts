@@ -60,10 +60,13 @@ export class AssetsManager {
 
       const filesToCopy = assets.map<AssetEntry>((item) => {
         let includePath = typeof item === 'string' ? item : item.include!;
-        let excludePath = typeof item !== 'string' && item.exclude ? item.exclude : undefined;
+        let excludePath =
+          typeof item !== 'string' && item.exclude ? item.exclude : undefined;
 
         includePath = join(sourceRoot, includePath).replace(/\\/g, '/');
-        excludePath = excludePath ? join(sourceRoot, excludePath).replace(/\\/g, '/') : undefined;
+        excludePath = excludePath
+          ? join(sourceRoot, excludePath).replace(/\\/g, '/')
+          : undefined;
 
         return {
           outDir: typeof item !== 'string' ? item.outDir || outDir : outDir,
