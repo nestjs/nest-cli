@@ -175,21 +175,11 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
-    const sourceMapsRegisterPath = this.getSourceMapSupportPkg();
-    if (sourceMapsRegisterPath !== undefined) {
-      processArgs.unshift(`-r "${sourceMapsRegisterPath}"`);
-    }
+    processArgs.unshift('--enable-source-maps');
+
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
       shell: true,
     });
-  }
-
-  private getSourceMapSupportPkg() {
-    try {
-      return require.resolve('source-map-support/register');
-    } catch {
-      return undefined;
-    }
   }
 }
