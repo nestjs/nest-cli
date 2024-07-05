@@ -22,6 +22,7 @@ import {
 } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
 import { ERROR_PREFIX } from '../lib/ui';
+import { isModuleAvailable } from '../lib/utils/is-module-available';
 import { AbstractAction } from './abstract.action';
 import webpack = require('webpack');
 
@@ -261,13 +262,10 @@ export class BuildAction extends AbstractAction {
     webpackRef: typeof webpack,
   ) => webpack.Configuration {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
-    try {
-      return require(pathToWebpackFile);
-    } catch (err) {
-      if (webpackPath !== defaultPath) {
-        throw err;
-      }
+    const isWebpackFileAvailable = isModuleAvailable(pathToWebpackFile);
+    if (!isWebpackFileAvailable && webpackPath === defaultPath) {
       return ({}) => ({});
     }
+    return require(pathToWebpackFile);
   }
 }
