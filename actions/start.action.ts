@@ -78,6 +78,7 @@ export class StartAction extends BuildAction {
         debugFlag,
         outDir,
         binaryToRun,
+        isWatchEnabled,
       );
 
       await this.runBuild(
@@ -103,6 +104,7 @@ export class StartAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    isWatchEnabled: boolean,
   ) {
     let childProcessRef: any;
     process.on(
@@ -120,6 +122,7 @@ export class StartAction extends BuildAction {
             debugFlag,
             outDirName,
             binaryToRun,
+            isWatchEnabled,
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
         });
@@ -133,6 +136,7 @@ export class StartAction extends BuildAction {
           debugFlag,
           outDirName,
           binaryToRun,
+          isWatchEnabled,
         );
         childProcessRef.on('exit', (code: number) => {
           process.exitCode = code;
@@ -148,6 +152,7 @@ export class StartAction extends BuildAction {
     debug: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    isWatchEnabled: boolean,
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
     if (!fs.existsSync(outputFilePath + '.js')) {
@@ -174,6 +179,9 @@ export class StartAction extends BuildAction {
       const inspectFlag =
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
+    }
+    if (isWatchEnabled) {
+      processArgs.unshift('--watch');
     }
     processArgs.unshift('--enable-source-maps');
 
