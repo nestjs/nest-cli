@@ -62,7 +62,7 @@
     "@commitlint/cli": "19.3.0",
     "@commitlint/config-angular": "19.3.0",
     "@swc/cli": "0.4.0",
-    "@swc/core": "1.7.2",
+    "@swc/core": "1.7.3",
     "@types/inquirer": "9.0.7",
     "@types/jest": "29.5.12",
     "@types/node": "20.14.12",
