@@ -15,8 +15,8 @@ function dealWith(inPath: string, up: number) {
     return inPath;
   }
 
-  if (depth(inPath) < up) {
-    throw new Error('cant go up that far');
+  if (depth(inPath) < up - 1) {
+    throw new Error('Path outside of project folder is not allowed');
   }
 
   return path.join(...path.normalize(inPath).split(path.sep).slice(up));
