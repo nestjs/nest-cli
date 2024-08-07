@@ -59,7 +59,7 @@
     "webpack-node-externals": "3.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.3.0",
+    "@commitlint/cli": "19.4.0",
     "@commitlint/config-angular": "19.3.0",
     "@swc/cli": "0.4.0",
     "@swc/core": "1.7.6",
