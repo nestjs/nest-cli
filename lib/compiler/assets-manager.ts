@@ -103,9 +103,18 @@ export class AssetsManager {
 
           this.watchers.push(watcher);
         } else {
-          const files = sync(item.glob, { ignore: item.exclude }).filter(
-            (matched) => statSync(matched).isFile(),
-          );
+          const matchedPaths = sync(item.glob, { ignore: item.exclude });
+          const files = item.glob.endsWith('*')
+            ? matchedPaths.filter((matched) => statSync(matched).isFile())
+            : matchedPaths.flatMap((matched) => {
+                if (statSync(matched).isDirectory()) {
+                  return sync(`${matched}/**/*`, {
+                    ignore: item.exclude,
+                  }).filter((file) => statSync(file).isFile());
+                }
+                return matched;
+              });
+
           for (const path of files) {
             this.actionOnFile({ ...option, path, action: 'change' });
           }
