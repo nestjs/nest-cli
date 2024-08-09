@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import { Input } from '../commands';
+import { CommandContext, CommandContextEntry } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
   AbstractPackageManager,
@@ -23,7 +23,11 @@ import { AbstractAction } from './abstract.action';
 const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[], extraFlags: string[]) {
+  public async handle(
+    inputs: CommandContext,
+    options: CommandContext,
+    extraFlags: string[],
+  ) {
     const libraryName = this.getLibraryName(inputs);
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
@@ -32,10 +36,13 @@ export class AddAction extends AbstractAction {
     const packageInstallSuccess =
       skipInstall || (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
-      const sourceRootOption: Input = await this.getSourceRoot(
-        inputs.concat(options),
-      );
-      options.push(sourceRootOption);
+      const sourceRootOption: CommandContextEntry = await this.getSourceRoot([
+        inputs,
+        options,
+      ]);
+      if (sourceRootOption) {
+        options.add(sourceRootOption);
+      }
 
       await this.addLibrary(collectionName, options, extraFlags);
     } else {
@@ -50,12 +57,20 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private async getSourceRoot(inputs: Input[]): Promise<Input> {
+  private async getSourceRoot(
+    storages: CommandContext[],
+  ): Promise<CommandContextEntry> {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
-    const appName = inputs.find((option) => option.name === 'project')!
-      .value as string;
+    let appName: string | undefined;
+    for (const storage of storages) {
+      const maybeProject = storage.get<string>('project');
+      if (maybeProject) {
+        appName = maybeProject.value;
+        break;
+      }
+    }
 
     let sourceRoot = appName
       ? getValueOrDefault(configuration, 'sourceRoot', appName)
@@ -117,7 +132,7 @@ export class AddAction extends AbstractAction {
 
   private async addLibrary(
     collectionName: string,
-    options: Input[],
+    options: CommandContext,
     extraFlags: string[],
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
@@ -125,7 +140,7 @@ export class AddAction extends AbstractAction {
     schematicOptions.push(
       new SchematicOption(
         'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string,
+        options.get<string>('sourceRoot', true).value,
       ),
     );
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
@@ -146,15 +161,13 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private getLibraryName(inputs: Input[]): string {
-    const libraryInput: Input = inputs.find(
-      (input) => input.name === 'library',
-    ) as Input;
+  private getLibraryName(inputs: CommandContext): string {
+    const libraryInput = inputs.get<string>('library');
 
     if (!libraryInput) {
       throw new Error('No library found in command input');
     }
-    return libraryInput.value as string;
+    return libraryInput.value;
   }
 
   private getPackageName(library: string): string {
