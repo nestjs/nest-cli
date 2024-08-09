@@ -131,12 +131,13 @@ export class AssetsManager {
     const { action, item, path, sourceRoot, watchAssetsMode } = option;
     const isWatchEnabled = watchAssetsMode || item.watchAssets;
 
+    const assetCheckKey = path + (item.outDir ?? '');
     // Allow to do action for the first time before check watchMode
-    if (!isWatchEnabled && this.watchAssetsKeyValue[path]) {
+    if (!isWatchEnabled && this.watchAssetsKeyValue[assetCheckKey]) {
       return;
     }
     // Set path value to true for watching the first time
-    this.watchAssetsKeyValue[path] = true;
+    this.watchAssetsKeyValue[assetCheckKey] = true;
     // Set action to true to avoid watches getting cutoff
     this.actionInProgress = true;
 
