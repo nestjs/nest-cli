@@ -89,18 +89,13 @@ const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
     const message = MESSAGES.PROJECT_NAME_QUESTION;
     const question: InputQuestion = generateInput('name', message)('nest-app');    
     const answer = await input(question as any);
-
-    console.log('name answer', answer)
-
     replaceInputMissingInformation(inputs, {name: 'name', value: answer});
   }
 
   const packageManagerInput = getPackageManagerInput(options);
 
-  console.log(packageManagerInput)
   if (!packageManagerInput!.value) {
     const answer = await askForPackageManager();
-    console.log('manager answer', answer)
     replaceInputMissingInformation(options, {name: 'packageManager', value: answer });
   }
 };
@@ -109,16 +104,11 @@ const replaceInputMissingInformation = (
   inputs: Input[],
   answer: Answers,
 ): void => {
-  console.log('inputs', inputs)
-  console.log('answers', answer)
-
   const input = inputs.find(input => input.name === answer.name);
   
   if (input) {
     input.value = input.value !== undefined ? input.value : answer.value;
   }
-
-  console.log('inputs after apply', inputs)
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
