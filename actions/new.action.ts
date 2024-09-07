@@ -94,6 +94,12 @@ const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
     replaceInputMissingInformation(inputs, answers);
   }
 
+  // It should not ask for the package manager if --skip-install is option is set
+  const shouldSkipInstall = options.find((opt) => opt.name === 'skip-install')!;
+  if (shouldSkipInstall.value) {
+    return;
+  }
+
   const packageManagerInput = getPackageManagerInput(options);
   if (!packageManagerInput!.value) {
     const answers = await askForPackageManager();
