@@ -48,7 +48,7 @@
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "9.0.2",
     "glob": "10.4.2",
-    "inquirer": "8.2.6",
+    "inquirer": "10.2.2",
     "node-emoji": "1.11.0",
     "ora": "5.4.1",
     "tree-kill": "1.2.2",
