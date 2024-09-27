@@ -1,4 +1,4 @@
-import * as inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import { Answers, Question } from 'inquirer';
 import { Input } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
@@ -120,8 +120,8 @@ export async function askForProjectName(
   const questions: Question[] = [
     generateSelect('appName')(promptQuestion)(projects),
   ];
-  const prompt = inquirer.createPromptModule();
-  return prompt(questions);
+
+  return select(questions as any);
 }
 
 export function moveDefaultProjectToStart(
