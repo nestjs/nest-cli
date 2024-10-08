@@ -1,10 +1,11 @@
 import { Command, CommanderStatic } from 'commander';
+import type { StartAction } from '../actions';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
-import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { CommandContext } from './command-context';
+import type { BuilderVariant } from '../lib/configuration';
 
-export class StartCommand extends AbstractCommand {
+export class StartCommand extends AbstractCommand<StartAction> {
   public load(program: CommanderStatic): void {
     program
       .command('start [app]')
@@ -40,39 +41,42 @@ export class StartCommand extends AbstractCommand {
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
-        const options: Input[] = [];
+        const commandOptions = new CommandContext();
 
-        options.push({
+        commandOptions.add({
           name: 'config',
           value: command.config,
         });
 
         const isWebpackEnabled = command.tsc ? false : command.webpack;
-        options.push({ name: 'webpack', value: isWebpackEnabled });
-        options.push({ name: 'debug', value: command.debug });
-        options.push({ name: 'watch', value: !!command.watch });
-        options.push({ name: 'watchAssets', value: !!command.watchAssets });
-        options.push({
+        commandOptions.add({ name: 'webpack', value: isWebpackEnabled });
+        commandOptions.add({ name: 'debug', value: command.debug });
+        commandOptions.add({ name: 'watch', value: !!command.watch });
+        commandOptions.add({
+          name: 'watchAssets',
+          value: !!command.watchAssets,
+        });
+        commandOptions.add({
           name: 'path',
           value: command.path,
         });
-        options.push({
+        commandOptions.add({
           name: 'webpackPath',
           value: command.webpackPath,
         });
-        options.push({
+        commandOptions.add({
           name: 'exec',
           value: command.exec,
         });
-        options.push({
+        commandOptions.add({
           name: 'sourceRoot',
           value: command.sourceRoot,
         });
-        options.push({
+        commandOptions.add({
           name: 'entryFile',
           value: command.entryFile,
         });
-        options.push({
+        commandOptions.add({
           name: 'preserveWatchOutput',
           value:
             !!command.preserveWatchOutput &&
@@ -80,7 +84,7 @@ export class StartCommand extends AbstractCommand {
             !isWebpackEnabled,
         });
 
-        const availableBuilders = ['tsc', 'webpack', 'swc'];
+        const availableBuilders: BuilderVariant[] = ['tsc', 'webpack', 'swc'];
         if (command.builder && !availableBuilders.includes(command.builder)) {
           console.error(
             ERROR_PREFIX +
@@ -90,7 +94,7 @@ export class StartCommand extends AbstractCommand {
           );
           return;
         }
-        options.push({
+        commandOptions.add({
           name: 'builder',
           value: command.builder,
         });
@@ -101,17 +105,16 @@ export class StartCommand extends AbstractCommand {
               ` "typeCheck" will not have any effect when "builder" is not "swc".`,
           );
         }
-        options.push({
+        commandOptions.add({
           name: 'typeCheck',
           value: command.typeCheck,
         });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'app', value: app });
-        const flags = getRemainingFlags(program);
+        const inputs = new CommandContext();
+        inputs.add({ name: 'app', value: app });
 
         try {
-          await this.action.handle(inputs, options, flags);
+          await this.action.handle(inputs, commandOptions);
         } catch (err) {
           process.exit(1);
         }

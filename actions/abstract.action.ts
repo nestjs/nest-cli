@@ -1,9 +1,9 @@
-import { Input } from '../commands';
+import { CommandContext } from '../commands';
 
 export abstract class AbstractAction {
   public abstract handle(
-    inputs?: Input[],
-    options?: Input[],
+    inputs?: CommandContext,
+    options?: CommandContext,
     extraFlags?: string[],
   ): Promise<void>;
 }
