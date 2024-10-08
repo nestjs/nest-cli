@@ -39,7 +39,7 @@ export class SwcCompiler extends BaseCompiler {
   public async run(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
@@ -79,13 +79,13 @@ export class SwcCompiler extends BaseCompiler {
   private runTypeChecker(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: SwcCompilerExtras,
   ) {
     if (extras.watch) {
       const args = [
         tsConfigPath,
-        appName,
+        appName ?? 'undefined',
         configuration.sourceRoot ?? 'src',
         JSON.stringify(configuration.compilerOptions.plugins ?? []),
       ];

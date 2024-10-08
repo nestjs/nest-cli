@@ -4,7 +4,7 @@ import { getValueOrDefault } from './get-value-or-default';
 
 export async function deleteOutDirIfEnabled(
   configuration: Required<Configuration>,
-  appName: string,
+  appName: string | undefined,
   dirPath: string,
 ) {
   const isDeleteEnabled = getValueOrDefault<boolean>(
