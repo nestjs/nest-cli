@@ -37,7 +37,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
   public run(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: WebpackCompilerExtras,
     onSuccess?: () => void,
   ) {

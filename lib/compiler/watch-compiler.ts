@@ -35,7 +35,7 @@ export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
   public run(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: TypescriptWatchCompilerExtras,
     onSuccess?: () => void,
   ) {
