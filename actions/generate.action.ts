@@ -19,6 +19,7 @@ import {
   shouldGenerateSpec,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
+import { CaseType, normalizeToCase } from '../lib/utils/formatting';
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -44,10 +45,19 @@ const generateFiles = async (inputs: Input[]) => {
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
+
+  const caseType = (
+      configuration?.generateOptions?.caseNaming
+      || 'snake'
+  ) as CaseType;
+
+  const inputName = inputs.find((option) => option.name === 'name');
+  const name = normalizeToCase(inputName?.value as string, caseType);
+
   const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
-  schematicOptions.push(
-    new SchematicOption('language', configuration.language),
-  );
+  schematicOptions.push(new SchematicOption('name', name));
+  schematicOptions.push(new SchematicOption('caseNaming', caseType));
+  schematicOptions.push(new SchematicOption('language', configuration.language));
   const configurationProjects = configuration.projects;
 
   let sourceRoot = appName
@@ -128,9 +138,7 @@ const generateFiles = async (inputs: Input[]) => {
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
   schematicOptions.push(new SchematicOption('spec', generateSpec));
   schematicOptions.push(new SchematicOption('flat', generateFlat));
-  schematicOptions.push(
-    new SchematicOption('specFileSuffix', generateSpecFileSuffix),
-  );
+  schematicOptions.push(new SchematicOption('specFileSuffix', generateSpecFileSuffix));
   try {
     const schematicInput = inputs.find((input) => input.name === 'schematic');
     if (!schematicInput) {
@@ -144,8 +152,10 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
-  const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
+const mapSchematicOptions = (
+  inputs: Input[],
+): SchematicOption[] => {
+  const excludedInputNames = ['name','schematic', 'spec', 'flat', 'specFileSuffix'];
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
