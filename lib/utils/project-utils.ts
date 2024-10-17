@@ -1,6 +1,6 @@
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
-import { Input } from '../../commands';
+import { CommandContext } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
@@ -8,7 +8,7 @@ import { generateSelect } from '../questions/questions';
 export function shouldAskForProject(
   schematic: string,
   configurationProjects: { [key: string]: ProjectConfiguration },
-  appName: string,
+  appName: string | undefined,
 ) {
   return (
     ['app', 'sub-app', 'library', 'lib'].includes(schematic) === false &&
@@ -21,7 +21,7 @@ export function shouldAskForProject(
 export function shouldGenerateSpec(
   configuration: Required<Configuration>,
   schematic: string,
-  appName: string,
+  appName: string | undefined,
   specValue: boolean,
   specPassedAsInput?: boolean,
 ) {
@@ -70,7 +70,7 @@ export function shouldGenerateSpec(
 
 export function shouldGenerateFlat(
   configuration: Required<Configuration>,
-  appName: string,
+  appName: string | undefined,
   flatValue: boolean,
 ): boolean {
   // CLI parameters have the highest priority
@@ -91,8 +91,8 @@ export function shouldGenerateFlat(
 
 export function getSpecFileSuffix(
   configuration: Required<Configuration>,
-  appName: string,
-  specFileSuffixValue: string,
+  appName: string | undefined,
+  specFileSuffixValue: string | undefined,
 ): string {
   // CLI parameters have the highest priority
   if (specFileSuffixValue) {
@@ -110,7 +110,7 @@ export function getSpecFileSuffix(
   if (typeof specFileSuffixConfiguration === 'string') {
     return specFileSuffixConfiguration;
   }
-  return specFileSuffixValue;
+  throw new Error('No spec file suffix was defined!');
 }
 
 export async function askForProjectName(
@@ -142,11 +142,9 @@ export function moveDefaultProjectToStart(
 
 export function hasValidOptionFlag(
   queriedOptionName: string,
-  options: Input[],
+  options: CommandContext,
   queriedValue: string | number | boolean = true,
 ): boolean {
-  return options.some(
-    (option: Input) =>
-      option.name === queriedOptionName && option.value === queriedValue,
-  );
+  const option = options.get(queriedOptionName);
+  return option?.value === queriedValue;
 }
