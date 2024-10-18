@@ -4,6 +4,7 @@ import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';
 import { YarnRunner } from './yarn.runner';
 import { PnpmRunner } from './pnpm.runner';
+import { BunRunner } from './bun.runner';
 
 export class RunnerFactory {
   public static create(runner: Runner) {
@@ -19,6 +20,9 @@ export class RunnerFactory {
 
       case Runner.PNPM:
         return new PnpmRunner();
+
+      case Runner.BUN:
+        return new BunRunner();
 
       default:
         console.info(chalk.yellow(`[WARN] Unsupported runner: ${runner}`));
