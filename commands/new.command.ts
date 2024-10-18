@@ -32,6 +32,10 @@ export class NewCommand extends AbstractCommand {
         Collection.NESTJS,
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
+      .option(
+            '--caseNaming [caseType]',
+            `Casing type for generated files. Available options: "camel", "kebab" (default), "snake", "pascal", "snake-or-kebab".`,
+      )
       .action(async (name: string, command: Command) => {
         const options: Input[] = [];
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
@@ -45,6 +49,11 @@ export class NewCommand extends AbstractCommand {
           value: command.packageManager,
         });
         options.push({ name: 'collection', value: command.collection });
+
+        options.push({
+          name: 'caseNaming',
+          value: command.caseNaming,
+        });
 
         if (!!command.language) {
           const lowercasedLanguage = command.language.toLowerCase();

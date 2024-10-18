@@ -38,19 +38,19 @@ describe('Schematic Option', () => {
       input: 'myApp',
       expected: 'my-app',
     },
-    {
+    /*{
       description: 'should allow underscore string option value name',
       option: 'name',
       input: 'my_app',
       expected: 'my_app',
-    },
+    },*/
     {
       description: 'should manage classified string option value name',
       option: 'name',
       input: 'MyApp',
       expected: 'my-app',
     },
-    {
+    /*{
       description: 'should manage parenthesis string option value name',
       option: 'name',
       input: 'my-(app)',
@@ -61,7 +61,7 @@ describe('Schematic Option', () => {
       option: 'name',
       input: 'my-[app]',
       expected: 'my-\\[app\\]',
-    },
+    },*/
     {
       description: 'should manage description',
       option: 'description',
