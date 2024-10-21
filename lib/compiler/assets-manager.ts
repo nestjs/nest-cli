@@ -38,7 +38,7 @@ export class AssetsManager {
   }
 
   public copyAssets(
-    configuration: Required<Configuration>,
+    configuration: Required,
     appName: string,
     outDir: string,
     watchAssetsMode: boolean,
@@ -103,7 +103,10 @@ export class AssetsManager {
 
           this.watchers.push(watcher);
         } else {
-          const matchedPaths = sync(item.glob, { ignore: item.exclude });
+          const matchedPaths = sync(item.glob, {
+            ignore: item.exclude,
+            dot: true,
+          });
           const files = item.glob.endsWith('*')
             ? matchedPaths.filter((matched) => statSync(matched).isFile())
             : matchedPaths.flatMap((matched) => {
