@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "extends": ["../simple/collection.json"],
+  "schematics": {
+    "simple1": {
+      "factory": "factory",
+      "description": "Override schematic 1",
+      "aliases": ["s1", "simp1"]
+    },
+    "simple2": {
+      "factory": "factory",
+      "description": "Override schematic 2",
+      "aliases": ["os2", "s2", "simp2"]
+    },
+    "extend1": {
+      "factory": "factory",
+      "description": "Extended schematic 1",
+      "aliases": ["x1", "ext1"]
+    },
+    "extend2": {
+      "factory": "factory",
+      "description": "Extended schematic 2",
+      "aliases": ["x2", "ext2", "s3", "simp3"]
+    }
+  }
+}
