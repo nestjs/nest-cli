@@ -15,7 +15,7 @@ aliases:
   - &run-unit-tests
     run:
       name: Test
-      command: npm run test
+      command: npm run test -- --runInBand --no-cache
 
 jobs:
   build:
