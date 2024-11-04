@@ -5,6 +5,7 @@
     "target": "ES2021",
     "skipLibCheck": true,
     "sourceMap": false,
+    "allowJs": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
     "types": [

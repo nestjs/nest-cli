@@ -49,6 +49,9 @@ jobs:
       - *restore-cache
       - *install-deps
       - *build-packages
+      - run:
+          name: Clean build artifacts
+          command: npm run clean
       - *run-unit-tests
 
 workflows:
