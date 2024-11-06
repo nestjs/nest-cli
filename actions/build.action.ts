@@ -3,6 +3,7 @@ import { join } from 'path';
 import * as ts from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
+import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
@@ -10,7 +11,6 @@ import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config
 import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
-import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
 import {
   Configuration,
   ConfigurationLoader,
@@ -21,7 +21,7 @@ import {
   defaultWebpackConfigFilename,
 } from '../lib/configuration/defaults';
 import { FileSystemReader } from '../lib/readers';
-import { ERROR_PREFIX } from '../lib/ui';
+import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { isModuleAvailable } from '../lib/utils/is-module-available';
 import { AbstractAction } from './abstract.action';
 import webpack = require('webpack');
@@ -108,6 +108,20 @@ export class BuildAction extends AbstractAction {
       outDir,
       watchAssetsMode,
     );
+
+    const typeCheck = getValueOrDefault<boolean>(
+      configuration,
+      'compilerOptions.typeCheck',
+      appName,
+      'typeCheck',
+      commandOptions,
+    );
+    if (typeCheck && builder.type !== 'swc') {
+      console.warn(
+        INFO_PREFIX +
+          ` "typeCheck" will not have any effect when "builder" is not "swc".`,
+      );
+    }
 
     switch (builder.type) {
       case 'tsc':

@@ -1,5 +1,5 @@
 import { Command, CommanderStatic } from 'commander';
-import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
+import { ERROR_PREFIX } from '../lib/ui';
 import { getRemainingFlags } from '../lib/utils/remaining-flags';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
@@ -95,12 +95,6 @@ export class StartCommand extends AbstractCommand {
           value: command.builder,
         });
 
-        if (command.typeCheck && command.builder !== 'swc') {
-          console.warn(
-            INFO_PREFIX +
-              ` "typeCheck" will not have any effect when "builder" is not "swc".`,
-          );
-        }
         options.push({
           name: 'typeCheck',
           value: command.typeCheck,
