@@ -70,7 +70,8 @@ export const webpackDefaultsFactory = (
         checkResource(resource: any) {
           const lazyImports = [
             '@nestjs/microservices',
-            'cache-manager',
+            '@nestjs/microservices/microservices-module',
+            '@nestjs/websockets/socket-module',
             'class-validator',
             'class-transformer',
           ];
