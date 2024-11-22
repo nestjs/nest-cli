@@ -84,7 +84,8 @@ export class BuildAction extends AbstractAction {
 
     let appNames: (string | undefined)[];
     if (buildAll) {
-      appNames = [undefined]; // always include the default project
+      // If the "all" flag is set, we need to build all projects in a monorepo.
+      appNames = [];
 
       if (configuration.projects) {
         appNames.push(...Object.keys(configuration.projects));
@@ -93,6 +94,11 @@ export class BuildAction extends AbstractAction {
       appNames = commandInputs
         .filter((input) => input.name === 'app')
         .map((input) => input.value) as string[];
+    }
+
+    if (appNames.length === 0) {
+      // If there are no projects, use "undefined" to build the default project.
+      appNames.push(undefined);
     }
 
     for (const appName of appNames) {
