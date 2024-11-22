@@ -72,12 +72,17 @@ export class StartAction extends BuildAction {
         commandOptions,
         defaultConfiguration.sourceRoot,
       );
+      const shellOption = commandOptions.find(
+        (option) => option.name === 'shell',
+      );
+      const useShell = !!shellOption?.value;
       const onSuccess = this.createOnSuccessHook(
         entryFile,
         sourceRoot,
         debugFlag,
         outDir,
         binaryToRun,
+        useShell,
       );
 
       await this.runBuild(
@@ -103,6 +108,7 @@ export class StartAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    useShell: boolean,
   ) {
     let childProcessRef: any;
     process.on(
@@ -120,6 +126,7 @@ export class StartAction extends BuildAction {
             debugFlag,
             outDirName,
             binaryToRun,
+            useShell,
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
         });
@@ -133,6 +140,7 @@ export class StartAction extends BuildAction {
           debugFlag,
           outDirName,
           binaryToRun,
+          useShell,
         );
         childProcessRef.on('exit', (code: number) => {
           process.exitCode = code;
@@ -148,6 +156,7 @@ export class StartAction extends BuildAction {
     debug: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    useShell: boolean,
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
     if (!fs.existsSync(outputFilePath + '.js')) {
@@ -179,7 +188,7 @@ export class StartAction extends BuildAction {
 
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
-      shell: true,
+      shell: useShell,
     });
   }
 }

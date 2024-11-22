@@ -38,6 +38,11 @@ export class StartCommand extends AbstractCommand {
         '--preserveWatchOutput',
         'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
+      .option(
+        '--shell',
+        "Spawn child processes within a shell (see node's child_process.spawn() method docs). Default: true.",
+        true,
+      )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
@@ -78,6 +83,10 @@ export class StartCommand extends AbstractCommand {
             !!command.preserveWatchOutput &&
             !!command.watch &&
             !isWebpackEnabled,
+        });
+        options.push({
+          name: 'shell',
+          value: !!command.shell,
         });
 
         const availableBuilders = ['tsc', 'webpack', 'swc'];
