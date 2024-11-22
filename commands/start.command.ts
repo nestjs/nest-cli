@@ -43,6 +43,7 @@ export class StartCommand extends AbstractCommand {
         "Spawn child processes within a shell (see node's child_process.spawn() method docs). Default: true.",
         true,
       )
+      .option('--no-shell', 'Do not spawn child processes within a shell.')
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
