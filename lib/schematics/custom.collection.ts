@@ -12,22 +12,22 @@ export class CustomCollection extends AbstractCollection {
   public getSchematics(): Schematic[] {
     const workflow = new NodeWorkflow(process.cwd(), {});
     const collection = workflow.engine.createCollection(this.collection);
-    const collectionDescs = [
+    const collectionDescriptions = [
       collection.description,
       ...(collection.baseDescriptions ?? []),
     ];
     const usedNames = new Set<string>();
     const schematics: Schematic[] = [];
-    for (const collectionDesc of collectionDescs) {
+    for (const collectionDesc of collectionDescriptions) {
       const schematicsDescs = Object.entries(collectionDesc.schematics);
       for (const [name, { description, aliases = [] }] of schematicsDescs) {
         if (usedNames.has(name)) {
-            continue;
+          continue;
         }
         usedNames.add(name);
         const alias = aliases.find((a) => !usedNames.has(a)) ?? name;
         for (const alias of aliases) {
-           usedNames.add(alias);
+          usedNames.add(alias);
         }
         schematics.push({ name, alias, description });
       }
