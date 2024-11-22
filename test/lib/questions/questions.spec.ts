@@ -15,7 +15,6 @@ describe('Questions', () => {
       const message = 'name:';
       const question: Question = generateInput(input.name, message)('name');
       expect(question).toEqual({
-        type: 'input',
         name: 'name',
         message,
         default: 'name',
@@ -27,10 +26,22 @@ describe('Questions', () => {
       const choices: string[] = ['choiceA', 'choiceB', 'choiceC'];
       const question: Question = generateSelect('name')('message')(choices);
       expect(question).toEqual({
-        type: 'list',
-        name: 'name',
         message: 'message',
-        choices,
+        name: 'name',
+        choices: [
+        {
+         name: "choiceA",
+         value: "choiceA",
+        },
+        {
+          name: "choiceB",
+          value: "choiceB",
+        },
+        {
+          name: "choiceC",
+          value: "choiceC",
+        }
+      ]
       });
     });
   });
