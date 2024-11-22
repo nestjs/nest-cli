@@ -72,8 +72,10 @@ export class StartAction extends BuildAction {
         commandOptions,
         defaultConfiguration.sourceRoot,
       );
-      const noShellOption = commandOptions.find((option) => option.name === 'noShell')
-      const useShell = noShellOption ? !noShellOption.value : true;
+      const shellOption = commandOptions.find(
+        (option) => option.name === 'shell',
+      );
+      const useShell = !!shellOption?.value;
       const onSuccess = this.createOnSuccessHook(
         entryFile,
         sourceRoot,
