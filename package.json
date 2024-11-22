@@ -38,6 +38,9 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
+    "@angular-devkit/core": "19.0.1",
+    "@angular-devkit/schematics": "19.0.1",
+    "@angular-devkit/schematics-cli": "19.0.1",
     "@angular-devkit/core": "17.3.11",
     "@angular-devkit/schematics": "17.3.11",
     "@angular-devkit/schematics-cli": "17.3.11",
