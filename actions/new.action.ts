@@ -1,6 +1,8 @@
+import { input, select } from '@inquirer/prompts';
 import * as chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
+import { Answers } from 'inquirer';
 import { join } from 'path';
 import { Input } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
@@ -19,9 +21,8 @@ import {
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
+import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error';
 import { AbstractAction } from './abstract.action';
-import { input, select } from '@inquirer/prompts';
-import { Answers, ListQuestion, InputQuestion } from 'inquirer';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -87,16 +88,19 @@ const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
     const message = MESSAGES.PROJECT_NAME_QUESTION;
-    const question: InputQuestion = generateInput('name', message)('nest-app');    
-    const answer = await input(question as any);
-    replaceInputMissingInformation(inputs, {name: 'name', value: answer});
+    const question = generateInput('name', message)('nest-app');
+    const answer = await input(question).catch(gracefullyExitOnPromptError);
+    replaceInputMissingInformation(inputs, { name: 'name', value: answer });
   }
 
   const packageManagerInput = getPackageManagerInput(options);
 
   if (!packageManagerInput!.value) {
     const answer = await askForPackageManager();
-    replaceInputMissingInformation(options, {name: 'packageManager', value: answer });
+    replaceInputMissingInformation(options, {
+      name: 'packageManager',
+      value: answer,
+    });
   }
 };
 
@@ -104,8 +108,8 @@ const replaceInputMissingInformation = (
   inputs: Input[],
   answer: Answers,
 ): void => {
-  const input = inputs.find(input => input.name === answer.name);
-  
+  const input = inputs.find((input) => input.name === answer.name);
+
   if (input) {
     input.value = input.value !== undefined ? input.value : answer.value;
   }
@@ -161,14 +165,12 @@ const installPackages = async (
   }
 };
 
-const askForPackageManager = async (): Promise<Answers> => {
-  const question: ListQuestion = generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
-      PackageManager.NPM,
-      PackageManager.YARN,
-      PackageManager.PNPM,
-    ]);
+const askForPackageManager = async () => {
+  const question = generateSelect('packageManager')(
+    MESSAGES.PACKAGE_MANAGER_QUESTION,
+  )([PackageManager.NPM, PackageManager.YARN, PackageManager.PNPM]);
 
-  return select(question as any);
+  return select(question).catch(gracefullyExitOnPromptError);
 };
 
 const initializeGitRepository = async (dir: string) => {

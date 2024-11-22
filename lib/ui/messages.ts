@@ -7,7 +7,7 @@ export const MESSAGES = {
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
   DRY_RUN_MODE: 'Command has been executed in dry run mode, nothing changed!',
-  PROJECT_INFORMATION_START: `${EMOJIS.SPARKLES} We will scaffold your app in a few seconds..`,
+  PROJECT_INFORMATION_START: `${EMOJIS.SPARKLES}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART} to use?`,

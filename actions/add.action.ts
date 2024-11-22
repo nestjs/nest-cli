@@ -86,11 +86,11 @@ export class AddAction extends AbstractAction {
         defaultLabel,
       );
 
-      const answers = await askForProjectName(
+      const selectedProject = (await askForProjectName(
         MESSAGES.LIBRARY_PROJECT_SELECTION_QUESTION,
         projects,
-      );
-      const project = answers.appName.replace(defaultLabel, '');
+      )) as string;
+      const project = selectedProject.replace(defaultLabel, '');
       if (project !== configuration.sourceRoot) {
         sourceRoot = configurationProjects[project].sourceRoot;
       }

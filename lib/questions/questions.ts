@@ -6,9 +6,7 @@ export const generateInput = (name: string, message: string) => {
   });
 };
 
-export const generateSelect = (
-  name: string,
-): ((message: string) => (choices: string[]) => any) => {
+export const generateSelect = (name: string) => {
   return (message: string) => {
     return (choices: string[]) => {
       const choicesFormatted = choices.map((choice) => ({
