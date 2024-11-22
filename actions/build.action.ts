@@ -78,9 +78,7 @@ export class BuildAction extends AbstractAction {
       (option) => option.name === 'config',
     )!.value as string;
     const configuration = await this.loader.load(configFileName);
-
-    const buildAll = commandOptions.find((opt) => opt.name === 'all')!
-      .value as boolean;
+    const buildAll = commandOptions.find((opt) => opt.name === 'all')?.value;
 
     let appNames: (string | undefined)[];
     if (buildAll) {
@@ -152,6 +150,7 @@ export class BuildAction extends AbstractAction {
             configuration,
             pathToTsconfig,
             appName,
+            onSuccess,
           );
           break;
         case 'webpack':
@@ -162,6 +161,7 @@ export class BuildAction extends AbstractAction {
             pathToTsconfig,
             isDebugEnabled,
             watchMode,
+            onSuccess,
           );
           break;
         case 'swc':
@@ -172,12 +172,11 @@ export class BuildAction extends AbstractAction {
             watchMode,
             commandOptions,
             tsOptions,
+            onSuccess,
           );
           break;
       }
     }
-
-    onSuccess?.();
   }
 
   private async runSwc(
@@ -187,34 +186,29 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     options: Input[],
     tsOptions: ts.CompilerOptions,
+    onSuccess: (() => void) | undefined,
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler');
     const swc = new SwcCompiler(this.pluginsLoader);
 
-    return new Promise<void>((onSuccess, onError) => {
-      try {
-        swc.run(
+    await swc.run(
+      configuration,
+      pathToTsconfig,
+      appName,
+      {
+        watch: watchMode,
+        typeCheck: getValueOrDefault<boolean>(
           configuration,
-          pathToTsconfig,
+          'compilerOptions.typeCheck',
           appName,
-          {
-            watch: watchMode,
-            typeCheck: getValueOrDefault<boolean>(
-              configuration,
-              'compilerOptions.typeCheck',
-              appName,
-              'typeCheck',
-              options,
-            ),
-            tsOptions,
-            assetsManager: this.assetsManager,
-          },
-          onSuccess,
-        );
-      } catch (error) {
-        onError(error);
-      }
-    });
+          'typeCheck',
+          options,
+        ),
+        tsOptions,
+        assetsManager: this.assetsManager,
+      },
+      onSuccess,
+    );
   }
 
   private async runWebpack(
@@ -224,6 +218,7 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     debug: boolean,
     watchMode: boolean,
+    onSuccess: (() => void) | undefined,
   ) {
     const { WebpackCompiler } = await import(
       '../lib/compiler/webpack-compiler'
@@ -239,25 +234,19 @@ export class BuildAction extends AbstractAction {
       defaultWebpackConfigFilename,
     );
 
-    return new Promise<void>((onSuccess, onError) => {
-      try {
-        return webpackCompiler.run(
-          configuration,
-          pathToTsconfig,
-          appName,
-          {
-            inputs: commandOptions,
-            webpackConfigFactoryOrConfig,
-            debug,
-            watchMode,
-            assetsManager: this.assetsManager,
-          },
-          onSuccess,
-        );
-      } catch (error) {
-        onError(error);
-      }
-    });
+    return webpackCompiler.run(
+      configuration,
+      pathToTsconfig,
+      appName,
+      {
+        inputs: commandOptions,
+        webpackConfigFactoryOrConfig,
+        debug,
+        watchMode,
+        assetsManager: this.assetsManager,
+      },
+      onSuccess,
+    );
   }
 
   private async runTsc(
@@ -266,6 +255,7 @@ export class BuildAction extends AbstractAction {
     configuration: Required<Configuration>,
     pathToTsconfig: string,
     appName: string | undefined,
+    onSuccess: (() => void) | undefined,
   ) {
     if (watchMode) {
       const { WatchCompiler } = await import('../lib/compiler/watch-compiler');
@@ -279,19 +269,13 @@ export class BuildAction extends AbstractAction {
           option.name === 'preserveWatchOutput' && option.value === true,
       )?.value as boolean | undefined;
 
-      return new Promise<void>((onSuccess, onError) => {
-        try {
-          watchCompiler.run(
-            configuration,
-            pathToTsconfig,
-            appName,
-            { preserveWatchOutput: isPreserveWatchOutputEnabled },
-            onSuccess,
-          );
-        } catch (error) {
-          onError(error);
-        }
-      });
+      watchCompiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        { preserveWatchOutput: isPreserveWatchOutputEnabled },
+        onSuccess,
+      );
     } else {
       const { Compiler } = await import('../lib/compiler/compiler');
       const compiler = new Compiler(
@@ -300,20 +284,14 @@ export class BuildAction extends AbstractAction {
         this.tsLoader,
       );
 
-      return new Promise<void>((onSuccess, onError) => {
-        try {
-          compiler.run(
-            configuration,
-            pathToTsconfig,
-            appName,
-            undefined,
-            onSuccess,
-          );
-          this.assetsManager.closeWatchers();
-        } catch (error) {
-          onError(error);
-        }
-      });
+      compiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        undefined,
+        onSuccess,
+      );
+      this.assetsManager.closeWatchers();
     }
   }
 
