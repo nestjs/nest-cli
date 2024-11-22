@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "simple1": {
+      "factory": "factory",
+      "description": "Simple schematic 1",
+      "aliases": ["s1", "simp1"]
+    },
+    "simple2": {
+      "factory": "factory",
+      "description": "Simple schematic 2",
+      "aliases": ["s2", "simp2"]
+    },
+    "simple3": {
+      "factory": "factory",
+      "description": "Simple schematic 3",
+      "aliases": ["s3", "simp3"]
+    }
+  }
+}
