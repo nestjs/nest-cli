@@ -2,6 +2,7 @@ import * as chalk from 'chalk';
 import { EMOJIS } from './emojis';
 
 export const MESSAGES = {
+  PROJECT_NAME_QUESTION: 'What name would you like to use for the new project?',
   PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
@@ -9,7 +10,7 @@ export const MESSAGES = {
   PROJECT_INFORMATION_START: `${EMOJIS.ZAP}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
-  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
+  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART} to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
