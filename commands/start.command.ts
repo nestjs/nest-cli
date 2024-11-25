@@ -44,6 +44,10 @@ export class StartCommand extends AbstractCommand {
         true,
       )
       .option('--no-shell', 'Do not spawn child processes within a shell.')
+      .option(
+        '--env-file [path]',
+        'Path to an env file (.env) to be loaded into the environment.',
+      )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
         const options: Input[] = [];
@@ -88,6 +92,10 @@ export class StartCommand extends AbstractCommand {
         options.push({
           name: 'shell',
           value: !!command.shell,
+        });
+        options.push({
+          name: 'envFile',
+          value: command.envFile,
         });
 
         const availableBuilders = ['tsc', 'webpack', 'swc'];
