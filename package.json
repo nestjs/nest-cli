@@ -42,7 +42,7 @@
     "@angular-devkit/schematics": "19.0.1",
     "@angular-devkit/schematics-cli": "19.0.1",
     "@inquirer/prompts": "5.3.8",
-    "@nestjs/schematics": "^10.0.1",
+    "@nestjs/schematics": "next",
     "chalk": "4.1.2",
     "chokidar": "4.0.1",
     "cli-table3": "0.6.5",
