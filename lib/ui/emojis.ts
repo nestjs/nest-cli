@@ -14,7 +14,7 @@ export const EMOJIS = {
   SMIRK: get('smirk_cat'),
   RAISED_HANDS: get('raised_hands'),
   POINT_RIGHT: get('point_right'),
-  ZAP: get('zap'),
+  SPARKLES: get('sparkles'),
   BOOM: get('boom'),
   PRAY: get('pray'),
   WINE: get('wine_glass'),

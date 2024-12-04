@@ -30,9 +30,7 @@ describe('Nest Configuration Loader', () => {
     const configuration: Configuration = await loader.load();
     expect(reader.readAnyOf).toHaveBeenCalledWith([
       'nest-cli.json',
-      '.nestcli.json',
       '.nest-cli.json',
-      'nest.json',
     ]);
     expect(configuration).toEqual({
       language: 'ts',

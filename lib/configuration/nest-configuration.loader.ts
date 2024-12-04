@@ -27,9 +27,7 @@ export class NestConfigurationLoader implements ConfigurationLoader {
       ? this.reader.read(name)
       : this.reader.readAnyOf([
           'nest-cli.json',
-          '.nestcli.json',
           '.nest-cli.json',
-          'nest.json',
         ]);
 
     if (contentOrError) {
