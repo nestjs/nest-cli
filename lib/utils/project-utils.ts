@@ -1,9 +1,9 @@
-import * as inquirer from 'inquirer';
-import { Answers, Question } from 'inquirer';
+import { select } from '@inquirer/prompts';
 import { Input } from '../../commands';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
 import { Configuration, ProjectConfiguration } from '../configuration';
 import { generateSelect } from '../questions/questions';
+import { gracefullyExitOnPromptError } from './gracefully-exit-on-prompt-error';
 
 export function shouldAskForProject(
   schematic: string,
@@ -116,12 +116,9 @@ export function getSpecFileSuffix(
 export async function askForProjectName(
   promptQuestion: string,
   projects: string[],
-): Promise<Answers> {
-  const questions: Question[] = [
-    generateSelect('appName')(promptQuestion)(projects),
-  ];
-  const prompt = inquirer.createPromptModule();
-  return prompt(questions);
+) {
+  const projectNameSelect = generateSelect('appName')(promptQuestion)(projects);
+  return select(projectNameSelect).catch(gracefullyExitOnPromptError);
 }
 
 export function moveDefaultProjectToStart(

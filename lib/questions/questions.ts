@@ -1,21 +1,23 @@
 export const generateInput = (name: string, message: string) => {
   return (defaultAnswer: string): any => ({
-    type: 'input',
     name,
     message,
     default: defaultAnswer,
   });
 };
 
-export const generateSelect = (
-  name: string,
-): ((message: string) => (choices: string[]) => any) => {
+export const generateSelect = (name: string) => {
   return (message: string) => {
-    return (choices: string[]) => ({
-      type: 'list',
-      name,
-      message,
-      choices,
-    });
+    return (choices: string[]) => {
+      const choicesFormatted = choices.map((choice) => ({
+        name: choice,
+        value: choice,
+      }));
+      return {
+        name,
+        message,
+        choices: choicesFormatted,
+      };
+    };
   };
 };
