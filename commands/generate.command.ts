@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { bold, cyan, green } from 'ansis';
 import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
 import { AbstractCollection, CollectionFactory } from '../lib/schematics';
@@ -107,7 +107,7 @@ export class GenerateCommand extends AbstractCommand {
     const collection = await this.getCollection();
     return (
       'Generate a Nest element.\n' +
-      `  Schematics available on ${chalk.bold(collection)} collection:\n` +
+      `  Schematics available on ${bold(collection)} collection:\n` +
       this.buildSchematicsListAsTable(await this.getSchematics(collection))
     );
   }
@@ -129,8 +129,8 @@ export class GenerateCommand extends AbstractCommand {
     const table: any = new Table(tableConfig);
     for (const schematic of schematics) {
       table.push([
-        chalk.green(schematic.name),
-        chalk.cyan(schematic.alias),
+        green(schematic.name),
+        cyan(schematic.alias),
         schematic.description,
       ]);
     }

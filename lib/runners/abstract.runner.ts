@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { MESSAGES } from '../ui';
 
@@ -35,7 +35,7 @@ export class AbstractRunner {
           resolve(null);
         } else {
           console.error(
-            chalk.red(
+            red(
               MESSAGES.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`),
             ),
           );

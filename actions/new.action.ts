@@ -1,5 +1,5 @@
 import { input, select } from '@inquirer/prompts';
-import * as chalk from 'chalk';
+import * as ansis from 'ansis';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import { Answers } from 'inquirer';
@@ -151,7 +151,7 @@ const installPackages = async (
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
     console.info();
-    console.info(chalk.green(MESSAGES.DRY_RUN_MODE));
+    console.info(ansis.green(MESSAGES.DRY_RUN_MODE));
     console.info();
     return;
   }
@@ -160,7 +160,7 @@ const installPackages = async (
     await packageManager.install(installDirectory, inputPackageManager);
   } catch (error) {
     if (error && error.message) {
-      console.error(chalk.red(error.message));
+      console.error(ansis.red(error.message));
     }
   }
 };
@@ -176,7 +176,7 @@ const askForPackageManager = async () => {
 const initializeGitRepository = async (dir: string) => {
   const runner = new GitRunner();
   await runner.run('init', true, join(process.cwd(), dir)).catch(() => {
-    console.error(chalk.red(MESSAGES.GIT_INITIALIZATION_ERROR));
+    console.error(ansis.red(MESSAGES.GIT_INITIALIZATION_ERROR));
   });
 };
 
@@ -212,7 +212,7 @@ const printCollective = () => {
   emptyLine();
   emptyLine();
   print()(
-    `${chalk.bold(`${EMOJIS.WINE}  Donate:`)} ${chalk.underline(
+    `${ansis.bold`${EMOJIS.WINE}  Donate:`} ${ansis.underline(
       'https://opencollective.com/nest',
     )}`,
   );
@@ -227,7 +227,7 @@ const print =
     const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
     const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
     if (color) {
-      str = (chalk as any)[color](str);
+      str = (ansis as any)[color](str);
     }
     console.log(leftPadding, str);
   };
