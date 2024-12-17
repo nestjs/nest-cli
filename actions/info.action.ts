@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { blue, bold, green, red, yellow } from 'ansis';
 import { readFileSync } from 'fs';
 import { platform, release } from 'os';
 import { join } from 'path';
@@ -50,16 +50,16 @@ export class InfoAction extends AbstractAction {
   }
 
   private displayBanner() {
-    console.info(chalk.red(BANNER));
+    console.info(red(BANNER));
   }
 
   private async displaySystemInformation(): Promise<void> {
-    console.info(chalk.green('[System Information]'));
+    console.info(green`[System Information]`);
     console.info(
       'OS Version     :',
-      chalk.blue(osName(platform(), release()), release()),
+      blue(osName(platform(), release()) + release()),
     );
-    console.info('NodeJS Version :', chalk.blue(process.version));
+    console.info('NodeJS Version :', blue(process.version));
     await this.displayPackageManagerVersion();
   }
 
@@ -68,13 +68,13 @@ export class InfoAction extends AbstractAction {
       const version: string = await this.manager.version();
       console.info(
         `${this.manager.name} Version    :`,
-        chalk.blue(version),
+        blue(version),
         '\n',
       );
     } catch {
       console.error(
         `${this.manager.name} Version    :`,
-        chalk.red('Unknown'),
+        red`Unknown`,
         '\n',
       );
     }
@@ -82,7 +82,7 @@ export class InfoAction extends AbstractAction {
 
   async displayNestInformation(): Promise<void> {
     this.displayCliVersion();
-    console.info(chalk.green('[Nest Platform Information]'));
+    console.info(green`[Nest Platform Information`);
     await this.displayNestInformationFromPackage();
   }
 
@@ -93,16 +93,16 @@ export class InfoAction extends AbstractAction {
       this.displayNestVersions(dependencies);
     } catch (err) {
       console.error(
-        chalk.red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED),
+        red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED),
       );
     }
   }
 
   displayCliVersion(): void {
-    console.info(chalk.green('[Nest CLI]'));
+    console.info(green`[Nest CLI]`);
     console.info(
       'Nest CLI Version :',
-      chalk.blue(
+      blue(
         JSON.parse(readFileSync(join(__dirname, '../package.json')).toString())
           .version,
       ),
@@ -125,7 +125,7 @@ export class InfoAction extends AbstractAction {
   displayNestVersions(dependencies: PackageJsonDependencies) {
     const nestDependencies = this.buildNestVersionsMessage(dependencies);
     nestDependencies.forEach((dependency) =>
-      console.info(dependency.name, chalk.blue(dependency.value)),
+      console.info(dependency.name, blue(dependency.value)),
     );
 
     this.displayWarningMessage(nestDependencies);
@@ -137,13 +137,13 @@ export class InfoAction extends AbstractAction {
       const majorVersions = Object.keys(warnings);
       if (majorVersions.length > 0) {
         console.info('\r');
-        console.info(chalk.yellow('[Warnings]'));
+        console.info(yellow`[Warnings]`);
         console.info(
           'The following packages are not in the same major version',
         );
         console.info('This could lead to runtime errors');
         majorVersions.forEach((version) => {
-          console.info(chalk.bold(`* Under version ${version}`));
+          console.info(bold`* Under version ${version}`);
           warnings[version].forEach(({ packageName, value }) => {
             console.info(`- ${packageName} ${value}`);
           });
@@ -152,7 +152,7 @@ export class InfoAction extends AbstractAction {
     } catch {
       console.info('\t');
       console.error(
-        chalk.red(
+        red(
           MESSAGES.NEST_INFORMATION_PACKAGE_WARNING_FAILED(
             this.warningMessageDependenciesWhiteList,
           ),

@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { bold, gray, red } from 'ansis';
 import { readFile } from 'fs';
 import * as ora from 'ora';
 import { join } from 'path';
@@ -34,17 +34,17 @@ export abstract class AbstractPackageManager {
       console.info(MESSAGES.PACKAGE_MANAGER_INSTALLATION_SUCCEED(directory));
       console.info(MESSAGES.GET_STARTED_INFORMATION);
       console.info();
-      console.info(chalk.gray(MESSAGES.CHANGE_DIR_COMMAND(directory)));
-      console.info(chalk.gray(MESSAGES.START_COMMAND(packageManager)));
+      console.info(gray(MESSAGES.CHANGE_DIR_COMMAND(directory)));
+      console.info(gray(MESSAGES.START_COMMAND(packageManager)));
       console.info();
     } catch {
       spinner.fail();
       const commandArgs = this.cli.install;
       const commandToRun = this.runner.rawFullCommand(commandArgs);
       console.error(
-        chalk.red(
+        red(
           MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED(
-            chalk.bold(commandToRun),
+            bold(commandToRun),
           ),
         ),
       );

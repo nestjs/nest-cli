@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { yellow } from 'ansis';
 import { NpmRunner } from './npm.runner';
 import { Runner } from './runner';
 import { SchematicRunner } from './schematic.runner';
@@ -21,7 +21,7 @@ export class RunnerFactory {
         return new PnpmRunner();
 
       default:
-        console.info(chalk.yellow(`[WARN] Unsupported runner: ${runner}`));
+        console.info(yellow`[WARN] Unsupported runner: ${runner}`);
     }
   }
 }

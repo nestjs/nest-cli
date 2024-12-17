@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { green } from 'ansis';
 import { EMOJIS } from './emojis';
 
 export const MESSAGES = {
@@ -18,7 +18,7 @@ export const MESSAGES = {
   GIT_INITIALIZATION_ERROR: 'Git repository has not been initialized',
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name: string) =>
     name !== '.'
-      ? `${EMOJIS.ROCKET}  Successfully created project ${chalk.green(name)}`
+      ? `${EMOJIS.ROCKET}  Successfully created project ${green(name)}`
       : `${EMOJIS.ROCKET}  Successfully created a new project`,
   GET_STARTED_INFORMATION: `${EMOJIS.POINT_RIGHT}  Get started with the following commands:`,
   CHANGE_DIR_COMMAND: (name: string) => `$ cd ${name}`,

@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { join } from 'path';
 import * as ts from 'typescript';
 import { Input } from '../commands';
@@ -60,7 +60,7 @@ export class BuildAction extends AbstractAction {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
-        console.error(`\n${chalk.red(err)}\n`);
+        console.error(`\n${red(err)}\n`);
       }
       process.exit(1);
     }
