@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -107,7 +107,7 @@ export class StartAction extends BuildAction {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
-        console.error(`\n${chalk.red(err)}\n`);
+        console.error(`\n${red(err)}\n`);
       }
     }
   }

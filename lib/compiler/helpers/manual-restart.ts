@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { gray } from 'ansis';
 
 export function listenForManualRestart(callback: () => void) {
   const stdinListener = (data: Buffer) => {
@@ -11,5 +11,5 @@ export function listenForManualRestart(callback: () => void) {
 }
 
 export function displayManualRestartTip(): void {
-  console.log(`To restart at any time, enter ${chalk.gray('rs')}.\n`);
+  console.log(`To restart at any time, enter ${gray`rs`}.\n`);
 }

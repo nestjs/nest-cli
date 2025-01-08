@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { cyan } from 'ansis';
 import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
@@ -156,7 +156,7 @@ export class SwcCompiler extends BaseCompiler {
     swcrcFilePath?: string,
   ) {
     process.nextTick(() =>
-      console.log(SWC_LOG_PREFIX, chalk.cyan('Running...')),
+      console.log(SWC_LOG_PREFIX, cyan('Running...')),
     );
 
     const swcCli = this.loadSwcCliBinary();
