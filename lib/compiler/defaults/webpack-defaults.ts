@@ -74,6 +74,7 @@ export const webpackDefaultsFactory = (
             '@nestjs/websockets/socket-module',
             'class-validator',
             'class-transformer',
+            'class-transformer/storage',
           ];
           if (!lazyImports.includes(resource)) {
             return false;
