@@ -46,7 +46,7 @@
     "ansis": "3.4.0",
     "chokidar": "4.0.1",
     "cli-table3": "0.6.5",
-    "commander": "4.1.1",
+    "commander": "13.0.0",
     "fork-ts-checker-webpack-plugin": "9.0.2",
     "glob": "11.0.0",
     "node-emoji": "1.11.0",
