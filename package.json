@@ -38,9 +38,9 @@
   },
   "homepage": "https://github.com/nestjs/nest-cli#readme",
   "dependencies": {
-    "@angular-devkit/core": "19.0.1",
-    "@angular-devkit/schematics": "19.0.1",
-    "@angular-devkit/schematics-cli": "19.0.1",
+    "@angular-devkit/core": "19.1.1",
+    "@angular-devkit/schematics": "19.1.1",
+    "@angular-devkit/schematics-cli": "19.1.1",
     "@inquirer/prompts": "5.3.8",
     "@nestjs/schematics": "11.0.0",
     "ansis": "3.4.0",
