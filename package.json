@@ -43,7 +43,7 @@
     "@angular-devkit/schematics-cli": "19.1.1",
     "@inquirer/prompts": "5.5.0",
     "@nestjs/schematics": "11.0.0",
-    "ansis": "3.4.0",
+    "ansis": "3.9.0",
     "chokidar": "4.0.1",
     "cli-table3": "0.6.5",
     "commander": "4.1.1",
