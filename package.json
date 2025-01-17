@@ -44,7 +44,7 @@
     "@inquirer/prompts": "5.5.0",
     "@nestjs/schematics": "11.0.0",
     "ansis": "3.9.0",
-    "chokidar": "4.0.1",
+    "chokidar": "4.0.3",
     "cli-table3": "0.6.5",
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "9.0.2",
