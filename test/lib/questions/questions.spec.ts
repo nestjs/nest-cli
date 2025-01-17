@@ -24,24 +24,24 @@ describe('Questions', () => {
   describe('generateSelect', () => {
     it('should return a select question', () => {
       const choices: string[] = ['choiceA', 'choiceB', 'choiceC'];
-      const question: Question = generateSelect('name')('message')(choices);
+      const question = generateSelect('name')('message')(choices);
       expect(question).toEqual({
         message: 'message',
         name: 'name',
         choices: [
-        {
-         name: "choiceA",
-         value: "choiceA",
-        },
-        {
-          name: "choiceB",
-          value: "choiceB",
-        },
-        {
-          name: "choiceC",
-          value: "choiceC",
-        }
-      ]
+          {
+            name: 'choiceA',
+            value: 'choiceA',
+          },
+          {
+            name: 'choiceB',
+            value: 'choiceB',
+          },
+          {
+            name: 'choiceC',
+            value: 'choiceC',
+          },
+        ],
       });
     });
   });

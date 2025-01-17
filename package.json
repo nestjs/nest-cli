@@ -26,7 +26,7 @@
     "test:dev": "npm run clean && jest --config test/jest-config.json --watchAll",
     "prerelease": "npm run build",
     "release": "release-it",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
