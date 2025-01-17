@@ -155,9 +155,7 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     swcrcFilePath?: string,
   ) {
-    process.nextTick(() =>
-      console.log(SWC_LOG_PREFIX, cyan('Running...')),
-    );
+    process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
 
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
@@ -262,7 +260,7 @@ export class SwcCompiler extends BaseCompiler {
         pollInterval: 10,
       },
     });
-    for (const type of ['add', 'change']) {
+    for (const type of ['add', 'change'] as const) {
       watcher.on(type, async () => onChange());
     }
   }
