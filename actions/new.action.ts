@@ -1,8 +1,8 @@
-import * as chalk from 'chalk';
+import { input, select } from '@inquirer/prompts';
+import * as ansis from 'ansis';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
-import * as inquirer from 'inquirer';
-import { Answers, Question } from 'inquirer';
+import { Answers } from 'inquirer';
 import { join } from 'path';
 import { Input } from '../commands';
 import { defaultGitIgnore } from '../lib/configuration/defaults';
@@ -21,6 +21,7 @@ import {
 } from '../lib/schematics';
 import { EMOJIS, MESSAGES } from '../lib/ui';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
+import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error';
 import { AbstractAction } from './abstract.action';
 
 export class NewAction extends AbstractAction {
@@ -84,32 +85,34 @@ const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
-  const prompt: inquirer.PromptModule = inquirer.createPromptModule();
-
   const nameInput = getApplicationNameInput(inputs);
   if (!nameInput!.value) {
-    const message = 'What name would you like to use for the new project?';
-    const questions = [generateInput('name', message)('nest-app')];
-    const answers: Answers = await prompt(questions as ReadonlyArray<Question>);
-    replaceInputMissingInformation(inputs, answers);
+    const message = MESSAGES.PROJECT_NAME_QUESTION;
+    const question = generateInput('name', message)('nest-app');
+    const answer = await input(question).catch(gracefullyExitOnPromptError);
+    replaceInputMissingInformation(inputs, { name: 'name', value: answer });
   }
 
   const packageManagerInput = getPackageManagerInput(options);
+
   if (!packageManagerInput!.value) {
-    const answers = await askForPackageManager();
-    replaceInputMissingInformation(options, answers);
+    const answer = await askForPackageManager();
+    replaceInputMissingInformation(options, {
+      name: 'packageManager',
+      value: answer,
+    });
   }
 };
 
 const replaceInputMissingInformation = (
   inputs: Input[],
-  answers: Answers,
-): Input[] => {
-  return inputs.map(
-    (input) =>
-      (input.value =
-        input.value !== undefined ? input.value : answers[input.name]),
-  );
+  answer: Answers,
+): void => {
+  const input = inputs.find((input) => input.name === answer.name);
+
+  if (input) {
+    input.value = input.value !== undefined ? input.value : answer.value;
+  }
 };
 
 const generateApplicationFiles = async (args: Input[], options: Input[]) => {
@@ -148,7 +151,7 @@ const installPackages = async (
   let packageManager: AbstractPackageManager;
   if (dryRunMode) {
     console.info();
-    console.info(chalk.green(MESSAGES.DRY_RUN_MODE));
+    console.info(ansis.green(MESSAGES.DRY_RUN_MODE));
     console.info();
     return;
   }
@@ -157,27 +160,23 @@ const installPackages = async (
     await packageManager.install(installDirectory, inputPackageManager);
   } catch (error) {
     if (error && error.message) {
-      console.error(chalk.red(error.message));
+      console.error(ansis.red(error.message));
     }
   }
 };
 
-const askForPackageManager = async (): Promise<Answers> => {
-  const questions: Question[] = [
-    generateSelect('packageManager')(MESSAGES.PACKAGE_MANAGER_QUESTION)([
-      PackageManager.NPM,
-      PackageManager.YARN,
-      PackageManager.PNPM,
-    ]),
-  ];
-  const prompt = inquirer.createPromptModule();
-  return await prompt(questions);
+const askForPackageManager = async () => {
+  const question = generateSelect('packageManager')(
+    MESSAGES.PACKAGE_MANAGER_QUESTION,
+  )([PackageManager.NPM, PackageManager.YARN, PackageManager.PNPM]);
+
+  return select(question).catch(gracefullyExitOnPromptError);
 };
 
 const initializeGitRepository = async (dir: string) => {
   const runner = new GitRunner();
   await runner.run('init', true, join(process.cwd(), dir)).catch(() => {
-    console.error(chalk.red(MESSAGES.GIT_INITIALIZATION_ERROR));
+    console.error(ansis.red(MESSAGES.GIT_INITIALIZATION_ERROR));
   });
 };
 
@@ -213,7 +212,7 @@ const printCollective = () => {
   emptyLine();
   emptyLine();
   print()(
-    `${chalk.bold(`${EMOJIS.WINE}  Donate:`)} ${chalk.underline(
+    `${ansis.bold`${EMOJIS.WINE}  Donate:`} ${ansis.underline(
       'https://opencollective.com/nest',
     )}`,
   );
@@ -228,7 +227,7 @@ const print =
     const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
     const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
     if (color) {
-      str = (chalk as any)[color](str);
+      str = (ansis as any)[color](str);
     }
     console.log(leftPadding, str);
   };

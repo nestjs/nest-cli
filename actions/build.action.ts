@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { join } from 'path';
 import * as ts from 'typescript';
 import { Input } from '../commands';
@@ -60,7 +60,7 @@ export class BuildAction extends AbstractAction {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
-        console.error(`\n${chalk.red(err)}\n`);
+        console.error(`\n${red(err)}\n`);
       }
       process.exit(1);
     }
@@ -78,87 +78,110 @@ export class BuildAction extends AbstractAction {
       (option) => option.name === 'config',
     )!.value as string;
     const configuration = await this.loader.load(configFileName);
-    const appName = commandInputs.find((input) => input.name === 'app')!
-      .value as string;
+    const buildAll = commandOptions.find((opt) => opt.name === 'all')?.value;
 
-    const pathToTsconfig = getTscConfigPath(
-      configuration,
-      commandOptions,
-      appName,
-    );
-    const { options: tsOptions } =
-      this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
-    const outDir = tsOptions.outDir || defaultOutDir;
+    let appNames: (string | undefined)[];
+    if (buildAll) {
+      // If the "all" flag is set, we need to build all projects in a monorepo.
+      appNames = [];
 
-    const isWebpackEnabled = getValueOrDefault<boolean>(
-      configuration,
-      'compilerOptions.webpack',
-      appName,
-      'webpack',
-      commandOptions,
-    );
-    const builder = isWebpackEnabled
-      ? { type: 'webpack' }
-      : getBuilder(configuration, commandOptions, appName);
-
-    await deleteOutDirIfEnabled(configuration, appName, outDir);
-    this.assetsManager.copyAssets(
-      configuration,
-      appName,
-      outDir,
-      watchAssetsMode,
-    );
-
-    const typeCheck = getValueOrDefault<boolean>(
-      configuration,
-      'compilerOptions.typeCheck',
-      appName,
-      'typeCheck',
-      commandOptions,
-    );
-    if (typeCheck && builder.type !== 'swc') {
-      console.warn(
-        INFO_PREFIX +
-          ` "typeCheck" will not have any effect when "builder" is not "swc".`,
-      );
+      if (configuration.projects) {
+        appNames.push(...Object.keys(configuration.projects));
+      }
+    } else {
+      appNames = commandInputs
+        .filter((input) => input.name === 'app')
+        .map((input) => input.value) as string[];
     }
 
-    switch (builder.type) {
-      case 'tsc':
-        return this.runTsc(
-          watchMode,
-          commandOptions,
-          configuration,
-          pathToTsconfig,
-          appName,
-          onSuccess,
+    if (appNames.length === 0) {
+      // If there are no projects, use "undefined" to build the default project.
+      appNames.push(undefined);
+    }
+
+    for (const appName of appNames) {
+      const pathToTsconfig = getTscConfigPath(
+        configuration,
+        commandOptions,
+        appName,
+      );
+      const { options: tsOptions } =
+        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
+      const outDir = tsOptions.outDir || defaultOutDir;
+
+      const isWebpackEnabled = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.webpack',
+        appName,
+        'webpack',
+        commandOptions,
+      );
+      const builder = isWebpackEnabled
+        ? { type: 'webpack' }
+        : getBuilder(configuration, commandOptions, appName);
+
+      await deleteOutDirIfEnabled(configuration, appName, outDir);
+      this.assetsManager.copyAssets(
+        configuration,
+        appName,
+        outDir,
+        watchAssetsMode,
+      );
+
+      const typeCheck = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.typeCheck',
+        appName,
+        'typeCheck',
+        commandOptions,
+      );
+      if (typeCheck && builder.type !== 'swc') {
+        console.warn(
+          INFO_PREFIX +
+            ` "typeCheck" will not have any effect when "builder" is not "swc".`,
         );
-      case 'webpack':
-        return this.runWebpack(
-          configuration,
-          appName,
-          commandOptions,
-          pathToTsconfig,
-          isDebugEnabled,
-          watchMode,
-          onSuccess,
-        );
-      case 'swc':
-        return this.runSwc(
-          configuration,
-          appName,
-          pathToTsconfig,
-          watchMode,
-          commandOptions,
-          tsOptions,
-          onSuccess,
-        );
+      }
+
+      switch (builder.type) {
+        case 'tsc':
+          await this.runTsc(
+            watchMode,
+            commandOptions,
+            configuration,
+            pathToTsconfig,
+            appName,
+            onSuccess,
+          );
+          break;
+        case 'webpack':
+          await this.runWebpack(
+            configuration,
+            appName,
+            commandOptions,
+            pathToTsconfig,
+            isDebugEnabled,
+            watchMode,
+            onSuccess,
+          );
+          break;
+        case 'swc':
+          await this.runSwc(
+            configuration,
+            appName,
+            pathToTsconfig,
+            watchMode,
+            commandOptions,
+            tsOptions,
+            onSuccess,
+          );
+          break;
+      }
     }
   }
 
   private async runSwc(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     pathToTsconfig: string,
     watchMode: boolean,
     options: Input[],
@@ -167,6 +190,7 @@ export class BuildAction extends AbstractAction {
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler');
     const swc = new SwcCompiler(this.pluginsLoader);
+
     await swc.run(
       configuration,
       pathToTsconfig,
@@ -189,7 +213,7 @@ export class BuildAction extends AbstractAction {
 
   private async runWebpack(
     configuration: Required<Configuration>,
-    appName: string,
+    appName: string | undefined,
     commandOptions: Input[],
     pathToTsconfig: string,
     debug: boolean,
@@ -209,6 +233,7 @@ export class BuildAction extends AbstractAction {
       webpackPath,
       defaultWebpackConfigFilename,
     );
+
     return webpackCompiler.run(
       configuration,
       pathToTsconfig,
@@ -229,7 +254,7 @@ export class BuildAction extends AbstractAction {
     options: Input[],
     configuration: Required<Configuration>,
     pathToTsconfig: string,
-    appName: string,
+    appName: string | undefined,
     onSuccess: (() => void) | undefined,
   ) {
     if (watchMode) {
@@ -243,6 +268,7 @@ export class BuildAction extends AbstractAction {
         (option) =>
           option.name === 'preserveWatchOutput' && option.value === true,
       )?.value as boolean | undefined;
+
       watchCompiler.run(
         configuration,
         pathToTsconfig,
@@ -257,6 +283,7 @@ export class BuildAction extends AbstractAction {
         this.tsConfigProvider,
         this.tsLoader,
       );
+
       compiler.run(
         configuration,
         pathToTsconfig,

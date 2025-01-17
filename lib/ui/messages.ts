@@ -1,15 +1,16 @@
-import * as chalk from 'chalk';
+import { green } from 'ansis';
 import { EMOJIS } from './emojis';
 
 export const MESSAGES = {
+  PROJECT_NAME_QUESTION: 'What name would you like to use for the new project?',
   PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
   DRY_RUN_MODE: 'Command has been executed in dry run mode, nothing changed!',
-  PROJECT_INFORMATION_START: `${EMOJIS.ZAP}  We will scaffold your app in a few seconds..`,
+  PROJECT_INFORMATION_START: `${EMOJIS.SPARKLES}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
-  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
+  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART} to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
@@ -17,7 +18,7 @@ export const MESSAGES = {
   GIT_INITIALIZATION_ERROR: 'Git repository has not been initialized',
   PACKAGE_MANAGER_INSTALLATION_SUCCEED: (name: string) =>
     name !== '.'
-      ? `${EMOJIS.ROCKET}  Successfully created project ${chalk.green(name)}`
+      ? `${EMOJIS.ROCKET}  Successfully created project ${green(name)}`
       : `${EMOJIS.ROCKET}  Successfully created a new project`,
   GET_STARTED_INFORMATION: `${EMOJIS.POINT_RIGHT}  Get started with the following commands:`,
   CHANGE_DIR_COMMAND: (name: string) => `$ cd ${name}`,

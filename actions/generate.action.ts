@@ -1,6 +1,5 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import * as path from 'path';
-import { Answers } from 'inquirer';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
@@ -94,28 +93,28 @@ const generateFiles = async (inputs: Input[]) => {
       defaultLabel,
     );
 
-    const answers: Answers = await askForProjectName(
+    const selectedProjectName = (await askForProjectName(
       MESSAGES.PROJECT_SELECTION_QUESTION,
       projects,
-    );
+    )) as string;
 
-    const project: string = answers.appName.replace(defaultLabel, '');
+    const project: string = selectedProjectName.replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
       sourceRoot = configurationProjects[project].sourceRoot;
     }
 
-    if (answers.appName !== defaultProjectName) {
+    if (selectedProjectName !== defaultProjectName) {
       // Only overwrite if the appName is not the default- as it has already been loaded above
       generateSpec = shouldGenerateSpec(
         configuration,
         schematic,
-        answers.appName,
+        selectedProjectName,
         specValue,
         specOptions.passedAsInput,
       );
       generateFlat = shouldGenerateFlat(
         configuration,
-        answers.appNames,
+        selectedProjectName,
         flatValue,
       );
       generateSpecFileSuffix = getSpecFileSuffix(
@@ -144,7 +143,7 @@ const generateFiles = async (inputs: Input[]) => {
     await collection.execute(schematicInput.value as string, schematicOptions);
   } catch (error) {
     if (error && error.message) {
-      console.error(chalk.red(error.message));
+      console.error(red(error.message));
     }
   }
 };

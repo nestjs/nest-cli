@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { Input } from '../commands';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import {
@@ -40,7 +40,7 @@ export class AddAction extends AbstractAction {
       await this.addLibrary(collectionName, options, extraFlags);
     } else {
       console.error(
-        chalk.red(
+        red(
           MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
         ),
       );
@@ -86,11 +86,11 @@ export class AddAction extends AbstractAction {
         defaultLabel,
       );
 
-      const answers = await askForProjectName(
+      const selectedProject = (await askForProjectName(
         MESSAGES.LIBRARY_PROJECT_SELECTION_QUESTION,
         projects,
-      );
-      const project = answers.appName.replace(defaultLabel, '');
+      )) as string;
+      const project = selectedProject.replace(defaultLabel, '');
       if (project !== configuration.sourceRoot) {
         sourceRoot = configurationProjects[project].sourceRoot;
       }
@@ -109,7 +109,7 @@ export class AddAction extends AbstractAction {
       installResult = await manager.addProduction([collectionName], tagName);
     } catch (error) {
       if (error && error.message) {
-        console.error(chalk.red(error.message));
+        console.error(red(error.message));
       }
     }
     return installResult;
@@ -140,7 +140,7 @@ export class AddAction extends AbstractAction {
       );
     } catch (error) {
       if (error && error.message) {
-        console.error(chalk.red(error.message));
+        console.error(red(error.message));
         return Promise.reject();
       }
     }

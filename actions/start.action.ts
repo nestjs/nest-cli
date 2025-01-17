@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -72,12 +72,27 @@ export class StartAction extends BuildAction {
         commandOptions,
         defaultConfiguration.sourceRoot,
       );
+
+      const shellOption = commandOptions.find(
+        (option) => option.name === 'shell',
+      );
+      const useShell = !!shellOption?.value;
+
+      const envFileOption = commandOptions.find(
+        (option) => option.name === 'envFile',
+      );
+      const envFile = envFileOption?.value as string;
+
       const onSuccess = this.createOnSuccessHook(
         entryFile,
         sourceRoot,
         debugFlag,
         outDir,
         binaryToRun,
+        {
+          shell: useShell,
+          envFile,
+        },
       );
 
       await this.runBuild(
@@ -92,7 +107,7 @@ export class StartAction extends BuildAction {
       if (err instanceof Error) {
         console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
-        console.error(`\n${chalk.red(err)}\n`);
+        console.error(`\n${red(err)}\n`);
       }
     }
   }
@@ -103,6 +118,10 @@ export class StartAction extends BuildAction {
     debugFlag: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    options: {
+      shell: boolean;
+      envFile?: string;
+    },
   ) {
     let childProcessRef: any;
     process.on(
@@ -120,6 +139,10 @@ export class StartAction extends BuildAction {
             debugFlag,
             outDirName,
             binaryToRun,
+            {
+              shell: options.shell,
+              envFile: options.envFile,
+            },
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
         });
@@ -133,6 +156,10 @@ export class StartAction extends BuildAction {
           debugFlag,
           outDirName,
           binaryToRun,
+          {
+            shell: options.shell,
+            envFile: options.envFile,
+          },
         );
         childProcessRef.on('exit', (code: number) => {
           process.exitCode = code;
@@ -148,6 +175,10 @@ export class StartAction extends BuildAction {
     debug: boolean | string | undefined,
     outDirName: string,
     binaryToRun: string,
+    options: {
+      shell: boolean;
+      envFile?: string;
+    },
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
     if (!fs.existsSync(outputFilePath + '.js')) {
@@ -175,11 +206,14 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
+    if (options.envFile) {
+      processArgs.unshift(`--env-file=${options.envFile}`);
+    }
     processArgs.unshift('--enable-source-maps');
 
     return spawn(binaryToRun, processArgs, {
       stdio: 'inherit',
-      shell: true,
+      shell: options.shell,
     });
   }
 }

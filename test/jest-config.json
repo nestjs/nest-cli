@@ -5,5 +5,6 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "coverageDirectory": "../coverage"
+  "coverageDirectory": "../coverage",
+  "modulePaths": ["<rootDir>/test/lib/schematics/fixtures"]
 }

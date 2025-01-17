@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { red } from 'ansis';
 import * as ora from 'ora';
 import * as ts from 'typescript';
 import { TsConfigProvider } from '../helpers/tsconfig-provider';
@@ -63,7 +63,7 @@ export class TypeCheckerHost {
     const reportWatchStatusCallback = (diagnostic: ts.Diagnostic) => {
       if (diagnostic.messageText !== TSC_NO_ERRORS_MESSAGE) {
         if ((diagnostic.messageText as string)?.includes('Found')) {
-          console.log(TSC_LOG_ERROR_PREFIX, chalk.red(diagnostic.messageText));
+          console.log(TSC_LOG_ERROR_PREFIX, red(diagnostic.messageText.toString()));
         }
         return;
       }

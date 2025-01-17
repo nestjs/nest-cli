@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import { cyan } from 'ansis';
 import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
@@ -39,7 +39,7 @@ export class SwcCompiler extends BaseCompiler {
   public async run(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
@@ -79,13 +79,13 @@ export class SwcCompiler extends BaseCompiler {
   private runTypeChecker(
     configuration: Required<Configuration>,
     tsConfigPath: string,
-    appName: string,
+    appName: string | undefined,
     extras: SwcCompilerExtras,
   ) {
     if (extras.watch) {
       const args = [
         tsConfigPath,
-        appName,
+        appName ?? 'undefined',
         configuration.sourceRoot ?? 'src',
         JSON.stringify(configuration.compilerOptions.plugins ?? []),
       ];
@@ -156,7 +156,7 @@ export class SwcCompiler extends BaseCompiler {
     swcrcFilePath?: string,
   ) {
     process.nextTick(() =>
-      console.log(SWC_LOG_PREFIX, chalk.cyan('Running...')),
+      console.log(SWC_LOG_PREFIX, cyan('Running...')),
     );
 
     const swcCli = this.loadSwcCliBinary();
