@@ -2,7 +2,12 @@ import * as chokidar from 'chokidar';
 import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
 import { sync } from 'glob';
 import { dirname, join, sep } from 'path';
-import { ActionOnFile, Asset, AssetEntry, Configuration } from '../configuration';
+import {
+  ActionOnFile,
+  Asset,
+  AssetEntry,
+  Configuration,
+} from '../configuration';
 import { copyPathResolve } from './helpers/copy-path-resolve';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 
@@ -91,7 +96,10 @@ export class AssetsManager {
         if (isWatchEnabled || item.watchAssets) {
           // prettier-ignore
           const watcher = chokidar
-            .watch(item.glob, { ignored: item.exclude })
+            .watch(sync(item.glob, {
+              ignore: item.exclude,
+              dot: true,
+            }))
             .on('add', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
             .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
             .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
