@@ -252,8 +252,9 @@ export class SwcCompiler extends BaseCompiler {
     const dir = isAbsolute(options.cliOptions.outDir!)
       ? options.cliOptions.outDir!
       : join(process.cwd(), options.cliOptions.outDir!);
-    const paths = join(dir, '**/*.js');
-    const watcher = chokidar.watch(paths, {
+    const watcher = chokidar.watch(dir, {
+      ignored: (file, stats) =>
+        (stats?.isFile() && !file.endsWith('.js')) as boolean,
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: 50,
