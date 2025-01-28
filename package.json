@@ -65,7 +65,7 @@
     "@swc/core": "1.10.11",
     "@types/inquirer": "9.0.7",
     "@types/jest": "29.5.14",
-    "@types/node": "22.10.10",
+    "@types/node": "22.12.0",
     "@types/node-emoji": "1.8.2",
     "@types/webpack-node-externals": "3.0.4",
     "@typescript-eslint/eslint-plugin": "8.22.0",
