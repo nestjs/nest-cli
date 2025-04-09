@@ -81,7 +81,7 @@ export class StartAction extends BuildAction {
       const envFileOption = commandOptions.find(
         (option) => option.name === 'envFile',
       );
-      const envFile = envFileOption?.value as string;
+      const envFiles = (envFileOption?.value as string)?.split(',');
 
       const onSuccess = this.createOnSuccessHook(
         entryFile,
@@ -91,7 +91,7 @@ export class StartAction extends BuildAction {
         binaryToRun,
         {
           shell: useShell,
-          envFile,
+          envFiles,
         },
       );
 
@@ -120,7 +120,7 @@ export class StartAction extends BuildAction {
     binaryToRun: string,
     options: {
       shell: boolean;
-      envFile?: string;
+      envFiles?: string[];
     },
   ) {
     let childProcessRef: any;
@@ -141,7 +141,7 @@ export class StartAction extends BuildAction {
             binaryToRun,
             {
               shell: options.shell,
-              envFile: options.envFile,
+              envFiles: options.envFiles,
             },
           );
           childProcessRef.on('exit', () => (childProcessRef = undefined));
@@ -158,7 +158,7 @@ export class StartAction extends BuildAction {
           binaryToRun,
           {
             shell: options.shell,
-            envFile: options.envFile,
+            envFiles: options.envFiles,
           },
         );
         childProcessRef.on('exit', (code: number) => {
@@ -177,7 +177,7 @@ export class StartAction extends BuildAction {
     binaryToRun: string,
     options: {
       shell: boolean;
-      envFile?: string;
+      envFiles?: string[];
     },
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
@@ -206,8 +206,10 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
-    if (options.envFile) {
-      processArgs.unshift(`--env-file=${options.envFile}`);
+    if (options.envFiles?.length) {
+      options.envFiles.forEach((envFile) => {
+        processArgs.unshift(`--env-file=${envFile}`);
+      });
     }
     processArgs.unshift('--enable-source-maps');
 

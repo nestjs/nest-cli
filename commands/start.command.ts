@@ -47,6 +47,7 @@ export class StartCommand extends AbstractCommand {
       .option(
         '--env-file [path]',
         'Path to an env file (.env) to be loaded into the environment.',
+        (value, previous) => (previous ? [...previous, value] : [value]),
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {
@@ -95,7 +96,7 @@ export class StartCommand extends AbstractCommand {
         });
         options.push({
           name: 'envFile',
-          value: command.envFile,
+          value: (command.envFile as string[]).join(','),
         });
 
         const availableBuilders = ['tsc', 'webpack', 'swc'];
