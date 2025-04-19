@@ -71,7 +71,7 @@
     "@typescript-eslint/eslint-plugin": "8.30.1",
     "@typescript-eslint/parser": "8.30.1",
     "delete-empty": "3.0.0",
-    "eslint": "9.24.0",
+    "eslint": "9.25.0",
     "eslint-config-prettier": "10.1.2",
     "gulp": "5.0.0",
     "gulp-clean": "0.4.0",
