@@ -20,6 +20,12 @@ import {
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
 
+function assertNonArray<T>(value: T): asserts value is Exclude<T, any[]> {
+  if (Array.isArray(value)) {
+    throw new TypeError('Expected a non-array value');
+  }
+}
+
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
     await generateFiles(inputs.concat(options));
@@ -153,6 +159,7 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
+      assertNonArray(input.value);
       options.push(new SchematicOption(input.name, input.value));
     }
   });

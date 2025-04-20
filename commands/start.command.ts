@@ -6,6 +6,10 @@ import { Input } from './command.input';
 
 export class StartCommand extends AbstractCommand {
   public load(program: CommanderStatic): void {
+    const collect = (value: any, previous: any) => {
+      return previous.concat([value]);
+    };
+
     program
       .command('start [app]')
       .allowUnknownOption()
@@ -47,6 +51,8 @@ export class StartCommand extends AbstractCommand {
       .option(
         '--env-file [path]',
         'Path to an env file (.env) to be loaded into the environment.',
+        collect,
+        [],
       )
       .description('Run Nest application.')
       .action(async (app: string, command: Command) => {

@@ -65,6 +65,12 @@ export class NewAction extends AbstractAction {
   }
 }
 
+function assertNonArray<T>(value: T): asserts value is Exclude<T, any[]> {
+  if (Array.isArray(value)) {
+    throw new TypeError('Expected a non-array value');
+  }
+}
+
 const getApplicationNameInput = (inputs: Input[]) =>
   inputs.find((input) => input.name === 'name');
 
@@ -133,6 +139,7 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
       if (option.name !== 'skip-install') {
+        assertNonArray(option.value);
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;
