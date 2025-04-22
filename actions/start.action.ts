@@ -13,12 +13,7 @@ import {
 import { ERROR_PREFIX } from '../lib/ui';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { BuildAction } from './build.action';
-
-function assertNonArray<T>(value: T): asserts value is Exclude<T, any[]> {
-  if (Array.isArray(value)) {
-    throw new TypeError('Expected a non-array value');
-  }
-}
+import { assertNonArray } from '../lib/utils/type-assertions';
 
 export class StartAction extends BuildAction {
   public async handle(commandInputs: Input[], commandOptions: Input[]) {

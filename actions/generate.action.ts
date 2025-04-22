@@ -19,12 +19,7 @@ import {
   shouldGenerateSpec,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
-
-function assertNonArray<T>(value: T): asserts value is Exclude<T, any[]> {
-  if (Array.isArray(value)) {
-    throw new TypeError('Expected a non-array value');
-  }
-}
+import { assertNonArray } from '../lib/utils/type-assertions';
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
