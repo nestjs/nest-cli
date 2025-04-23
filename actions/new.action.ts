@@ -23,6 +23,7 @@ import { EMOJIS, MESSAGES } from '../lib/ui';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
 import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error';
 import { AbstractAction } from './abstract.action';
+import { assertNonArray } from '../lib/utils/type-assertions';
 
 export class NewAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -133,6 +134,7 @@ const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
   return options.reduce(
     (schematicOptions: SchematicOption[], option: Input) => {
       if (option.name !== 'skip-install') {
+        assertNonArray(option.value);
         schematicOptions.push(new SchematicOption(option.name, option.value));
       }
       return schematicOptions;

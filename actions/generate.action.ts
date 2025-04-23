@@ -19,6 +19,7 @@ import {
   shouldGenerateSpec,
 } from '../lib/utils/project-utils';
 import { AbstractAction } from './abstract.action';
+import { assertNonArray } from '../lib/utils/type-assertions';
 
 export class GenerateAction extends AbstractAction {
   public async handle(inputs: Input[], options: Input[]) {
@@ -153,6 +154,7 @@ const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
   const options: SchematicOption[] = [];
   inputs.forEach((input) => {
     if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
+      assertNonArray(input.value);
       options.push(new SchematicOption(input.name, input.value));
     }
   });

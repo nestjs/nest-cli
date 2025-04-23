@@ -13,6 +13,7 @@ import {
 import { ERROR_PREFIX } from '../lib/ui';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
 import { BuildAction } from './build.action';
+import { assertNonArray } from '../lib/utils/type-assertions';
 
 export class StartAction extends BuildAction {
   public async handle(commandInputs: Input[], commandOptions: Input[]) {
@@ -44,6 +45,8 @@ export class StartAction extends BuildAction {
         watchAssetsModeOption && watchAssetsModeOption.value
       );
       const debugFlag = debugModeOption && debugModeOption.value;
+      assertNonArray(debugFlag);
+
       const binaryToRun = getValueOrDefault(
         configuration,
         'exec',
@@ -81,7 +84,7 @@ export class StartAction extends BuildAction {
       const envFileOption = commandOptions.find(
         (option) => option.name === 'envFile',
       );
-      const envFile = envFileOption?.value as string;
+      const envFile = (envFileOption?.value ?? []) as string[];
 
       const onSuccess = this.createOnSuccessHook(
         entryFile,
@@ -120,7 +123,7 @@ export class StartAction extends BuildAction {
     binaryToRun: string,
     options: {
       shell: boolean;
-      envFile?: string;
+      envFile?: string[];
     },
   ) {
     let childProcessRef: any;
@@ -177,7 +180,7 @@ export class StartAction extends BuildAction {
     binaryToRun: string,
     options: {
       shell: boolean;
-      envFile?: string;
+      envFile?: string[];
     },
   ) {
     let outputFilePath = join(outDirName, sourceRoot, entryFile);
@@ -206,9 +209,14 @@ export class StartAction extends BuildAction {
         typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
       processArgs.unshift(inspectFlag);
     }
-    if (options.envFile) {
-      processArgs.unshift(`--env-file=${options.envFile}`);
+
+    if (options.envFile && options.envFile.length > 0) {
+      const envFileNodeArgs = options.envFile.map(
+        (envFilePath) => `--env-file=${envFilePath}`,
+      );
+      processArgs.unshift(envFileNodeArgs.join(' '));
     }
+
     processArgs.unshift('--enable-source-maps');
 
     return spawn(binaryToRun, processArgs, {
