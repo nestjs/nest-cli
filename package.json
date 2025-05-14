@@ -80,7 +80,7 @@
     "lint-staged": "16.0.0",
     "prettier": "3.5.3",
     "release-it": "19.0.2",
-    "ts-jest": "29.3.2",
+    "ts-jest": "29.3.3",
     "ts-loader": "9.5.2",
     "ts-node": "10.9.2"
   },
