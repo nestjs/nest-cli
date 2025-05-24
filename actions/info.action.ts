@@ -82,7 +82,7 @@ export class InfoAction extends AbstractAction {
 
   async displayNestInformation(): Promise<void> {
     this.displayCliVersion();
-    console.info(green`[Nest Platform Information`);
+    console.info(green`[Nest Platform Information]`);
     await this.displayNestInformationFromPackage();
   }
 
