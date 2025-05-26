@@ -4,6 +4,7 @@ import { NpmPackageManager } from './npm.package-manager';
 import { PackageManager } from './package-manager';
 import { YarnPackageManager } from './yarn.package-manager';
 import { PnpmPackageManager } from './pnpm.package-manager';
+import { BunPackageManager } from './bun.package-manager';
 
 export class PackageManagerFactory {
   public static create(name: PackageManager | string): AbstractPackageManager {
@@ -14,6 +15,8 @@ export class PackageManagerFactory {
         return new YarnPackageManager();
       case PackageManager.PNPM:
         return new PnpmPackageManager();
+      case PackageManager.BUN:
+        return new BunPackageManager();
       default:
         throw new Error(`Package manager ${name} is not managed.`);
     }
@@ -24,6 +27,11 @@ export class PackageManagerFactory {
 
     try {
       const files = await fs.promises.readdir(process.cwd());
+
+      const hasBunLockFile = files.includes('bun.lockb');
+      if (hasBunLockFile) {
+        return this.create(PackageManager.BUN);
+      }
 
       const hasYarnLockFile = files.includes('yarn.lock');
       if (hasYarnLockFile) {
