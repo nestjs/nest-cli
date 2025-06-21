@@ -41,6 +41,7 @@ describe('SWC Compiler', () => {
     compiler['runTypeChecker'] = jest.fn();
     compiler['debounce'] = debounceMock;
     compiler['watchFilesInOutDir'] = jest.fn();
+    compiler['getTsconfigFileContentIfExists'] = jest.fn();
 
     jest.clearAllMocks();
   });
@@ -164,6 +165,7 @@ describe('SWC Compiler', () => {
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
+        undefined
       );
 
       fixture.extras.watch = false;
@@ -175,6 +177,32 @@ describe('SWC Compiler', () => {
         'swcOptionsTest',
         fixture.extras,
         'swcrcPathTest',
+        undefined
+      );
+    });
+
+    it('should call runSwc and parse tsconfig', async () => {
+      swcDefaultsFactoryMock.mockReturnValueOnce('swcOptionsTest');
+      getValueOrDefaultMock.mockReturnValueOnce('swcrcPathTest');
+      (compiler['getTsconfigFileContentIfExists'] as jest.Mock).mockReturnValueOnce({ exclude: ['**/*spec.ts'] });
+
+      const fixture = {
+        extras: {
+          watch: false,
+        },
+      };
+
+      fixture.extras.watch = true;
+      await callRunCompiler({
+        extras: fixture.extras,
+        tsconfig: 'tsConfigPathTest'
+      });
+
+      expect(compiler['runSwc']).toHaveBeenCalledWith(
+        'swcOptionsTest',
+        fixture.extras,
+        'swcrcPathTest',
+        ['**/*spec.ts']
       );
     });
 

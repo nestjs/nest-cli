@@ -50,11 +50,14 @@ export class SwcCompiler extends BaseCompiler {
       appName,
     );
 
+    const tsconfigContent = this.getTsconfigFileContentIfExists(tsConfigPath);
+    const filesToExclude = this.extractExcludePattern(tsconfigContent);
+
     if (extras.watch) {
       if (extras.typeCheck) {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras, swcrcFilePath);
+      await this.runSwc(swcOptions, extras, swcrcFilePath, filesToExclude);
 
       if (onSuccess) {
         onSuccess();
@@ -67,7 +70,7 @@ export class SwcCompiler extends BaseCompiler {
       if (extras.typeCheck) {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
-      await this.runSwc(swcOptions, extras, swcrcFilePath);
+      await this.runSwc(swcOptions, extras, swcrcFilePath, filesToExclude);
       if (onSuccess) {
         onSuccess();
       }
@@ -154,6 +157,7 @@ export class SwcCompiler extends BaseCompiler {
     options: ReturnType<typeof swcDefaultsFactory>,
     extras: SwcCompilerExtras,
     swcrcFilePath?: string,
+    ignoreGlob?: string[],
   ) {
     process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
 
@@ -173,6 +177,7 @@ export class SwcCompiler extends BaseCompiler {
       swcOptions,
       cliOptions: {
         ...options.cliOptions,
+        ignore: ignoreGlob,
         watch: extras.watch,
       },
     });
@@ -205,6 +210,20 @@ export class SwcCompiler extends BaseCompiler {
       }
       return {};
     }
+  }
+
+  private getTsconfigFileContentIfExists(
+    filePath: string,
+  ): Record<string, unknown> {
+    try {
+      return JSON.parse(readFileSync(join(process.cwd(), filePath), 'utf8'));
+    } catch {
+      return {};
+    }
+  }
+
+  private extractExcludePattern(tsconfig: Record<string, unknown> = {}): string[] | undefined {
+    return tsconfig['exclude'] as string[] | undefined;
   }
 
   private deepMerge<T>(target: T, source: T): T {
