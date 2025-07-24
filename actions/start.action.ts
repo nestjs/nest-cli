@@ -211,10 +211,9 @@ export class StartAction extends BuildAction {
     }
 
     if (options.envFile && options.envFile.length > 0) {
-      const envFileNodeArgs = options.envFile.map(
-        (envFilePath) => `--env-file=${envFilePath}`,
-      );
-      processArgs.unshift(envFileNodeArgs.join(' '));
+      for (const envFilePath of options.envFile) {
+        processArgs.unshift(`--env-file=${envFilePath}`);
+      }
     }
 
     processArgs.unshift('--enable-source-maps');
