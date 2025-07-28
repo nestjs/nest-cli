@@ -2,6 +2,7 @@ import { cyan } from 'ansis';
 import { fork } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
+import { stat } from 'fs/promises';
 import * as path from 'path';
 import { isAbsolute, join } from 'path';
 import * as ts from 'typescript';
@@ -168,14 +169,30 @@ export class SwcCompiler extends BaseCompiler {
       swcOptions.jsc.baseUrl = path.join(rootDir, swcOptions.jsc.baseUrl);
     }
 
-    await swcCli.default({
+    const swcCliOpts = {
       ...options,
       swcOptions,
       cliOptions: {
         ...options.cliOptions,
         watch: extras.watch,
       },
-    });
+    };
+
+    if (extras.watch) {
+      // This is required since SWC no longer supports auto-compiling of newly added files in watch mode.
+      // We need to watch the source directory and trigger SWC compilation manually.
+      await this.watchFilesInSrcDir(options, async (file) => {
+        // Transpile newly added file
+        await swcCli.default({
+          ...swcCliOpts,
+          cliOptions: {
+            ...swcCliOpts.cliOptions,
+            filenames: [file],
+          },
+        });
+      });
+    }
+    await swcCli.default(swcCliOpts);
   }
 
   private loadSwcCliBinary() {
@@ -243,6 +260,34 @@ export class SwcCompiler extends BaseCompiler {
       clearTimeout(timeout);
       timeout = setTimeout(callback, wait);
     };
+  }
+
+  private async watchFilesInSrcDir(
+    options: ReturnType<typeof swcDefaultsFactory>,
+    onFileAdded: (file: string) => Promise<unknown>,
+  ) {
+    const srcDir = options.cliOptions?.filenames?.[0];
+    const isDirectory = await stat(srcDir)
+      .then((stats) => stats.isDirectory())
+      .catch(() => false);
+
+    if (!srcDir || !isDirectory) {
+      // Skip watching if source directory is not a default "src" folder
+      // or any other specified directory
+      return;
+    }
+    const extensions = options.cliOptions?.extensions ?? ['ts'];
+    const watcher = chokidar.watch(srcDir, {
+      ignored: (file, stats) =>
+        (stats?.isFile() &&
+          extensions.includes(path.extname(file).slice(1))) as boolean,
+      ignoreInitial: true,
+      awaitWriteFinish: {
+        stabilityThreshold: 50,
+        pollInterval: 10,
+      },
+    });
+    watcher.on('add', async (file) => onFileAdded(file));
   }
 
   private watchFilesInOutDir(
