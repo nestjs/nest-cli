@@ -41,7 +41,7 @@
     "@angular-devkit/core": "19.2.15",
     "@angular-devkit/schematics": "19.2.15",
     "@angular-devkit/schematics-cli": "19.2.15",
-    "@inquirer/prompts": "7.4.1",
+    "@inquirer/prompts": "7.7.1",
     "@nestjs/schematics": "^11.0.1",
     "ansis": "4.1.0",
     "chokidar": "4.0.3",
