@@ -44,8 +44,8 @@ export class StartCommand extends AbstractCommand {
       )
       .option(
         '--shell',
-        "Spawn child processes within a shell (see node's child_process.spawn() method docs). Default: false.",
-        false,
+        "Spawn child processes within a shell (see node's child_process.spawn() method docs). Default: true.",
+        true,
       )
       .option('--no-shell', 'Do not spawn child processes within a shell.')
       .option(
