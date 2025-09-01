@@ -226,9 +226,9 @@ describe('SWC Compiler', () => {
       expect(compiler['debounce']).not.toHaveBeenCalled();
     });
 
-    it('should call debounce method with debounceTime and onSuccess method and when extras.watch is true', async () => {
+    it('should call debounce method with debounceTime and a callback function when extras.watch is true', async () => {
       const fixture = {
-        onSuccess: jest.fn(),
+        onSuccess: jest.fn().mockReturnValue({}),
       };
 
       await callRunCompiler({
@@ -238,7 +238,10 @@ describe('SWC Compiler', () => {
         },
       });
 
-      expect(compiler['debounce']).toHaveBeenCalledWith(fixture.onSuccess, 150);
+      expect(compiler['debounce']).toHaveBeenCalledWith(
+        expect.any(Function),
+        150,
+      );
     });
 
     it('should call watchFilesInOutDir method with swcOptions and callback when extras.watch is true', async () => {

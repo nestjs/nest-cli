@@ -32,6 +32,7 @@ export type SwcCompilerExtras = {
 export class SwcCompiler extends BaseCompiler {
   private readonly pluginMetadataGenerator = new PluginMetadataGenerator();
   private readonly typeCheckerHost = new TypeCheckerHost();
+  private isFirstRun = true;
 
   constructor(pluginsLoader: PluginsLoader) {
     super(pluginsLoader);
@@ -59,10 +60,17 @@ export class SwcCompiler extends BaseCompiler {
 
       if (onSuccess) {
         onSuccess();
-
+        const callback = () => {
+          if (!this.isFirstRun) {
+            onSuccess();
+            return;
+          }
+          this.isFirstRun = false;
+          onSuccess();
+        };
         const debounceTime = 150;
-        const callback = this.debounce(onSuccess, debounceTime);
-        this.watchFilesInOutDir(swcOptions, callback);
+        const debouncedCallback = this.debounce(callback, debounceTime);
+        this.watchFilesInOutDir(swcOptions, debouncedCallback);
       }
     } else {
       if (extras.typeCheck) {
@@ -294,6 +302,7 @@ export class SwcCompiler extends BaseCompiler {
     options: ReturnType<typeof swcDefaultsFactory>,
     onChange: () => void,
   ) {
+    const compilationEndTime = Date.now();
     const dir = isAbsolute(options.cliOptions.outDir!)
       ? options.cliOptions.outDir!
       : join(process.cwd(), options.cliOptions.outDir!);
@@ -307,8 +316,31 @@ export class SwcCompiler extends BaseCompiler {
         pollInterval: 10,
       },
     });
-    for (const type of ['add', 'change'] as const) {
-      watcher.on(type, async () => onChange());
+
+    for (const eventType of ['add', 'change'] as const) {
+      watcher.on(eventType, (filePath, stats) => {
+        if (this.isFirstRun) {
+          if (
+            !compilationEndTime ||
+            (stats && stats.mtimeMs > compilationEndTime) ||
+            !stats
+          ) {
+            onChange();
+          } else if (!stats && compilationEndTime) {
+            stat(filePath)
+              .then((fileStats) => {
+                if (fileStats.mtimeMs > compilationEndTime) {
+                  onChange();
+                }
+              })
+              .catch((err) => {
+                console.error(`Error watching file ${filePath}:`, err);
+              });
+          }
+        } else {
+          onChange();
+        }
+      });
     }
   }
 }
