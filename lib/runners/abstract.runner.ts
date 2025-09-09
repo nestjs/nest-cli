@@ -1,5 +1,6 @@
 import { red } from 'ansis';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
+import { platform } from 'os';
 import { MESSAGES } from '../ui';
 
 export class AbstractRunner {
@@ -14,14 +15,15 @@ export class AbstractRunner {
     cwd: string = process.cwd(),
   ): Promise<null | string> {
     const args: string[] = [command];
+    const isWindows = platform() === 'win32';
     const options: SpawnOptions = {
       cwd,
       stdio: collect ? 'pipe' : 'inherit',
-      shell: true,
+      shell: isWindows,
     };
     return new Promise<null | string>((resolve, reject) => {
       const child: ChildProcess = spawn(
-        `${this.binary}`,
+        this.binary,
         [...this.args, ...args],
         options,
       );
