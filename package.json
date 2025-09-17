@@ -50,7 +50,7 @@
     "fork-ts-checker-webpack-plugin": "9.1.0",
     "glob": "11.0.3",
     "node-emoji": "1.11.0",
-    "ora": "5.4.1",
+    "ora": "9.0.0",
     "tree-kill": "1.2.2",
     "tsconfig-paths": "4.2.0",
     "tsconfig-paths-webpack-plugin": "4.2.0",
