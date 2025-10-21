@@ -79,7 +79,7 @@
     "jest": "29.7.0",
     "lint-staged": "16.1.6",
     "prettier": "3.6.2",
-    "release-it": "19.0.4",
+    "release-it": "19.0.5",
     "ts-jest": "29.4.2",
     "ts-loader": "9.5.4",
     "ts-node": "10.9.2"
