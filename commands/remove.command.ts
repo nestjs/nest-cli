@@ -4,15 +4,15 @@ import { Command, CommanderStatic } from 'commander';
 import { Input } from './command.input';
 
 export class RemoveCommand extends AbstractCommand {
-  public load(program: CommanderStatic): void {
+  public load(program: CommanderStatic) {
     program
-      .command('remove <schematicName>')
+      .command('remove <name>')
       .alias('rm')
-      .description('Removes a schematic from your nest project')
-      .action(async (schematicName: string, command: Command) => {
+      .description('Removes a Nest Element from your nest project')
+      .action(async (name: string, command: Command) => {
         const inputs: Input[] = [];
 
-        inputs.push({ name: 'schematicName', value: schematicName });
+        inputs.push({ name: 'name', value: name });
 
         const options: Input[] = []
 
