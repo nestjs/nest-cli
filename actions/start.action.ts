@@ -3,7 +3,6 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import { platform } from 'os';
-import * as killProcess from 'tree-kill';
 import { Input } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
@@ -153,7 +152,7 @@ export class StartAction extends BuildAction {
         });
 
         childProcessRef.stdin && childProcessRef.stdin.pause();
-        killProcess(childProcessRef.pid);
+        killProcessSync(childProcessRef.pid);
       } else {
         childProcessRef = this.spawnChildProcess(
           entryFile,
