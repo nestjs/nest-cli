@@ -2,6 +2,7 @@ import { red } from 'ansis';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
+import { platform } from 'os';
 import { Input } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
@@ -78,7 +79,8 @@ export class StartAction extends BuildAction {
       const shellOption = commandOptions.find(
         (option) => option.name === 'shell',
       );
-      const useShell = !!shellOption?.value;
+      const isWindows = platform() === 'win32';
+      const useShell = shellOption?.value !== false && isWindows;
 
       const envFileOption = commandOptions.find(
         (option) => option.name === 'envFile',
