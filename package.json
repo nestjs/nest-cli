@@ -60,7 +60,7 @@
   "devDependencies": {
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-angular": "20.0.0",
-    "@swc/cli": "0.7.8",
+    "@swc/cli": "0.7.9",
     "@swc/core": "1.15.0",
     "@types/inquirer": "9.0.9",
     "@types/jest": "29.5.14",
