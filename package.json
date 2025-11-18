@@ -48,7 +48,7 @@
     "cli-table3": "0.6.5",
     "commander": "4.1.1",
     "fork-ts-checker-webpack-plugin": "9.1.0",
-    "glob": "11.0.3",
+    "glob": "11.1.0",
     "node-emoji": "1.11.0",
     "ora": "5.4.1",
     "tsconfig-paths": "4.2.0",
