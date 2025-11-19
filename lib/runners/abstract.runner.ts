@@ -14,7 +14,7 @@ export class AbstractRunner {
     collect = false,
     cwd: string = process.cwd(),
   ): Promise<null | string> {
-    const args: string[] = [command];
+    const commandArgs = command.split(' ');
     const isWindows = platform() === 'win32';
     const options: SpawnOptions = {
       cwd,
@@ -24,7 +24,7 @@ export class AbstractRunner {
     return new Promise<null | string>((resolve, reject) => {
       const child: ChildProcess = spawn(
         this.binary,
-        [...this.args, ...args],
+        [...this.args, ...commandArgs],
         options,
       );
       if (collect) {

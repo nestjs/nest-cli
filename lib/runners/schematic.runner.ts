@@ -2,7 +2,7 @@ import { AbstractRunner } from './abstract.runner';
 
 export class SchematicRunner extends AbstractRunner {
   constructor() {
-    super(`node`, [`"${SchematicRunner.findClosestSchematicsBinary()}"`]);
+    super(`node`, [SchematicRunner.findClosestSchematicsBinary()]);
   }
 
   public static getModulePaths() {
