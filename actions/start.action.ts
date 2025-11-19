@@ -1,5 +1,5 @@
 import { red } from 'ansis';
-import { spawn } from 'child_process';
+import { spawn, SpawnOptions } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import { Input } from '../commands';
@@ -218,9 +218,16 @@ export class StartAction extends BuildAction {
 
     processArgs.unshift('--enable-source-maps');
 
-    return spawn(binaryToRun, processArgs, {
+    const spawnOptions: SpawnOptions = {
       stdio: 'inherit',
       shell: options.shell,
-    });
+    };
+
+    if (options.shell) {
+      const command = [binaryToRun, ...processArgs].join(' ');
+      return spawn(command, spawnOptions);
+    }
+
+    return spawn(binaryToRun, processArgs, spawnOptions);
   }
 }
