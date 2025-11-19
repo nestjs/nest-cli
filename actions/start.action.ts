@@ -2,7 +2,6 @@ import { red } from 'ansis';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
-import { platform } from 'os';
 import { Input } from '../commands';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
@@ -12,8 +11,8 @@ import {
 } from '../lib/configuration/defaults';
 import { ERROR_PREFIX } from '../lib/ui';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
-import { BuildAction } from './build.action';
 import { assertNonArray } from '../lib/utils/type-assertions';
+import { BuildAction } from './build.action';
 
 export class StartAction extends BuildAction {
   public async handle(commandInputs: Input[], commandOptions: Input[]) {
@@ -79,8 +78,7 @@ export class StartAction extends BuildAction {
       const shellOption = commandOptions.find(
         (option) => option.name === 'shell',
       );
-      const isWindows = platform() === 'win32';
-      const useShell = shellOption?.value !== false && isWindows;
+      const useShell = !!shellOption?.value;
 
       const envFileOption = commandOptions.find(
         (option) => option.name === 'envFile',
