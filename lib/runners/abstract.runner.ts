@@ -19,11 +19,11 @@ export class AbstractRunner {
     const options: SpawnOptions = {
       cwd,
       stdio: collect ? 'pipe' : 'inherit',
-      shell: isWindows,
+      shell: true,
     };
     return new Promise<null | string>((resolve, reject) => {
       const child: ChildProcess = spawn(
-        this.binary,
+        `${this.binary}`,
         [...this.args, ...args],
         options,
       );
@@ -37,9 +37,7 @@ export class AbstractRunner {
           resolve(null);
         } else {
           console.error(
-            red(
-              MESSAGES.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`),
-            ),
+            red(MESSAGES.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`)),
           );
           reject();
         }
