@@ -22,11 +22,8 @@ export class AbstractRunner {
       shell: true,
     };
     return new Promise<null | string>((resolve, reject) => {
-      const child: ChildProcess = spawn(
-        `${this.binary}`,
-        [...this.args, ...args],
-        options,
-      );
+      const command = [this.binary, ...this.args, ...args].join(' ');
+      const child: ChildProcess = spawn(command, options);
       if (collect) {
         child.stdout!.on('data', (data) =>
           resolve(data.toString().replace(/\r\n|\n/, '')),
