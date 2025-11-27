@@ -1,11 +1,16 @@
+# ignore everything by default
 *
 
 # definitions
 !**/*.d.ts
 !*.d.ts
+
+# source
 !actions/**/*.js
 !bin/**/*.js
 !commands/**/*.js
 !lib/**/*.js
+
+# documents
 !README.md
 !LICENSE
