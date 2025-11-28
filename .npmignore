@@ -1,34 +1,16 @@
-.idea/
-.circleci
-.github
-.gitignore
-.prettierrc
-.travis.yml
-Makefile
-node_modules/
-.DS_Store
-CONTRIBUTE.md
-
-# source
-**/*.ts
-*.ts
-/test
+# ignore everything by default
+*
 
 # definitions
 !**/*.d.ts
 !*.d.ts
 
-# configuration
-renovate.json
-gulpfile.js
-tsconfig.json
-tools
-/test/jest-config.json
-/.vscode
-.commitlintrc.json
-.eslintrc.js
-.eslintignore
-.release-it.json
+# source
+!actions/**/*.js
+!bin/**/*.js
+!commands/**/*.js
+!lib/**/*.js
 
-# sample
-/sample
+# documents
+!README.md
+!LICENSE
