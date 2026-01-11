@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 
 export function treeKillSync(pid: number, signal?: string | number): void {
   if (process.platform === 'win32') {
@@ -19,11 +19,16 @@ function getAllPid(): {
   pid: number;
   ppid: number;
 }[] {
-  const rows = execSync('ps -A -o pid,ppid')
-    .toString()
-    .trim()
-    .split('\n')
-    .slice(1);
+  const result = spawnSync('ps', ['-A', '-o', 'pid,ppid'], {
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  });
+
+  if (result.error || !result.stdout) {
+    return [];
+  }
+
+  const rows = result.stdout.trim().split('\n').slice(1);
 
   return rows
     .map(function (row) {
