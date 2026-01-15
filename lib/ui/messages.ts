@@ -25,7 +25,6 @@ export const MESSAGES = {
   START_COMMAND: (name: string) => `$ ${name} run start`,
   PACKAGE_MANAGER_INSTALLATION_FAILED: (commandToRunManually: string) =>
     `${EMOJIS.SCREAM}  Packages installation failed!\nIn case you don't see any errors above, consider manually running the failed command ${commandToRunManually} to see more details on why it errored out.`,
-  // tslint:disable-next-line:max-line-length
   NEST_INFORMATION_PACKAGE_MANAGER_FAILED: `${EMOJIS.SMIRK}  cannot read your project package.json file, are you inside your project directory?`,
   NEST_INFORMATION_PACKAGE_WARNING_FAILED: (nestDependencies: string[]) =>
     `${
