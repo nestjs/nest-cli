@@ -10,7 +10,7 @@ export const MESSAGES = {
   PROJECT_INFORMATION_START: `${EMOJIS.SPARKLES}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>
     `\nFailed to execute command: ${command}`,
-  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
+  PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART} to use?`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
