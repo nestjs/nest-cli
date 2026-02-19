@@ -6,11 +6,25 @@ import { TypeScriptBinaryLoader } from '../typescript-loader';
 
 export type TsConfigProviderOutput = Pick<
   ts.ParsedCommandLine,
-  'options' | 'fileNames' | 'projectReferences'
->;
+  'fileNames' | 'projectReferences'
+> & {
+  options: ts.ParsedCommandLine['options'] & { exclude: string[] };
+};
 
 export class TsConfigProvider {
   constructor(private readonly typescriptLoader: TypeScriptBinaryLoader) {}
+
+  private parseExclude(exclude: unknown): string[] {
+    const passesTypeValidation =
+      Array.isArray(exclude) &&
+      exclude.every((item) => typeof item === 'string');
+
+    if (!passesTypeValidation) {
+      return [];
+    }
+
+    return exclude;
+  }
 
   public getByConfigFilename(configFilename: string): TsConfigProviderOutput {
     const configPath = join(process.cwd(), configFilename);
@@ -23,7 +37,18 @@ export class TsConfigProvider {
       undefined!,
       tsBinary.sys as unknown as ts.ParseConfigFileHost,
     );
-    const { options, fileNames, projectReferences } = parsedCmd!;
+    const {
+      options: rawOptions,
+      fileNames,
+      projectReferences,
+      raw,
+    } = parsedCmd!;
+
+    const options = {
+      ...rawOptions,
+      exclude: this.parseExclude(raw?.exclude),
+    };
+
     return { options, fileNames, projectReferences };
   }
 }
