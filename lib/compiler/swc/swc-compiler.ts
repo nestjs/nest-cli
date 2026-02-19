@@ -6,7 +6,6 @@ import { stat } from 'fs/promises';
 import { createRequire } from 'module';
 import * as path from 'path';
 import { dirname, isAbsolute, join } from 'path';
-import * as ts from 'typescript';
 import { fileURLToPath } from 'url';
 import { Configuration } from '../../configuration/index.js';
 import { ERROR_PREFIX } from '../../ui/index.js';
@@ -15,6 +14,7 @@ import { AssetsManager } from '../assets-manager.js';
 import { BaseCompiler } from '../base-compiler.js';
 import { swcDefaultsFactory } from '../defaults/swc-defaults.js';
 import { getValueOrDefault } from '../helpers/get-value-or-default.js';
+import type { TsConfigProviderOutput } from '../helpers/tsconfig-provider.js';
 import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
 import { PluginsLoader } from '../plugins/plugins-loader.js';
 import {
@@ -33,7 +33,7 @@ export type SwcCompilerExtras = {
   typeCheck: boolean;
   emitDeclarations: boolean;
   assetsManager: AssetsManager;
-  tsOptions: ts.CompilerOptions;
+  tsOptions: TsConfigProviderOutput['options'];
   silent?: boolean;
 };
 

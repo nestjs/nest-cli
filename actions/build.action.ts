@@ -1,7 +1,6 @@
 import { createRequire } from 'module';
 import { red } from 'ansis';
 import { join } from 'path';
-import type * as ts from 'typescript';
 import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
@@ -11,7 +10,10 @@ import { getRspackConfigPath } from '../lib/compiler/helpers/get-rspack-config-p
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path.js';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path.js';
-import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider.js';
+import {
+  TsConfigProvider,
+  TsConfigProviderOutput,
+} from '../lib/compiler/helpers/tsconfig-provider.js';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader.js';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader.js';
 import {
@@ -214,7 +216,7 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     watchMode: boolean,
     options: Record<string, any>,
-    tsOptions: ts.CompilerOptions,
+    tsOptions: TsConfigProviderOutput['options'],
     emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
   ) {
