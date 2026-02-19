@@ -43,6 +43,7 @@ export const swcDefaultsFactory = (
       extensions: ['.js', '.ts'],
       copyFiles: false,
       includeDotfiles: false,
+      ignore: tsOptions?.exclude?.length ? tsOptions.exclude : undefined,
       quiet: false,
       watch: false,
       stripLeadingPaths: true,
