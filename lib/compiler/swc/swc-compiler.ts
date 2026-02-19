@@ -5,7 +5,6 @@ import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
 import * as path from 'path';
 import { isAbsolute, join } from 'path';
-import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
 import { ERROR_PREFIX } from '../../ui';
 import { treeKillSync } from '../../utils/tree-kill';
@@ -21,12 +20,13 @@ import {
   SWC_LOG_PREFIX,
 } from './constants';
 import { TypeCheckerHost } from './type-checker-host';
+import { TsConfigProviderOutput } from '../helpers/tsconfig-provider';
 
 export type SwcCompilerExtras = {
   watch: boolean;
   typeCheck: boolean;
   assetsManager: AssetsManager;
-  tsOptions: ts.CompilerOptions;
+  tsOptions: TsConfigProviderOutput['options'];
 };
 
 export class SwcCompiler extends BaseCompiler {

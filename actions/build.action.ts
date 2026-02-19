@@ -1,6 +1,5 @@
 import { red } from 'ansis';
 import { join } from 'path';
-import * as ts from 'typescript';
 import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
@@ -25,6 +24,7 @@ import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
 import { isModuleAvailable } from '../lib/utils/is-module-available';
 import { AbstractAction } from './abstract.action';
 import webpack = require('webpack');
+import { TsConfigProviderOutput } from '../lib/compiler/helpers/tsconfig-provider';
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -185,7 +185,7 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     watchMode: boolean,
     options: Input[],
-    tsOptions: ts.CompilerOptions,
+    tsOptions: TsConfigProviderOutput['options'],
     onSuccess: (() => void) | undefined,
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler');
