@@ -4,10 +4,15 @@ import * as ts from 'typescript';
 import { CLI_ERRORS } from '../../ui';
 import { TypeScriptBinaryLoader } from '../typescript-loader';
 
+export type TsConfigProviderOutput = Pick<
+  ts.ParsedCommandLine,
+  'options' | 'fileNames' | 'projectReferences'
+>;
+
 export class TsConfigProvider {
   constructor(private readonly typescriptLoader: TypeScriptBinaryLoader) {}
 
-  public getByConfigFilename(configFilename: string) {
+  public getByConfigFilename(configFilename: string): TsConfigProviderOutput {
     const configPath = join(process.cwd(), configFilename);
     if (!existsSync(configPath)) {
       throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
