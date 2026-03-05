@@ -1,12 +1,12 @@
 import { bold, gray, red } from 'ansis';
-import { readFile } from 'fs';
-import * as ora from 'ora';
+import { readFile } from 'fs/promises';
+import ora from 'ora';
 import { join } from 'path';
-import { AbstractRunner } from '../runners/abstract.runner';
-import { MESSAGES } from '../ui';
-import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
-import { PackageManagerCommands } from './package-manager-commands';
-import { ProjectDependency } from './project.dependency';
+import { AbstractRunner } from '../runners/abstract.runner.js';
+import { MESSAGES } from '../ui/index.js';
+import { normalizeToKebabOrSnakeCase } from '../utils/formatting.js';
+import { PackageManagerCommands } from './package-manager-commands.js';
+import { ProjectDependency } from './project.dependency.js';
 
 export abstract class AbstractPackageManager {
   constructor(protected runner: AbstractRunner) {}
@@ -42,11 +42,7 @@ export abstract class AbstractPackageManager {
       const commandArgs = this.cli.install;
       const commandToRun = this.runner.rawFullCommand(commandArgs);
       console.error(
-        red(
-          MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED(
-            bold(commandToRun),
-          ),
-        ),
+        red(MESSAGES.PACKAGE_MANAGER_INSTALLATION_FAILED(bold(commandToRun))),
       );
     }
   }
@@ -100,7 +96,8 @@ export abstract class AbstractPackageManager {
 
   public async getProduction(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDependencies: any = packageJsonContent.dependencies;
+    const packageJsonDependencies: Record<string, string> =
+      packageJsonContent.dependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDependencies)) {
@@ -112,7 +109,8 @@ export abstract class AbstractPackageManager {
 
   public async getDevelopment(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
-    const packageJsonDevDependencies: any = packageJsonContent.devDependencies;
+    const packageJsonDevDependencies: Record<string, string> =
+      packageJsonContent.devDependencies;
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDevDependencies)) {
@@ -122,19 +120,12 @@ export abstract class AbstractPackageManager {
     return dependencies as ProjectDependency[];
   }
 
-  private async readPackageJson(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      readFile(
-        join(process.cwd(), 'package.json'),
-        (error: NodeJS.ErrnoException | null, buffer: Buffer) => {
-          if (error !== undefined && error !== null) {
-            reject(error);
-          } else {
-            resolve(JSON.parse(buffer.toString()));
-          }
-        },
-      );
-    });
+  private async readPackageJson(): Promise<{
+    dependencies: Record<string, string>;
+    devDependencies: Record<string, string>;
+  }> {
+    const buffer = await readFile(join(process.cwd(), 'package.json'));
+    return JSON.parse(buffer.toString());
   }
 
   public async updateProduction(dependencies: string[]) {
@@ -177,7 +168,7 @@ export abstract class AbstractPackageManager {
     await this.delete(commandArguments);
   }
 
-  public async delete(commandArguments: string) {
+  private async delete(commandArguments: string) {
     const collect = true;
     await this.runner.run(commandArguments, collect);
   }

@@ -1,11 +1,12 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { join } from 'path';
 import {
   PackageManagerCommands,
   YarnPackageManager,
-} from '../../../lib/package-managers';
-import { YarnRunner } from '../../../lib/runners/yarn.runner';
+} from '../../../lib/package-managers/index.js';
+import { YarnRunner } from '../../../lib/runners/yarn.runner.js';
 
-jest.mock('../../../lib/runners/yarn.runner');
+vi.mock('../../../lib/runners/yarn.runner.js');
 
 describe('YarnPackageManager', () => {
   let packageManager: YarnPackageManager;
@@ -35,7 +36,7 @@ describe('YarnPackageManager', () => {
   });
   describe('install', () => {
     it('should use the proper command for installing', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'yarn');
@@ -44,7 +45,7 @@ describe('YarnPackageManager', () => {
   });
   describe('addProduction', () => {
     it('should use the proper command for adding production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `add ${dependencies
@@ -56,7 +57,7 @@ describe('YarnPackageManager', () => {
   });
   describe('addDevelopment', () => {
     it('should use the proper command for adding development dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `add -D ${dependencies
@@ -68,7 +69,7 @@ describe('YarnPackageManager', () => {
   });
   describe('updateProduction', () => {
     it('should use the proper command for updating production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateProduction(dependencies);
@@ -77,7 +78,7 @@ describe('YarnPackageManager', () => {
   });
   describe('updateDevelopment', () => {
     it('should use the proper command for updating development dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateDevelopment(dependencies);
@@ -86,7 +87,7 @@ describe('YarnPackageManager', () => {
   });
   describe('upgradeProduction', () => {
     it('should use the proper command for upgrading production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `remove ${dependencies.join(' ')}`;
@@ -105,7 +106,7 @@ describe('YarnPackageManager', () => {
   });
   describe('upgradeDevelopment', () => {
     it('should use the proper command for upgrading production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `remove -D ${dependencies.join(' ')}`;

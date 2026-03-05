@@ -1,9 +1,8 @@
-import { yellow } from 'ansis';
-import { NpmRunner } from './npm.runner';
-import { Runner } from './runner';
-import { SchematicRunner } from './schematic.runner';
-import { YarnRunner } from './yarn.runner';
-import { PnpmRunner } from './pnpm.runner';
+import { NpmRunner } from './npm.runner.js';
+import { PnpmRunner } from './pnpm.runner.js';
+import { Runner } from './runner.js';
+import { SchematicRunner } from './schematic.runner.js';
+import { YarnRunner } from './yarn.runner.js';
 
 export class RunnerFactory {
   public static create(runner: Runner) {
@@ -21,7 +20,7 @@ export class RunnerFactory {
         return new PnpmRunner();
 
       default:
-        console.info(yellow`[WARN] Unsupported runner: ${runner}`);
+        throw new Error(`Unsupported runner: ${runner}`);
     }
   }
 }

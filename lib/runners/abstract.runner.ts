@@ -1,7 +1,7 @@
 import { red } from 'ansis';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { platform } from 'os';
-import { MESSAGES } from '../ui';
+import { MESSAGES } from '../ui/index.js';
 
 export class AbstractRunner {
   constructor(
@@ -15,7 +15,7 @@ export class AbstractRunner {
     cwd: string = process.cwd(),
   ): Promise<null | string> {
     const args: string[] = [command];
-    const isWindows = platform() === 'win32';
+    const _isWindows = platform() === 'win32';
     const options: SpawnOptions = {
       cwd,
       stdio: collect ? 'pipe' : 'inherit',

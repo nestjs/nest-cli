@@ -1,10 +1,10 @@
-import { Command, CommanderStatic } from 'commander';
-import { getRemainingFlags } from '../lib/utils/remaining-flags';
-import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Command } from 'commander';
+import { getRemainingFlags } from '../lib/utils/remaining-flags.js';
+import { AbstractCommand } from './abstract.command.js';
+import { AddCommandContext } from './context/index.js';
 
 export class AddCommand extends AbstractCommand {
-  public load(program: CommanderStatic): void {
+  public load(program: Command): void {
     program
       .command('add <library>')
       .allowUnknownOption()
@@ -16,22 +16,18 @@ export class AddCommand extends AbstractCommand {
       .option('-s, --skip-install', 'Skip package installation.', false)
       .option('-p, --project [project]', 'Project in which to generate files.')
       .usage('<library> [options] [library-specific-options]')
-      .action(async (library: string, command: Command) => {
-        const options: Input[] = [];
-        options.push({ name: 'dry-run', value: !!command.dryRun });
-        options.push({ name: 'skip-install', value: command.skipInstall });
-        options.push({
-          name: 'project',
-          value: command.project,
-        });
+      .action(async (library: string, options: Record<string, any>) => {
+        const context: AddCommandContext = {
+          library,
+          dryRun: !!options.dryRun,
+          skipInstall: options.skipInstall,
+          project: options.project,
+          extraFlags: getRemainingFlags(program),
+        };
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'library', value: library });
-
-        const flags = getRemainingFlags(program);
         try {
-          await this.action.handle(inputs, options, flags);
-        } catch (err) {
+          await this.action.handle(context);
+        } catch {
           process.exit(1);
         }
       });

@@ -1,20 +1,21 @@
-import { Configuration, ConfigurationLoader } from '../../../lib/configuration';
-import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader';
-import { Reader } from '../../../lib/readers';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { Configuration, ConfigurationLoader } from '../../../lib/configuration/index.js';
+import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader.js';
+import { Reader } from '../../../lib/readers/index.js';
 
 describe('Nest Configuration Loader', () => {
   let reader: Reader;
   beforeAll(() => {
-    const mock = jest.fn();
+    const mock = vi.fn();
     mock.mockImplementation(() => {
       return {
-        readAnyOf: jest.fn(() =>
+        readAnyOf: vi.fn(() =>
           JSON.stringify({
             language: 'ts',
             collection: '@nestjs/schematics',
           }),
         ),
-        read: jest.fn(() =>
+        read: vi.fn(() =>
           JSON.stringify({
             language: 'ts',
             collection: '@nestjs/schematics',

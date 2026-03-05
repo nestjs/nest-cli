@@ -1,9 +1,10 @@
+import { describe, it, expect, vi, afterAll } from 'vitest';
 import * as fs from 'fs';
-import { FileSystemReader, Reader } from '../../../lib/readers';
+import { FileSystemReader, Reader } from '../../../lib/readers/index.js';
 
-jest.mock('fs', () => ({
-  readdirSync: jest.fn().mockResolvedValue([]),
-  readFileSync: jest.fn().mockResolvedValue('content'),
+vi.mock('fs', () => ({
+  readdirSync: vi.fn().mockResolvedValue([]),
+  readFileSync: vi.fn().mockResolvedValue('content'),
 }));
 
 const dir: string = process.cwd();
@@ -11,7 +12,7 @@ const reader: Reader = new FileSystemReader(dir);
 
 describe('File System Reader', () => {
   afterAll(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
   it('should use fs.readdirSync when list (for performance reasons)', async () => {
     reader.list();

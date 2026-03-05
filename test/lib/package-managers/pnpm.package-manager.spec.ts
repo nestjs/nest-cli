@@ -1,11 +1,12 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { join } from 'path';
 import {
   PnpmPackageManager,
   PackageManagerCommands,
-} from '../../../lib/package-managers';
-import { PnpmRunner } from '../../../lib/runners/pnpm.runner';
+} from '../../../lib/package-managers/index.js';
+import { PnpmRunner } from '../../../lib/runners/pnpm.runner.js';
 
-jest.mock('../../../lib/runners/pnpm.runner');
+vi.mock('../../../lib/runners/pnpm.runner.js');
 
 describe('PnpmPackageManager', () => {
   let packageManager: PnpmPackageManager;
@@ -35,7 +36,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('install', () => {
     it('should use the proper command for installing', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'pnpm');
@@ -48,7 +49,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('addProduction', () => {
     it('should use the proper command for adding production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --strict-peer-dependencies=false --save ${dependencies
@@ -60,7 +61,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('addDevelopment', () => {
     it('should use the proper command for adding development dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const command = `install --strict-peer-dependencies=false --save-dev ${dependencies
@@ -72,7 +73,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('updateProduction', () => {
     it('should use the proper command for updating production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `update ${dependencies.join(' ')}`;
       packageManager.updateProduction(dependencies);
@@ -81,7 +82,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('updateDevelopment', () => {
     it('should use the proper command for updating development dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `update ${dependencies.join(' ')}`;
       packageManager.updateDevelopment(dependencies);
@@ -90,7 +91,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('upgradeProduction', () => {
     it('should use the proper command for upgrading production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `uninstall --save ${dependencies.join(' ')}`;
@@ -109,7 +110,7 @@ describe('PnpmPackageManager', () => {
   });
   describe('upgradeDevelopment', () => {
     it('should use the proper command for upgrading production dependencies', () => {
-      const spy = jest.spyOn((packageManager as any).runner, 'run');
+      const spy = vi.spyOn((packageManager as any).runner, 'run');
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const tag = '5.0.0';
       const uninstallCommand = `uninstall --save-dev ${dependencies.join(' ')}`;

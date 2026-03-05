@@ -1,4 +1,5 @@
-import { SchematicOption } from '../../../lib/schematics';
+import { describe, it, expect } from 'vitest';
+import { SchematicOption } from '../../../lib/schematics/index.js';
 
 interface TestOption {
   input: string;
@@ -106,7 +107,7 @@ describe('Schematic Option', () => {
         if (test.input) {
           expect(option.toCommandString()).toEqual(`--${test.option}`);
         } else {
-          expect(option.toCommandString()).toEqual(`--no-${test.option}`);
+          expect(option.toCommandString()).toEqual(`--${test.option}=false`);
         }
       } else {
         expect(option.toCommandString()).toEqual(
@@ -118,6 +119,6 @@ describe('Schematic Option', () => {
 
   it('should manage boolean option', () => {
     const option = new SchematicOption('dry-run', false);
-    expect(option.toCommandString()).toEqual('--no-dry-run');
+    expect(option.toCommandString()).toEqual('--dry-run=false');
   });
 });

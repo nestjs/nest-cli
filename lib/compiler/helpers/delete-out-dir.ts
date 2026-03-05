@@ -1,6 +1,6 @@
 import { rm } from 'fs/promises';
-import { Configuration } from '../../configuration';
-import { getValueOrDefault } from './get-value-or-default';
+import { Configuration } from '../../configuration/index.js';
+import { getValueOrDefault } from './get-value-or-default.js';
 
 export async function deleteOutDirIfEnabled(
   configuration: Required<Configuration>,

@@ -1,10 +1,13 @@
+import { createRequire } from 'module';
 import { join } from 'path';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import { defaultTsconfigFilename } from '../../configuration/defaults';
-import { appendTsExtension } from '../helpers/append-extension';
-import { MultiNestCompilerPlugins } from '../plugins/plugins-loader';
-import webpack = require('webpack');
-import nodeExternals = require('webpack-node-externals');
+import { defaultTsconfigFilename } from '../../configuration/defaults.js';
+import { appendTsExtension } from '../helpers/append-extension.js';
+import { MultiNestCompilerPlugins } from '../plugins/plugins-loader.js';
+import webpack from 'webpack';
+import nodeExternals from 'webpack-node-externals';
+
+const require = createRequire(import.meta.url);
 
 export const webpackDefaultsFactory = (
   sourceRoot: string,
@@ -83,7 +86,7 @@ export const webpackDefaultsFactory = (
             require.resolve(resource, {
               paths: [process.cwd()],
             });
-          } catch (err) {
+          } catch {
             return true;
           }
           return false;
@@ -93,7 +96,6 @@ export const webpackDefaultsFactory = (
   };
 
   if (!isPluginRegistered) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
     webpackConfiguration.plugins!.push(

@@ -1,14 +1,13 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { Input } from '../../commands';
-import { Configuration } from '../configuration';
-import { INFO_PREFIX } from '../ui';
-import { AssetsManager } from './assets-manager';
-import { BaseCompiler } from './base-compiler';
-import { webpackDefaultsFactory } from './defaults/webpack-defaults';
-import { getValueOrDefault } from './helpers/get-value-or-default';
-import { PluginsLoader } from './plugins/plugins-loader';
-import webpack = require('webpack');
+import { Configuration } from '../configuration/index.js';
+import { INFO_PREFIX } from '../ui/index.js';
+import { AssetsManager } from './assets-manager.js';
+import { BaseCompiler } from './base-compiler.js';
+import { webpackDefaultsFactory } from './defaults/webpack-defaults.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
+import { PluginsLoader } from './plugins/plugins-loader.js';
+import webpack from 'webpack';
 
 type WebpackConfigFactory = (
   config: webpack.Configuration,
@@ -20,7 +19,7 @@ type WebpackConfigFactoryOrConfig =
   | webpack.Configuration;
 
 type WebpackCompilerExtras = {
-  inputs: Input[];
+  options: Record<string, any>;
   assetsManager: AssetsManager;
   webpackConfigFactoryOrConfig:
     | WebpackConfigFactoryOrConfig
@@ -61,7 +60,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       'entryFile',
       appName,
       'entryFile',
-      extras.inputs,
+      extras.options,
     );
     const entryFileRoot =
       getValueOrDefault<string>(configuration, 'root', appName) || '';

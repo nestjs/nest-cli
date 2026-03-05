@@ -1,5 +1,4 @@
-import { Input } from '../../../commands';
-import { Configuration } from '../../configuration';
+import { Configuration } from '../../configuration/index.js';
 
 export function getValueOrDefault<T = any>(
   configuration: Required<Configuration>,
@@ -14,11 +13,10 @@ export function getValueOrDefault<T = any>(
     | 'exec'
     | 'builder'
     | 'typeCheck',
-  options: Input[] = [],
+  options: Record<string, any> = {},
   defaultValue?: T,
 ): T {
-  const item = options.find((option) => option.name === key);
-  const origValue = item && (item.value as unknown as T);
+  const origValue = key != null ? (options[key] as unknown as T) : undefined;
   if (origValue !== undefined && origValue !== null) {
     return origValue as T;
   }

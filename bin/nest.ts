@@ -1,14 +1,20 @@
 #!/usr/bin/env node
-import * as commander from 'commander';
-import { CommanderStatic } from 'commander';
-import { CommandLoader } from '../commands';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { Command } from 'commander';
+import { CommandLoader } from '../commands/index.js';
 import {
   loadLocalBinCommandLoader,
   localBinExists,
-} from '../lib/utils/local-binaries';
+} from '../lib/utils/local-binaries.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 const bootstrap = async () => {
-  const program: CommanderStatic = commander;
+  const program = new Command();
   program
     .version(
       require('../package.json').version,
@@ -24,7 +30,7 @@ const bootstrap = async () => {
   } else {
     await CommandLoader.load(program);
   }
-  await commander.parseAsync(process.argv);
+  await program.parseAsync(process.argv);
 
   if (!process.argv.slice(2).length) {
     program.outputHelp();

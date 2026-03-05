@@ -1,8 +1,8 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { CLI_ERRORS } from '../../ui';
-import { TypeScriptBinaryLoader } from '../typescript-loader';
+import { CLI_ERRORS } from '../../ui/index.js';
+import { TypeScriptBinaryLoader } from '../typescript-loader.js';
 
 export class TsConfigProvider {
   constructor(private readonly typescriptLoader: TypeScriptBinaryLoader) {}

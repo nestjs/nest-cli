@@ -1,7 +1,13 @@
+import { describe, it, expect } from 'vitest';
 import * as path from 'path';
 import * as ts from 'typescript';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { JsxEmit } from 'typescript';
-import { tsconfigPathsBeforeHookFactory } from '../../../../lib/compiler/hooks/tsconfig-paths.hook';
+import { tsconfigPathsBeforeHookFactory } from '../../../../lib/compiler/hooks/tsconfig-paths.hook.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function createSpec(
   baseUrl: string,

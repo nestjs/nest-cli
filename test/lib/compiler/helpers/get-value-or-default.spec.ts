@@ -1,5 +1,6 @@
-import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default';
-import { Configuration } from '../../../../lib/configuration';
+import { describe, it, expect } from 'vitest';
+import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+import { Configuration } from '../../../../lib/configuration/index.js';
 
 describe('getValueOrDefault', () => {
   it('should return assigned configuration value', async () => {

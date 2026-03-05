@@ -1,14 +1,18 @@
+import { describe, it, expect, vi } from 'vitest';
 import { resolve } from 'path';
-import { AbstractRunner } from '../../../lib/runners';
-import { CustomCollection } from '../../../lib/schematics/custom.collection';
+import { createRequire } from 'module';
+import { AbstractRunner } from '../../../lib/runners/index.js';
+import { CustomCollection } from '../../../lib/schematics/custom.collection.js';
+
+const require = createRequire(import.meta.url);
 
 describe('Custom Collection', () => {
   it(`should list schematics from simple collection`, async () => {
-    const mock = jest.fn();
+    const mock = vi.fn();
     mock.mockImplementation(() => {
       return {
         logger: {},
-        run: jest.fn().mockImplementation(() => Promise.resolve()),
+        run: vi.fn().mockImplementation(() => Promise.resolve()),
       };
     });
     const mockedRunner = mock();
@@ -25,11 +29,11 @@ describe('Custom Collection', () => {
   });
 
   it(`should list schematics from extended collection`, async () => {
-    const mock = jest.fn();
+    const mock = vi.fn();
     mock.mockImplementation(() => {
       return {
         logger: {},
-        run: jest.fn().mockImplementation(() => Promise.resolve()),
+        run: vi.fn().mockImplementation(() => Promise.resolve()),
       };
     });
     const mockedRunner = mock();
@@ -56,11 +60,11 @@ describe('Custom Collection', () => {
   });
 
   it(`should list schematics from package with collection.json path in package.json`, async () => {
-    const mock = jest.fn();
+    const mock = vi.fn();
     mock.mockImplementation(() => {
       return {
         logger: {},
-        run: jest.fn().mockImplementation(() => Promise.resolve()),
+        run: vi.fn().mockImplementation(() => Promise.resolve()),
       };
     });
     const mockedRunner = mock();

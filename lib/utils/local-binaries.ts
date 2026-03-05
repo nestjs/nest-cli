@@ -1,6 +1,9 @@
 import { existsSync } from 'fs';
+import { createRequire } from 'module';
 import { join, posix } from 'path';
-import { CommandLoader } from '../../commands';
+import { CommandLoader } from '../../commands/index.js';
+
+const require = createRequire(import.meta.url);
 
 const localBinPathSegments = [process.cwd(), 'node_modules', '@nestjs', 'cli'];
 
@@ -9,7 +12,6 @@ export function localBinExists() {
 }
 
 export function loadLocalBinCommandLoader(): typeof CommandLoader {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const commandsFile = require(posix.join(...localBinPathSegments, 'commands'));
   return commandsFile.CommandLoader;
 }

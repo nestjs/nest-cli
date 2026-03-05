@@ -1,14 +1,21 @@
-import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader';
-import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
+import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
 
-import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
-import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
+import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
+import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+
+vi.mock('../../../../lib/compiler/defaults/swc-defaults.js', () => ({
+  swcDefaultsFactory: vi.fn(),
+}));
+
+vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
+  getValueOrDefault: vi.fn(),
+}));
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
-  let swcDefaultsFactoryMock = jest.fn();
-  let getValueOrDefaultMock = jest.fn();
-  let debounceMock = jest.fn();
+  let debounceMock = vi.fn();
 
   const callRunCompiler = async ({
     configuration,
@@ -22,27 +29,24 @@ describe('SWC Compiler', () => {
       tsconfig || '',
       appName || '',
       extras || {},
-      onSuccess ?? jest.fn(),
+      onSuccess ?? vi.fn(),
     );
   };
 
   beforeEach(() => {
     const PluginsLoaderStub = {
-      load: () => jest.fn(),
-      resolvePluginReferences: () => jest.fn(),
+      load: () => vi.fn(),
+      resolvePluginReferences: () => vi.fn(),
     } as unknown as PluginsLoader;
 
     compiler = new SwcCompiler(PluginsLoaderStub);
 
-    (swcDefaults as any).swcDefaultsFactory = swcDefaultsFactoryMock;
-    (getValueOrDefault as any).getValueOrDefault = getValueOrDefaultMock;
-
-    compiler['runSwc'] = jest.fn();
-    compiler['runTypeChecker'] = jest.fn();
+    compiler['runSwc'] = vi.fn();
+    compiler['runTypeChecker'] = vi.fn();
     compiler['debounce'] = debounceMock;
-    compiler['watchFilesInOutDir'] = jest.fn();
+    compiler['watchFilesInOutDir'] = vi.fn();
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('run', () => {
@@ -62,7 +66,7 @@ describe('SWC Compiler', () => {
         configuration: fixture.configuration,
         extras: fixture.extras,
       });
-      expect(swcDefaultsFactoryMock).toHaveBeenCalledWith(
+      expect(vi.mocked(swcDefaultsFactory)).toHaveBeenCalledWith(
         fixture.extras.tsOptions,
         fixture.configuration,
       );
@@ -79,7 +83,7 @@ describe('SWC Compiler', () => {
         appName: fixture.appName,
       });
 
-      expect(getValueOrDefaultMock).toHaveBeenCalledWith(
+      expect(vi.mocked(getValueOrDefault)).toHaveBeenCalledWith(
         fixture.configuration,
         'compilerOptions.builder.options.swcrcPath',
         fixture.appName,
@@ -146,8 +150,8 @@ describe('SWC Compiler', () => {
     });
 
     it('should call runSwc', async () => {
-      swcDefaultsFactoryMock.mockReturnValueOnce('swcOptionsTest');
-      getValueOrDefaultMock.mockReturnValueOnce('swcrcPathTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce('swcOptionsTest');
+      vi.mocked(getValueOrDefault).mockReturnValueOnce('swcrcPathTest');
 
       const fixture = {
         extras: {
@@ -185,7 +189,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call onSuccess method when is defined', async () => {
-      const onSuccessMock = jest.fn();
+      const onSuccessMock = vi.fn();
       await callRunCompiler({
         onSuccess: onSuccessMock,
         extras: {
@@ -228,7 +232,7 @@ describe('SWC Compiler', () => {
 
     it('should call debounce method with debounceTime and onSuccess method and when extras.watch is true', async () => {
       const fixture = {
-        onSuccess: jest.fn(),
+        onSuccess: vi.fn(),
       };
 
       await callRunCompiler({
@@ -242,7 +246,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call watchFilesInOutDir method with swcOptions and callback when extras.watch is true', async () => {
-      swcDefaultsFactoryMock.mockReturnValueOnce('swcOptionsTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce('swcOptionsTest');
       debounceMock.mockReturnValueOnce('debounceTest');
 
       await callRunCompiler({
@@ -258,7 +262,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should not call closeWatchers method when extras.watch is true', async () => {
-      const closeWatchersMock = jest.fn();
+      const closeWatchersMock = vi.fn();
       const fixture = {
         extras: {
           watch: true,
@@ -281,7 +285,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call closeWatchers method when extras.watch is false', async () => {
-      const closeWatchersMock = jest.fn();
+      const closeWatchersMock = vi.fn();
       const fixture = {
         extras: {
           watch: false,

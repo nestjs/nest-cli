@@ -1,11 +1,11 @@
-import { Command, CommanderStatic } from 'commander';
-import { ERROR_PREFIX } from '../lib/ui';
-import { getRemainingFlags } from '../lib/utils/remaining-flags';
-import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Command } from 'commander';
+import { ERROR_PREFIX } from '../lib/ui/index.js';
+import { getRemainingFlags } from '../lib/utils/remaining-flags.js';
+import { AbstractCommand } from './abstract.command.js';
+import { StartCommandContext } from './context/index.js';
 
 export class StartCommand extends AbstractCommand {
-  public load(program: CommanderStatic): void {
+  public load(program: Command): void {
     const collect = (value: any, previous: any) => {
       return previous.concat([value]);
     };
@@ -16,7 +16,10 @@ export class StartCommand extends AbstractCommand {
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
-      .option('-b, --builder [name]', 'Builder to be used (tsc, webpack, swc).')
+      .option(
+        '-b, --builder [name]',
+        'Builder to be used (tsc, webpack, swc, rspack).',
+      )
       .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option(
         '-d, --debug [hostport] ',
@@ -55,82 +58,46 @@ export class StartCommand extends AbstractCommand {
         [],
       )
       .description('Run Nest application.')
-      .action(async (app: string, command: Command) => {
-        const options: Input[] = [];
+      .action(async (app: string, options: Record<string, any>) => {
+        const isWebpackEnabled = options.tsc ? false : options.webpack;
 
-        options.push({
-          name: 'config',
-          value: command.config,
-        });
-
-        const isWebpackEnabled = command.tsc ? false : command.webpack;
-        options.push({ name: 'webpack', value: isWebpackEnabled });
-        options.push({ name: 'debug', value: command.debug });
-        options.push({ name: 'watch', value: !!command.watch });
-        options.push({ name: 'watchAssets', value: !!command.watchAssets });
-        options.push({
-          name: 'path',
-          value: command.path,
-        });
-        options.push({
-          name: 'webpackPath',
-          value: command.webpackPath,
-        });
-        options.push({
-          name: 'exec',
-          value: command.exec,
-        });
-        options.push({
-          name: 'sourceRoot',
-          value: command.sourceRoot,
-        });
-        options.push({
-          name: 'entryFile',
-          value: command.entryFile,
-        });
-        options.push({
-          name: 'preserveWatchOutput',
-          value:
-            !!command.preserveWatchOutput &&
-            !!command.watch &&
-            !isWebpackEnabled,
-        });
-        options.push({
-          name: 'shell',
-          value: !!command.shell,
-        });
-        options.push({
-          name: 'envFile',
-          value: command.envFile,
-        });
-
-        const availableBuilders = ['tsc', 'webpack', 'swc'];
-        if (command.builder && !availableBuilders.includes(command.builder)) {
+        const availableBuilders = ['tsc', 'webpack', 'swc', 'rspack'];
+        if (options.builder && !availableBuilders.includes(options.builder)) {
           console.error(
             ERROR_PREFIX +
               ` Invalid builder option: ${
-                command.builder
+                options.builder
               }. Available builders: ${availableBuilders.join(', ')}`,
           );
           return;
         }
-        options.push({
-          name: 'builder',
-          value: command.builder,
-        });
 
-        options.push({
-          name: 'typeCheck',
-          value: command.typeCheck,
-        });
-
-        const inputs: Input[] = [];
-        inputs.push({ name: 'app', value: app });
-        const flags = getRemainingFlags(program);
+        const context: StartCommandContext = {
+          app,
+          config: options.config,
+          webpack: isWebpackEnabled,
+          watch: !!options.watch,
+          watchAssets: !!options.watchAssets,
+          path: options.path,
+          webpackPath: options.webpackPath,
+          builder: options.builder,
+          typeCheck: options.typeCheck,
+          preserveWatchOutput:
+            !!options.preserveWatchOutput &&
+            !!options.watch &&
+            !isWebpackEnabled,
+          debug: options.debug,
+          exec: options.exec,
+          sourceRoot: options.sourceRoot,
+          entryFile: options.entryFile,
+          shell: !!options.shell,
+          envFile: options.envFile ?? [],
+          extraFlags: getRemainingFlags(program),
+        };
 
         try {
-          await this.action.handle(inputs, options, flags);
-        } catch (err) {
+          await this.action.handle(context);
+        } catch {
           process.exit(1);
         }
       });

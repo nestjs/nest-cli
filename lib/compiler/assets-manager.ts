@@ -7,9 +7,9 @@ import {
   Asset,
   AssetEntry,
   Configuration,
-} from '../configuration';
-import { copyPathResolve } from './helpers/copy-path-resolve';
-import { getValueOrDefault } from './helpers/get-value-or-default';
+} from '../configuration/index.js';
+import { copyPathResolve } from './helpers/copy-path-resolve.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
 
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
@@ -128,7 +128,8 @@ export class AssetsManager {
       }
     } catch (err) {
       throw new Error(
-        `An error occurred during the assets copying process. ${err.message}`,
+        `An error occurred during the assets copying process. ${(err as Error).message}`,
+        { cause: err },
       );
     }
   }

@@ -1,14 +1,15 @@
-import { InfoAction } from '../../actions/info.action';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { InfoAction } from '../../actions/info.action.js';
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(() => '{"version": "1.2.3"}'),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(() => '{"version": "1.2.3"}'),
 }));
 
-jest.mock('../../lib/package-managers', () => ({
+vi.mock('../../lib/package-managers/index.js', () => ({
   PackageManagerFactory: {
-    find: jest.fn(() => ({
+    find: vi.fn(() => ({
       name: 'MockedPackageManager',
-      version: jest.fn(() => '1.0.0'),
+      version: vi.fn(() => '1.0.0'),
     })),
   },
 }));
@@ -26,7 +27,9 @@ describe('InfoAction', () => {
         { packageName: '@nestjs/core', name: 'core', value: '1.2.3' },
         { packageName: '@nestjs/common', name: 'common', value: '1.2.4' },
       ];
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       expect(result).toEqual({});
     });
 
@@ -67,7 +70,9 @@ describe('InfoAction', () => {
         { packageName: '@nestjs/test1', name: 'test1', value: '1.2.4' },
         { packageName: '@nestjs/test2', name: 'test2', value: '1.2.4' },
       ];
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       const expected = {
         '1': [
           { packageName: '@nestjs/core', name: 'core', value: '1.2.3' },
@@ -143,7 +148,9 @@ describe('InfoAction', () => {
         },
       ];
 
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       const expected = {
         '2': [
           {
