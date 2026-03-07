@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "clean": "gulp clean:bundle",
+    "clean": "node tools/clean.js",
     "format": "prettier --write \"**/*.ts\"",
     "lint": "eslint 'lib/**/*.ts' 'commands/**/*.ts' 'actions/**/*.ts' --fix",
     "start": "node bin/nest.js",
