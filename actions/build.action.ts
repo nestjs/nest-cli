@@ -27,7 +27,7 @@ import { FileSystemReader } from '../lib/readers/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
 import { isModuleAvailable } from '../lib/utils/is-module-available.js';
 import { AbstractAction } from './abstract.action.js';
-import webpack from 'webpack';
+import type webpack from 'webpack';
 
 const require = createRequire(import.meta.url);
 

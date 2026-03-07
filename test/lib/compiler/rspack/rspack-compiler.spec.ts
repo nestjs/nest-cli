@@ -5,6 +5,7 @@ import { RspackCompiler } from '../../../../lib/compiler/rspack-compiler.js';
 import { existsSync } from 'fs';
 import { rspackDefaultsFactory } from '../../../../lib/compiler/defaults/rspack-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+import * as esmProjectUtil from '../../../../lib/utils/is-esm-project.js';
 
 // Hoist rspack mock so it can be used in createRequire mock
 const { mockRspackModule, mockCompiler } = vi.hoisted(() => {
@@ -59,6 +60,8 @@ vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
   getValueOrDefault: vi.fn().mockReturnValue(''),
 }));
 
+vi.mock('../../../../lib/utils/is-esm-project.js');
+
 describe('Rspack Compiler', () => {
   let compiler: RspackCompiler;
 
@@ -73,6 +76,7 @@ describe('Rspack Compiler', () => {
 
     // Re-set mock return values after clearAllMocks
     mockRspackModule.rspack.mockReturnValue(mockCompiler);
+    vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(false);
 
     const PluginsLoaderStub = {
       load: () => ({
@@ -167,6 +171,32 @@ describe('Rspack Compiler', () => {
           afterHooks: [],
           afterDeclarationsHooks: [],
         }),
+        false,
+      );
+    });
+
+    it('should call rspackDefaultsFactory with isEsm=true for ESM projects', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras(),
+      );
+
+      expect(vi.mocked(rspackDefaultsFactory)).toHaveBeenCalledWith(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        expect.anything(),
+        true,
       );
     });
 
@@ -189,6 +219,7 @@ describe('Rspack Compiler', () => {
         true,
         'tsconfig.json',
         expect.anything(),
+        false,
       );
     });
 

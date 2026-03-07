@@ -20,7 +20,7 @@ const { mockIgnorePlugin, mockForkTsChecker, mockNodeExternals, mockTsconfigPath
   })),
 }));
 
-// Mock ESM imports
+// Mock ESM type-only imports (no-op, types are stripped at runtime)
 vi.mock('tsconfig-paths-webpack-plugin', () => ({
   TsconfigPathsPlugin: mockTsconfigPathsPlugin,
 }));
@@ -29,7 +29,7 @@ vi.mock('webpack-node-externals', () => ({
   default: mockNodeExternals,
 }));
 
-// Mock createRequire to intercept CJS require('@rspack/core') and require('fork-ts-checker-webpack-plugin')
+// Mock createRequire to intercept all CJS require() calls in the module under test
 vi.mock('module', async (importOriginal) => {
   const actual = await importOriginal<typeof import('module')>();
   return {
@@ -39,6 +39,8 @@ vi.mock('module', async (importOriginal) => {
       const mockedReq: any = (id: string) => {
         if (id === '@rspack/core') return { IgnorePlugin: mockIgnorePlugin };
         if (id === 'fork-ts-checker-webpack-plugin') return mockForkTsChecker;
+        if (id === 'webpack-node-externals') return mockNodeExternals;
+        if (id === 'tsconfig-paths-webpack-plugin') return { TsconfigPathsPlugin: mockTsconfigPathsPlugin };
         return realReq(id);
       };
       mockedReq.resolve = realReq.resolve.bind(realReq);
@@ -328,5 +330,177 @@ describe('rspackDefaultsFactory', () => {
       emptyPlugins,
     );
     expect(releaseConfig.module.rules[0].use[0].options.sourceMaps).toBe(false);
+  });
+
+  describe('ESM mode', () => {
+    it('should set output.module, output.library.type, and output.chunkFormat for ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      expect(config.output.module).toBe(true);
+      expect(config.output.library).toEqual({ type: 'module' });
+      expect(config.output.chunkFormat).toBe('module');
+      expect(config.output.chunkLoading).toBe('import');
+    });
+
+    it('should enable experiments.outputModule for ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      expect(config.experiments).toEqual({
+        outputModule: true,
+        topLevelAwait: true,
+      });
+    });
+
+    it('should set module rule type to javascript/esm for ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      expect(config.module.rules[0].type).toBe('javascript/esm');
+    });
+
+    it('should not set module rule type when isEsm is false', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+      );
+
+      expect(config.module.rules[0].type).toBeUndefined();
+    });
+
+    it('should disable externalsPresets.node for ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      expect(config.externalsPresets).toEqual({ node: false });
+    });
+
+    it('should externalize node builtins via custom function for ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      // Should have nodeExternals + builtins handler
+      expect(config.externals).toHaveLength(2);
+
+      // Test the builtins handler function
+      const builtinsHandler = config.externals[1];
+      const results: any[] = [];
+      builtinsHandler({ request: 'fs' }, (...args: any[]) => results.push(args));
+      expect(results[0]).toEqual([null, 'module fs']);
+
+      results.length = 0;
+      builtinsHandler({ request: 'node:path' }, (...args: any[]) => results.push(args));
+      expect(results[0]).toEqual([null, 'module node:path']);
+
+      results.length = 0;
+      builtinsHandler({ request: 'some-pkg' }, (...args: any[]) => results.push(args));
+      expect(results[0]).toEqual([]);
+    });
+
+    it('should enable externalsPresets.node for non-ESM', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+      );
+
+      expect(config.externalsPresets).toEqual({ node: true });
+      expect(config.externals).toHaveLength(1);
+    });
+
+    it('should call nodeExternals with importType module for ESM', () => {
+      mockNodeExternals.mockClear();
+
+      rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        true,
+      );
+
+      expect(mockNodeExternals).toHaveBeenCalledWith({ importType: 'module' });
+    });
+
+    it('should not set ESM output options when isEsm is false', () => {
+      const config = rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+      );
+
+      expect(config.output.module).toBeUndefined();
+      expect(config.output.library).toBeUndefined();
+      expect(config.output.chunkFormat).toBeUndefined();
+      expect(config.output.chunkLoading).toBeUndefined();
+      expect(config.experiments).toBeUndefined();
+    });
+
+    it('should call nodeExternals with empty options when isEsm is false', () => {
+      mockNodeExternals.mockClear();
+
+      rspackDefaultsFactory(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+      );
+
+      expect(mockNodeExternals).toHaveBeenCalledWith({});
+    });
   });
 });

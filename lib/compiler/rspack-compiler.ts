@@ -3,6 +3,7 @@ import { createRequire } from 'module';
 import { join } from 'path';
 import { Configuration } from '../configuration/index.js';
 import { INFO_PREFIX } from '../ui/index.js';
+import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
 import { rspackDefaultsFactory } from './defaults/rspack-defaults.js';
@@ -71,9 +72,18 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       extras.debug ?? false,
       tsConfigPath,
       plugins,
+      isEsmProject(),
     );
 
-    const rspack = require('@rspack/core');
+    let rspack: any;
+    try {
+      rspack = require('@rspack/core');
+    } catch {
+      throw new Error(
+        '@rspack/core is not installed. To use the rspack compiler, install the required packages:\n\n' +
+          '  npm install --save-dev @rspack/core webpack-node-externals tsconfig-paths-webpack-plugin\n',
+      );
+    }
 
     let compiler: any;
     let watchOptions: any;

@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "11.0.16",
+  "version": "12.0.0-alpha.3",
   "type": "module",
   "description": "Nest - modern, fast, powerful node.js web framework (@cli)",
   "publishConfig": {
@@ -28,8 +28,7 @@
     "test:dev": "npm run clean && vitest --watch",
     "prerelease": "npm run build",
     "release": "release-it",
-    "prepare": "husky",
-    "postinstall": "node tools/postinstall.cjs"
+    "prepare": "husky && node tools/postinstall.cjs"
   },
   "repository": {
     "type": "git",
@@ -45,33 +44,30 @@
     "@angular-devkit/schematics": "21.2.0",
     "@angular-devkit/schematics-cli": "21.2.0",
     "@inquirer/prompts": "8.3.0",
-    "@nestjs/schematics": "^11.0.1",
+    "@nestjs/schematics": "^12.0.0-alpha.0",
     "ansis": "4.2.0",
     "chokidar": "4.0.3",
     "cli-table3": "0.6.5",
     "commander": "14.0.3",
-    "fork-ts-checker-webpack-plugin": "9.1.0",
     "glob": "13.0.6",
     "node-emoji": "2.2.0",
     "ora": "9.3.0",
     "tsconfig-paths": "4.2.0",
-    "tsconfig-paths-webpack-plugin": "4.2.0",
-    "typescript": "5.9.3",
-    "webpack": "5.105.4",
-    "webpack-node-externals": "3.0.0"
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@commitlint/cli": "20.4.3",
     "@commitlint/config-angular": "20.4.3",
+    "@eslint/js": "10.0.1",
+    "@rspack/core": "^1.7.7",
     "@swc/cli": "0.8.0",
     "@swc/core": "1.15.18",
     "@types/node": "24.10.13",
     "@types/webpack-node-externals": "3.0.4",
-    "@eslint/js": "10.0.1",
     "delete-empty": "3.0.0",
     "eslint": "10.0.2",
     "eslint-config-prettier": "10.1.8",
-    "typescript-eslint": "8.56.1",
+    "fork-ts-checker-webpack-plugin": "9.1.0",
     "gulp": "5.0.1",
     "gulp-clean": "0.4.0",
     "husky": "9.1.7",
@@ -79,20 +75,48 @@
     "prettier": "3.8.1",
     "release-it": "19.2.4",
     "ts-loader": "9.5.4",
-    "vitest": "3.2.4"
+    "tsconfig-paths-webpack-plugin": "4.2.0",
+    "typescript-eslint": "8.56.1",
+    "vitest": "3.2.4",
+    "webpack": "5.105.4",
+    "webpack-node-externals": "3.0.0"
   },
   "lint-staged": {
     "**/*.{ts,json}": []
   },
   "peerDependencies": {
+    "@rspack/core": "^1.0.0",
     "@swc/cli": "^0.1.62 || ^0.3.0 || ^0.4.0 || ^0.5.0 || ^0.6.0 || ^0.7.0 || ^0.8.0",
-    "@swc/core": "^1.3.62"
+    "@swc/core": "^1.3.62",
+    "fork-ts-checker-webpack-plugin": "^9.0.0",
+    "ts-loader": "^9.0.0",
+    "tsconfig-paths-webpack-plugin": "^4.0.0",
+    "webpack": "^5.0.0",
+    "webpack-node-externals": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "@rspack/core": {
+      "optional": true
+    },
     "@swc/cli": {
       "optional": true
     },
     "@swc/core": {
+      "optional": true
+    },
+    "fork-ts-checker-webpack-plugin": {
+      "optional": true
+    },
+    "ts-loader": {
+      "optional": true
+    },
+    "tsconfig-paths-webpack-plugin": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    },
+    "webpack-node-externals": {
       "optional": true
     }
   }

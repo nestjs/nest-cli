@@ -390,3 +390,104 @@ export function writeFileContent(filePath: string, content: string): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content, 'utf-8');
 }
+
+/**
+ * Convert a scaffolded CJS NestJS app into an ESM project.
+ *
+ * 1. Adds `"type": "module"` to package.json
+ * 2. Appends `.js` extensions to all relative imports in `.ts` source files
+ * 3. Rewrites main.ts to use top-level `await` (validates ESM TLA support)
+ */
+export function convertToEsm(appPath: string): void {
+  // 1. Add "type": "module" to package.json
+  const pkgPath = path.join(appPath, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  pkg.type = 'module';
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+
+  // 2. Add .js extensions to relative imports in all .ts files under src/
+  const srcDir = path.join(appPath, 'src');
+  const tsFiles = fs
+    .readdirSync(srcDir, { recursive: true })
+    .filter((f): f is string => typeof f === 'string' && f.endsWith('.ts'));
+
+  for (const file of tsFiles) {
+    const filePath = path.join(srcDir, file);
+    let content = fs.readFileSync(filePath, 'utf-8');
+    // Match `from './foo'` or `from '../foo'` and append .js
+    content = content.replace(
+      /(from\s+['"])(\.\.?\/[^'"]+?)(?<!\.js)(['"])/g,
+      '$1$2.js$3',
+    );
+    fs.writeFileSync(filePath, content);
+  }
+
+  // 3. Rewrite main.ts to use top-level await
+  const mainPath = path.join(srcDir, 'main.ts');
+  const mainContent = `\
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module.js';
+
+const app = await NestFactory.create(AppModule);
+await app.listen(process.env.PORT ?? 3000);
+`;
+  fs.writeFileSync(mainPath, mainContent);
+}
+
+/**
+ * Scaffold an ESM NestJS app with dependencies installed.
+ * Wraps scaffoldAppWithDeps + convertToEsm.
+ */
+export function scaffoldEsmAppWithDeps(
+  tmpDir: string,
+  appName: string,
+): string {
+  const appPath = scaffoldAppWithDeps(tmpDir, appName);
+  convertToEsm(appPath);
+  return appPath;
+}
+
+/**
+ * Enable the webpack compiler in a scaffolded project's nest-cli.json.
+ */
+export function enableWebpack(appPath: string): void {
+  const cliJsonPath = path.join(appPath, 'nest-cli.json');
+  const cliJson = JSON.parse(fs.readFileSync(cliJsonPath, 'utf-8'));
+  cliJson.compilerOptions = {
+    ...cliJson.compilerOptions,
+    webpack: true,
+  };
+  fs.writeFileSync(cliJsonPath, JSON.stringify(cliJson, null, 2));
+}
+
+/**
+ * Enable the rspack builder in a scaffolded project's nest-cli.json.
+ *
+ * The rspack dependencies (@rspack/core, webpack-node-externals, etc.) are
+ * resolved from the CLI's own node_modules via createRequire(import.meta.url),
+ * so they don't need to be installed in the project itself.
+ */
+export function enableRspack(appPath: string): void {
+  const cliJsonPath = path.join(appPath, 'nest-cli.json');
+  const cliJson = JSON.parse(fs.readFileSync(cliJsonPath, 'utf-8'));
+  cliJson.compilerOptions = {
+    ...cliJson.compilerOptions,
+    builder: 'rspack',
+  };
+  fs.writeFileSync(cliJsonPath, JSON.stringify(cliJson, null, 2));
+}
+
+/**
+ * Remove the locally installed @nestjs/cli from a scaffolded project.
+ *
+ * The CLI entry-point (`bin/nest.js`) delegates to a project-local
+ * `node_modules/@nestjs/cli` when it exists. For e2e tests that need to
+ * exercise the *development* version of the CLI we must remove the published
+ * copy so that `localBinExists()` returns false.
+ */
+export function removeLocalCli(appPath: string): void {
+  const localCli = path.join(appPath, 'node_modules', '@nestjs', 'cli');
+  if (fs.existsSync(localCli)) {
+    fs.rmSync(localCli, { recursive: true, force: true });
+  }
+}

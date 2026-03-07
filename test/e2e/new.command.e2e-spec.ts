@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as path from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   createTempDir,
   fileExists,
@@ -88,10 +88,7 @@ describe('New Command (e2e)', () => {
     const tsconfig = JSON.parse(
       readFileContent(path.join(appPath, 'tsconfig.json')),
     );
-    // --strict enables individual strict flags rather than the top-level "strict" option
-    expect(tsconfig.compilerOptions.strictNullChecks).toBe(true);
-    expect(tsconfig.compilerOptions.noImplicitAny).toBe(true);
-    expect(tsconfig.compilerOptions.strictBindCallApply).toBe(true);
+    expect(tsconfig.compilerOptions.strict).toBeTruthy();
   });
 
   it('should produce dry-run output without creating files', () => {
