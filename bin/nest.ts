@@ -1,20 +1,17 @@
 #!/usr/bin/env node
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { Command } from 'commander';
+import { createRequire } from 'module';
 import { CommandLoader } from '../commands/index.js';
 import {
   loadLocalBinCommandLoader,
   localBinExists,
 } from '../lib/utils/local-binaries.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const bootstrap = async () => {
   const program = new Command();
+  (program as any).__nestCliEsm = true;
   program
     .version(
       require('../package.json').version,
@@ -25,7 +22,7 @@ const bootstrap = async () => {
     .helpOption('-h, --help', 'Output usage information.');
 
   if (localBinExists()) {
-    const localCommandLoader = loadLocalBinCommandLoader();
+    const localCommandLoader = await loadLocalBinCommandLoader();
     await localCommandLoader.load(program);
   } else {
     await CommandLoader.load(program);

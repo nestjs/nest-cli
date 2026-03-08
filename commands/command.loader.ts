@@ -15,8 +15,19 @@ import { GenerateCommand } from './generate.command.js';
 import { InfoCommand } from './info.command.js';
 import { NewCommand } from './new.command.js';
 import { StartCommand } from './start.command.js';
+
 export class CommandLoader {
   public static async load(program: Command): Promise<void> {
+    if (!(program as any).__nestCliEsm) {
+      console.error(
+        `\n${ERROR_PREFIX} The globally installed ${red('@nestjs/cli')} is outdated and ` +
+          'incompatible with the local version (which requires ESM).\n' +
+          'Please upgrade your global installation:\n\n' +
+          `  ${red('npm i -g @nestjs/cli')}\n`,
+      );
+      process.exit(1);
+    }
+
     new NewCommand(new NewAction()).load(program);
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
