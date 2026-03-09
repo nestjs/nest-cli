@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SchematicOption } from '../../../lib/schematics/index.js';
+import { SchematicOption } from '../../../lib/schematics/schematic.option.js';
 
 interface TestOption {
   input: string;

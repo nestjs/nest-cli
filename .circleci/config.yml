@@ -61,9 +61,6 @@ jobs:
       - *install-deps
       - *build-packages
       - run:
-          name: Clean build artifacts
-          command: npm run clean
-      - run:
           name: E2E tests
           command: npm run test:e2e
 
