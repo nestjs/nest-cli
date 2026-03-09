@@ -12,7 +12,7 @@ describe('NpmPackageManager', () => {
   let packageManager: NpmPackageManager;
   beforeEach(() => {
     (NpmRunner as any).mockClear();
-    (NpmRunner as any).mockImplementation(() => {
+    (NpmRunner as any).mockImplementation(function () {
       return {
         run: (): Promise<void> => Promise.resolve(),
       };

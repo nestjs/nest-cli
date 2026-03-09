@@ -5,9 +5,9 @@ import { RspackCompiler } from '../../lib/compiler/rspack-compiler.js';
 import { WebpackCompiler } from '../../lib/compiler/webpack-compiler.js';
 
 vi.mock('../../lib/compiler/rspack-compiler.js', () => ({
-  RspackCompiler: vi.fn().mockImplementation(() => ({
-    run: vi.fn(),
-  })),
+  RspackCompiler: vi.fn().mockImplementation(function () {
+    return { run: vi.fn() };
+  }),
 }));
 
 vi.mock('../../lib/compiler/helpers/get-rspack-config-path.js', () => ({
@@ -19,9 +19,9 @@ vi.mock('../../lib/utils/is-module-available.js', () => ({
 }));
 
 vi.mock('../../lib/compiler/webpack-compiler.js', () => ({
-  WebpackCompiler: vi.fn().mockImplementation(() => ({
-    run: vi.fn(),
-  })),
+  WebpackCompiler: vi.fn().mockImplementation(function () {
+    return { run: vi.fn() };
+  }),
 }));
 
 vi.mock('../../lib/compiler/helpers/get-webpack-config-path.js', () => ({

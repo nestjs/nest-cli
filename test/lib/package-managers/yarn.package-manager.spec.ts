@@ -12,7 +12,7 @@ describe('YarnPackageManager', () => {
   let packageManager: YarnPackageManager;
   beforeEach(() => {
     (YarnRunner as any).mockClear();
-    (YarnRunner as any).mockImplementation(() => {
+    (YarnRunner as any).mockImplementation(function () {
       return {
         run: (): Promise<void> => Promise.resolve(),
       };

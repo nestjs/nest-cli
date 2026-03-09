@@ -12,7 +12,7 @@ describe('PnpmPackageManager', () => {
   let packageManager: PnpmPackageManager;
   beforeEach(() => {
     (PnpmRunner as any).mockClear();
-    (PnpmRunner as any).mockImplementation(() => {
+    (PnpmRunner as any).mockImplementation(function () {
       return {
         run: (): Promise<void> => Promise.resolve(),
       };

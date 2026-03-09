@@ -5,19 +5,16 @@ import { MultiNestCompilerPlugins } from '../../../../lib/compiler/plugins/plugi
 
 // Hoist mocks so they can be referenced in vi.mock factories
 const { mockIgnorePlugin, mockForkTsChecker, mockNodeExternals, mockTsconfigPathsPlugin } = vi.hoisted(() => ({
-  mockIgnorePlugin: vi.fn().mockImplementation((opts: any) => ({
-    __type: 'IgnorePlugin',
-    ...opts,
-  })),
-  mockForkTsChecker: vi.fn().mockImplementation((opts: any) => ({
-    __type: 'ForkTsCheckerWebpackPlugin',
-    ...opts,
-  })),
+  mockIgnorePlugin: vi.fn().mockImplementation(function (opts: any) {
+    return { __type: 'IgnorePlugin', ...opts };
+  }),
+  mockForkTsChecker: vi.fn().mockImplementation(function (opts: any) {
+    return { __type: 'ForkTsCheckerWebpackPlugin', ...opts };
+  }),
   mockNodeExternals: vi.fn().mockReturnValue('mocked-externals'),
-  mockTsconfigPathsPlugin: vi.fn().mockImplementation((opts: any) => ({
-    __type: 'TsconfigPathsPlugin',
-    ...opts,
-  })),
+  mockTsconfigPathsPlugin: vi.fn().mockImplementation(function (opts: any) {
+    return { __type: 'TsconfigPathsPlugin', ...opts };
+  }),
 }));
 
 // Mock ESM type-only imports (no-op, types are stripped at runtime)
