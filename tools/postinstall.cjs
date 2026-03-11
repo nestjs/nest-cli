@@ -3,7 +3,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 // ── 1. Symlink test fixture ─────────────────────────────────────────────────
 const link = path.join(__dirname, '..', 'node_modules', 'package');
