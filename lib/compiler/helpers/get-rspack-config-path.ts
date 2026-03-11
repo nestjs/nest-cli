@@ -3,6 +3,7 @@ import { getValueOrDefault } from './get-value-or-default.js';
 
 /**
  * Returns the path to the rspack configuration file to use for the given application.
+ * CLI option `rspackPath` takes precedence over the configuration file.
  * @param configuration Configuration object.
  * @param cmdOptions Command line options.
  * @param appName Application name.
@@ -13,6 +14,10 @@ export function getRspackConfigPath(
   cmdOptions: Record<string, any>,
   appName: string | undefined,
 ) {
+  if (cmdOptions?.rspackPath) {
+    return cmdOptions.rspackPath as string;
+  }
+
   const builder = getValueOrDefault<Builder>(
     configuration,
     'compilerOptions.builder',

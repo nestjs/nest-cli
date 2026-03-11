@@ -99,4 +99,21 @@ describe('getRspackConfigPath', () => {
     const result = getRspackConfigPath(config, {}, 'my-app');
     expect(result).toBe('apps/my-app/rspack.config.js');
   });
+
+  it('should return the CLI rspackPath option when provided', () => {
+    const config = makeConfiguration({
+      compilerOptions: {
+        builder: {
+          type: 'rspack',
+          options: { configPath: 'rspack.config.js' },
+        },
+      },
+    });
+    const result = getRspackConfigPath(
+      config,
+      { rspackPath: 'custom-cli-rspack.config.ts' },
+      undefined,
+    );
+    expect(result).toBe('custom-cli-rspack.config.ts');
+  });
 });
