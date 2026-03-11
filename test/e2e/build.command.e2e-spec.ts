@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 import {
   createTempDir,
@@ -26,7 +27,6 @@ describe('Build Command (e2e)', () => {
   });
 
   function cleanDist() {
-    const fs = require('fs');
     fs.rmSync(path.join(appPath, 'dist'), { recursive: true, force: true });
   }
 
@@ -117,7 +117,6 @@ describe('Build Command - Monorepo with webpack (e2e)', () => {
   });
 
   function cleanDist() {
-    const fs = require('fs');
     fs.rmSync(path.join(monoPath, 'dist'), { recursive: true, force: true });
   }
 
