@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import { FileSystemReader, Reader } from '../../../lib/readers/index.js';
 
 vi.mock('fs', () => ({
-  readdirSync: vi.fn().mockResolvedValue([]),
-  readFileSync: vi.fn().mockResolvedValue('content'),
+  readdirSync: vi.fn().mockReturnValue([]),
+  readFileSync: vi.fn().mockReturnValue('content'),
 }));
 
 const dir: string = process.cwd();
