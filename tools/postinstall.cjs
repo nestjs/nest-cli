@@ -27,7 +27,7 @@ if (!fs.existsSync(link)) {
 //
 // Vitest exposes no configuration knob for this value, so we patch the bundled
 // chunk directly.  The change is idempotent and survives re-installs because
-// this script runs as a postinstall hook.
+// this script runs as a prepare hook.
 try {
   const chunksDir = path.join(
     __dirname,
