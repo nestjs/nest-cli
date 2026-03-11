@@ -97,7 +97,7 @@ export abstract class AbstractPackageManager {
   public async getProduction(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
     const packageJsonDependencies: Record<string, string> =
-      packageJsonContent.dependencies;
+      packageJsonContent.dependencies ?? {};
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDependencies)) {
@@ -110,7 +110,7 @@ export abstract class AbstractPackageManager {
   public async getDevelopment(): Promise<ProjectDependency[]> {
     const packageJsonContent = await this.readPackageJson();
     const packageJsonDevDependencies: Record<string, string> =
-      packageJsonContent.devDependencies;
+      packageJsonContent.devDependencies ?? {};
     const dependencies = [];
 
     for (const [name, version] of Object.entries(packageJsonDevDependencies)) {
@@ -121,8 +121,8 @@ export abstract class AbstractPackageManager {
   }
 
   private async readPackageJson(): Promise<{
-    dependencies: Record<string, string>;
-    devDependencies: Record<string, string>;
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
   }> {
     const buffer = await readFile(join(process.cwd(), 'package.json'));
     return JSON.parse(buffer.toString());
