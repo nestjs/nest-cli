@@ -8,6 +8,7 @@ export interface BuildCommandContext {
   webpackPath?: string;
   builder?: string;
   typeCheck?: boolean;
+  silent?: boolean;
   preserveWatchOutput: boolean;
   all: boolean;
 }

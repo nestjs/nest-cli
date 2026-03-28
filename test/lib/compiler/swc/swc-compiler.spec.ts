@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
 import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
 
@@ -305,6 +305,39 @@ describe('SWC Compiler', () => {
       });
 
       expect(closeWatchersMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('shouldLogSwcStatus', () => {
+    const originalLogLevel = process.env.npm_config_loglevel;
+
+    afterEach(() => {
+      process.env.npm_config_loglevel = originalLogLevel;
+    });
+
+    it('should return false when extras.silent is true', () => {
+      const result = compiler['shouldLogSwcStatus']({
+        silent: true,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when npm log level is silent', () => {
+      process.env.npm_config_loglevel = 'silent';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when silent mode is not enabled', () => {
+      process.env.npm_config_loglevel = 'warn';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(true);
     });
   });
 });
