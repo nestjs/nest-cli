@@ -31,9 +31,14 @@ export function getWebpackConfigPath(
     appName,
   );
 
-  webpackPath =
-    typeof builder === 'object' && builder?.type === 'webpack'
-      ? builder.options?.configPath
-      : undefined;
-  return webpackPath;
+  if (typeof builder === 'object' && builder?.type === 'webpack') {
+    const webpackConfigPath = builder.options?.configPath;
+    if (webpackConfigPath) {
+      return webpackConfigPath;
+    }
+    // If builder.type is 'webpack' but no config path is specified, return undefined
+    // to let webpack use its default behavior
+    return undefined;
+  }
+  return undefined;
 }
