@@ -1,12 +1,14 @@
-import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
 import * as path from 'path';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
+  convertToCjs,
   createTempDir,
   enableRspack,
   enableWebpack,
   freePort,
   httpGet,
+  installWebpackDeps,
   readFileContent,
   removeLocalCli,
   removeTempDir,
@@ -27,6 +29,7 @@ describe('Start Command - CJS project (e2e)', () => {
   beforeAll(() => {
     tmpDir = createTempDir('nest-e2e-start-');
     appPath = scaffoldAppWithDeps(tmpDir, 'start-app');
+    convertToCjs(appPath);
     // Pre-build so that start is faster
     runNest('build', appPath);
   });
@@ -214,6 +217,8 @@ describe('Start Command - Monorepo with webpack (e2e)', () => {
   beforeAll(() => {
     tmpDir = createTempDir('nest-e2e-start-mono-');
     monoPath = scaffoldMonorepoWithDeps(tmpDir, 'primary', 'worker');
+    convertToCjs(monoPath);
+    installWebpackDeps(monoPath);
   });
 
   afterAll(() => {
@@ -434,8 +439,7 @@ describe('Start Command - ESM project (e2e)', () => {
 
       try {
         await waitFor(
-          () =>
-            proc.output().includes('Nest application successfully started'),
+          () => proc.output().includes('Nest application successfully started'),
           60_000,
         );
 
@@ -555,9 +559,7 @@ describe('Start Command - ESM project with webpack should error (e2e)', () => {
     const { stderr, exitCode } = runNestRaw('build', appPath);
 
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain(
-      'webpack compiler does not support ESM projects',
-    );
+    expect(stderr).toContain('webpack compiler does not support ESM projects');
     expect(stderr).toContain('rspack');
   });
 });

@@ -44,7 +44,7 @@ describe('New Command (e2e)', () => {
     expect(fileExists(path.join(appPath, 'test', 'app.e2e-spec.ts'))).toBe(
       true,
     );
-    expect(fileExists(path.join(appPath, 'test', 'jest-e2e.json'))).toBe(true);
+    expect(fileExists(path.join(appPath, 'vitest.config.e2e.ts'))).toBe(true);
 
     // package.json content
     const pkg = JSON.parse(readFileContent(path.join(appPath, 'package.json')));

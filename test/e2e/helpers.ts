@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as os from 'os';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -389,6 +389,66 @@ export function scaffoldMonorepoWithDeps(
 export function writeFileContent(filePath: string, content: string): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content, 'utf-8');
+}
+
+/**
+ * Convert a scaffolded ESM NestJS app back to CJS.
+ *
+ * 1. Removes `"type": "module"` from package.json
+ * 2. Replaces top-level `await bootstrap()` with `bootstrap()` in main.ts
+ * 3. Strips `.js` extensions from relative imports in `.ts` source files
+ */
+export function convertToCjs(appPath: string): void {
+  // 1. Remove "type": "module" from package.json
+  const pkgPath = path.join(appPath, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  delete pkg.type;
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+
+  // Collect all .ts source directories
+  const srcDirs: string[] = [];
+  const rootSrc = path.join(appPath, 'src');
+  if (fs.existsSync(rootSrc)) srcDirs.push(rootSrc);
+  const appsDir = path.join(appPath, 'apps');
+  if (fs.existsSync(appsDir)) {
+    for (const dir of fs.readdirSync(appsDir)) {
+      const appSrc = path.join(appsDir, dir, 'src');
+      if (fs.existsSync(appSrc)) srcDirs.push(appSrc);
+    }
+  }
+
+  // 2. Replace top-level await bootstrap() in main.ts files
+  // 3. Strip .js extensions from relative imports
+  for (const srcDir of srcDirs) {
+    const tsFiles = fs
+      .readdirSync(srcDir, { recursive: true })
+      .filter((f): f is string => typeof f === 'string' && f.endsWith('.ts'));
+
+    for (const file of tsFiles) {
+      const filePath = path.join(srcDir, file);
+      let content = fs.readFileSync(filePath, 'utf-8');
+      // Strip .js from relative imports: './foo.js' → './foo'
+      content = content.replace(
+        /(from\s+['"]\.\.?\/[^'"]*?)\.js(['"])/g,
+        '$1$2',
+      );
+      // Replace top-level await bootstrap()
+      content = content.replace(/^await (bootstrap\(\));?$/m, '$1;');
+      fs.writeFileSync(filePath, content);
+    }
+  }
+}
+
+/**
+ * Install the optional webpack peer dependencies that `@nestjs/cli` needs for
+ * webpack-based builds. The published CLI marks these as optional, so they are
+ * not installed automatically.
+ */
+export function installWebpackDeps(appPath: string): void {
+  execSync(
+    'npm install --save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
+    { cwd: appPath, encoding: 'utf-8', timeout: 120_000, stdio: 'pipe' },
+  );
 }
 
 /**
