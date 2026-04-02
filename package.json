@@ -8,12 +8,22 @@
   "engines": {
     "node": ">= 20.11"
   },
+  "files": [
+    "*.d.ts",
+    "**/*.d.ts",
+    "actions/**/*.js",
+    "bin/**/*.js",
+    "commands/**/*.js",
+    "lib/**/*.js",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "nest": "bin/nest.js"
   },
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "clean": "gulp clean:bundle",
     "format": "prettier --write \"**/*.ts\"",
     "start": "node bin/nest.js",
