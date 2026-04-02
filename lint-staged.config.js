@@ -1,3 +1,3 @@
 export default {
-  '**/*.{ts,json}': [],
+  '**/*.{ts,json}': ['eslint --cache']
 }
