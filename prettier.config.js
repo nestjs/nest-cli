@@ -1,18 +1,19 @@
 /** @type{import('prettier').Config} */
 export default {
   singleQuote: true,
-  trailingComma: 'all',
+  trailingComma: 'none',
   bracketSpacing: true,
   semi: false,
   printWidth: 80,
-  quoteProps: 'preserve',
+  quoteProps: 'consistent',
   proseWrap: 'preserve',
   arrowParens: 'always',
   bracketSameLine: true,
   endOfLine: 'lf',
+  experimentalTernaries: true,
   singleAttributePerLine: false,
   jsxSingleQuote: false,
   useTabs: false,
   tabWidth: 2,
-  plugins: [],
-};
+  plugins: []
+}
