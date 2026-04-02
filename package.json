@@ -19,7 +19,7 @@
     "LICENSE"
   ],
   "bin": {
-    "nest": "bin/nest.js"
+    "nest": "dist/bin/nest.js"
   },
   "type": "module",
   "scripts": {

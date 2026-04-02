@@ -8,11 +8,7 @@
     "allowJs": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
-    "types": [
-      "node",
-      "jest"
-    ]
+    "types": ["node", "jest"]
   },
-  "include": ["actions", "bin", "commands", "lib"],
-  "exclude": ["node_modules", "e2e"]
+  "exclude": ["node_modules", "dist", "e2e"]
 }

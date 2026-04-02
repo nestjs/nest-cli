@@ -44,7 +44,7 @@ describe('Nest Configuration Loader', () => {
         assets: [],
         builder: {
           options: {
-            configPath: 'tsconfig.json',
+            configPath: 'tsconfig.build.json',
           },
           type: 'tsc',
         },
@@ -73,7 +73,7 @@ describe('Nest Configuration Loader', () => {
         assets: [],
         builder: {
           options: {
-            configPath: 'tsconfig.json',
+            configPath: 'tsconfig.build.json',
           },
           type: 'tsc',
         },
