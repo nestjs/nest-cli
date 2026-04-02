@@ -11,17 +11,19 @@
   "bin": {
     "nest": "bin/nest.js"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "clean": "gulp clean:bundle",
     "format": "prettier --write \"**/*.ts\"",
-    "lint": "eslint '{lib,commands,actions}/**/*.ts' --fix",
     "start": "node bin/nest.js",
     "prepack": "npm run build",
     "prepublish:next": "npm run build",
     "publish:next": "npm publish --access public --tag next",
     "prepublish:npm": "npm run build",
     "publish:npm": "npm publish --access public",
+    "lint": "eslint --cache",
+    "lint:fix": "eslint --fix --cache",
     "test": "jest --passWithNoTests",
     "test:ci": "jest --passWithNoTests --ci",
     "test:watch": "jest --passWithNoTests --watch",
@@ -63,6 +65,7 @@
   "devDependencies": {
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-angular": "20.5.0",
+    "@eslint/js": "^10.0.1",
     "@swc/cli": "0.7.10",
     "@swc/core": "1.15.11",
     "@swc/jest": "^0.2.39",
@@ -71,11 +74,11 @@
     "@types/node": "24.12.0",
     "@types/node-emoji": "1.8.2",
     "@types/webpack-node-externals": "3.0.4",
-    "@typescript-eslint/eslint-plugin": "8.58.0",
-    "@typescript-eslint/parser": "8.58.0",
     "delete-empty": "3.0.0",
     "eslint": "10.1.0",
-    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-jest": "^29.15.1",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.4.0",
     "gulp": "5.0.1",
     "gulp-clean": "0.4.0",
     "husky": "9.1.7",
@@ -84,7 +87,8 @@
     "prettier": "3.8.1",
     "release-it": "19.2.4",
     "ts-loader": "9.5.4",
-    "ts-node": "10.9.2"
+    "ts-node": "10.9.2",
+    "typescript-eslint": "^8.58.0"
   },
   "lint-staged": {
     "**/*.{ts,json}": []

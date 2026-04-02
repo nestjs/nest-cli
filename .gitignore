@@ -23,3 +23,7 @@ gulpfile.js
 /sample
 
 yarn.lock
+
+.eslintcache
+
+tsconfig.tsbuildinfo
