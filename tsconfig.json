@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "target": "ES2021",
-    "skipLibCheck": true,
-    "sourceMap": false,
-    "allowJs": true,
     "strict": true,
-    "useUnknownInCatchVariables": false,
-    "types": ["node", "jest"]
-  },
-  "exclude": ["node_modules", "dist", "e2e"]
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+
+    "esModuleInterop": true
+  }
 }
