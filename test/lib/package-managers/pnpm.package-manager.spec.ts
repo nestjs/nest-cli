@@ -1,21 +1,20 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import {
   PnpmPackageManager,
   PackageManagerCommands,
 } from '../../../lib/package-managers';
-import { PnpmRunner } from '../../../lib/runners/pnpm.runner';
-
-jest.mock('../../../lib/runners/pnpm.runner');
+import { RunnerFactory } from '../../../lib/runners';
 
 describe('PnpmPackageManager', () => {
   let packageManager: PnpmPackageManager;
+  let runner: { run: jest.Mock<Promise<void>, any[]> };
+
   beforeEach(() => {
-    (PnpmRunner as any).mockClear();
-    (PnpmRunner as any).mockImplementation(() => {
-      return {
-        run: (): Promise<void> => Promise.resolve(),
-      };
-    });
+    jest.restoreAllMocks();
+    runner = {
+      run: jest.fn().mockResolvedValue(undefined),
+    };
+    jest.spyOn(RunnerFactory, 'create').mockReturnValue(runner as any);
     packageManager = new PnpmPackageManager();
   });
   it('should be created', () => {
@@ -39,7 +38,7 @@ describe('PnpmPackageManager', () => {
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'pnpm');
-      expect(spy).toBeCalledWith(
+      expect(spy).toHaveBeenCalledWith(
         'install --strict-peer-dependencies=false --reporter=silent',
         true,
         testDir,
@@ -55,7 +54,7 @@ describe('PnpmPackageManager', () => {
         .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('addDevelopment', () => {
@@ -67,7 +66,7 @@ describe('PnpmPackageManager', () => {
         .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('updateProduction', () => {
@@ -76,7 +75,7 @@ describe('PnpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `update ${dependencies.join(' ')}`;
       packageManager.updateProduction(dependencies);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('updateDevelopment', () => {
@@ -85,7 +84,7 @@ describe('PnpmPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `update ${dependencies.join(' ')}`;
       packageManager.updateDevelopment(dependencies);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('upgradeProduction', () => {

@@ -1,14 +1,21 @@
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader';
 import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
+import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults';
+import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default';
 
-import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
-import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
+jest.mock('../../../../lib/compiler/defaults/swc-defaults', () => ({
+  swcDefaultsFactory: jest.fn(),
+}));
+
+jest.mock('../../../../lib/compiler/helpers/get-value-or-default', () => ({
+  getValueOrDefault: jest.fn(),
+}));
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
-  let swcDefaultsFactoryMock = jest.fn();
-  let getValueOrDefaultMock = jest.fn();
-  let debounceMock = jest.fn();
+  let swcDefaultsFactoryMock: jest.Mock;
+  let getValueOrDefaultMock: jest.Mock;
+  let debounceMock: jest.Mock;
 
   const callRunCompiler = async ({
     configuration,
@@ -27,15 +34,19 @@ describe('SWC Compiler', () => {
   };
 
   beforeEach(() => {
+    swcDefaultsFactoryMock = swcDefaultsFactory as jest.Mock;
+    getValueOrDefaultMock = getValueOrDefault as jest.Mock;
+    debounceMock = jest.fn();
+
+    swcDefaultsFactoryMock.mockReset();
+    getValueOrDefaultMock.mockReset();
+
     const PluginsLoaderStub = {
       load: () => jest.fn(),
       resolvePluginReferences: () => jest.fn(),
     } as unknown as PluginsLoader;
 
     compiler = new SwcCompiler(PluginsLoaderStub);
-
-    (swcDefaults as any).swcDefaultsFactory = swcDefaultsFactoryMock;
-    (getValueOrDefault as any).getValueOrDefault = getValueOrDefaultMock;
 
     compiler['runSwc'] = jest.fn();
     compiler['runTypeChecker'] = jest.fn();

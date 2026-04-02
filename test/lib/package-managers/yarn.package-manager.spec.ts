@@ -1,21 +1,20 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import {
   PackageManagerCommands,
   YarnPackageManager,
 } from '../../../lib/package-managers';
-import { YarnRunner } from '../../../lib/runners/yarn.runner';
-
-jest.mock('../../../lib/runners/yarn.runner');
+import { RunnerFactory } from '../../../lib/runners';
 
 describe('YarnPackageManager', () => {
   let packageManager: YarnPackageManager;
+  let runner: { run: jest.Mock<Promise<void>, any[]> };
+
   beforeEach(() => {
-    (YarnRunner as any).mockClear();
-    (YarnRunner as any).mockImplementation(() => {
-      return {
-        run: (): Promise<void> => Promise.resolve(),
-      };
-    });
+    jest.restoreAllMocks();
+    runner = {
+      run: jest.fn().mockResolvedValue(undefined),
+    };
+    jest.spyOn(RunnerFactory, 'create').mockReturnValue(runner as any);
     packageManager = new YarnPackageManager();
   });
   it('should be created', () => {
@@ -39,7 +38,7 @@ describe('YarnPackageManager', () => {
       const dirName = '/tmp';
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'yarn');
-      expect(spy).toBeCalledWith('install --silent', true, testDir);
+      expect(spy).toHaveBeenCalledWith('install --silent', true, testDir);
     });
   });
   describe('addProduction', () => {
@@ -51,7 +50,7 @@ describe('YarnPackageManager', () => {
         .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addProduction(dependencies, tag);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('addDevelopment', () => {
@@ -63,7 +62,7 @@ describe('YarnPackageManager', () => {
         .map((dependency) => `${dependency}@${tag}`)
         .join(' ')}`;
       packageManager.addDevelopment(dependencies, tag);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('updateProduction', () => {
@@ -72,7 +71,7 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateProduction(dependencies);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('updateDevelopment', () => {
@@ -81,7 +80,7 @@ describe('YarnPackageManager', () => {
       const dependencies = ['@nestjs/common', '@nestjs/core'];
       const command = `upgrade ${dependencies.join(' ')}`;
       packageManager.updateDevelopment(dependencies);
-      expect(spy).toBeCalledWith(command, true);
+      expect(spy).toHaveBeenCalledWith(command, true);
     });
   });
   describe('upgradeProduction', () => {
