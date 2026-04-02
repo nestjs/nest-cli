@@ -8,7 +8,7 @@ import { BaseCompiler } from './base-compiler';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults';
 import { getValueOrDefault } from './helpers/get-value-or-default';
 import { PluginsLoader } from './plugins/plugins-loader';
-import webpack = require('webpack');
+import webpack from 'webpack';
 
 type WebpackConfigFactory = (
   config: webpack.Configuration,
