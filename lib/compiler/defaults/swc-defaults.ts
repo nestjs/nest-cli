@@ -1,8 +1,8 @@
-import * as ts from 'typescript';
 import { Configuration } from '../../configuration';
+import { TsConfigProviderOutput } from '../helpers/tsconfig-provider';
 
 export const swcDefaultsFactory = (
-  tsOptions?: ts.CompilerOptions,
+  tsOptions?: TsConfigProviderOutput['options'],
   configuration?: Configuration,
 ) => {
   const builderOptions =
@@ -43,6 +43,7 @@ export const swcDefaultsFactory = (
       extensions: ['.js', '.ts'],
       copyFiles: false,
       includeDotfiles: false,
+      ignore: tsOptions?.exclude?.length ? tsOptions.exclude : undefined,
       quiet: false,
       watch: false,
       stripLeadingPaths: true,
