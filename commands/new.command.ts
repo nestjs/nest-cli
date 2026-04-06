@@ -1,5 +1,6 @@
 import { Command, CommanderStatic } from 'commander';
 import { Collection } from '../lib/schematics';
+import { exitIfExtraArgs } from '../lib/utils/extra-args-warning';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
 
@@ -33,6 +34,8 @@ export class NewCommand extends AbstractCommand {
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
       .action(async (name: string, command: Command) => {
+        exitIfExtraArgs(command, 1);
+
         const options: Input[] = [];
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
         options.push({ name: 'directory', value: command.directory });

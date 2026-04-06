@@ -1,4 +1,5 @@
-import { CommanderStatic } from 'commander';
+import { Command, CommanderStatic } from 'commander';
+import { exitIfExtraArgs } from '../lib/utils/extra-args-warning';
 import { AbstractCommand } from './abstract.command';
 
 export class InfoCommand extends AbstractCommand {
@@ -7,7 +8,9 @@ export class InfoCommand extends AbstractCommand {
       .command('info')
       .alias('i')
       .description('Display Nest project details.')
-      .action(async () => {
+      .action(async (command: Command) => {
+        exitIfExtraArgs(command, 0);
+
         await this.action.handle();
       });
   }
