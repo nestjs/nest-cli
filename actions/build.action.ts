@@ -120,7 +120,7 @@ export class BuildAction extends AbstractAction {
         ? { type: 'webpack' }
         : getBuilder(configuration, commandOptions, appName);
 
-      await deleteOutDirIfEnabled(configuration, appName, outDir);
+      await deleteOutDirIfEnabled(configuration, appName, outDir, tsOptions);
       this.assetsManager.copyAssets(
         configuration,
         appName,
