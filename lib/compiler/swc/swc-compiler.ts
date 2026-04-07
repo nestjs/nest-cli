@@ -34,6 +34,7 @@ export type SwcCompilerExtras = {
   typeCheck: boolean;
   assetsManager: AssetsManager;
   tsOptions: ts.CompilerOptions;
+  silent?: boolean;
 };
 
 export class SwcCompiler extends BaseCompiler {
@@ -163,7 +164,9 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     swcrcFilePath?: string,
   ) {
-    process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
+    if (this.shouldLogSwcStatus(extras)) {
+      process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
+    }
 
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
@@ -202,7 +205,15 @@ export class SwcCompiler extends BaseCompiler {
     await swcCli.default(swcCliOpts);
   }
 
-  private loadSwcCliBinary(): any {
+  private shouldLogSwcStatus(extras: SwcCompilerExtras): boolean {
+    if (extras.silent) {
+      return false;
+    }
+    const npmLogLevel = process.env.npm_config_loglevel?.toLowerCase();
+    return npmLogLevel !== 'silent';
+  }
+
+  private loadSwcCliBinary() {
     try {
       return require('@swc/cli/lib/swc/dir');
     } catch {

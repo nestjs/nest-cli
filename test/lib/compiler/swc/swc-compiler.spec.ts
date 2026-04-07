@@ -1,5 +1,5 @@
 import * as chokidar from 'chokidar';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
@@ -395,6 +395,39 @@ describe('SWC Compiler', () => {
       listeners['add'][0]();
 
       expect(onChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('shouldLogSwcStatus', () => {
+    const originalLogLevel = process.env.npm_config_loglevel;
+
+    afterEach(() => {
+      process.env.npm_config_loglevel = originalLogLevel;
+    });
+
+    it('should return false when extras.silent is true', () => {
+      const result = compiler['shouldLogSwcStatus']({
+        silent: true,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when npm log level is silent', () => {
+      process.env.npm_config_loglevel = 'silent';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when silent mode is not enabled', () => {
+      process.env.npm_config_loglevel = 'warn';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(true);
     });
   });
 });

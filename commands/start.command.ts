@@ -31,6 +31,7 @@ export class StartCommand extends AbstractCommand {
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--type-check', 'Enable type checking (when SWC is used).')
+      .option('--silent', 'Suppress informational compiler logs.')
       .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
         '--sourceRoot [sourceRoot]',
@@ -82,6 +83,7 @@ export class StartCommand extends AbstractCommand {
           webpackPath: options.webpackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
+          silent: !!options.silent,
           preserveWatchOutput:
             !!options.preserveWatchOutput &&
             !!options.watch &&
