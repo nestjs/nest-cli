@@ -70,7 +70,7 @@ export interface CompilerOptions {
    */
   webpackConfigPath?: string;
   plugins?: string[] | PluginOptions[];
-  assets?: string[];
+  assets?: Asset[];
   deleteOutDir?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
