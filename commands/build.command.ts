@@ -19,7 +19,16 @@ export class BuildCommand extends AbstractCommand {
         '--webpack',
         'Use webpack for compilation (deprecated option, use --builder instead).',
       )
-      .option('--type-check', 'Enable type checking (when SWC is used).')
+      .option(
+        '--type-check',
+        'Enable type checking (when SWC is used).',
+        () => true,
+      )
+      .option(
+        '--no-type-check',
+        'Disable type checking (when SWC is used).',
+        () => false,
+      )
       .option('--silent', 'Suppress informational compiler logs.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
       .option('--tsc', 'Use typescript compiler for compilation.')
