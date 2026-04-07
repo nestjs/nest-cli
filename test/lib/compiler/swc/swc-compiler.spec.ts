@@ -6,6 +6,9 @@ import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
 import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
 
 jest.mock('chokidar');
+jest.mock('fs/promises', () => ({
+  stat: jest.fn(),
+}));
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
@@ -312,8 +315,7 @@ describe('SWC Compiler', () => {
 
     beforeEach(() => {
       // Restore the real implementation that was mocked in the outer beforeEach
-      originalWatchFilesInOutDir =
-        SwcCompiler.prototype['watchFilesInOutDir'];
+      originalWatchFilesInOutDir = SwcCompiler.prototype['watchFilesInOutDir'];
       compiler['watchFilesInOutDir'] =
         originalWatchFilesInOutDir.bind(compiler);
     });
@@ -389,6 +391,141 @@ describe('SWC Compiler', () => {
       listeners['add'][0]();
 
       expect(onChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('watchFilesInSrcDir', () => {
+    let originalWatchFilesInSrcDir: Function;
+    let statMock: jest.Mock;
+
+    beforeEach(() => {
+      originalWatchFilesInSrcDir = SwcCompiler.prototype['watchFilesInSrcDir'];
+      compiler['watchFilesInSrcDir'] =
+        originalWatchFilesInSrcDir.bind(compiler);
+
+      statMock = require('fs/promises').stat;
+      statMock.mockResolvedValue({ isDirectory: () => true });
+    });
+
+    it('should not ignore .ts files when extensions include .ts (with dot prefix)', async () => {
+      const mockWatcher = {
+        on: jest.fn().mockReturnThis(),
+      };
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+
+      const onFileAdded = jest.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['.js', '.ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const watchOptions = (chokidar.watch as jest.Mock).mock.calls[0][1];
+      const ignoredFn = watchOptions.ignored;
+
+      const fileStats = { isFile: () => true };
+
+      // .ts files should NOT be ignored
+      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
+
+      // .js files should NOT be ignored
+      expect(ignoredFn('src/app.service.js', fileStats)).toBe(false);
+
+      // Non-matching files (e.g., .json) should be ignored
+      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
+
+      // Directories should not be ignored
+      const dirStats = { isFile: () => false };
+      expect(ignoredFn('src/subdir', dirStats)).toBe(false);
+    });
+
+    it('should normalize extensions without dots', async () => {
+      const mockWatcher = {
+        on: jest.fn().mockReturnThis(),
+      };
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+
+      const onFileAdded = jest.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['ts', 'js'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const watchOptions = (chokidar.watch as jest.Mock).mock.calls[0][1];
+      const ignoredFn = watchOptions.ignored;
+
+      const fileStats = { isFile: () => true };
+
+      // .ts files should NOT be ignored even when extensions are specified without dots
+      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
+
+      // Non-matching files should be ignored
+      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
+    });
+
+    it('should skip watching if source directory does not exist', async () => {
+      statMock.mockRejectedValue(new Error('ENOENT'));
+
+      const onFileAdded = jest.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['.ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
+    });
+
+    it('should skip watching if filenames is empty', async () => {
+      const onFileAdded = jest.fn();
+      const options = {
+        cliOptions: {
+          filenames: [],
+          extensions: ['.ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
+    });
+
+    it('should use default .ts extension when extensions are not specified', async () => {
+      const mockWatcher = {
+        on: jest.fn().mockReturnThis(),
+      };
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+
+      const onFileAdded = jest.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const watchOptions = (chokidar.watch as jest.Mock).mock.calls[0][1];
+      const ignoredFn = watchOptions.ignored;
+
+      const fileStats = { isFile: () => true };
+
+      // .ts files should NOT be ignored
+      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
+
+      // Other files should be ignored
+      expect(ignoredFn('src/app.service.js', fileStats)).toBe(true);
+      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
     });
   });
 });

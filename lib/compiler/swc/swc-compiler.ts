@@ -276,11 +276,13 @@ export class SwcCompiler extends BaseCompiler {
       // or any other specified directory
       return;
     }
-    const extensions = options.cliOptions?.extensions ?? ['ts'];
+    const extensions = (options.cliOptions?.extensions ?? ['.ts']).map(
+      (ext: string) => (ext.startsWith('.') ? ext : `.${ext}`),
+    );
     const watcher = chokidar.watch(srcDir, {
       ignored: (file, stats) =>
         (stats?.isFile() &&
-          extensions.includes(path.extname(file).slice(1))) as boolean,
+          !extensions.includes(path.extname(file))) as boolean,
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: 50,
