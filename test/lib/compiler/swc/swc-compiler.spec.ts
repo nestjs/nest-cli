@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
-import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
-
+import * as chokidar from 'chokidar';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
+import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
 
 vi.mock('../../../../lib/compiler/defaults/swc-defaults.js', () => ({
   swcDefaultsFactory: vi.fn(),
@@ -13,9 +13,15 @@ vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
   getValueOrDefault: vi.fn(),
 }));
 
+vi.mock('chokidar');
+
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
   let debounceMock = vi.fn();
+  const swcOptionsFixture = {
+    swcOptions: {},
+    cliOptions: {},
+  } as ReturnType<typeof swcDefaultsFactory>;
 
   const callRunCompiler = async ({
     configuration,
@@ -150,7 +156,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call runSwc', async () => {
-      vi.mocked(swcDefaultsFactory).mockReturnValueOnce('swcOptionsTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce(swcOptionsFixture);
       vi.mocked(getValueOrDefault).mockReturnValueOnce('swcrcPathTest');
 
       const fixture = {
@@ -165,7 +171,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         fixture.extras,
         'swcrcPathTest',
       );
@@ -176,7 +182,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         fixture.extras,
         'swcrcPathTest',
       );
@@ -246,7 +252,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call watchFilesInOutDir method with swcOptions and callback when extras.watch is true', async () => {
-      vi.mocked(swcDefaultsFactory).mockReturnValueOnce('swcOptionsTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce(swcOptionsFixture);
       debounceMock.mockReturnValueOnce('debounceTest');
 
       await callRunCompiler({
@@ -256,7 +262,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['watchFilesInOutDir']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         'debounceTest',
       );
     });
@@ -305,6 +311,90 @@ describe('SWC Compiler', () => {
       });
 
       expect(closeWatchersMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('watchFilesInOutDir', () => {
+    let originalWatchFilesInOutDir: Function;
+
+    beforeEach(() => {
+      // Restore the real implementation that was mocked in the outer beforeEach
+      originalWatchFilesInOutDir = SwcCompiler.prototype['watchFilesInOutDir'];
+      compiler['watchFilesInOutDir'] =
+        originalWatchFilesInOutDir.bind(compiler);
+    });
+
+    it('should only register add/change listeners after the watcher is ready', () => {
+      const listeners: Record<string, Function[]> = {};
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: Function) => {
+          if (!listeners[event]) {
+            listeners[event] = [];
+          }
+          listeners[event].push(handler);
+          return mockWatcher;
+        }),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onChange = vi.fn();
+      const options = {
+        cliOptions: {
+          outDir: '/tmp/test-out',
+        },
+      };
+
+      // Call the private method directly
+      compiler['watchFilesInOutDir'](options as any, onChange);
+
+      // Before 'ready' fires, there should be no 'add' or 'change' listeners
+      expect(listeners['ready']).toBeDefined();
+      expect(listeners['ready']).toHaveLength(1);
+      expect(listeners['add']).toBeUndefined();
+      expect(listeners['change']).toBeUndefined();
+
+      // Simulate the 'ready' event
+      listeners['ready'][0]();
+
+      // After 'ready', add and change listeners should be registered
+      expect(listeners['add']).toBeDefined();
+      expect(listeners['add']).toHaveLength(1);
+      expect(listeners['change']).toBeDefined();
+      expect(listeners['change']).toHaveLength(1);
+    });
+
+    it('should not trigger onChange for file events that occur before watcher is ready', () => {
+      const listeners: Record<string, Function[]> = {};
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: Function) => {
+          if (!listeners[event]) {
+            listeners[event] = [];
+          }
+          listeners[event].push(handler);
+          return mockWatcher;
+        }),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onChange = vi.fn();
+      const options = {
+        cliOptions: {
+          outDir: '/tmp/test-out',
+        },
+      };
+
+      compiler['watchFilesInOutDir'](options as any, onChange);
+
+      // Before 'ready', no add/change listeners exist, so no way to trigger onChange
+      // This verifies that even if files are written during initial scan,
+      // onChange won't be called
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Now emit ready, then simulate a file change
+      listeners['ready'][0]();
+      listeners['add'][0]();
+
+      expect(onChange).toHaveBeenCalledTimes(1);
     });
   });
 });

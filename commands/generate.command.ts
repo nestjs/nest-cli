@@ -1,7 +1,10 @@
 import { bold, cyan, green } from 'ansis';
 import Table from 'cli-table3';
 import { Command } from 'commander';
-import { AbstractCollection, CollectionFactory } from '../lib/schematics/index.js';
+import {
+  AbstractCollection,
+  CollectionFactory,
+} from '../lib/schematics/index.js';
 import { Schematic } from '../lib/schematics/nest.collection.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import { AbstractCommand } from './abstract.command.js';

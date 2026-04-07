@@ -106,6 +106,16 @@ export class StartAction extends BuildAction {
       () => childProcessRef && killProcessSync(childProcessRef.pid!),
     );
 
+    const signalHandler = (signal: NodeJS.Signals) => {
+      if (childProcessRef) {
+        childProcessRef.kill(signal);
+      } else {
+        process.exit();
+      }
+    };
+    process.on('SIGINT', signalHandler);
+    process.on('SIGTERM', signalHandler);
+
     return () => {
       if (childProcessRef) {
         childProcessRef.removeAllListeners('exit');
