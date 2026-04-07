@@ -3,6 +3,7 @@ import * as Table from 'cli-table3';
 import { Command, CommanderStatic } from 'commander';
 import { AbstractCollection, CollectionFactory } from '../lib/schematics';
 import { Schematic } from '../lib/schematics/nest.collection';
+import { exitIfExtraArgs } from '../lib/utils/extra-args-warning';
 import { loadConfiguration } from '../lib/utils/load-configuration';
 import { AbstractCommand } from './abstract.command';
 import { Input } from './command.input';
@@ -55,6 +56,8 @@ export class GenerateCommand extends AbstractCommand {
           path: string,
           command: Command,
         ) => {
+          exitIfExtraArgs(command, 3);
+
           const options: Input[] = [];
           options.push({ name: 'dry-run', value: !!command.dryRun });
 
