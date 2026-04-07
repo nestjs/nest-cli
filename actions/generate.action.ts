@@ -120,7 +120,7 @@ const generateFiles = async (inputs: Input[]) => {
       );
       generateSpecFileSuffix = getSpecFileSuffix(
         configuration,
-        appName,
+        selectedProjectName,
         specFileSuffixValue,
       );
     }
