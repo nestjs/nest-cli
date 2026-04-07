@@ -178,6 +178,7 @@ export class BuildAction extends AbstractAction {
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler.js');
     const swc = new SwcCompiler(this.pluginsLoader);
+    const isSilent = !!options.silent;
 
     await swc.run(
       configuration,
@@ -194,6 +195,7 @@ export class BuildAction extends AbstractAction {
         ),
         tsOptions,
         assetsManager: this.assetsManager,
+        silent: isSilent,
       },
       onSuccess,
     );
