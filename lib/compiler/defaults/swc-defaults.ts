@@ -45,7 +45,7 @@ export const swcDefaultsFactory = (
       includeDotfiles: false,
       quiet: false,
       watch: false,
-      stripLeadingPaths: true,
+      stripLeadingPaths: !tsOptions?.rootDir,
       ...builderOptions,
     },
   };
