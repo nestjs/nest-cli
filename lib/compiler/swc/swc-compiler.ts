@@ -307,8 +307,10 @@ export class SwcCompiler extends BaseCompiler {
         pollInterval: 10,
       },
     });
-    for (const type of ['add', 'change'] as const) {
-      watcher.on(type, async () => onChange());
-    }
+    watcher.on('ready', () => {
+      for (const type of ['add', 'change'] as const) {
+        watcher.on(type, async () => onChange());
+      }
+    });
   }
 }

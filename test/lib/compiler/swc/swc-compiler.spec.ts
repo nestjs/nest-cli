@@ -1,8 +1,11 @@
+import * as chokidar from 'chokidar';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader';
 import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
 
 import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
 import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
+
+jest.mock('chokidar');
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
@@ -301,6 +304,91 @@ describe('SWC Compiler', () => {
       });
 
       expect(closeWatchersMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('watchFilesInOutDir', () => {
+    let originalWatchFilesInOutDir: Function;
+
+    beforeEach(() => {
+      // Restore the real implementation that was mocked in the outer beforeEach
+      originalWatchFilesInOutDir =
+        SwcCompiler.prototype['watchFilesInOutDir'];
+      compiler['watchFilesInOutDir'] =
+        originalWatchFilesInOutDir.bind(compiler);
+    });
+
+    it('should only register add/change listeners after the watcher is ready', () => {
+      const listeners: Record<string, Function[]> = {};
+      const mockWatcher: { on: jest.Mock } = {
+        on: jest.fn((event: string, handler: Function) => {
+          if (!listeners[event]) {
+            listeners[event] = [];
+          }
+          listeners[event].push(handler);
+          return mockWatcher;
+        }),
+      };
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+
+      const onChange = jest.fn();
+      const options = {
+        cliOptions: {
+          outDir: '/tmp/test-out',
+        },
+      };
+
+      // Call the private method directly
+      compiler['watchFilesInOutDir'](options as any, onChange);
+
+      // Before 'ready' fires, there should be no 'add' or 'change' listeners
+      expect(listeners['ready']).toBeDefined();
+      expect(listeners['ready']).toHaveLength(1);
+      expect(listeners['add']).toBeUndefined();
+      expect(listeners['change']).toBeUndefined();
+
+      // Simulate the 'ready' event
+      listeners['ready'][0]();
+
+      // After 'ready', add and change listeners should be registered
+      expect(listeners['add']).toBeDefined();
+      expect(listeners['add']).toHaveLength(1);
+      expect(listeners['change']).toBeDefined();
+      expect(listeners['change']).toHaveLength(1);
+    });
+
+    it('should not trigger onChange for file events that occur before watcher is ready', () => {
+      const listeners: Record<string, Function[]> = {};
+      const mockWatcher: { on: jest.Mock } = {
+        on: jest.fn((event: string, handler: Function) => {
+          if (!listeners[event]) {
+            listeners[event] = [];
+          }
+          listeners[event].push(handler);
+          return mockWatcher;
+        }),
+      };
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+
+      const onChange = jest.fn();
+      const options = {
+        cliOptions: {
+          outDir: '/tmp/test-out',
+        },
+      };
+
+      compiler['watchFilesInOutDir'](options as any, onChange);
+
+      // Before 'ready', no add/change listeners exist, so no way to trigger onChange
+      // This verifies that even if files are written during initial scan,
+      // onChange won't be called
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Now emit ready, then simulate a file change
+      listeners['ready'][0]();
+      listeners['add'][0]();
+
+      expect(onChange).toHaveBeenCalledTimes(1);
     });
   });
 });
