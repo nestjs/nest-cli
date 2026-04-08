@@ -12,6 +12,8 @@ import { ERROR_PREFIX } from '../lib/ui/index.js';
 import { AddCommand } from './add.command.js';
 import { BuildCommand } from './build.command.js';
 import { GenerateCommand } from './generate.command.js';
+import { UnusedRoutesCommand } from './unused-routes.command.js';
+import { UnusedRoutesAction } from '../actions/unused-routes.action.js';
 import { InfoCommand } from './info.command.js';
 import { NewCommand } from './new.command.js';
 import { StartCommand } from './start.command.js';
@@ -35,6 +37,7 @@ export class CommandLoader {
     new AddCommand(new AddAction()).load(program);
     await new GenerateCommand(new GenerateAction()).load(program);
 
+    new UnusedRoutesCommand(new UnusedRoutesAction()).load(program);
     this.handleInvalidCommand(program);
   }
 
