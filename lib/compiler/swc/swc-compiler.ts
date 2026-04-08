@@ -298,7 +298,7 @@ export class SwcCompiler extends BaseCompiler {
     const watcher = chokidar.watch(srcDir, {
       ignored: (file, stats) =>
         (stats?.isFile() &&
-          extensions.includes(path.extname(file).slice(1))) as boolean,
+          !extensions.includes(path.extname(file).slice(1))) as boolean,
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: 50,
