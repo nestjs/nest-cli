@@ -1,4 +1,4 @@
-export type Asset = 'string' | AssetEntry;
+export type Asset = string | AssetEntry;
 export interface AssetEntry {
   glob: string;
   include?: string;
@@ -62,7 +62,7 @@ export interface CompilerOptions {
    */
   webpackConfigPath?: string;
   plugins?: string[] | PluginOptions[];
-  assets?: string[];
+  assets?: Asset[];
   deleteOutDir?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
