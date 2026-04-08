@@ -36,19 +36,20 @@ export class NestConfigurationLoader implements ConfigurationLoader {
       }
 
       const fileConfig = JSON.parse(contentOrError);
+      loadedConfig = {
+        ...defaultConfiguration,
+        ...fileConfig,
+      };
       if (fileConfig.compilerOptions) {
-        loadedConfig = {
-          ...defaultConfiguration,
-          ...fileConfig,
-          compilerOptions: {
-            ...defaultConfiguration.compilerOptions,
-            ...fileConfig.compilerOptions,
-          },
+        loadedConfig.compilerOptions = {
+          ...defaultConfiguration.compilerOptions,
+          ...fileConfig.compilerOptions,
         };
-      } else {
-        loadedConfig = {
-          ...defaultConfiguration,
-          ...fileConfig,
+      }
+      if (fileConfig.generateOptions) {
+        loadedConfig.generateOptions = {
+          ...defaultConfiguration.generateOptions,
+          ...fileConfig.generateOptions,
         };
       }
     }
