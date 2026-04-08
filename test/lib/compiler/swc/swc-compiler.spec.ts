@@ -1,4 +1,5 @@
 import * as chokidar from 'chokidar';
+import { stat } from 'fs/promises';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
@@ -14,6 +15,9 @@ vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
 }));
 
 vi.mock('chokidar');
+vi.mock('fs/promises', () => ({
+  stat: vi.fn(),
+}));
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
@@ -395,6 +399,81 @@ describe('SWC Compiler', () => {
       listeners['add'][0]();
 
       expect(onChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('watchFilesInSrcDir', () => {
+    let originalWatchFilesInSrcDir: Function;
+
+    beforeEach(() => {
+      originalWatchFilesInSrcDir =
+        SwcCompiler.prototype['watchFilesInSrcDir'];
+      compiler['watchFilesInSrcDir'] =
+        originalWatchFilesInSrcDir.bind(compiler);
+
+      vi.mocked(stat).mockResolvedValue({ isDirectory: () => true } as any);
+    });
+
+    it('should not ignore .ts files when extensions include ts', async () => {
+      const mockWatcher = {
+        on: vi.fn().mockReturnThis(),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['js', 'ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const watchOptions = vi.mocked(chokidar.watch).mock.calls[0][1] as any;
+      const ignoredFn = watchOptions.ignored;
+
+      const fileStats = { isFile: () => true };
+
+      // .ts files should NOT be ignored
+      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
+      // .js files should NOT be ignored
+      expect(ignoredFn('src/app.service.js', fileStats)).toBe(false);
+      // Non-matching files should be ignored
+      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
+      // Directories should not be ignored
+      const dirStats = { isFile: () => false };
+      expect(ignoredFn('src/subdir', dirStats)).toBe(false);
+    });
+
+    it('should skip watching if source directory does not exist', async () => {
+      vi.mocked(stat).mockRejectedValue(new Error('ENOENT'));
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
+    });
+
+    it('should skip watching if filenames is empty', async () => {
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: [],
+          extensions: ['ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
     });
   });
 
