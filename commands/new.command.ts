@@ -32,6 +32,11 @@ export class NewCommand extends AbstractCommand {
         Collection.NESTJS,
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
+      .option(
+        '-t, --skip-tests',
+        'Do not generate testing files for the new project.',
+        false,
+      )
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -63,6 +68,7 @@ export class NewCommand extends AbstractCommand {
           dryRun: options.dryRun,
           skipGit: options.skipGit,
           skipInstall: options.skipInstall,
+          skipTests: options.skipTests,
           packageManager: options.packageManager,
           language,
           collection: options.collection,
