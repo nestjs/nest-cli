@@ -18,7 +18,12 @@ export class TsConfigProvider {
       undefined!,
       tsBinary.sys as unknown as ts.ParseConfigFileHost,
     );
-    const { options, fileNames, projectReferences } = parsedCmd!;
+    if (!parsedCmd) {
+      throw new Error(
+        `Could not parse TypeScript configuration file "${configFilename}". Please ensure it contains valid JSON and compiler options.`,
+      );
+    }
+    const { options, fileNames, projectReferences } = parsedCmd;
     return { options, fileNames, projectReferences };
   }
 }
