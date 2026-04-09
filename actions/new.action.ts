@@ -103,6 +103,7 @@ const mapContextToSchematicOptions = (
     options.push(new SchematicOption('collection', context.collection));
 
   options.push(new SchematicOption('language', context.language));
+  options.push(new SchematicOption('format', context.format));
   // note: skip-install is intentionally excluded — not sent to schematics
   return options;
 };

@@ -44,6 +44,7 @@ export class GenerateCommand extends AbstractCommand {
         'Use a custom suffix for spec files.',
       )
       .option('--skip-import', 'Skip importing', () => true, false)
+      .option('--format', 'Format generated files using Prettier.', false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
       })
@@ -69,6 +70,7 @@ export class GenerateCommand extends AbstractCommand {
             collection: options.collection,
             project: options.project,
             skipImport: options.skipImport,
+            format: options.format === true,
           };
 
           await this.action.handle(context);

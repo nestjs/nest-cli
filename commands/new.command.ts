@@ -37,6 +37,7 @@ export class NewCommand extends AbstractCommand {
         'Do not generate testing files for the new project.',
         false,
       )
+      .option('--format', 'Format generated files using Prettier.', false)
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -73,6 +74,7 @@ export class NewCommand extends AbstractCommand {
           language,
           collection: options.collection,
           strict: options.strict,
+          format: options.format === true,
         };
 
         await this.action.handle(context);
