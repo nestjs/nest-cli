@@ -473,12 +473,10 @@ describe('AssetsManager', () => {
 
       (getValueOrDefault as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce([]) // app assets (empty)
-        .mockReturnValueOnce(['non-existent-lib']) // includeLibraryAssets - does not exist
-        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
-        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+        .mockReturnValueOnce(['non-existent-lib']); // includeLibraryAssets - does not exist
 
       // With no assets from either app or valid library, copyAssets returns early
-      // but should not throw
+      // (collectLibraryAssets returns [] because lib not found)
       expect(() =>
         assetsManager.copyAssets(configuration, 'my-app', 'dist', false),
       ).not.toThrow();
@@ -498,10 +496,10 @@ describe('AssetsManager', () => {
 
       (getValueOrDefault as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce([]) // app assets (empty)
-        .mockReturnValueOnce(['no-assets-lib']) // includeLibraryAssets
-        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
-        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+        .mockReturnValueOnce(['no-assets-lib']); // includeLibraryAssets
 
+      // Library has no assets configured, so collectLibraryAssets returns []
+      // Both assets and libraryAssets are empty, so copyAssets returns early
       expect(() =>
         assetsManager.copyAssets(configuration, 'my-app', 'dist', false),
       ).not.toThrow();
