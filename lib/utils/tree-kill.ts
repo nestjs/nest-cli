@@ -78,7 +78,7 @@ function killPid(pid: number, signal?: string | number) {
   try {
     process.kill(pid, signal);
   } catch (err) {
-    if (err.code !== 'ESRCH') {
+    if ((err as NodeJS.ErrnoException).code !== 'ESRCH') {
       throw err;
     }
   }
