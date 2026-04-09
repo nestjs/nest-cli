@@ -151,6 +151,120 @@ describe('AssetsManager', () => {
       await new Promise((resolve) => setImmediate(resolve));
       // No error thrown = success
     });
+  });
+
+  describe('onSuccess callback on asset change', () => {
+    it('should call onSuccess when a watched asset changes after watcher is ready', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = jest.fn();
+      const onSuccess = jest.fn();
+
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
+      (getValueOrDefault as jest.Mock)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      // Simulate initial add (before ready) - should NOT call onSuccess
+      mockWatcher.emit('add', '/src/file.hbs');
+      expect(onSuccess).not.toHaveBeenCalled();
+
+      // Emit ready
+      mockWatcher.emit('ready');
+
+      // Simulate change after ready - should call onSuccess
+      mockWatcher.emit('change', '/src/file.hbs');
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call onSuccess when a new asset is added after watcher is ready', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = jest.fn();
+      const onSuccess = jest.fn();
+
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
+      (getValueOrDefault as jest.Mock)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      mockWatcher.emit('ready');
+
+      // Simulate add after ready - should call onSuccess
+      mockWatcher.emit('add', '/src/new-file.hbs');
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call onSuccess when an asset is deleted after watcher is ready', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = jest.fn();
+      const onSuccess = jest.fn();
+
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
+      (getValueOrDefault as jest.Mock)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      mockWatcher.emit('add', '/src/file.hbs');
+      mockWatcher.emit('ready');
+
+      // Simulate unlink after ready - should call onSuccess
+      mockWatcher.emit('unlink', '/src/file.hbs');
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onSuccess if no callback is provided', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = jest.fn();
+
+      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
+      (getValueOrDefault as jest.Mock)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      // No onSuccess provided
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+      );
+
+      mockWatcher.emit('ready');
+
+      // Should not throw when change occurs without onSuccess
+      expect(() => mockWatcher.emit('change', '/src/file.hbs')).not.toThrow();
+    });
 
     it('should not stall when asset glob matches no files', async () => {
       // Chokidar does not emit 'ready' when given an empty array,

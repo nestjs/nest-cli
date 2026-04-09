@@ -11,6 +11,8 @@ import {
 import { copyPathResolve } from './helpers/copy-path-resolve.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 
+const ASSET_CHANGE_RESTART_DEBOUNCE_MS = 150;
+
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
@@ -32,6 +34,7 @@ export class AssetsManager {
     appName: string | undefined,
     outDir: string,
     watchAssetsMode: boolean,
+    onSuccess?: () => void,
   ) {
     const assets =
       getValueOrDefault<Asset[]>(
@@ -74,6 +77,22 @@ export class AssetsManager {
           appName,
         ) || watchAssetsMode;
 
+      // Debounce onSuccess so that a burst of asset changes (e.g. a git
+      // checkout touching many files at once) only triggers a single restart.
+      let debouncedOnSuccess: (() => void) | undefined;
+      if (onSuccess) {
+        let pending: NodeJS.Timeout | undefined;
+        debouncedOnSuccess = () => {
+          if (pending) {
+            clearTimeout(pending);
+          }
+          pending = setTimeout(() => {
+            pending = undefined;
+            onSuccess();
+          }, ASSET_CHANGE_RESTART_DEBOUNCE_MS);
+        };
+      }
+
       for (const item of filesToCopy) {
         const option: ActionOnFile = {
           action: 'change',
@@ -101,12 +120,32 @@ export class AssetsManager {
             continue;
           }
 
+          let ready = false;
           // prettier-ignore
           const watcher = chokidar
             .watch(matchedPaths)
-            .on('add', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
-            .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
-            .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
+            .on('add', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'change' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            })
+            .on('change', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'change' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            })
+            .on('unlink', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'unlink' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            });
+
+          watcher.on('ready', () => {
+            ready = true;
+          });
 
           this.watchers.push(watcher);
           this.watcherReadyPromises.push(
