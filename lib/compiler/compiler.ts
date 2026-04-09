@@ -62,7 +62,9 @@ export class Compiler extends BaseCompiler {
           ? [tsconfigPathsPlugin, ...before]
           : before,
         after,
-        afterDeclarations,
+        afterDeclarations: tsconfigPathsPlugin
+          ? [tsconfigPathsPlugin, ...afterDeclarations]
+          : afterDeclarations,
       },
     );
 
