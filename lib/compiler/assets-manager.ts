@@ -22,7 +22,7 @@ export class AssetsManager {
    * ensuring all assets are copied regardless of system speed.
    */
   public closeWatchers() {
-    Promise.all(this.watcherReadyPromises).then(() => {
+    return Promise.all(this.watcherReadyPromises).then(() => {
       this.watchers.forEach((watcher) => watcher.close());
     });
   }

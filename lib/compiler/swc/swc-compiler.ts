@@ -73,7 +73,7 @@ export class SwcCompiler extends BaseCompiler {
         onSuccess();
       }
 
-      extras.assetsManager?.closeWatchers();
+      await extras.assetsManager?.closeWatchers();
     }
   }
 
