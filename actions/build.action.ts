@@ -119,6 +119,20 @@ export class BuildAction extends AbstractAction {
         );
       }
 
+      const emitDeclarations = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.emitDeclarations',
+        appName,
+        'emitDeclarations',
+        commandOptions,
+      );
+      if (emitDeclarations && builder.type !== 'swc') {
+        console.warn(
+          INFO_PREFIX +
+            ` "emitDeclarations" will not have any effect when "builder" is not "swc".`,
+        );
+      }
+
       switch (builder.type) {
         case 'tsc':
           await this.runTsc(
@@ -160,6 +174,7 @@ export class BuildAction extends AbstractAction {
             watchMode,
             options,
             tsOptions,
+            emitDeclarations,
             onSuccess,
           );
           break;
@@ -174,6 +189,7 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     options: Record<string, any>,
     tsOptions: ts.CompilerOptions,
+    emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler.js');
@@ -193,6 +209,7 @@ export class BuildAction extends AbstractAction {
           'typeCheck',
           options,
         ),
+        emitDeclarations,
         tsOptions,
         assetsManager: this.assetsManager,
         silent: isSilent,

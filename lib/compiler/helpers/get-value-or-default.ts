@@ -12,7 +12,8 @@ export function getValueOrDefault<T = any>(
     | 'sourceRoot'
     | 'exec'
     | 'builder'
-    | 'typeCheck',
+    | 'typeCheck'
+    | 'emitDeclarations',
   options: Record<string, any> = {},
   defaultValue?: T,
 ): T {

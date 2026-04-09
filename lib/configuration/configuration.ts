@@ -74,6 +74,7 @@ export interface CompilerOptions {
   deleteOutDir?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
+  emitDeclarations?: boolean;
 }
 
 export interface PluginOptions {
