@@ -194,7 +194,7 @@ describe('getValueOrDefault', () => {
       },
       generateOptions: {},
     } as unknown as Required<Configuration>;
-    const options = [{ name: 'typeCheck', value: false as boolean }];
+    const options = { typeCheck: false };
     const value = getValueOrDefault(
       configuration,
       'compilerOptions.typeCheck',
@@ -219,7 +219,7 @@ describe('getValueOrDefault', () => {
       },
       generateOptions: {},
     } as unknown as Required<Configuration>;
-    const options = [{ name: 'typeCheck', value: true as boolean }];
+    const options = { typeCheck: true };
     const value = getValueOrDefault(
       configuration,
       'compilerOptions.typeCheck',
@@ -244,7 +244,7 @@ describe('getValueOrDefault', () => {
       },
       generateOptions: {},
     } as unknown as Required<Configuration>;
-    const options = [{ name: 'typeCheck', value: undefined as any }];
+    const options = { typeCheck: undefined };
     const value = getValueOrDefault(
       configuration,
       'compilerOptions.typeCheck',
@@ -273,7 +273,7 @@ describe('getValueOrDefault', () => {
       compilerOptions: {},
       generateOptions: {},
     } as unknown as Required<Configuration>;
-    const options = [{ name: 'typeCheck', value: false as boolean }];
+    const options = { typeCheck: false };
     const value = getValueOrDefault(
       configuration,
       'compilerOptions.typeCheck',
