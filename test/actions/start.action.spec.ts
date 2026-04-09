@@ -171,4 +171,34 @@ describe('StartAction', () => {
       exitSpy.mockRestore();
     });
   });
+
+  describe('createOnSuccessHook - watch mode signal handling', () => {
+    it('should NOT register SIGINT/SIGTERM handlers in watch mode', () => {
+      startAction.createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false, watch: true },
+      );
+
+      expect(registeredHandlers['SIGINT']).toBeUndefined();
+      expect(registeredHandlers['SIGTERM']).toBeUndefined();
+    });
+
+    it('should still register exit handler in watch mode', () => {
+      startAction.createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false, watch: true },
+      );
+
+      expect(registeredHandlers['exit']).toBeDefined();
+      expect(registeredHandlers['exit'].length).toBeGreaterThanOrEqual(1);
+    });
+  });
 });
