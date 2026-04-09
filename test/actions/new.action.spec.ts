@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('child_process', () => ({
   execSync: vi.fn(() => '80'),
@@ -45,11 +45,13 @@ vi.mock('../../lib/package-managers/index.js', () => ({
   },
 }));
 
-vi.mock('../../lib/runners/git.runner.js', () => ({
-  GitRunner: vi.fn().mockImplementation(() => ({
-    run: vi.fn().mockResolvedValue(undefined),
-  })),
-}));
+vi.mock('../../lib/runners/git.runner.js', () => {
+  return {
+    GitRunner: class {
+      run = vi.fn().mockResolvedValue(undefined);
+    },
+  };
+});
 
 import { NewAction } from '../../actions/new.action.js';
 import { NewCommandContext } from '../../commands/context/new.context.js';
@@ -84,7 +86,7 @@ describe('NewAction', () => {
   });
 
   describe('--skip-tests flag', () => {
-    it('should pass --no-spec to schematics when --skip-tests is true', async () => {
+    it('should pass --spec=false to schematics when --skip-tests is true', async () => {
       const context = baseContext({ skipTests: true });
       await action.handle(context);
 
@@ -94,12 +96,12 @@ describe('NewAction', () => {
       expect(schematicName).toBe('application');
 
       const specOption = schematicOptions.find(
-        (opt: SchematicOption) => opt.toCommandString() === '--no-spec',
+        (opt: SchematicOption) => opt.toCommandString() === '--spec=false',
       );
       expect(specOption).toBeDefined();
     });
 
-    it('should not pass --no-spec to schematics when --skip-tests is false', async () => {
+    it('should not pass spec option to schematics when --skip-tests is false', async () => {
       const context = baseContext({ skipTests: false });
       await action.handle(context);
 
@@ -108,7 +110,7 @@ describe('NewAction', () => {
 
       const specOption = schematicOptions.find(
         (opt: SchematicOption) =>
-          opt.toCommandString() === '--no-spec' ||
+          opt.toCommandString() === '--spec=false' ||
           opt.toCommandString() === '--spec',
       );
       expect(specOption).toBeUndefined();
