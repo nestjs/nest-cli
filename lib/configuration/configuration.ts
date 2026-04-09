@@ -75,6 +75,11 @@ export interface CompilerOptions {
   manualRestart?: boolean;
   builder?: Builder;
   emitDeclarations?: boolean;
+  /**
+   * List of library project names whose assets should also be copied
+   * when building this application.
+   */
+  includeLibraryAssets?: string[];
 }
 
 export interface PluginOptions {

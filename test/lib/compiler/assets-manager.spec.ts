@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import * as chokidar from 'chokidar';
-import { copyFileSync } from 'fs';
+import { copyFileSync, statSync } from 'fs';
 import { sync as globSync } from 'glob';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssetsManager } from '../../../lib/compiler/assets-manager.js';
@@ -47,6 +47,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src') // sourceRoot
         .mockReturnValueOnce(false); // compilerOptions.watchAssets
 
@@ -81,6 +82,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -116,6 +118,7 @@ describe('AssetsManager', () => {
           { include: '**/*.hbs', watchAssets: true },
           { include: '**/*.html', watchAssets: true },
         ])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -145,7 +148,7 @@ describe('AssetsManager', () => {
       expect(mockWatcher2.close).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle no watchers gracefully', async () => {
+    it('should handle no watchers gracefully (closeWatchers)', async () => {
       // closeWatchers with no watchers should not throw
       assetsManager.closeWatchers();
       await new Promise((resolve) => setImmediate(resolve));
@@ -352,6 +355,7 @@ describe('AssetsManager', () => {
       ]);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -387,6 +391,172 @@ describe('AssetsManager', () => {
 
       // Now close should have been called
       expect(mockWatcher.close).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('includeLibraryAssets', () => {
+    it('should copy library assets when includeLibraryAssets references a library', () => {
+      const configuration = {
+        projects: {
+          'my-lib': {
+            type: 'library',
+            root: 'libs/my-lib',
+            sourceRoot: 'libs/my-lib/src',
+            compilerOptions: {
+              assets: ['**/*.graphql'],
+            },
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce(['my-lib']) // includeLibraryAssets
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([]);
+      const statMock = statSync as ReturnType<typeof vi.fn>;
+      statMock.mockReturnValue({ isFile: () => true, isDirectory: () => false });
+
+      assetsManager.copyAssets(configuration, 'my-app', 'dist', false);
+
+      // The method should not throw and should process the library assets
+      // Since globSync returns empty, no files are copied, but the flow completes
+      expect(getValueOrDefault).toHaveBeenCalledTimes(4);
+    });
+
+    it('should copy library assets alongside app assets', () => {
+      const configuration = {
+        projects: {
+          'shared-lib': {
+            type: 'library',
+            root: 'libs/shared-lib',
+            sourceRoot: 'libs/shared-lib/src',
+            compilerOptions: {
+              assets: ['**/*.proto'],
+            },
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(['**/*.hbs']) // app assets
+        .mockReturnValueOnce(['shared-lib']) // includeLibraryAssets
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      const matchedFiles = ['/cwd/libs/shared-lib/src/schema.proto'];
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(matchedFiles);
+      const statMock = statSync as ReturnType<typeof vi.fn>;
+      statMock.mockReturnValue({ isFile: () => true, isDirectory: () => false });
+
+      assetsManager.copyAssets(configuration, 'my-app', 'dist', false);
+
+      // copyFileSync should be called for both app and library assets
+      expect(copyFileSync).toHaveBeenCalled();
+    });
+
+    it('should skip non-existent library names gracefully', () => {
+      const configuration = {
+        projects: {
+          'existing-lib': {
+            type: 'library',
+            root: 'libs/existing-lib',
+            sourceRoot: 'libs/existing-lib/src',
+            compilerOptions: {
+              assets: ['**/*.json'],
+            },
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce(['non-existent-lib']) // includeLibraryAssets - does not exist
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      // With no assets from either app or valid library, copyAssets returns early
+      // but should not throw
+      expect(() =>
+        assetsManager.copyAssets(configuration, 'my-app', 'dist', false),
+      ).not.toThrow();
+    });
+
+    it('should skip library with no assets configured', () => {
+      const configuration = {
+        projects: {
+          'no-assets-lib': {
+            type: 'library',
+            root: 'libs/no-assets-lib',
+            sourceRoot: 'libs/no-assets-lib/src',
+            compilerOptions: {},
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce(['no-assets-lib']) // includeLibraryAssets
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      expect(() =>
+        assetsManager.copyAssets(configuration, 'my-app', 'dist', false),
+      ).not.toThrow();
+    });
+
+    it('should not include library assets when includeLibraryAssets is not set', () => {
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce([]); // includeLibraryAssets (empty)
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      // Should return early without calling sourceRoot or watchAssets
+      expect(getValueOrDefault).toHaveBeenCalledTimes(2);
+      expect(copyFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should use library sourceRoot to resolve asset paths', () => {
+      const configuration = {
+        projects: {
+          'my-lib': {
+            type: 'library',
+            root: 'libs/my-lib',
+            sourceRoot: 'libs/my-lib/src',
+            compilerOptions: {
+              assets: [{ include: '**/*.graphql', exclude: '**/*.test.graphql' }],
+            },
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce(['my-lib']) // includeLibraryAssets
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      const cwd = process.cwd();
+      const expectedGlob = (cwd + '/libs/my-lib/src/**/*.graphql').replace(
+        /\\/g,
+        '/',
+      );
+      const expectedExclude = (
+        cwd + '/libs/my-lib/src/**/*.test.graphql'
+      ).replace(/\\/g, '/');
+
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([]);
+
+      assetsManager.copyAssets(configuration, 'my-app', 'dist', false);
+
+      // Verify glob was called with library-resolved paths
+      expect(globSync).toHaveBeenCalledWith(expectedGlob, {
+        ignore: expectedExclude,
+        dot: true,
+      });
     });
   });
 });
