@@ -198,7 +198,7 @@ export class StartAction extends BuildAction {
       const envFileNodeArgs = options.envFile.map(
         (envFilePath) => `--env-file=${envFilePath}`,
       );
-      processArgs.unshift(envFileNodeArgs.join(' '));
+      processArgs.unshift(...envFileNodeArgs);
     }
 
     processArgs.unshift('--enable-source-maps');
