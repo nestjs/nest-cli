@@ -1,13 +1,14 @@
 import * as ts from 'typescript';
-import { TypeCheckerHost } from '../../../../lib/compiler/swc/type-checker-host';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { TypeCheckerHost } from '../../../../lib/compiler/swc/type-checker-host.js';
 
-jest.mock('ora', () => {
+vi.mock('ora', () => {
   const spinner = {
-    start: jest.fn().mockReturnThis(),
-    succeed: jest.fn().mockReturnThis(),
-    fail: jest.fn().mockReturnThis(),
+    start: vi.fn().mockReturnThis(),
+    succeed: vi.fn().mockReturnThis(),
+    fail: vi.fn().mockReturnThis(),
   };
-  return jest.fn(() => spinner);
+  return { default: vi.fn(() => spinner) };
 });
 
 describe('TypeCheckerHost', () => {
@@ -15,22 +16,22 @@ describe('TypeCheckerHost', () => {
 
   beforeEach(() => {
     typeCheckerHost = new TypeCheckerHost();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('runOnce (via run)', () => {
     function setupMocks(diagnostics: ts.Diagnostic[]) {
       const mockProgram = {
-        getSourceFiles: jest.fn().mockReturnValue([]),
-        getCompilerOptions: jest.fn().mockReturnValue({}),
+        getSourceFiles: vi.fn().mockReturnValue([]),
+        getCompilerOptions: vi.fn().mockReturnValue({}),
       } as unknown as ts.Program;
 
       const mockBuilderProgram = {
-        getProgram: jest.fn().mockReturnValue(mockProgram),
+        getProgram: vi.fn().mockReturnValue(mockProgram),
       };
 
       const mockTsConfigProvider = {
-        getByConfigFilename: jest.fn().mockReturnValue({
+        getByConfigFilename: vi.fn().mockReturnValue({
           options: {},
           fileNames: [],
           projectReferences: undefined,
@@ -39,18 +40,18 @@ describe('TypeCheckerHost', () => {
 
       const mockTsBinary = {
         ...ts,
-        createIncrementalProgram: jest
+        createIncrementalProgram: vi
           .fn()
           .mockReturnValue(mockBuilderProgram),
-        getPreEmitDiagnostics: jest.fn().mockReturnValue(diagnostics),
-        formatDiagnosticsWithColorAndContext: jest
+        getPreEmitDiagnostics: vi.fn().mockReturnValue(diagnostics),
+        formatDiagnosticsWithColorAndContext: vi
           .fn()
           .mockReturnValue('mock formatted diagnostics'),
         sys: ts.sys,
       };
 
       const mockTypescriptLoader = {
-        load: jest.fn().mockReturnValue(mockTsBinary),
+        load: vi.fn().mockReturnValue(mockTsBinary),
       };
 
       Object.defineProperty(typeCheckerHost, 'tsConfigProvider', {
@@ -77,7 +78,7 @@ describe('TypeCheckerHost', () => {
 
       setupMocks([mockDiagnostic]);
 
-      const onTypeCheck = jest.fn();
+      const onTypeCheck = vi.fn();
 
       expect(() => {
         typeCheckerHost.run('tsconfig.json', {
@@ -93,7 +94,7 @@ describe('TypeCheckerHost', () => {
     it('should call onTypeCheck when there are no type errors', () => {
       const { mockProgram } = setupMocks([]);
 
-      const onTypeCheck = jest.fn();
+      const onTypeCheck = vi.fn();
 
       expect(() => {
         typeCheckerHost.run('tsconfig.json', {
@@ -107,7 +108,7 @@ describe('TypeCheckerHost', () => {
     });
 
     it('should not call process.exit when type errors are found', () => {
-      const processExitSpy = jest
+      const processExitSpy = vi
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
@@ -125,7 +126,7 @@ describe('TypeCheckerHost', () => {
       try {
         typeCheckerHost.run('tsconfig.json', {
           watch: false,
-          onTypeCheck: jest.fn(),
+          onTypeCheck: vi.fn(),
         });
       } catch {
         // Expected to throw
@@ -168,7 +169,7 @@ describe('TypeCheckerHost', () => {
       expect(() => {
         typeCheckerHost.run('tsconfig.json', {
           watch: false,
-          onTypeCheck: jest.fn(),
+          onTypeCheck: vi.fn(),
         });
       }).toThrow('Found 3 type error(s) during compilation.');
     });
