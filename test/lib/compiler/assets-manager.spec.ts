@@ -156,12 +156,12 @@ describe('AssetsManager', () => {
   describe('onSuccess callback on asset change', () => {
     it('should call onSuccess when a watched asset changes after watcher is ready', async () => {
       const mockWatcher = new EventEmitter() as any;
-      mockWatcher.close = jest.fn();
-      const onSuccess = jest.fn();
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
 
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
-      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
-      (getValueOrDefault as jest.Mock)
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
@@ -188,12 +188,12 @@ describe('AssetsManager', () => {
 
     it('should call onSuccess when a new asset is added after watcher is ready', async () => {
       const mockWatcher = new EventEmitter() as any;
-      mockWatcher.close = jest.fn();
-      const onSuccess = jest.fn();
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
 
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
-      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
-      (getValueOrDefault as jest.Mock)
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
@@ -215,12 +215,12 @@ describe('AssetsManager', () => {
 
     it('should call onSuccess when an asset is deleted after watcher is ready', async () => {
       const mockWatcher = new EventEmitter() as any;
-      mockWatcher.close = jest.fn();
-      const onSuccess = jest.fn();
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
 
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
-      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
-      (getValueOrDefault as jest.Mock)
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
@@ -243,11 +243,11 @@ describe('AssetsManager', () => {
 
     it('should not call onSuccess if no callback is provided', async () => {
       const mockWatcher = new EventEmitter() as any;
-      mockWatcher.close = jest.fn();
+      mockWatcher.close = vi.fn();
 
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
-      (globSync as unknown as jest.Mock).mockReturnValue(['/src/file.hbs']);
-      (getValueOrDefault as jest.Mock)
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
