@@ -46,7 +46,10 @@ export const rspackDefaultsFactory = (
     devtool: isDebugEnabled ? 'inline-source-map' : false,
     target: 'node',
     output: {
-      filename: join(relativeSourceRoot, `${entryFilename}.js`),
+      filename: join(relativeSourceRoot, `${entryFilename}.js`).replace(
+        /\\/g,
+        '/',
+      ),
       ...(isEsm && {
         module: true,
         library: { type: 'module' },

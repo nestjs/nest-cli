@@ -47,7 +47,10 @@ export const webpackDefaultsFactory = (
     devtool: isDebugEnabled ? 'inline-source-map' : false,
     target: 'node',
     output: {
-      filename: join(relativeSourceRoot, `${entryFilename}.js`),
+      filename: join(relativeSourceRoot, `${entryFilename}.js`).replace(
+        /\\/g,
+        '/',
+      ),
     },
     ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
     externals: [externals() as any],
