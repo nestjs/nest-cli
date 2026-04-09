@@ -124,7 +124,7 @@ export class BuildAction extends AbstractAction {
         'compilerOptions.emitDeclarations',
         appName,
         'emitDeclarations',
-        commandOptions,
+        options,
       );
       if (emitDeclarations && builder.type !== 'swc') {
         console.warn(
