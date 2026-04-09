@@ -36,6 +36,41 @@ function createSpec(
   return output;
 }
 
+function createSpecWithDeclarations(
+  baseUrl: string,
+  fileNames: string[],
+  compilerOptions?: ts.CompilerOptions,
+) {
+  const options: ts.CompilerOptions = {
+    baseUrl,
+    outDir: path.join(baseUrl, 'dist'),
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.CommonJS,
+    declaration: true,
+    ...compilerOptions,
+  };
+
+  const program = ts.createProgram({
+    rootNames: fileNames.map((name) => path.join(baseUrl, name)),
+    options,
+  });
+  const output = new Map<string, string>();
+  const transformer = tsconfigPathsBeforeHookFactory(options);
+  program.emit(
+    undefined,
+    (fileName, data) => {
+      output.set(path.relative(baseUrl, fileName), data);
+    },
+    undefined,
+    undefined,
+    {
+      before: transformer ? [transformer] : [],
+      afterDeclarations: transformer ? [transformer] : [],
+    },
+  );
+  return output;
+}
+
 /**
  * This test is temporarily skipped because it's flaky on CI.
  * Not yet clear why but it's not a blocker.
@@ -71,5 +106,49 @@ describe.skip('tsconfig paths hooks', () => {
       { paths: { '~/*': ['./src/*'] }, jsx: JsxEmit.Preserve, allowJs: true },
     );
     expect(output).toMatchSnapshot();
+  });
+});
+
+describe('tsconfig paths hooks - declaration files', () => {
+  it('should replace path aliases in .d.ts files when transformer is applied to afterDeclarations', () => {
+    const output = createSpecWithDeclarations(
+      path.join(__dirname, './fixtures/aliased-dts-imports'),
+      ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+      { paths: { '~/*': ['./src/*'] } },
+    );
+
+    const dtsFiles = Array.from(output.entries()).filter(([key]) =>
+      key.endsWith('.d.ts'),
+    );
+    expect(dtsFiles.length).toBeGreaterThan(0);
+
+    const mainDtsKey = Array.from(output.keys()).find(
+      (key) => key.includes('main') && key.endsWith('.d.ts'),
+    );
+    expect(mainDtsKey).toBeDefined();
+    const mainDts = output.get(mainDtsKey!);
+    // The alias '~/foo' and '~/bar' should be replaced with relative paths
+    expect(mainDts).not.toContain('~/foo');
+    expect(mainDts).not.toContain('~/bar');
+    expect(mainDts).toContain('./foo');
+    expect(mainDts).toContain('./bar');
+  });
+
+  it('should not leave any path aliases in .d.ts files', () => {
+    const output = createSpecWithDeclarations(
+      path.join(__dirname, './fixtures/aliased-dts-imports'),
+      ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+      { paths: { '~/*': ['./src/*'] } },
+    );
+
+    const dtsFiles = Array.from(output.entries()).filter(([key]) =>
+      key.endsWith('.d.ts'),
+    );
+
+    for (const [, content] of dtsFiles) {
+      expect(content).not.toMatch(
+        /from\s+['"]~\//,
+      );
+    }
   });
 });
