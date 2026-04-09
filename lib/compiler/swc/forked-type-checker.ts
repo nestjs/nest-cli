@@ -54,7 +54,7 @@ class ForkedTypeChecker extends BaseCompiler {
         onProgramInit: onTypeCheckOrProgramInit,
       });
     } catch (err) {
-      console.log(ERROR_PREFIX, err.message);
+      console.error(ERROR_PREFIX, (err as Error).message);
     }
   }
 }
