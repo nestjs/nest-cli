@@ -4,6 +4,7 @@ export interface NewCommandContext {
   dryRun: boolean;
   skipGit: boolean;
   skipInstall: boolean;
+  skipTests: boolean;
   packageManager?: string;
   language: string;
   collection: string;

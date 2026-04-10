@@ -93,6 +93,10 @@ const mapContextToSchematicOptions = (
   options.push(new SchematicOption('skip-git', context.skipGit));
   options.push(new SchematicOption('strict', context.strict));
 
+  if (context.skipTests) {
+    options.push(new SchematicOption('spec', false));
+  }
+
   if (context.packageManager !== undefined)
     options.push(new SchematicOption('packageManager', context.packageManager));
   if (context.collection !== undefined)
