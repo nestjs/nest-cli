@@ -5,6 +5,7 @@ import {
   BuildAction,
   GenerateAction,
   InfoAction,
+  InspectAction,
   NewAction,
   StartAction,
 } from '../actions/index.js';
@@ -13,6 +14,7 @@ import { AddCommand } from './add.command.js';
 import { BuildCommand } from './build.command.js';
 import { GenerateCommand } from './generate.command.js';
 import { InfoCommand } from './info.command.js';
+import { InspectCommand } from './inspect.command.js';
 import { NewCommand } from './new.command.js';
 import { StartCommand } from './start.command.js';
 
@@ -32,6 +34,7 @@ export class CommandLoader {
     new BuildCommand(new BuildAction()).load(program);
     new StartCommand(new StartAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
+    new InspectCommand(new InspectAction()).load(program);
     new AddCommand(new AddAction()).load(program);
     await new GenerateCommand(new GenerateAction()).load(program);
 
