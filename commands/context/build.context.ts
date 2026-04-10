@@ -11,4 +11,5 @@ export interface BuildCommandContext {
   silent?: boolean;
   preserveWatchOutput: boolean;
   all: boolean;
+  parallel?: number | boolean;
 }

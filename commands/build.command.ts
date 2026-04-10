@@ -37,6 +37,10 @@ export class BuildCommand extends AbstractCommand {
         'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
       .option('--all', 'Build all projects in a monorepo.')
+      .option(
+        '--parallel [concurrency]',
+        'Build projects in parallel (with --all). Optionally limit concurrency.',
+      )
       .description('Build Nest application.')
       .action(async (apps: string[], options: Record<string, any>) => {
         const isWebpackEnabled = options.tsc ? false : options.webpack;
@@ -68,6 +72,11 @@ export class BuildCommand extends AbstractCommand {
             !!options.watch &&
             !isWebpackEnabled,
           all: !!options.all,
+          parallel: options.parallel === true
+            ? true
+            : options.parallel
+              ? parseInt(options.parallel, 10)
+              : undefined,
         };
 
         await this.action.handle(context);
