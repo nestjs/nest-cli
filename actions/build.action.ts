@@ -80,7 +80,7 @@ export class BuildAction extends AbstractAction {
       appNames.push(undefined);
     }
 
-    for (const appName of appNames) {
+    const buildApp = async (appName: string | undefined) => {
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
       const { options: tsOptions } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
@@ -163,6 +163,20 @@ export class BuildAction extends AbstractAction {
             onSuccess,
           );
           break;
+      }
+    };
+
+    const parallel = options.parallel;
+    if (parallel && appNames.length > 1) {
+      const concurrency =
+        typeof parallel === 'number' ? parallel : appNames.length;
+      for (let i = 0; i < appNames.length; i += concurrency) {
+        const chunk = appNames.slice(i, i + concurrency);
+        await Promise.all(chunk.map((appName) => buildApp(appName)));
+      }
+    } else {
+      for (const appName of appNames) {
+        await buildApp(appName);
       }
     }
   }
