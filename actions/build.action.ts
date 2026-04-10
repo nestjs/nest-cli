@@ -104,6 +104,7 @@ export class BuildAction extends AbstractAction {
         outDir,
         watchAssetsMode,
       );
+      this.warnOnIgnoredLibraryAssets(configuration, appName);
 
       const typeCheck = getValueOrDefault<boolean>(
         configuration,
@@ -356,5 +357,31 @@ export class BuildAction extends AbstractAction {
       return (_config: Record<string, any>) => ({});
     }
     return require(pathToRspackFile);
+  }
+
+  private warnOnIgnoredLibraryAssets(
+    configuration: Required<Configuration>,
+    appName: string | undefined,
+  ) {
+    if (!configuration.projects) {
+      return;
+    }
+    for (const [projectName, project] of Object.entries(
+      configuration.projects,
+    )) {
+      if (projectName === appName) {
+        continue;
+      }
+      if (
+        project.type === 'library' &&
+        project.compilerOptions?.assets?.length
+      ) {
+        console.warn(
+          INFO_PREFIX +
+            ` Assets configured for library "${projectName}" will not be copied during application build.` +
+            ` Build the library separately or move assets to the application configuration.`,
+        );
+      }
+    }
   }
 }
