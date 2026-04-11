@@ -74,7 +74,7 @@ export class PluginMetadataPrinter {
       options.outputDir!,
       options.filename ?? SERIALIZED_METADATA_FILENAME,
     );
-    const eslintPrefix = `/* eslint-disable */\n`;
+    const eslintPrefix = `/* eslint-disable */\n// @ts-nocheck\n`;
     writeFileSync(
       filename,
       eslintPrefix +
