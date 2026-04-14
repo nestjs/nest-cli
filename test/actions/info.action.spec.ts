@@ -23,7 +23,7 @@ describe('InfoAction', () => {
 
   describe('displaySystemInformation', () => {
     it('should include a space between the OS name and release version', async () => {
-      const consoleSpy = jest
+      const consoleSpy = vi
         .spyOn(console, 'info')
         .mockImplementation(() => {});
 
