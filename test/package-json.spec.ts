@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 describe('package.json', () => {
   let packageJson: Record<string, any>;
