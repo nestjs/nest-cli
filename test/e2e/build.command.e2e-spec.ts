@@ -116,14 +116,33 @@ describe('Build Command (e2e)', () => {
       // about it. Force the dev CLI to run instead of delegating.
       removeLocalCli(appPath);
 
-      runNest('build --builder swc --emit-declarations', appPath);
+      // The SWC compiler delegates declaration emission to `tsc
+      // --emitDeclarationOnly`, which requires `declaration: true` in the
+      // tsconfig. The default scaffold sets `declaration: false`.
+      const tsconfigBuildPath = path.join(appPath, 'tsconfig.build.json');
+      const originalTsconfig = fs.readFileSync(tsconfigBuildPath, 'utf-8');
+      const tsconfig = JSON.parse(originalTsconfig);
+      tsconfig.compilerOptions = {
+        ...tsconfig.compilerOptions,
+        declaration: true,
+      };
+      fs.writeFileSync(tsconfigBuildPath, JSON.stringify(tsconfig, null, 2));
 
-      const distDir = path.join(appPath, 'dist');
-      expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
-      // Declaration files should be generated alongside compiled JS
-      expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(true);
-      expect(fileExists(path.join(distDir, 'app.controller.d.ts'))).toBe(true);
-      expect(fileExists(path.join(distDir, 'app.service.d.ts'))).toBe(true);
+      try {
+        runNest('build --builder swc --emit-declarations', appPath);
+
+        const distDir = path.join(appPath, 'dist');
+        expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+        // Declaration files should be generated alongside compiled JS
+        expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(true);
+        expect(fileExists(path.join(distDir, 'app.controller.d.ts'))).toBe(
+          true,
+        );
+        expect(fileExists(path.join(distDir, 'app.service.d.ts'))).toBe(true);
+      } finally {
+        // Restore the original tsconfig so subsequent tests aren't affected
+        fs.writeFileSync(tsconfigBuildPath, originalTsconfig);
+      }
     });
 
     it('should not emit .d.ts declaration files without --emit-declarations', () => {
