@@ -24,15 +24,17 @@ describe('Library Assets (e2e)', () => {
       'Hello {{ name }}!',
     );
 
-    // Configure the library with assets
+    // Configure nest-cli.json: disable webpack (no peer deps needed), add asset
+    // configs for the library, and enable includeLibraryAssets on the main app
     const nestCliPath = path.join(appPath, 'nest-cli.json');
     const nestConfig = JSON.parse(fs.readFileSync(nestCliPath, 'utf-8'));
+
+    delete nestConfig.compilerOptions.webpack;
 
     nestConfig.projects['my-lib'].compilerOptions.assets = [
       'templates/**/*.hbs',
     ];
 
-    // Configure the main app to include library assets
     nestConfig.projects['main-app'].compilerOptions.includeLibraryAssets = [
       'my-lib',
     ];
