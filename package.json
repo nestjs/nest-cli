@@ -53,7 +53,7 @@
     "node-emoji": "2.2.0",
     "ora": "9.3.0",
     "tsconfig-paths": "4.2.0",
-    "typescript": "6.0.2"
+    "typescript": "~6.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "20.4.3",
