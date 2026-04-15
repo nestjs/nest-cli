@@ -106,6 +106,30 @@ describe('Build Command (e2e)', () => {
 
       expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
     });
+
+    it('should emit .d.ts declaration files with --emit-declarations', () => {
+      cleanDist();
+
+      runNest('build --builder swc --emit-declarations', appPath);
+
+      const distDir = path.join(appPath, 'dist');
+      expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+      // Declaration files should be generated alongside compiled JS
+      expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(true);
+      expect(fileExists(path.join(distDir, 'app.controller.d.ts'))).toBe(true);
+      expect(fileExists(path.join(distDir, 'app.service.d.ts'))).toBe(true);
+    });
+
+    it('should not emit .d.ts declaration files without --emit-declarations', () => {
+      cleanDist();
+
+      runNest('build --builder swc', appPath);
+
+      const distDir = path.join(appPath, 'dist');
+      expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+      // Without the flag, declaration files should NOT be present
+      expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(false);
+    });
   });
 });
 
