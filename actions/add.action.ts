@@ -147,8 +147,13 @@ export class AddAction extends AbstractAction {
   }
 
   private getTagName(packageName: string): string {
-    return packageName.startsWith('@')
+    // For scoped packages like "@scope/pkg@1.0.0", split('@', 3) yields
+    // ["", "scope/pkg", "1.0.0"]. For "@scope/pkg" with no version,
+    // the tag slot is undefined. Fall back to an empty string so the
+    // return type stays string and installPackage can substitute "latest".
+    const tag = packageName.startsWith('@')
       ? packageName.split('@', 3)[2]
       : packageName.split('@', 2)[1];
+    return tag ?? '';
   }
 }
