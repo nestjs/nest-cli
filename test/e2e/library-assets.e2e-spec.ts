@@ -16,11 +16,11 @@ describe('Library Assets (e2e)', () => {
 
   beforeAll(() => {
     tmpDir = createTempDir('nest-e2e-lib-assets-');
-    appPath = scaffoldMonorepoWithDeps(tmpDir, 'main-app', 'my-lib');
+    appPath = scaffoldMonorepoWithDeps(tmpDir, 'main-app', 'mylib');
 
     // Add an asset file to the library
     writeFileContent(
-      path.join(appPath, 'apps', 'my-lib', 'src', 'templates', 'hello.hbs'),
+      path.join(appPath, 'apps', 'mylib', 'src', 'templates', 'hello.hbs'),
       'Hello {{ name }}!',
     );
 
@@ -31,12 +31,12 @@ describe('Library Assets (e2e)', () => {
 
     delete nestConfig.compilerOptions.webpack;
 
-    nestConfig.projects['my-lib'].compilerOptions.assets = [
+    nestConfig.projects['mylib'].compilerOptions.assets = [
       'templates/**/*.hbs',
     ];
 
     nestConfig.projects['main-app'].compilerOptions.includeLibraryAssets = [
-      'my-lib',
+      'mylib',
     ];
 
     fs.writeFileSync(nestCliPath, JSON.stringify(nestConfig, null, 2));
@@ -58,9 +58,9 @@ describe('Library Assets (e2e)', () => {
   });
 
   it('should build library standalone with its own assets', () => {
-    runNest('build my-lib', appPath);
+    runNest('build mylib', appPath);
 
-    const libDistDir = path.join(appPath, 'dist', 'apps', 'my-lib');
+    const libDistDir = path.join(appPath, 'dist', 'apps', 'mylib');
     expect(fileExists(libDistDir)).toBe(true);
     expect(fileExists(path.join(libDistDir, 'src', 'main.js'))).toBe(true);
   });
