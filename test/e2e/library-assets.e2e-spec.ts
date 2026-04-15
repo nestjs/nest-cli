@@ -2,8 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
+  convertToCjs,
   createTempDir,
   fileExists,
+  removeLocalCli,
   removeTempDir,
   runNest,
   scaffoldMonorepoWithDeps,
@@ -17,6 +19,14 @@ describe('Library Assets (e2e)', () => {
   beforeAll(() => {
     tmpDir = createTempDir('nest-e2e-lib-assets-');
     appPath = scaffoldMonorepoWithDeps(tmpDir, 'main-app', 'mylib');
+    // Monorepo scaffold is ESM by default; the manually-written sub-app
+    // files use CJS-style imports without .js extensions, so convert the
+    // project to CJS for consistent tsc compilation.
+    convertToCjs(appPath);
+    // includeLibraryAssets is new in this PR — the scaffolded app's
+    // node_modules has the published CLI which ignores the option. Force
+    // the dev CLI to run.
+    removeLocalCli(appPath);
 
     // Add an asset file to the library
     writeFileContent(
