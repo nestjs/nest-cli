@@ -7,6 +7,7 @@ import {
   createTempDir,
   fileExists,
   installWebpackDeps,
+  removeLocalCli,
   removeTempDir,
   runNest,
   scaffoldAppWithDeps,
@@ -109,6 +110,11 @@ describe('Build Command (e2e)', () => {
 
     it('should emit .d.ts declaration files with --emit-declarations', () => {
       cleanDist();
+
+      // The --emit-declarations flag is new in this PR, so the published
+      // @nestjs/cli in the scaffolded project's node_modules doesn't know
+      // about it. Force the dev CLI to run instead of delegating.
+      removeLocalCli(appPath);
 
       runNest('build --builder swc --emit-declarations', appPath);
 
