@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import * as chokidar from 'chokidar';
 import { copyFileSync } from 'fs';
 import { sync as globSync } from 'glob';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssetsManager } from '../../../lib/compiler/assets-manager.js';
 import { getValueOrDefault } from '../../../lib/compiler/helpers/get-value-or-default.js';
 
@@ -150,6 +150,164 @@ describe('AssetsManager', () => {
       assetsManager.closeWatchers();
       await new Promise((resolve) => setImmediate(resolve));
       // No error thrown = success
+    });
+  });
+
+  describe('onSuccess callback on asset change', () => {
+    it('should call onSuccess when a watched asset changes after watcher is ready', async () => {
+      vi.useFakeTimers();
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      // Simulate initial add (before ready) - should NOT call onSuccess
+      mockWatcher.emit('add', '/src/file.hbs');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).not.toHaveBeenCalled();
+
+      // Emit ready
+      mockWatcher.emit('ready');
+
+      // Simulate change after ready - should call onSuccess (after debounce)
+      mockWatcher.emit('change', '/src/file.hbs');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
+    it('should call onSuccess when a new asset is added after watcher is ready', async () => {
+      vi.useFakeTimers();
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      mockWatcher.emit('ready');
+
+      // Simulate add after ready - should call onSuccess (after debounce)
+      mockWatcher.emit('add', '/src/new-file.hbs');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
+    it('should call onSuccess when an asset is deleted after watcher is ready', async () => {
+      vi.useFakeTimers();
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      mockWatcher.emit('add', '/src/file.hbs');
+      mockWatcher.emit('ready');
+
+      // Simulate unlink after ready - should call onSuccess (after debounce)
+      mockWatcher.emit('unlink', '/src/file.hbs');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
+    it('should debounce rapid onSuccess calls into a single invocation', async () => {
+      vi.useFakeTimers();
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        onSuccess,
+      );
+
+      mockWatcher.emit('ready');
+
+      // Burst of changes — should collapse into a single onSuccess call
+      mockWatcher.emit('change', '/src/a.hbs');
+      mockWatcher.emit('change', '/src/b.hbs');
+      mockWatcher.emit('add', '/src/c.hbs');
+      mockWatcher.emit('unlink', '/src/a.hbs');
+      await vi.runAllTimersAsync();
+
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
+    it('should not call onSuccess if no callback is provided', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      // No onSuccess provided
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+      );
+
+      mockWatcher.emit('ready');
+
+      // Should not throw when change occurs without onSuccess
+      expect(() => mockWatcher.emit('change', '/src/file.hbs')).not.toThrow();
     });
 
     it('should not stall when asset glob matches no files', async () => {

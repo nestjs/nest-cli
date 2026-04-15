@@ -103,6 +103,7 @@ export class BuildAction extends AbstractAction {
         appName,
         outDir,
         watchAssetsMode,
+        onSuccess,
       );
       this.warnOnIgnoredLibraryAssets(configuration, appName);
 
