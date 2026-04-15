@@ -14,17 +14,27 @@ import { getValueOrDefault } from './helpers/get-value-or-default';
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
-  private watcherReadyPromises: Promise<void>[] = [];
+  private actionInProgress = false;
 
   /**
-   * Using on `nest build` to close file watch or the build process will not end.
-   * Waits for all watchers to complete their initial scan before closing them,
-   * ensuring all assets are copied regardless of system speed.
+   * Using on `nest build` to close file watch or the build process will not end
+   * Interval like process
+   * If no action has been taken recently close watchers
+   * If action has been taken recently flag and try again
    */
   public closeWatchers() {
-    return Promise.all(this.watcherReadyPromises).then(() => {
-      this.watchers.forEach((watcher) => watcher.close());
-    });
+    // Consider adjusting this for larger files
+    const timeoutMs = 500;
+    const closeFn = () => {
+      if (this.actionInProgress) {
+        this.actionInProgress = false;
+        setTimeout(closeFn, timeoutMs);
+      } else {
+        this.watchers.forEach((watcher) => watcher.close());
+      }
+    };
+
+    setTimeout(closeFn, timeoutMs);
   }
 
   public copyAssets(
@@ -95,9 +105,6 @@ export class AssetsManager {
             .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
 
           this.watchers.push(watcher);
-          this.watcherReadyPromises.push(
-            new Promise<void>((resolve) => watcher.on('ready', resolve)),
-          );
         } else {
           const matchedPaths = sync(item.glob, {
             ignore: item.exclude,
@@ -137,6 +144,8 @@ export class AssetsManager {
     }
     // Set path value to true for watching the first time
     this.watchAssetsKeyValue[assetCheckKey] = true;
+    // Set action to true to avoid watches getting cutoff
+    this.actionInProgress = true;
 
     const dest = copyPathResolve(
       path,
