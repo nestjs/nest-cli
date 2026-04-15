@@ -152,6 +152,35 @@ describe('AssetsManager', () => {
       // No error thrown = success
     });
 
+    it('should not stall when asset glob matches no files', async () => {
+      // Chokidar does not emit 'ready' when given an empty array,
+      // which caused closeWatchers() to hang forever.
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      vi.mocked(globSync).mockReturnValue([]);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([
+          { include: 'does-not-exist/**/*', watchAssets: true },
+        ])
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      // No watcher should have been created for the empty glob
+      expect(chokidar.watch).not.toHaveBeenCalled();
+
+      // A warning should have been logged
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('does-not-exist/**/*'),
+      );
+
+      // closeWatchers should resolve immediately since no watchers exist
+      await assetsManager.closeWatchers();
+
+      warnSpy.mockRestore();
+    });
+
     it('should ensure all add events fire before watcher is closed', async () => {
       const addedFiles: string[] = [];
       const mockWatcher = new EventEmitter() as any;

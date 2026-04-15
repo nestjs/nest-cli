@@ -84,12 +84,26 @@ export class AssetsManager {
         };
 
         if (isWatchEnabled || item.watchAssets) {
+          const matchedPaths = sync(item.glob, {
+            ignore: item.exclude,
+            dot: true,
+          });
+
+          // Chokidar does not emit the 'ready' event when given an empty
+          // array of paths, which causes closeWatchers() to hang forever
+          // on Promise.all(watcherReadyPromises). Skip the watcher and
+          // warn the user so the build can finish normally.
+          if (matchedPaths.length === 0) {
+            console.warn(
+              `No files matched the asset pattern "${item.glob}". ` +
+                `Skipping watcher for this entry.`,
+            );
+            continue;
+          }
+
           // prettier-ignore
           const watcher = chokidar
-            .watch(sync(item.glob, {
-              ignore: item.exclude,
-              dot: true,
-            }))
+            .watch(matchedPaths)
             .on('add', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
             .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
             .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
