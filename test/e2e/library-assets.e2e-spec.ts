@@ -63,8 +63,10 @@ describe('Library Assets (e2e)', () => {
     const distDir = path.join(appPath, 'dist', 'apps', 'main-app');
     expect(fileExists(distDir)).toBe(true);
 
-    // Check that at least the main app built successfully
-    expect(fileExists(path.join(distDir, 'src', 'main.js'))).toBe(true);
+    // Check that at least the main app built successfully.
+    // Monorepo tsconfig uses include: ['src/**/*'] which makes tsc infer
+    // rootDir as src/, so main.js sits directly under the outDir.
+    expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
   });
 
   it('should build library standalone with its own assets', () => {
@@ -72,6 +74,6 @@ describe('Library Assets (e2e)', () => {
 
     const libDistDir = path.join(appPath, 'dist', 'apps', 'mylib');
     expect(fileExists(libDistDir)).toBe(true);
-    expect(fileExists(path.join(libDistDir, 'src', 'main.js'))).toBe(true);
+    expect(fileExists(path.join(libDistDir, 'main.js'))).toBe(true);
   });
 });
