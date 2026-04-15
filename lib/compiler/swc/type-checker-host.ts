@@ -45,8 +45,13 @@ export class TypeCheckerHost {
       return;
     }
     spinner.start();
-    this.runOnce(tsconfigPath, tsBinary, options);
-    spinner.succeed();
+    try {
+      this.runOnce(tsconfigPath, tsBinary, options);
+      spinner.succeed();
+    } catch (err) {
+      spinner.fail();
+      throw err;
+    }
   }
 
   private runInWatchMode(
@@ -121,14 +126,17 @@ export class TypeCheckerHost {
         getNewLine: () => tsBinary.sys.newLine,
       };
 
-      console.log();
-      console.log(
+      const formattedDiagnostics =
         tsBinary.formatDiagnosticsWithColorAndContext(
           diagnostics,
           formatDiagnosticsHost,
-        ),
+        );
+
+      console.log();
+      console.log(formattedDiagnostics);
+      throw new Error(
+        `Found ${diagnostics.length} type error(s) during compilation.`,
       );
-      process.exit(1);
     }
     options.onTypeCheck?.(programRef);
   }
