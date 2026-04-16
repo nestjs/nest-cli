@@ -21,6 +21,28 @@ describe('InfoAction', () => {
     infoAction = new InfoAction();
   });
 
+  describe('displaySystemInformation', () => {
+    it('should include a space between the OS name and release version', async () => {
+      const consoleSpy = vi
+        .spyOn(console, 'info')
+        .mockImplementation(() => {});
+
+      await infoAction.handle();
+
+      const osVersionCall = consoleSpy.mock.calls.find(
+        (call) =>
+          typeof call[0] === 'string' && call[0].includes('OS Version'),
+      );
+      expect(osVersionCall).toBeDefined();
+      // The second argument (blue-colored string) should have a space
+      // between the OS name and the kernel release
+      const osVersionValue: string = osVersionCall![1];
+      expect(osVersionValue).toMatch(/\w\s+\d/);
+
+      consoleSpy.mockRestore();
+    });
+  });
+
   describe('buildNestVersionsWarningMessage', () => {
     it('should return an empty object for one or zero minor versions', () => {
       const dependencies = [

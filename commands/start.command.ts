@@ -40,6 +40,10 @@ export class StartCommand extends AbstractCommand {
         'Disable type checking (when SWC is used).',
         () => false,
       )
+      .option(
+        '--emit-declarations',
+        'Emit declaration files (.d.ts) when using SWC builder.',
+      )
       .option('--silent', 'Suppress informational compiler logs.')
       .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
@@ -92,6 +96,7 @@ export class StartCommand extends AbstractCommand {
           webpackPath: options.webpackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
+          emitDeclarations: !!options.emitDeclarations,
           silent: !!options.silent,
           preserveWatchOutput:
             !!options.preserveWatchOutput &&

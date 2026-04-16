@@ -64,7 +64,7 @@ export class InfoAction extends AbstractAction {
     console.info(green`[System Information]`);
     console.info(
       'OS Version     :',
-      blue(osName(platform(), release()) + release()),
+      blue(osName(platform(), release()) + ' ' + release()),
     );
     console.info('NodeJS Version :', blue(process.version));
     await this.displayPackageManagerVersion();

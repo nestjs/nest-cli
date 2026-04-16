@@ -8,6 +8,7 @@ export interface StartCommandContext {
   webpackPath?: string;
   builder?: string;
   typeCheck?: boolean;
+  emitDeclarations?: boolean;
   silent?: boolean;
   preserveWatchOutput: boolean;
   debug?: boolean | string;

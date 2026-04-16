@@ -1,5 +1,5 @@
 import { cyan } from 'ansis';
-import { fork } from 'child_process';
+import { fork, spawnSync } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
@@ -32,6 +32,7 @@ const require = createRequire(import.meta.url);
 export type SwcCompilerExtras = {
   watch: boolean;
   typeCheck: boolean;
+  emitDeclarations: boolean;
   assetsManager: AssetsManager;
   tsOptions: ts.CompilerOptions;
   silent?: boolean;
@@ -65,6 +66,10 @@ export class SwcCompiler extends BaseCompiler {
       }
       await this.runSwc(swcOptions, extras, swcrcFilePath);
 
+      if (extras.emitDeclarations) {
+        this.emitDeclarations(tsConfigPath);
+      }
+
       if (onSuccess) {
         onSuccess();
 
@@ -77,11 +82,41 @@ export class SwcCompiler extends BaseCompiler {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
       await this.runSwc(swcOptions, extras, swcrcFilePath);
+
+      if (extras.emitDeclarations) {
+        this.emitDeclarations(tsConfigPath);
+      }
+
       if (onSuccess) {
         onSuccess();
       }
 
       extras.assetsManager?.closeWatchers();
+    }
+  }
+
+  private emitDeclarations(tsConfigPath: string) {
+    process.nextTick(() =>
+      console.log(SWC_LOG_PREFIX, cyan('Emitting declaration files...')),
+    );
+
+    const tscPath = join(
+      process.cwd(),
+      'node_modules',
+      '.bin',
+      'tsc',
+    );
+    const result = spawnSync(tscPath, ['--emitDeclarationOnly', '-p', tsConfigPath], {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+      shell: true,
+    });
+
+    if (result.status !== 0) {
+      console.error(
+        ERROR_PREFIX +
+          ' Failed to emit declaration files. Please ensure "declaration" is enabled in your tsconfig.',
+      );
     }
   }
 

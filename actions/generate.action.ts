@@ -115,7 +115,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
       );
       generateSpecFileSuffix = getSpecFileSuffix(
         configuration,
-        appName,
+        selectedProjectName,
         specFileSuffixValue,
       );
     }

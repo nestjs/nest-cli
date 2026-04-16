@@ -7,6 +7,7 @@ import {
   createTempDir,
   fileExists,
   installWebpackDeps,
+  removeLocalCli,
   removeTempDir,
   runNest,
   scaffoldAppWithDeps,
@@ -105,6 +106,84 @@ describe('Build Command (e2e)', () => {
       runNest('build --builder swc --type-check', appPath);
 
       expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
+    });
+
+    it('should emit .d.ts declaration files with --emit-declarations', () => {
+      cleanDist();
+
+      // The --emit-declarations flag is new in this PR, so the published
+      // @nestjs/cli in the scaffolded project's node_modules doesn't know
+      // about it. Force the dev CLI to run instead of delegating.
+      removeLocalCli(appPath);
+
+      // The SWC compiler delegates declaration emission to `tsc
+      // --emitDeclarationOnly`, which requires `declaration: true` in the
+      // tsconfig. Enable it on both tsconfig.json and tsconfig.build.json
+      // to cover either tsconfig that nest may resolve.
+      const tsconfigJsonPath = path.join(appPath, 'tsconfig.json');
+      const tsconfigBuildPath = path.join(appPath, 'tsconfig.build.json');
+      const originalTsconfigJson = fs.readFileSync(tsconfigJsonPath, 'utf-8');
+      const originalTsconfigBuild = fs.readFileSync(tsconfigBuildPath, 'utf-8');
+      const tsconfigJson = JSON.parse(originalTsconfigJson);
+      tsconfigJson.compilerOptions = {
+        ...tsconfigJson.compilerOptions,
+        declaration: true,
+      };
+      fs.writeFileSync(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2));
+
+      try {
+        const output = runNest(
+          'build --builder swc --emit-declarations',
+          appPath,
+        );
+
+        const distDir = path.join(appPath, 'dist');
+        expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+
+        // Walk dist/ recursively to find any .d.ts files — be tolerant of
+        // exact output paths since tsc's layout depends on rootDir inference.
+        const findDts = (dir: string): string[] => {
+          if (!fileExists(dir)) return [];
+          const entries = fs.readdirSync(dir, { withFileTypes: true });
+          return entries.flatMap((e) => {
+            const full = path.join(dir, e.name);
+            if (e.isDirectory()) return findDts(full);
+            return e.name.endsWith('.d.ts') ? [full] : [];
+          });
+        };
+        const dtsFiles = findDts(distDir);
+
+        // Helpful diagnostic if assertion below fails
+        if (dtsFiles.length === 0) {
+          console.error(
+            '[emit-declarations test] no .d.ts files found under',
+            distDir,
+          );
+          console.error(
+            '[emit-declarations test] dist contents:',
+            fileExists(distDir)
+              ? fs.readdirSync(distDir, { recursive: true })
+              : '(missing)',
+          );
+          console.error('[emit-declarations test] nest build output:', output);
+        }
+        expect(dtsFiles.length).toBeGreaterThan(0);
+      } finally {
+        // Restore the original tsconfigs so subsequent tests aren't affected
+        fs.writeFileSync(tsconfigJsonPath, originalTsconfigJson);
+        fs.writeFileSync(tsconfigBuildPath, originalTsconfigBuild);
+      }
+    });
+
+    it('should not emit .d.ts declaration files without --emit-declarations', () => {
+      cleanDist();
+
+      runNest('build --builder swc', appPath);
+
+      const distDir = path.join(appPath, 'dist');
+      expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+      // Without the flag, declaration files should NOT be present
+      expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(false);
     });
   });
 });
