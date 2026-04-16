@@ -167,6 +167,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -203,6 +204,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -233,6 +235,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -264,6 +267,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -296,6 +300,7 @@ describe('AssetsManager', () => {
       vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
@@ -323,6 +328,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce([
           { include: 'does-not-exist/**/*', watchAssets: true },
         ])
+        .mockReturnValueOnce([]) // includeLibraryAssets
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
