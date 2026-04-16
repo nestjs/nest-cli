@@ -49,6 +49,8 @@ export class GenerateCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option('--type <type>', 'Transport layer type (rest, graphql, microservice)')
+      .option('--crud [value]', 'Generate CRUD entry points')
       .action(
         async (
           schematic: string,
@@ -95,6 +97,18 @@ export class GenerateCommand extends AbstractCommand {
             name: 'skipImport',
             value: command.skipImport,
           });
+
+          options.push({
+            name: 'type',
+            value: command.type,
+          });
+
+          if (command.crud !== undefined) {
+            options.push({
+              name: 'crud',
+              value: command.crud === true || command.crud === 'true',
+            });
+          }
 
           const inputs: Input[] = [];
           inputs.push({ name: 'schematic', value: schematic });
