@@ -9,4 +9,5 @@ export interface GenerateCommandContext {
   collection?: string;
   project?: string;
   skipImport: boolean;
+  format: boolean;
 }

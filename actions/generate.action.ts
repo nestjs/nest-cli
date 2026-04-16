@@ -131,6 +131,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
   schematicOptions.push(
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
+  schematicOptions.push(new SchematicOption('format', context.format));
   try {
     if (!schematic) {
       throw new Error('Unable to find a schematic for this configuration');

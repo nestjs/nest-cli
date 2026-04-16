@@ -9,4 +9,5 @@ export interface NewCommandContext {
   language: string;
   collection: string;
   strict: boolean;
+  format: boolean;
 }
