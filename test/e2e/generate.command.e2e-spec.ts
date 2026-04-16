@@ -301,4 +301,24 @@ describe('Generate Command (e2e)', () => {
       ).toBe(true);
     });
   });
+
+  describe('format flag', () => {
+    it('should accept --format and still generate the file', () => {
+      runNest('generate controller fmt --format', appPath);
+
+      expect(
+        fileExists(path.join(appPath, 'src', 'fmt', 'fmt.controller.ts')),
+      ).toBe(true);
+    });
+
+    it('should default to format=false when the flag is omitted', () => {
+      runNest('generate controller fmt-default', appPath);
+
+      expect(
+        fileExists(
+          path.join(appPath, 'src', 'fmt-default', 'fmt-default.controller.ts'),
+        ),
+      ).toBe(true);
+    });
+  });
 });
