@@ -42,6 +42,46 @@ function createSpec(
   return output;
 }
 
+function createSpecWithDeclarations(
+  baseUrl: string,
+  fileNames: string[],
+  compilerOptions?: ts.CompilerOptions,
+) {
+  const options: ts.CompilerOptions = {
+    baseUrl,
+    outDir: path.join(baseUrl, 'dist'),
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.CommonJS,
+    declaration: true,
+    ...compilerOptions,
+  };
+
+  const program = ts.createProgram({
+    rootNames: fileNames.map((name) => path.join(baseUrl, name)),
+    options,
+  });
+  const output = new Map<string, string>();
+  const transformer = tsconfigPathsBeforeHookFactory(options);
+  program.emit(
+    undefined,
+    (fileName, data) => {
+      // Store with forward-slash keys so assertions work on Windows too.
+      const relativePath = path
+        .relative(baseUrl, fileName)
+        .split(path.sep)
+        .join('/');
+      output.set(relativePath, data);
+    },
+    undefined,
+    undefined,
+    {
+      before: transformer ? [transformer] : [],
+      afterDeclarations: transformer ? [transformer] : [],
+    },
+  );
+  return output;
+}
+
 describe('tsconfig paths hooks', () => {
   describe('CJS output (module: CommonJS)', () => {
     it('should remove type imports', () => {
@@ -139,6 +179,44 @@ describe('tsconfig paths hooks', () => {
       expect(mainJs).toContain('from "./baz"');
       expect(mainJs).toContain('from "./qux"');
       expect(mainJs).not.toContain('~/');
+    });
+  });
+
+  describe('declaration files (afterDeclarations)', () => {
+    it('should replace path aliases in emitted .d.ts files', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/aliased-dts-imports'),
+        ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
+
+      const dtsEntries = Array.from(output.entries()).filter(([key]) =>
+        key.endsWith('.d.ts'),
+      );
+      expect(dtsEntries.length).toBeGreaterThan(0);
+
+      const mainDts = output.get('dist/main.d.ts')!;
+      expect(mainDts).toBeDefined();
+      expect(mainDts).not.toContain('~/foo');
+      expect(mainDts).not.toContain('~/bar');
+      expect(mainDts).toContain('./foo');
+      expect(mainDts).toContain('./bar');
+    });
+
+    it('should not leave any path aliases in .d.ts files', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/aliased-dts-imports'),
+        ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
+
+      const dtsEntries = Array.from(output.entries()).filter(([key]) =>
+        key.endsWith('.d.ts'),
+      );
+
+      for (const [, content] of dtsEntries) {
+        expect(content).not.toMatch(/from\s+['"]~\//);
+      }
     });
   });
 });
