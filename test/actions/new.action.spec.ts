@@ -53,9 +53,10 @@ vi.mock('../../lib/runners/git.runner.js', () => {
   };
 });
 
-import { NewAction } from '../../actions/new.action.js';
+import { NewAction, retrieveCols } from '../../actions/new.action.js';
 import { NewCommandContext } from '../../commands/context/new.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
+import { execSync } from 'child_process';
 
 describe('NewAction', () => {
   let action: NewAction;
@@ -127,6 +128,66 @@ describe('NewAction', () => {
           opt.toCommandString().includes('skip-tests'),
       );
       expect(skipTestsOption).toBeUndefined();
+    });
+  });
+
+  describe('retrieveCols', () => {
+    const originalColumns = process.stdout.columns;
+
+    afterEach(() => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: originalColumns,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('should return process.stdout.columns when set to a positive number', () => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: 132,
+        configurable: true,
+        writable: true,
+      });
+
+      expect(retrieveCols()).toBe(132);
+      // tput should never be spawned when stdout.columns is usable.
+      expect(execSync).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to tput cols when stdout.columns is undefined', () => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+      vi.mocked(execSync).mockReturnValueOnce('120' as any);
+
+      expect(retrieveCols()).toBe(120);
+      expect(execSync).toHaveBeenCalledWith('tput cols', expect.any(Object));
+    });
+
+    it('should fall back to tput cols when stdout.columns is zero (not a TTY)', () => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: 0,
+        configurable: true,
+        writable: true,
+      });
+      vi.mocked(execSync).mockReturnValueOnce('100' as any);
+
+      expect(retrieveCols()).toBe(100);
+    });
+
+    it('should return default 80 when neither stdout.columns nor tput is usable', () => {
+      Object.defineProperty(process.stdout, 'columns', {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+      vi.mocked(execSync).mockImplementationOnce(() => {
+        throw new Error('tput: command not found');
+      });
+
+      expect(retrieveCols()).toBe(80);
     });
   });
 });
