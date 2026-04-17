@@ -147,6 +147,7 @@ export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
         );
         if (tsconfigPathsPlugin) {
           before.unshift(tsconfigPathsPlugin);
+          afterDeclarations.unshift(tsconfigPathsPlugin);
         }
 
         transforms.before = before.concat(transforms.before || []);

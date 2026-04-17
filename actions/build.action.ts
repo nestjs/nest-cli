@@ -310,7 +310,7 @@ export class BuildAction extends AbstractAction {
         undefined,
         onSuccess,
       );
-      this.assetsManager.closeWatchers();
+      await this.assetsManager.closeWatchers();
     }
   }
 

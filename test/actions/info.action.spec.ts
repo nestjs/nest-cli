@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InfoAction } from '../../actions/info.action.js';
 
 vi.mock('fs', () => ({
@@ -23,15 +23,12 @@ describe('InfoAction', () => {
 
   describe('displaySystemInformation', () => {
     it('should include a space between the OS name and release version', async () => {
-      const consoleSpy = vi
-        .spyOn(console, 'info')
-        .mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
       await infoAction.handle();
 
       const osVersionCall = consoleSpy.mock.calls.find(
-        (call) =>
-          typeof call[0] === 'string' && call[0].includes('OS Version'),
+        (call) => typeof call[0] === 'string' && call[0].includes('OS Version'),
       );
       expect(osVersionCall).toBeDefined();
       // The second argument (blue-colored string) should have a space

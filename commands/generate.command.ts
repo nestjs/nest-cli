@@ -44,6 +44,7 @@ export class GenerateCommand extends AbstractCommand {
         'Use a custom suffix for spec files.',
       )
       .option('--skip-import', 'Skip importing', () => true, false)
+      .option('--format', 'Format generated files using Prettier.', false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
       })
@@ -51,6 +52,11 @@ export class GenerateCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option(
+        '--type <type>',
+        'Transport layer type (rest, graphql, microservice)',
+      )
+      .option('--crud [value]', 'Generate CRUD entry points')
       .action(
         async (
           schematic: string,
@@ -69,6 +75,9 @@ export class GenerateCommand extends AbstractCommand {
             collection: options.collection,
             project: options.project,
             skipImport: options.skipImport,
+            format: options.format === true,
+            type: options.type,
+            crud: options.crud === true ? true : undefined,
           };
 
           await this.action.handle(context);

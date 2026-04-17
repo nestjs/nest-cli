@@ -5,10 +5,9 @@ import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
 import { createRequire } from 'module';
 import * as path from 'path';
-import { isAbsolute, join } from 'path';
+import { dirname, isAbsolute, join } from 'path';
 import * as ts from 'typescript';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { Configuration } from '../../configuration/index.js';
 import { ERROR_PREFIX } from '../../ui/index.js';
 import { treeKillSync } from '../../utils/tree-kill.js';
@@ -91,7 +90,7 @@ export class SwcCompiler extends BaseCompiler {
         onSuccess();
       }
 
-      extras.assetsManager?.closeWatchers();
+      await extras.assetsManager?.closeWatchers();
     }
   }
 
@@ -100,17 +99,16 @@ export class SwcCompiler extends BaseCompiler {
       console.log(SWC_LOG_PREFIX, cyan('Emitting declaration files...')),
     );
 
-    const tscPath = join(
-      process.cwd(),
-      'node_modules',
-      '.bin',
-      'tsc',
+    const tscPath = join(process.cwd(), 'node_modules', '.bin', 'tsc');
+    const result = spawnSync(
+      tscPath,
+      ['--emitDeclarationOnly', '-p', tsConfigPath],
+      {
+        cwd: process.cwd(),
+        stdio: 'inherit',
+        shell: true,
+      },
     );
-    const result = spawnSync(tscPath, ['--emitDeclarationOnly', '-p', tsConfigPath], {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-      shell: true,
-    });
 
     if (result.status !== 0) {
       console.error(
@@ -329,11 +327,11 @@ export class SwcCompiler extends BaseCompiler {
       // or any other specified directory
       return;
     }
-    const extensions = options.cliOptions?.extensions ?? ['ts'];
+    const extensions = options.cliOptions?.extensions ?? ['.ts'];
     const watcher = chokidar.watch(srcDir, {
       ignored: (file, stats) =>
         (stats?.isFile() &&
-          !extensions.includes(path.extname(file).slice(1))) as boolean,
+          !extensions.some((ext) => file.endsWith(ext))) as boolean,
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: 50,

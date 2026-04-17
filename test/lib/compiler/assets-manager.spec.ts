@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events';
 import * as chokidar from 'chokidar';
-import { copyFileSync, statSync } from 'fs';
+import { EventEmitter } from 'events';
+import { copyFileSync, statSync} from 'fs';
 import { sync as globSync } from 'glob';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssetsManager } from '../../../lib/compiler/assets-manager.js';
 import { getValueOrDefault } from '../../../lib/compiler/helpers/get-value-or-default.js';
 
@@ -51,12 +51,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src') // sourceRoot
         .mockReturnValueOnce(false); // compilerOptions.watchAssets
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
       // Call closeWatchers before watcher is ready
       assetsManager.closeWatchers();
@@ -86,12 +81,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
       // Emit ready before calling closeWatchers
       mockWatcher.emit('ready');
@@ -122,12 +112,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
       assetsManager.closeWatchers();
 
@@ -171,13 +156,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-        onSuccess,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
 
       // Simulate initial add (before ready) - should NOT call onSuccess
       mockWatcher.emit('add', '/src/file.hbs');
@@ -208,13 +187,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-        onSuccess,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
 
       mockWatcher.emit('ready');
 
@@ -239,13 +212,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-        onSuccess,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
 
       mockWatcher.emit('add', '/src/file.hbs');
       mockWatcher.emit('ready');
@@ -271,13 +238,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce('src')
         .mockReturnValueOnce(false);
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-        onSuccess,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
 
       mockWatcher.emit('ready');
 
@@ -305,12 +266,7 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce(false);
 
       // No onSuccess provided
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
       mockWatcher.emit('ready');
 
@@ -370,12 +326,7 @@ describe('AssetsManager', () => {
         addedFiles.push('copied');
       });
 
-      assetsManager.copyAssets(
-        {} as any,
-        undefined,
-        'dist',
-        false,
-      );
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
       // Request close before any add events
       assetsManager.closeWatchers();

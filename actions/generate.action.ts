@@ -131,6 +131,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
   schematicOptions.push(
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
+  schematicOptions.push(new SchematicOption('format', context.format));
   try {
     if (!schematic) {
       throw new Error('Unable to find a schematic for this configuration');
@@ -160,6 +161,10 @@ const mapContextToSchematicOptions = (
     options.push(new SchematicOption('project', context.project));
   if (context.skipImport !== undefined)
     options.push(new SchematicOption('skipImport', context.skipImport));
+  if (context.type !== undefined)
+    options.push(new SchematicOption('type', context.type));
+  if (context.crud === true)
+    options.push(new SchematicOption('crud', true));
   // 'schematic', 'spec', 'flat', 'specFileSuffix' are handled separately
   return options;
 };
