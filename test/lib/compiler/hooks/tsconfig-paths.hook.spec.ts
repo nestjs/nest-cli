@@ -41,6 +41,7 @@ function createSpec(
   );
   return output;
 }
+
 function createSpecWithDeclarations(
   baseUrl: string,
   fileNames: string[],
@@ -64,7 +65,12 @@ function createSpecWithDeclarations(
   program.emit(
     undefined,
     (fileName, data) => {
-      output.set(path.relative(baseUrl, fileName), data);
+      // Store with forward-slash keys so assertions work on Windows too.
+      const relativePath = path
+        .relative(baseUrl, fileName)
+        .split(path.sep)
+        .join('/');
+      output.set(relativePath, data);
     },
     undefined,
     undefined,
@@ -77,11 +83,7 @@ function createSpecWithDeclarations(
 }
 
 describe('tsconfig paths hooks', () => {
-  /**
-   * This test is temporarily skipped because it's flaky on CI.
-   * Not yet clear why but it's not a blocker.
-   */
-  describe.skip('CJS output (module: CommonJS)', () => {
+  describe('CJS output (module: CommonJS)', () => {
     it('should remove type imports', () => {
       const output = createSpec(
         path.join(__dirname, './fixtures/type-imports'),
@@ -126,13 +128,9 @@ describe('tsconfig paths hooks', () => {
       expect(mainJs).toContain('require("./qux")');
       expect(mainJs).not.toContain('~/');
     });
-  });
+  }, 15000);
 
-  /**
-   * This test is temporarily skipped because it's flaky on CI.
-   * Not yet clear why but it's not a blocker.
-   */
-  describe.skip('ESM output (module: ESNext)', () => {
+  describe('ESM output (module: ESNext)', () => {
     const esmOptions: ts.CompilerOptions = {
       module: ts.ModuleKind.ESNext,
     };
@@ -182,47 +180,43 @@ describe('tsconfig paths hooks', () => {
       expect(mainJs).toContain('from "./qux"');
       expect(mainJs).not.toContain('~/');
     });
-  });
-});
+  }, 15000);
 
-describe.skip('tsconfig paths hooks - declaration files', () => {
-  it('should replace path aliases in .d.ts files when transformer is applied to afterDeclarations', () => {
-    const output = createSpecWithDeclarations(
-      path.join(__dirname, './fixtures/aliased-dts-imports'),
-      ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
-      { paths: { '~/*': ['./src/*'] } },
-    );
+  describe('declaration files (afterDeclarations)', () => {
+    it('should replace path aliases in emitted .d.ts files', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/aliased-dts-imports'),
+        ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
 
-    const dtsFiles = Array.from(output.entries()).filter(([key]) =>
-      key.endsWith('.d.ts'),
-    );
-    expect(dtsFiles.length).toBeGreaterThan(0);
+      const dtsEntries = Array.from(output.entries()).filter(([key]) =>
+        key.endsWith('.d.ts'),
+      );
+      expect(dtsEntries.length).toBeGreaterThan(0);
 
-    const mainDtsKey = Array.from(output.keys()).find(
-      (key) => key.includes('main') && key.endsWith('.d.ts'),
-    );
-    expect(mainDtsKey).toBeDefined();
-    const mainDts = output.get(mainDtsKey!);
-    // The alias '~/foo' and '~/bar' should be replaced with relative paths
-    expect(mainDts).not.toContain('~/foo');
-    expect(mainDts).not.toContain('~/bar');
-    expect(mainDts).toContain('./foo');
-    expect(mainDts).toContain('./bar');
-  });
+      const mainDts = output.get('dist/main.d.ts')!;
+      expect(mainDts).toBeDefined();
+      expect(mainDts).not.toContain('~/foo');
+      expect(mainDts).not.toContain('~/bar');
+      expect(mainDts).toContain('./foo');
+      expect(mainDts).toContain('./bar');
+    });
 
-  it('should not leave any path aliases in .d.ts files', () => {
-    const output = createSpecWithDeclarations(
-      path.join(__dirname, './fixtures/aliased-dts-imports'),
-      ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
-      { paths: { '~/*': ['./src/*'] } },
-    );
+    it('should not leave any path aliases in .d.ts files', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/aliased-dts-imports'),
+        ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
 
-    const dtsFiles = Array.from(output.entries()).filter(([key]) =>
-      key.endsWith('.d.ts'),
-    );
+      const dtsEntries = Array.from(output.entries()).filter(([key]) =>
+        key.endsWith('.d.ts'),
+      );
 
-    for (const [, content] of dtsFiles) {
-      expect(content).not.toMatch(/from\s+['"]~\//);
-    }
-  });
+      for (const [, content] of dtsEntries) {
+        expect(content).not.toMatch(/from\s+['"]~\//);
+      }
+    });
+  }, 15000);
 });
