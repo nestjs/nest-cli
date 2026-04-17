@@ -43,7 +43,20 @@ export class AssetsManager {
         appName,
       ) || [];
 
-    if (assets.length <= 0) {
+    const includeLibraryAssets =
+      getValueOrDefault<string[]>(
+        configuration,
+        'compilerOptions.includeLibraryAssets',
+        appName,
+      ) || [];
+
+    const libraryAssets = this.collectLibraryAssets(
+      configuration,
+      includeLibraryAssets,
+      outDir,
+    );
+
+    if (assets.length <= 0 && libraryAssets.length <= 0) {
       return;
     }
 
@@ -70,6 +83,8 @@ export class AssetsManager {
         };
       });
 
+      const allFilesToCopy = [...filesToCopy, ...libraryAssets];
+
       const isWatchEnabled =
         getValueOrDefault<boolean>(
           configuration,
@@ -93,12 +108,13 @@ export class AssetsManager {
         };
       }
 
-      for (const item of filesToCopy) {
+      for (const item of allFilesToCopy) {
+        const itemSourceRoot = (item as any)._sourceRoot || sourceRoot;
         const option: ActionOnFile = {
           action: 'change',
           item,
           path: '',
-          sourceRoot,
+          sourceRoot: itemSourceRoot,
           watchAssetsMode: isWatchEnabled,
         };
 
@@ -178,6 +194,61 @@ export class AssetsManager {
         { cause: err },
       );
     }
+  }
+
+  private collectLibraryAssets(
+    configuration: Required<Configuration>,
+    libraryNames: string[],
+    outDir: string,
+  ): AssetEntry[] {
+    if (!libraryNames.length || !configuration.projects) {
+      return [];
+    }
+
+    const result: AssetEntry[] = [];
+
+    for (const libName of libraryNames) {
+      const libProject = configuration.projects[libName];
+      if (!libProject) {
+        continue;
+      }
+
+      const libAssets = libProject.compilerOptions?.assets as
+        | Asset[]
+        | undefined;
+      if (!libAssets || libAssets.length <= 0) {
+        continue;
+      }
+
+      const libSourceRoot = join(
+        process.cwd(),
+        libProject.sourceRoot || libProject.root || '',
+      );
+
+      for (const item of libAssets) {
+        let includePath = typeof item === 'string' ? item : item.include!;
+        let excludePath =
+          typeof item !== 'string' && item.exclude ? item.exclude : undefined;
+
+        includePath = join(libSourceRoot, includePath).replace(/\\/g, '/');
+        excludePath = excludePath
+          ? join(libSourceRoot, excludePath).replace(/\\/g, '/')
+          : undefined;
+
+        const entry: AssetEntry & { _sourceRoot?: string } = {
+          outDir: typeof item !== 'string' ? item.outDir || outDir : outDir,
+          glob: includePath,
+          exclude: excludePath,
+          flat: typeof item !== 'string' ? item.flat : undefined,
+          watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
+          _sourceRoot: libSourceRoot,
+        };
+
+        result.push(entry);
+      }
+    }
+
+    return result;
   }
 
   private actionOnFile(option: ActionOnFile) {
