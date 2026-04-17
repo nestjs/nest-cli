@@ -69,6 +69,7 @@ export class StartAction extends BuildAction {
         {
           shell: useShell,
           envFile,
+          watch: isWatchEnabled,
         },
       );
 
@@ -98,6 +99,7 @@ export class StartAction extends BuildAction {
     options: {
       shell: boolean;
       envFile?: string[];
+      watch?: boolean;
     },
   ) {
     let childProcessRef: ChildProcess | undefined;
@@ -105,16 +107,6 @@ export class StartAction extends BuildAction {
       'exit',
       () => childProcessRef && killProcessSync(childProcessRef.pid!),
     );
-
-    const signalHandler = (signal: NodeJS.Signals) => {
-      if (childProcessRef) {
-        childProcessRef.kill(signal);
-      } else {
-        process.exit();
-      }
-    };
-    process.on('SIGINT', signalHandler);
-    process.on('SIGTERM', signalHandler);
 
     return () => {
       if (childProcessRef) {

@@ -53,10 +53,10 @@ export class GenerateCommand extends AbstractCommand {
         'Schematics collection to use.',
       )
       .option(
-        '--type [type]',
-        'Transport layer type (rest, graphql-code-first, graphql-schema-first, microservice, ws).',
+        '--type <type>',
+        'Transport layer type (rest, graphql, microservice)',
       )
-      .option('--crud', 'Generate CRUD entry points for a resource.')
+      .option('--crud [value]', 'Generate CRUD entry points')
       .action(
         async (
           schematic: string,
