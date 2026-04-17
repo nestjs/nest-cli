@@ -42,6 +42,7 @@ export class AssetsManager {
     appName: string | undefined,
     outDir: string,
     watchAssetsMode: boolean,
+    rootDir?: string,
   ) {
     const assets =
       getValueOrDefault<Asset[]>(
@@ -57,6 +58,13 @@ export class AssetsManager {
     try {
       let sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
       sourceRoot = join(process.cwd(), sourceRoot);
+
+      // The asset path stripping must mirror how the TypeScript compiler emits
+      // files. When `--path` (or any other tsconfig override) results in a
+      // rootDir that differs from the configured `sourceRoot`, we use that
+      // rootDir instead so that copied assets stay aligned with the emitted
+      // JavaScript output. See https://github.com/nestjs/nest-cli/issues/3387.
+      const stripRoot = rootDir ? join(rootDir) : sourceRoot;
 
       const filesToCopy = assets.map<AssetEntry>((item) => {
         let includePath = typeof item === 'string' ? item : item.include!;
@@ -89,7 +97,7 @@ export class AssetsManager {
           action: 'change',
           item,
           path: '',
-          sourceRoot,
+          sourceRoot: stripRoot,
           watchAssetsMode: isWatchEnabled,
         };
 

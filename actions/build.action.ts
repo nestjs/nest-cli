@@ -5,6 +5,7 @@ import { Input } from '../commands';
 import { AssetsManager } from '../lib/compiler/assets-manager';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
 import { getBuilder } from '../lib/compiler/helpers/get-builder';
+import { getEffectiveRootDir } from '../lib/compiler/helpers/get-effective-root-dir';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
 import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path';
@@ -105,9 +106,10 @@ export class BuildAction extends AbstractAction {
         commandOptions,
         appName,
       );
-      const { options: tsOptions } =
+      const { options: tsOptions, fileNames: tsFileNames } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
+      const tsRootDir = getEffectiveRootDir(tsOptions.rootDir, tsFileNames);
 
       const isWebpackEnabled = getValueOrDefault<boolean>(
         configuration,
@@ -126,6 +128,7 @@ export class BuildAction extends AbstractAction {
         appName,
         outDir,
         watchAssetsMode,
+        tsRootDir,
       );
 
       const typeCheck = getValueOrDefault<boolean>(
