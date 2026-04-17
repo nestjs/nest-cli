@@ -35,6 +35,7 @@ export class BuildCommand extends AbstractCommand {
       )
       .option('--silent', 'Suppress informational compiler logs.')
       .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .option('--rspackPath [path]', 'Path to rspack configuration.')
       .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
         '--preserveWatchOutput',
@@ -68,6 +69,7 @@ export class BuildCommand extends AbstractCommand {
           watchAssets: !!options.watchAssets,
           path: options.path,
           webpackPath: options.webpackPath,
+          rspackPath: options.rspackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
           emitDeclarations: !!options.emitDeclarations,

@@ -30,6 +30,7 @@ export class StartCommand extends AbstractCommand {
         'Use webpack for compilation (deprecated option, use --builder instead).',
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
+      .option('--rspackPath [path]', 'Path to rspack configuration.')
       .option(
         '--type-check',
         'Enable type checking (when SWC is used).',
@@ -94,6 +95,7 @@ export class StartCommand extends AbstractCommand {
           watchAssets: !!options.watchAssets,
           path: options.path,
           webpackPath: options.webpackPath,
+          rspackPath: options.rspackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
           emitDeclarations: !!options.emitDeclarations,

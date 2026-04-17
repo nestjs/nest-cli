@@ -3,6 +3,7 @@ import { BuildAction } from '../../actions/build.action.js';
 import { Configuration } from '../../lib/configuration/index.js';
 import { RspackCompiler } from '../../lib/compiler/rspack-compiler.js';
 import { WebpackCompiler } from '../../lib/compiler/webpack-compiler.js';
+import { getRspackConfigPath } from '../../lib/compiler/helpers/get-rspack-config-path.js';
 
 vi.mock('../../lib/compiler/rspack-compiler.js', () => ({
   RspackCompiler: vi.fn().mockImplementation(function () {
@@ -111,6 +112,25 @@ describe('BuildAction - Rspack', () => {
       );
 
       expect(RspackCompiler).toHaveBeenCalled();
+    });
+
+    it('should forward rspackPath option to getRspackConfigPath helper', async () => {
+      // Return undefined so runRspack falls back to the default config filename
+      // and the (mocked) is-module-available short-circuits the require call.
+      vi.mocked(getRspackConfigPath).mockReturnValue(undefined);
+
+      await buildAction.runBuild(
+        [undefined],
+        { builder: 'rspack', rspackPath: 'custom.rspack.config.js' },
+        false,
+        false,
+      );
+
+      expect(getRspackConfigPath).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ rspackPath: 'custom.rspack.config.js' }),
+        undefined,
+      );
     });
 
     it('should not use rspack compiler when builder type is webpack', async () => {
