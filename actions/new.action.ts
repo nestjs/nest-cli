@@ -201,6 +201,13 @@ const print =
 
 export const retrieveCols = () => {
   const defaultCols = 80;
+  // Prefer process.stdout.columns: it works on every platform (including
+  // Windows, where `tput` is not available by default) and reflects the
+  // actual terminal size instead of always falling back to the default.
+  const stdoutCols = process.stdout.columns;
+  if (typeof stdoutCols === 'number' && stdoutCols > 0) {
+    return stdoutCols;
+  }
   try {
     const terminalCols = execSync('tput cols', {
       stdio: ['pipe', 'pipe', 'ignore'],
