@@ -10,4 +10,6 @@ export interface GenerateCommandContext {
   project?: string;
   skipImport: boolean;
   format: boolean;
+  type?: string;
+  crud?: boolean;
 }
