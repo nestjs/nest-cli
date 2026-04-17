@@ -31,7 +31,13 @@ function createSpec(
   program.emit(
     undefined,
     (fileName, data) => {
-      output.set(path.relative(baseUrl, fileName), data);
+      // Normalize path separators so assertions using forward slashes
+      // also pass on Windows where TypeScript emits paths with backslashes.
+      const relativePath = path
+        .relative(baseUrl, fileName)
+        .split(path.sep)
+        .join('/');
+      output.set(relativePath, data);
     },
     undefined,
     undefined,
