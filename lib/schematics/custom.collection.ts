@@ -1,6 +1,6 @@
-import { NodeWorkflow } from '@angular-devkit/schematics/tools';
-import { AbstractCollection } from './abstract.collection';
-import { Schematic } from './nest.collection';
+import { NodeWorkflow } from '@angular-devkit/schematics/tools/index.js';
+import { AbstractCollection } from './abstract.collection.js';
+import { Schematic } from './nest.collection.js';
 
 export interface CollectionSchematic {
   schema: string;

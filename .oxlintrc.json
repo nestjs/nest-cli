@@ -1,0 +1,9 @@
+{
+  "ignorePatterns": ["**/*.js", "**/*.d.ts", "node_modules/", "dist/", "test/"],
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ]
+  }
+}

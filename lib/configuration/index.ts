@@ -1,3 +1,3 @@
-export * from './configuration.loader';
-export * from './nest-configuration.loader';
-export * from './configuration';
+export * from './configuration.loader.js';
+export * from './nest-configuration.loader.js';
+export * from './configuration.js';

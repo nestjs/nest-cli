@@ -1,15 +1,15 @@
 import { red } from 'ansis';
 import * as path from 'path';
-import { Input } from '../commands';
-import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
+import { GenerateCommandContext } from '../commands/index.js';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import {
   AbstractCollection,
   Collection,
   CollectionFactory,
   SchematicOption,
-} from '../lib/schematics';
-import { MESSAGES } from '../lib/ui';
-import { loadConfiguration } from '../lib/utils/load-configuration';
+} from '../lib/schematics/index.js';
+import { MESSAGES } from '../lib/ui/index.js';
+import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
   getSpecFileSuffix,
@@ -17,35 +17,28 @@ import {
   shouldAskForProject,
   shouldGenerateFlat,
   shouldGenerateSpec,
-} from '../lib/utils/project-utils';
-import { AbstractAction } from './abstract.action';
-import { assertNonArray } from '../lib/utils/type-assertions';
+} from '../lib/utils/project-utils.js';
+import { AbstractAction } from './abstract.action.js';
 
 export class GenerateAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[]) {
-    await generateFiles(inputs.concat(options));
+  public async handle(context: GenerateCommandContext) {
+    await generateFiles(context);
   }
 }
 
-const generateFiles = async (inputs: Input[]) => {
+const generateFiles = async (context: GenerateCommandContext) => {
   const configuration = await loadConfiguration();
-  const collectionOption = inputs.find(
-    (option) => option.name === 'collection',
-  )!.value as string;
-  const schematic = inputs.find((option) => option.name === 'schematic')!
-    .value as string;
-  const appName = inputs.find((option) => option.name === 'project')!
-    .value as string;
-  const spec = inputs.find((option) => option.name === 'spec');
-  const flat = inputs.find((option) => option.name === 'flat');
-  const specFileSuffix = inputs.find(
-    (option) => option.name === 'specFileSuffix',
-  );
+  const collectionOption = context.collection;
+  const schematic = context.schematic;
+  const appName = context.project ?? '';
+  const specFileSuffix = context.specFileSuffix;
 
   const collection: AbstractCollection = CollectionFactory.create(
     collectionOption || configuration.collection || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(inputs);
+
+  const schematicOptions: SchematicOption[] =
+    mapContextToSchematicOptions(context);
   schematicOptions.push(
     new SchematicOption('language', configuration.language),
   );
@@ -55,16 +48,18 @@ const generateFiles = async (inputs: Input[]) => {
     ? getValueOrDefault(configuration, 'sourceRoot', appName)
     : configuration.sourceRoot;
 
-  const specValue = spec!.value as boolean;
-  const flatValue = !!flat?.value;
-  const specFileSuffixValue = specFileSuffix!.value as string;
-  const specOptions = spec!.options as any;
+  const specValue =
+    typeof context.spec === 'boolean' ? context.spec : context.spec.value;
+  const specPassedAsInput =
+    typeof context.spec === 'boolean' ? false : context.spec.passedAsInput;
+  const flatValue = context.flat !== undefined ? !!context.flat : false;
+  const specFileSuffixValue = specFileSuffix as string;
   let generateSpec = shouldGenerateSpec(
     configuration,
     schematic,
     appName,
     specValue,
-    specOptions.passedAsInput,
+    specPassedAsInput,
   );
   let generateFlat = shouldGenerateFlat(configuration, appName, flatValue);
   let generateSpecFileSuffix = getSpecFileSuffix(
@@ -111,7 +106,7 @@ const generateFiles = async (inputs: Input[]) => {
         schematic,
         selectedProjectName,
         specValue,
-        specOptions.passedAsInput,
+        specPassedAsInput,
       );
       generateFlat = shouldGenerateFlat(
         configuration,
@@ -120,7 +115,7 @@ const generateFiles = async (inputs: Input[]) => {
       );
       generateSpecFileSuffix = getSpecFileSuffix(
         configuration,
-        appName,
+        selectedProjectName,
         specFileSuffixValue,
       );
     }
@@ -136,12 +131,12 @@ const generateFiles = async (inputs: Input[]) => {
   schematicOptions.push(
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
+  schematicOptions.push(new SchematicOption('format', context.format));
   try {
-    const schematicInput = inputs.find((input) => input.name === 'schematic');
-    if (!schematicInput) {
+    if (!schematic) {
       throw new Error('Unable to find a schematic for this configuration');
     }
-    await collection.execute(schematicInput.value as string, schematicOptions);
+    await collection.execute(schematic, schematicOptions);
   } catch (error) {
     if (error && error.message) {
       console.error(red(error.message));
@@ -149,14 +144,27 @@ const generateFiles = async (inputs: Input[]) => {
   }
 };
 
-const mapSchematicOptions = (inputs: Input[]): SchematicOption[] => {
-  const excludedInputNames = ['schematic', 'spec', 'flat', 'specFileSuffix'];
+const mapContextToSchematicOptions = (
+  context: GenerateCommandContext,
+): SchematicOption[] => {
   const options: SchematicOption[] = [];
-  inputs.forEach((input) => {
-    if (!excludedInputNames.includes(input.name) && input.value !== undefined) {
-      assertNonArray(input.value);
-      options.push(new SchematicOption(input.name, input.value));
-    }
-  });
+  // Only include fields that schematics expect; exclude those handled separately
+  if (context.name !== undefined)
+    options.push(new SchematicOption('name', context.name));
+  if (context.path !== undefined)
+    options.push(new SchematicOption('path', context.path));
+  if (context.dryRun)
+    options.push(new SchematicOption('dry-run', true));
+  if (context.collection !== undefined)
+    options.push(new SchematicOption('collection', context.collection));
+  if (context.project !== undefined)
+    options.push(new SchematicOption('project', context.project));
+  if (context.skipImport !== undefined)
+    options.push(new SchematicOption('skipImport', context.skipImport));
+  if (context.type !== undefined)
+    options.push(new SchematicOption('type', context.type));
+  if (context.crud === true)
+    options.push(new SchematicOption('crud', true));
+  // 'schematic', 'spec', 'flat', 'specFileSuffix' are handled separately
   return options;
 };

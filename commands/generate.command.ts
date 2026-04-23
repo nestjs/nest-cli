@@ -1,14 +1,17 @@
 import { bold, cyan, green } from 'ansis';
-import * as Table from 'cli-table3';
-import { Command, CommanderStatic } from 'commander';
-import { AbstractCollection, CollectionFactory } from '../lib/schematics';
-import { Schematic } from '../lib/schematics/nest.collection';
-import { loadConfiguration } from '../lib/utils/load-configuration';
-import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import Table from 'cli-table3';
+import { Command } from 'commander';
+import {
+  AbstractCollection,
+  CollectionFactory,
+} from '../lib/schematics/index.js';
+import { Schematic } from '../lib/schematics/nest.collection.js';
+import { loadConfiguration } from '../lib/utils/load-configuration.js';
+import { AbstractCommand } from './abstract.command.js';
+import { GenerateCommandContext } from './context/index.js';
 
 export class GenerateCommand extends AbstractCommand {
-  public async load(program: CommanderStatic): Promise<void> {
+  public async load(program: Command): Promise<void> {
     program
       .command('generate <schematic> [name] [path]')
       .alias('g')
@@ -34,13 +37,14 @@ export class GenerateCommand extends AbstractCommand {
         () => {
           return { value: true, passedAsInput: true };
         },
-        true,
+        { value: true, passedAsInput: false },
       )
       .option(
         '--spec-file-suffix [suffix]',
         'Use a custom suffix for spec files.',
       )
       .option('--skip-import', 'Skip importing', () => true, false)
+      .option('--format', 'Format generated files using Prettier.', false)
       .option('--no-spec', 'Disable spec files generation.', () => {
         return { value: false, passedAsInput: true };
       })
@@ -48,57 +52,35 @@ export class GenerateCommand extends AbstractCommand {
         '-c, --collection [collectionName]',
         'Schematics collection to use.',
       )
+      .option(
+        '--type <type>',
+        'Transport layer type (rest, graphql, microservice)',
+      )
+      .option('--crud [value]', 'Generate CRUD entry points')
       .action(
         async (
           schematic: string,
           name: string,
           path: string,
-          command: Command,
+          options: Record<string, any>,
         ) => {
-          const options: Input[] = [];
-          options.push({ name: 'dry-run', value: !!command.dryRun });
+          const context: GenerateCommandContext = {
+            schematic,
+            name,
+            path,
+            dryRun: !!options.dryRun,
+            flat: options.flat,
+            spec: options.spec,
+            specFileSuffix: options.specFileSuffix,
+            collection: options.collection,
+            project: options.project,
+            skipImport: options.skipImport,
+            format: options.format === true,
+            type: options.type,
+            crud: options.crud === true ? true : undefined,
+          };
 
-          if (command.flat !== undefined) {
-            options.push({ name: 'flat', value: command.flat });
-          }
-
-          options.push({
-            name: 'spec',
-            value:
-              typeof command.spec === 'boolean'
-                ? command.spec
-                : command.spec.value,
-            options: {
-              passedAsInput:
-                typeof command.spec === 'boolean'
-                  ? false
-                  : command.spec.passedAsInput,
-            },
-          });
-          options.push({
-            name: 'specFileSuffix',
-            value: command.specFileSuffix,
-          });
-          options.push({
-            name: 'collection',
-            value: command.collection,
-          });
-          options.push({
-            name: 'project',
-            value: command.project,
-          });
-
-          options.push({
-            name: 'skipImport',
-            value: command.skipImport,
-          });
-
-          const inputs: Input[] = [];
-          inputs.push({ name: 'schematic', value: schematic });
-          inputs.push({ name: 'name', value: name });
-          inputs.push({ name: 'path', value: path });
-
-          await this.action.handle(inputs, options);
+          await this.action.handle(context);
         },
       );
   }
@@ -126,7 +108,7 @@ export class GenerateCommand extends AbstractCommand {
         'right-mid': '',
       },
     };
-    const table: any = new Table(tableConfig);
+    const table = new Table(tableConfig);
     for (const schematic of schematics) {
       table.push([
         green(schematic.name),

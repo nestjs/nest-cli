@@ -1,5 +1,5 @@
 import { green } from 'ansis';
-import { EMOJIS } from './emojis';
+import { EMOJIS } from './emojis.js';
 
 export const MESSAGES = {
   PROJECT_NAME_QUESTION: 'What name would you like to use for the new project?',

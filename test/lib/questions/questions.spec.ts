@@ -1,19 +1,18 @@
-import { Question } from 'inquirer';
-import { Input } from '../../../commands/command.input';
+import { describe, it, expect } from 'vitest';
 import {
   generateInput,
   generateSelect,
-} from '../../../lib/questions/questions';
+} from '../../../lib/questions/questions.js';
 
 describe('Questions', () => {
   describe('generateInput', () => {
     it('should return an input question', () => {
-      const input: Input = {
+      const input = {
         name: 'name',
         value: 'test',
       };
       const message = 'name:';
-      const question: Question = generateInput(input.name, message)('name');
+      const question = generateInput(input.name, message)('name');
       expect(question).toEqual({
         name: 'name',
         message,

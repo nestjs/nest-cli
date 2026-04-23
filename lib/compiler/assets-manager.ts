@@ -7,34 +7,26 @@ import {
   Asset,
   AssetEntry,
   Configuration,
-} from '../configuration';
-import { copyPathResolve } from './helpers/copy-path-resolve';
-import { getValueOrDefault } from './helpers/get-value-or-default';
+} from '../configuration/index.js';
+import { copyPathResolve } from './helpers/copy-path-resolve.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
+
+const ASSET_CHANGE_RESTART_DEBOUNCE_MS = 150;
 
 export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
-  private actionInProgress = false;
+  private watcherReadyPromises: Promise<void>[] = [];
 
   /**
-   * Using on `nest build` to close file watch or the build process will not end
-   * Interval like process
-   * If no action has been taken recently close watchers
-   * If action has been taken recently flag and try again
+   * Using on `nest build` to close file watch or the build process will not end.
+   * Waits for all watchers to complete their initial scan before closing them,
+   * ensuring all assets are copied regardless of system speed.
    */
   public closeWatchers() {
-    // Consider adjusting this for larger files
-    const timeoutMs = 500;
-    const closeFn = () => {
-      if (this.actionInProgress) {
-        this.actionInProgress = false;
-        setTimeout(closeFn, timeoutMs);
-      } else {
-        this.watchers.forEach((watcher) => watcher.close());
-      }
-    };
-
-    setTimeout(closeFn, timeoutMs);
+    Promise.all(this.watcherReadyPromises).then(() => {
+      this.watchers.forEach((watcher) => watcher.close());
+    });
   }
 
   public copyAssets(
@@ -42,6 +34,7 @@ export class AssetsManager {
     appName: string | undefined,
     outDir: string,
     watchAssetsMode: boolean,
+    onSuccess?: () => void,
   ) {
     const assets =
       getValueOrDefault<Asset[]>(
@@ -50,7 +43,20 @@ export class AssetsManager {
         appName,
       ) || [];
 
-    if (assets.length <= 0) {
+    const includeLibraryAssets =
+      getValueOrDefault<string[]>(
+        configuration,
+        'compilerOptions.includeLibraryAssets',
+        appName,
+      ) || [];
+
+    const libraryAssets = this.collectLibraryAssets(
+      configuration,
+      includeLibraryAssets,
+      outDir,
+    );
+
+    if (assets.length <= 0 && libraryAssets.length <= 0) {
       return;
     }
 
@@ -77,6 +83,8 @@ export class AssetsManager {
         };
       });
 
+      const allFilesToCopy = [...filesToCopy, ...libraryAssets];
+
       const isWatchEnabled =
         getValueOrDefault<boolean>(
           configuration,
@@ -84,27 +92,81 @@ export class AssetsManager {
           appName,
         ) || watchAssetsMode;
 
-      for (const item of filesToCopy) {
+      // Debounce onSuccess so that a burst of asset changes (e.g. a git
+      // checkout touching many files at once) only triggers a single restart.
+      let debouncedOnSuccess: (() => void) | undefined;
+      if (onSuccess) {
+        let pending: NodeJS.Timeout | undefined;
+        debouncedOnSuccess = () => {
+          if (pending) {
+            clearTimeout(pending);
+          }
+          pending = setTimeout(() => {
+            pending = undefined;
+            onSuccess();
+          }, ASSET_CHANGE_RESTART_DEBOUNCE_MS);
+        };
+      }
+
+      for (const item of allFilesToCopy) {
+        const itemSourceRoot = (item as any)._sourceRoot || sourceRoot;
         const option: ActionOnFile = {
           action: 'change',
           item,
           path: '',
-          sourceRoot,
+          sourceRoot: itemSourceRoot,
           watchAssetsMode: isWatchEnabled,
         };
 
         if (isWatchEnabled || item.watchAssets) {
+          const matchedPaths = sync(item.glob, {
+            ignore: item.exclude,
+            dot: true,
+          });
+
+          // Chokidar does not emit the 'ready' event when given an empty
+          // array of paths, which causes closeWatchers() to hang forever
+          // on Promise.all(watcherReadyPromises). Skip the watcher and
+          // warn the user so the build can finish normally.
+          if (matchedPaths.length === 0) {
+            console.warn(
+              `No files matched the asset pattern "${item.glob}". ` +
+                `Skipping watcher for this entry.`,
+            );
+            continue;
+          }
+
+          let ready = false;
           // prettier-ignore
           const watcher = chokidar
-            .watch(sync(item.glob, {
-              ignore: item.exclude,
-              dot: true,
-            }))
-            .on('add', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
-            .on('change', (path: string) => this.actionOnFile({ ...option, path, action: 'change' }))
-            .on('unlink', (path: string) => this.actionOnFile({ ...option, path, action: 'unlink' }));
+            .watch(matchedPaths)
+            .on('add', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'change' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            })
+            .on('change', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'change' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            })
+            .on('unlink', (path: string) => {
+              this.actionOnFile({ ...option, path, action: 'unlink' });
+              if (ready && debouncedOnSuccess) {
+                debouncedOnSuccess();
+              }
+            });
+
+          watcher.on('ready', () => {
+            ready = true;
+          });
 
           this.watchers.push(watcher);
+          this.watcherReadyPromises.push(
+            new Promise<void>((resolve) => watcher.on('ready', resolve)),
+          );
         } else {
           const matchedPaths = sync(item.glob, {
             ignore: item.exclude,
@@ -128,9 +190,65 @@ export class AssetsManager {
       }
     } catch (err) {
       throw new Error(
-        `An error occurred during the assets copying process. ${err.message}`,
+        `An error occurred during the assets copying process. ${(err as Error).message}`,
+        { cause: err },
       );
     }
+  }
+
+  private collectLibraryAssets(
+    configuration: Required<Configuration>,
+    libraryNames: string[],
+    outDir: string,
+  ): AssetEntry[] {
+    if (!libraryNames.length || !configuration.projects) {
+      return [];
+    }
+
+    const result: AssetEntry[] = [];
+
+    for (const libName of libraryNames) {
+      const libProject = configuration.projects[libName];
+      if (!libProject) {
+        continue;
+      }
+
+      const libAssets = libProject.compilerOptions?.assets as
+        | Asset[]
+        | undefined;
+      if (!libAssets || libAssets.length <= 0) {
+        continue;
+      }
+
+      const libSourceRoot = join(
+        process.cwd(),
+        libProject.sourceRoot || libProject.root || '',
+      );
+
+      for (const item of libAssets) {
+        let includePath = typeof item === 'string' ? item : item.include!;
+        let excludePath =
+          typeof item !== 'string' && item.exclude ? item.exclude : undefined;
+
+        includePath = join(libSourceRoot, includePath).replace(/\\/g, '/');
+        excludePath = excludePath
+          ? join(libSourceRoot, excludePath).replace(/\\/g, '/')
+          : undefined;
+
+        const entry: AssetEntry & { _sourceRoot?: string } = {
+          outDir: typeof item !== 'string' ? item.outDir || outDir : outDir,
+          glob: includePath,
+          exclude: excludePath,
+          flat: typeof item !== 'string' ? item.flat : undefined,
+          watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
+          _sourceRoot: libSourceRoot,
+        };
+
+        result.push(entry);
+      }
+    }
+
+    return result;
   }
 
   private actionOnFile(option: ActionOnFile) {
@@ -144,8 +262,6 @@ export class AssetsManager {
     }
     // Set path value to true for watching the first time
     this.watchAssetsKeyValue[assetCheckKey] = true;
-    // Set action to true to avoid watches getting cutoff
-    this.actionInProgress = true;
 
     const dest = copyPathResolve(
       path,

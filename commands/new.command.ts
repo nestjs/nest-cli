@@ -1,10 +1,10 @@
-import { Command, CommanderStatic } from 'commander';
-import { Collection } from '../lib/schematics';
-import { AbstractCommand } from './abstract.command';
-import { Input } from './command.input';
+import { Command } from 'commander';
+import { Collection } from '../lib/schematics/index.js';
+import { AbstractCommand } from './abstract.command.js';
+import { NewCommandContext } from './context/index.js';
 
 export class NewCommand extends AbstractCommand {
-  public load(program: CommanderStatic) {
+  public load(program: Command) {
     program
       .command('new [name]')
       .alias('n')
@@ -32,49 +32,52 @@ export class NewCommand extends AbstractCommand {
         Collection.NESTJS,
       )
       .option('--strict', 'Enables strict mode in TypeScript.', false)
-      .action(async (name: string, command: Command) => {
-        const options: Input[] = [];
+      .option(
+        '-t, --skip-tests',
+        'Do not generate testing files for the new project.',
+        false,
+      )
+      .option('--format', 'Format generated files using Prettier.', false)
+      .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
-        options.push({ name: 'directory', value: command.directory });
-        options.push({ name: 'dry-run', value: command.dryRun });
-        options.push({ name: 'skip-git', value: command.skipGit });
-        options.push({ name: 'skip-install', value: command.skipInstall });
-        options.push({ name: 'strict', value: command.strict });
-        options.push({
-          name: 'packageManager',
-          value: command.packageManager,
-        });
-        options.push({ name: 'collection', value: command.collection });
 
-        if (!!command.language) {
-          const lowercasedLanguage = command.language.toLowerCase();
+        let language = options.language;
+        if (language) {
+          const lowercasedLanguage = language.toLowerCase();
           const langMatch = availableLanguages.includes(lowercasedLanguage);
           if (!langMatch) {
             throw new Error(
-              `Invalid language "${command.language}" selected. Available languages are "typescript" or "javascript"`,
+              `Invalid language "${language}" selected. Available languages are "typescript" or "javascript"`,
             );
           }
           switch (lowercasedLanguage) {
             case 'javascript':
-              command.language = 'js';
+              language = 'js';
               break;
             case 'typescript':
-              command.language = 'ts';
+              language = 'ts';
               break;
             default:
-              command.language = lowercasedLanguage;
+              language = lowercasedLanguage;
               break;
           }
         }
-        options.push({
-          name: 'language',
-          value: command.language,
-        });
 
-        const inputs: Input[] = [];
-        inputs.push({ name: 'name', value: name });
+        const context: NewCommandContext = {
+          name,
+          directory: options.directory,
+          dryRun: options.dryRun,
+          skipGit: options.skipGit,
+          skipInstall: options.skipInstall,
+          skipTests: options.skipTests,
+          packageManager: options.packageManager,
+          language,
+          collection: options.collection,
+          strict: options.strict,
+          format: options.format === true,
+        };
 
-        await this.action.handle(inputs, options);
+        await this.action.handle(context);
       });
   }
 }

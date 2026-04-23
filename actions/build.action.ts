@@ -1,30 +1,35 @@
+import { createRequire } from 'module';
 import { red } from 'ansis';
 import { join } from 'path';
-import * as ts from 'typescript';
-import { Input } from '../commands';
-import { AssetsManager } from '../lib/compiler/assets-manager';
-import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir';
-import { getBuilder } from '../lib/compiler/helpers/get-builder';
-import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
-import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
-import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path';
-import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider';
-import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader';
-import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader';
+import type * as ts from 'typescript';
+import { BuildCommandContext } from '../commands/index.js';
+import { AssetsManager } from '../lib/compiler/assets-manager.js';
+import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
+import { getBuilder } from '../lib/compiler/helpers/get-builder.js';
+import { getRspackConfigPath } from '../lib/compiler/helpers/get-rspack-config-path.js';
+import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path.js';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
+import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path.js';
+import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider.js';
+import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader.js';
+import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader.js';
 import {
   Configuration,
   ConfigurationLoader,
   NestConfigurationLoader,
-} from '../lib/configuration';
+} from '../lib/configuration/index.js';
 import {
   defaultOutDir,
+  defaultRspackConfigFilename,
   defaultWebpackConfigFilename,
-} from '../lib/configuration/defaults';
-import { FileSystemReader } from '../lib/readers';
-import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui';
-import { isModuleAvailable } from '../lib/utils/is-module-available';
-import { AbstractAction } from './abstract.action';
-import webpack = require('webpack');
+} from '../lib/configuration/defaults.js';
+import { FileSystemReader } from '../lib/readers/index.js';
+import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
+import { isModuleAvailable } from '../lib/utils/is-module-available.js';
+import { AbstractAction } from './abstract.action.js';
+import type webpack from 'webpack';
+
+const require = createRequire(import.meta.url);
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -36,29 +41,13 @@ export class BuildAction extends AbstractAction {
   );
   protected readonly assetsManager = new AssetsManager();
 
-  public async handle(commandInputs: Input[], commandOptions: Input[]) {
+  public async handle(context: any) {
+    const { apps, watch, watchAssets } = context as BuildCommandContext;
     try {
-      const watchModeOption = commandOptions.find(
-        (option) => option.name === 'watch',
-      );
-      const watchMode = !!(watchModeOption && watchModeOption.value);
-
-      const watchAssetsModeOption = commandOptions.find(
-        (option) => option.name === 'watchAssets',
-      );
-      const watchAssetsMode = !!(
-        watchAssetsModeOption && watchAssetsModeOption.value
-      );
-
-      await this.runBuild(
-        commandInputs,
-        commandOptions,
-        watchMode,
-        watchAssetsMode,
-      );
+      await this.runBuild(apps, context, watch, watchAssets);
     } catch (err) {
       if (err instanceof Error) {
-        console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
+        console.error(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
         console.error(`\n${red(err)}\n`);
       }
@@ -67,44 +56,32 @@ export class BuildAction extends AbstractAction {
   }
 
   public async runBuild(
-    commandInputs: Input[],
-    commandOptions: Input[],
+    apps: (string | undefined)[],
+    options: Record<string, any>,
     watchMode: boolean,
     watchAssetsMode: boolean,
     isDebugEnabled = false,
     onSuccess?: () => void,
   ) {
-    const configFileName = commandOptions.find(
-      (option) => option.name === 'config',
-    )!.value as string;
+    const configFileName = options.config as string | undefined;
     const configuration = await this.loader.load(configFileName);
-    const buildAll = commandOptions.find((opt) => opt.name === 'all')?.value;
 
     let appNames: (string | undefined)[];
-    if (buildAll) {
-      // If the "all" flag is set, we need to build all projects in a monorepo.
+    if (options.all) {
       appNames = [];
-
       if (configuration.projects) {
         appNames.push(...Object.keys(configuration.projects));
       }
     } else {
-      appNames = commandInputs
-        .filter((input) => input.name === 'app')
-        .map((input) => input.value) as string[];
+      appNames = apps;
     }
 
     if (appNames.length === 0) {
-      // If there are no projects, use "undefined" to build the default project.
       appNames.push(undefined);
     }
 
-    for (const appName of appNames) {
-      const pathToTsconfig = getTscConfigPath(
-        configuration,
-        commandOptions,
-        appName,
-      );
+    const buildApp = async (appName: string | undefined) => {
+      const pathToTsconfig = getTscConfigPath(configuration, options, appName);
       const { options: tsOptions } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
@@ -114,26 +91,28 @@ export class BuildAction extends AbstractAction {
         'compilerOptions.webpack',
         appName,
         'webpack',
-        commandOptions,
+        options,
       );
       const builder = isWebpackEnabled
         ? { type: 'webpack' }
-        : getBuilder(configuration, commandOptions, appName);
+        : getBuilder(configuration, options, appName);
 
-      await deleteOutDirIfEnabled(configuration, appName, outDir);
+      await deleteOutDirIfEnabled(configuration, appName, outDir, tsOptions);
       this.assetsManager.copyAssets(
         configuration,
         appName,
         outDir,
         watchAssetsMode,
+        onSuccess,
       );
+      this.warnOnIgnoredLibraryAssets(configuration, appName);
 
       const typeCheck = getValueOrDefault<boolean>(
         configuration,
         'compilerOptions.typeCheck',
         appName,
         'typeCheck',
-        commandOptions,
+        options,
       );
       if (typeCheck && builder.type !== 'swc') {
         console.warn(
@@ -142,11 +121,25 @@ export class BuildAction extends AbstractAction {
         );
       }
 
+      const emitDeclarations = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.emitDeclarations',
+        appName,
+        'emitDeclarations',
+        options,
+      );
+      if (emitDeclarations && builder.type !== 'swc') {
+        console.warn(
+          INFO_PREFIX +
+            ` "emitDeclarations" will not have any effect when "builder" is not "swc".`,
+        );
+      }
+
       switch (builder.type) {
         case 'tsc':
           await this.runTsc(
             watchMode,
-            commandOptions,
+            options,
             configuration,
             pathToTsconfig,
             appName,
@@ -157,7 +150,18 @@ export class BuildAction extends AbstractAction {
           await this.runWebpack(
             configuration,
             appName,
-            commandOptions,
+            options,
+            pathToTsconfig,
+            isDebugEnabled,
+            watchMode,
+            onSuccess,
+          );
+          break;
+        case 'rspack':
+          await this.runRspack(
+            configuration,
+            appName,
+            options,
             pathToTsconfig,
             isDebugEnabled,
             watchMode,
@@ -170,11 +174,26 @@ export class BuildAction extends AbstractAction {
             appName,
             pathToTsconfig,
             watchMode,
-            commandOptions,
+            options,
             tsOptions,
+            emitDeclarations,
             onSuccess,
           );
           break;
+      }
+    };
+
+    const parallel = options.parallel;
+    if (parallel && appNames.length > 1) {
+      const concurrency =
+        typeof parallel === 'number' ? parallel : appNames.length;
+      for (let i = 0; i < appNames.length; i += concurrency) {
+        const chunk = appNames.slice(i, i + concurrency);
+        await Promise.all(chunk.map((appName) => buildApp(appName)));
+      }
+    } else {
+      for (const appName of appNames) {
+        await buildApp(appName);
       }
     }
   }
@@ -184,12 +203,14 @@ export class BuildAction extends AbstractAction {
     appName: string | undefined,
     pathToTsconfig: string,
     watchMode: boolean,
-    options: Input[],
+    options: Record<string, any>,
     tsOptions: ts.CompilerOptions,
+    emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
   ) {
-    const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler');
+    const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler.js');
     const swc = new SwcCompiler(this.pluginsLoader);
+    const isSilent = !!options.silent;
 
     await swc.run(
       configuration,
@@ -204,8 +225,10 @@ export class BuildAction extends AbstractAction {
           'typeCheck',
           options,
         ),
+        emitDeclarations,
         tsOptions,
         assetsManager: this.assetsManager,
+        silent: isSilent,
       },
       onSuccess,
     );
@@ -214,19 +237,18 @@ export class BuildAction extends AbstractAction {
   private async runWebpack(
     configuration: Required<Configuration>,
     appName: string | undefined,
-    commandOptions: Input[],
+    options: Record<string, any>,
     pathToTsconfig: string,
     debug: boolean,
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
   ) {
-    const { WebpackCompiler } = await import(
-      '../lib/compiler/webpack-compiler'
-    );
+    const { WebpackCompiler } =
+      await import('../lib/compiler/webpack-compiler.js');
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
     const webpackPath =
-      getWebpackConfigPath(configuration, commandOptions, appName) ??
+      getWebpackConfigPath(configuration, options, appName) ??
       defaultWebpackConfigFilename;
 
     const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
@@ -239,7 +261,7 @@ export class BuildAction extends AbstractAction {
       pathToTsconfig,
       appName,
       {
-        inputs: commandOptions,
+        options,
         webpackConfigFactoryOrConfig,
         debug,
         watchMode,
@@ -251,23 +273,20 @@ export class BuildAction extends AbstractAction {
 
   private async runTsc(
     watchMode: boolean,
-    options: Input[],
+    options: Record<string, any>,
     configuration: Required<Configuration>,
     pathToTsconfig: string,
     appName: string | undefined,
     onSuccess: (() => void) | undefined,
   ) {
     if (watchMode) {
-      const { WatchCompiler } = await import('../lib/compiler/watch-compiler');
+      const { WatchCompiler } = await import('../lib/compiler/watch-compiler.js');
       const watchCompiler = new WatchCompiler(
         this.pluginsLoader,
         this.tsConfigProvider,
         this.tsLoader,
       );
-      const isPreserveWatchOutputEnabled = options.find(
-        (option) =>
-          option.name === 'preserveWatchOutput' && option.value === true,
-      )?.value as boolean | undefined;
+      const isPreserveWatchOutputEnabled = !!options.preserveWatchOutput;
 
       watchCompiler.run(
         configuration,
@@ -277,7 +296,7 @@ export class BuildAction extends AbstractAction {
         onSuccess,
       );
     } else {
-      const { Compiler } = await import('../lib/compiler/compiler');
+      const { Compiler } = await import('../lib/compiler/compiler.js');
       const compiler = new Compiler(
         this.pluginsLoader,
         this.tsConfigProvider,
@@ -291,7 +310,7 @@ export class BuildAction extends AbstractAction {
         undefined,
         onSuccess,
       );
-      this.assetsManager.closeWatchers();
+      await this.assetsManager.closeWatchers();
     }
   }
 
@@ -305,8 +324,82 @@ export class BuildAction extends AbstractAction {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
     const isWebpackFileAvailable = isModuleAvailable(pathToWebpackFile);
     if (!isWebpackFileAvailable && webpackPath === defaultPath) {
-      return ({}) => ({});
+      return (_config: webpack.Configuration) => ({});
     }
     return require(pathToWebpackFile);
+  }
+
+  private async runRspack(
+    configuration: Required<Configuration>,
+    appName: string | undefined,
+    options: Record<string, any>,
+    pathToTsconfig: string,
+    debug: boolean,
+    watchMode: boolean,
+    onSuccess: (() => void) | undefined,
+  ) {
+    const { RspackCompiler } = await import('../lib/compiler/rspack-compiler.js');
+    const rspackCompiler = new RspackCompiler(this.pluginsLoader);
+
+    const rspackPath =
+      getRspackConfigPath(configuration, options, appName) ??
+      defaultRspackConfigFilename;
+
+    const rspackConfigFactoryOrConfig = this.getRspackConfigFactoryByPath(
+      rspackPath,
+      defaultRspackConfigFilename,
+    );
+
+    return rspackCompiler.run(
+      configuration,
+      pathToTsconfig,
+      appName,
+      {
+        options,
+        rspackConfigFactoryOrConfig,
+        debug,
+        watchMode,
+        assetsManager: this.assetsManager,
+      },
+      onSuccess,
+    );
+  }
+
+  private getRspackConfigFactoryByPath(
+    rspackPath: string,
+    defaultPath: string,
+  ): (config: Record<string, any>, rspackRef: any) => Record<string, any> {
+    const pathToRspackFile = join(process.cwd(), rspackPath);
+    const isRspackFileAvailable = isModuleAvailable(pathToRspackFile);
+    if (!isRspackFileAvailable && rspackPath === defaultPath) {
+      return (_config: Record<string, any>) => ({});
+    }
+    return require(pathToRspackFile);
+  }
+
+  private warnOnIgnoredLibraryAssets(
+    configuration: Required<Configuration>,
+    appName: string | undefined,
+  ) {
+    if (!configuration.projects) {
+      return;
+    }
+    for (const [projectName, project] of Object.entries(
+      configuration.projects,
+    )) {
+      if (projectName === appName) {
+        continue;
+      }
+      if (
+        project.type === 'library' &&
+        project.compilerOptions?.assets?.length
+      ) {
+        console.warn(
+          INFO_PREFIX +
+            ` Assets configured for library "${projectName}" will not be copied during application build.` +
+            ` Build the library separately or move assets to the application configuration.`,
+        );
+      }
+    }
   }
 }

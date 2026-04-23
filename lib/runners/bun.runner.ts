@@ -1,4 +1,4 @@
-import { AbstractRunner } from './abstract.runner';
+import { AbstractRunner } from './abstract.runner.js';
 
 export class BunRunner extends AbstractRunner {
   constructor() {

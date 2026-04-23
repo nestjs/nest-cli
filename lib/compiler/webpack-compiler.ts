@@ -1,14 +1,33 @@
 import { existsSync } from 'fs';
+import { createRequire } from 'module';
 import { join } from 'path';
-import { Input } from '../../commands';
-import { Configuration } from '../configuration';
-import { INFO_PREFIX } from '../ui';
-import { AssetsManager } from './assets-manager';
-import { BaseCompiler } from './base-compiler';
-import { webpackDefaultsFactory } from './defaults/webpack-defaults';
-import { getValueOrDefault } from './helpers/get-value-or-default';
-import { PluginsLoader } from './plugins/plugins-loader';
-import webpack = require('webpack');
+import { Configuration } from '../configuration/index.js';
+import { INFO_PREFIX } from '../ui/index.js';
+import { isEsmProject } from '../utils/is-esm-project.js';
+import { AssetsManager } from './assets-manager.js';
+import { BaseCompiler } from './base-compiler.js';
+import { webpackDefaultsFactory } from './defaults/webpack-defaults.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
+import { PluginsLoader } from './plugins/plugins-loader.js';
+import type webpack from 'webpack';
+
+const WEBPACK_DEPRECATION_MSG =
+  'The webpack compiler is deprecated and will be removed in a future major version. ' +
+  'Please migrate to rspack (--builder rspack). ' +
+  'See https://docs.nestjs.com/cli/usages#build for details.';
+
+const require = createRequire(import.meta.url);
+
+function loadWebpack(): typeof webpack {
+  try {
+    return require('webpack');
+  } catch {
+    throw new Error(
+      'webpack is not installed. To use the webpack compiler, install the required packages:\n\n' +
+        '  npm install --save-dev webpack webpack-node-externals tsconfig-paths-webpack-plugin ts-loader\n',
+    );
+  }
+}
 
 type WebpackConfigFactory = (
   config: webpack.Configuration,
@@ -20,7 +39,7 @@ type WebpackConfigFactoryOrConfig =
   | webpack.Configuration;
 
 type WebpackCompilerExtras = {
-  inputs: Input[];
+  options: Record<string, any>;
   assetsManager: AssetsManager;
   webpackConfigFactoryOrConfig:
     | WebpackConfigFactoryOrConfig
@@ -61,10 +80,21 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       'entryFile',
       appName,
       'entryFile',
-      extras.inputs,
+      extras.options,
     );
     const entryFileRoot =
       getValueOrDefault<string>(configuration, 'root', appName) || '';
+
+    if (isEsmProject()) {
+      throw new Error(
+        'The webpack compiler does not support ESM projects ("type": "module" in package.json). ' +
+          'Please use rspack instead by setting "builder": "rspack" in your nest-cli.json compilerOptions, ' +
+          'or use --builder rspack on the command line.',
+      );
+    }
+
+    console.warn(`\n${INFO_PREFIX} ${WEBPACK_DEPRECATION_MSG}\n`);
+
     const defaultOptions = webpackDefaultsFactory(
       pathToSource,
       entryFileRoot,
@@ -73,6 +103,8 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       tsConfigPath,
       plugins,
     );
+
+    const wp = loadWebpack();
 
     let compiler: webpack.Compiler | webpack.MultiCompiler;
     let watchOptions:
@@ -86,7 +118,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
           const unwrappedConfig =
             typeof configOrFactory !== 'function'
               ? configOrFactory
-              : configOrFactory(defaultOptions, webpack);
+              : configOrFactory(defaultOptions, wp);
           return {
             ...defaultOptions,
             mode: extras.watchMode ? 'development' : defaultOptions.mode,
@@ -94,7 +126,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
           };
         },
       );
-      compiler = webpack(webpackConfigurations);
+      compiler = wp(webpackConfigurations);
       watchOptions = webpackConfigurations.map(
         (config) => config.watchOptions || {},
       );
@@ -103,13 +135,13 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       const projectWebpackOptions =
         typeof extras.webpackConfigFactoryOrConfig !== 'function'
           ? extras.webpackConfigFactoryOrConfig
-          : extras.webpackConfigFactoryOrConfig(defaultOptions, webpack);
+          : extras.webpackConfigFactoryOrConfig(defaultOptions, wp);
       const webpackConfiguration = {
         ...defaultOptions,
         mode: extras.watchMode ? 'development' : defaultOptions.mode,
         ...projectWebpackOptions,
       };
-      compiler = webpack(webpackConfiguration);
+      compiler = wp(webpackConfiguration);
       watchOptions = webpackConfiguration.watchOptions;
       watch = webpackConfiguration.watch;
     }

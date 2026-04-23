@@ -1,49 +1,31 @@
 import { red } from 'ansis';
-import { spawn, SpawnOptions } from 'child_process';
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
-import { Input } from '../commands';
-import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path';
-import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
+import { StartCommandContext } from '../commands/index.js';
+import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path.js';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import {
   defaultConfiguration,
   defaultOutDir,
-} from '../lib/configuration/defaults';
-import { ERROR_PREFIX } from '../lib/ui';
-import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill';
-import { assertNonArray } from '../lib/utils/type-assertions';
-import { BuildAction } from './build.action';
+} from '../lib/configuration/defaults.js';
+import { ERROR_PREFIX } from '../lib/ui/index.js';
+import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill.js';
+import { assertNonArray } from '../lib/utils/type-assertions.js';
+import { BuildAction } from './build.action.js';
 
 export class StartAction extends BuildAction {
-  public async handle(commandInputs: Input[], commandOptions: Input[]) {
+  public async handle(context: StartCommandContext) {
     try {
-      const configFileName = commandOptions.find(
-        (option) => option.name === 'config',
-      )!.value as string;
+      const configFileName = context.config;
       const configuration = await this.loader.load(configFileName);
-      const appName = commandInputs.find((input) => input.name === 'app')!
-        .value as string;
+      const appName = context.app;
 
-      const pathToTsconfig = getTscConfigPath(
-        configuration,
-        commandOptions,
-        appName,
-      );
+      const pathToTsconfig = getTscConfigPath(configuration, context, appName);
 
-      const debugModeOption = commandOptions.find(
-        (option) => option.name === 'debug',
-      );
-      const watchModeOption = commandOptions.find(
-        (option) => option.name === 'watch',
-      );
-      const isWatchEnabled = !!(watchModeOption && watchModeOption.value);
-      const watchAssetsModeOption = commandOptions.find(
-        (option) => option.name === 'watchAssets',
-      );
-      const isWatchAssetsEnabled = !!(
-        watchAssetsModeOption && watchAssetsModeOption.value
-      );
-      const debugFlag = debugModeOption && debugModeOption.value;
+      const isWatchEnabled = !!context.watch;
+      const isWatchAssetsEnabled = !!context.watchAssets;
+      const debugFlag = context.debug;
       assertNonArray(debugFlag);
 
       const binaryToRun = getValueOrDefault(
@@ -51,7 +33,7 @@ export class StartAction extends BuildAction {
         'exec',
         appName,
         'exec',
-        commandOptions,
+        context,
         defaultConfiguration.exec,
       );
 
@@ -63,7 +45,7 @@ export class StartAction extends BuildAction {
         'entryFile',
         appName,
         'entryFile',
-        commandOptions,
+        context,
         defaultConfiguration.entryFile,
       );
       const sourceRoot = getValueOrDefault(
@@ -71,19 +53,12 @@ export class StartAction extends BuildAction {
         'sourceRoot',
         appName,
         'sourceRoot',
-        commandOptions,
+        context,
         defaultConfiguration.sourceRoot,
       );
 
-      const shellOption = commandOptions.find(
-        (option) => option.name === 'shell',
-      );
-      const useShell = !!shellOption?.value;
-
-      const envFileOption = commandOptions.find(
-        (option) => option.name === 'envFile',
-      );
-      const envFile = (envFileOption?.value ?? []) as string[];
+      const useShell = !!context.shell;
+      const envFile = context.envFile ?? [];
 
       const onSuccess = this.createOnSuccessHook(
         entryFile,
@@ -94,12 +69,13 @@ export class StartAction extends BuildAction {
         {
           shell: useShell,
           envFile,
+          watch: isWatchEnabled,
         },
       );
 
       await this.runBuild(
-        commandInputs,
-        commandOptions,
+        appName ? [appName] : [],
+        context,
         isWatchEnabled,
         isWatchAssetsEnabled,
         !!debugFlag,
@@ -107,14 +83,14 @@ export class StartAction extends BuildAction {
       );
     } catch (err) {
       if (err instanceof Error) {
-        console.log(`\n${ERROR_PREFIX} ${err.message}\n`);
+        console.error(`\n${ERROR_PREFIX} ${err.message}\n`);
       } else {
         console.error(`\n${red(err)}\n`);
       }
     }
   }
 
-  public createOnSuccessHook(
+  private createOnSuccessHook(
     entryFile: string,
     sourceRoot: string,
     debugFlag: boolean | string | undefined,
@@ -123,12 +99,13 @@ export class StartAction extends BuildAction {
     options: {
       shell: boolean;
       envFile?: string[];
+      watch?: boolean;
     },
   ) {
-    let childProcessRef: any;
+    let childProcessRef: ChildProcess | undefined;
     process.on(
       'exit',
-      () => childProcessRef && killProcessSync(childProcessRef.pid),
+      () => childProcessRef && killProcessSync(childProcessRef.pid!),
     );
 
     return () => {
@@ -149,8 +126,8 @@ export class StartAction extends BuildAction {
           childProcessRef.on('exit', () => (childProcessRef = undefined));
         });
 
-        childProcessRef.stdin && childProcessRef.stdin.pause();
-        killProcessSync(childProcessRef.pid);
+        (childProcessRef.stdin as NodeJS.ReadableStream | null)?.pause?.();
+        killProcessSync(childProcessRef.pid!);
       } else {
         childProcessRef = this.spawnChildProcess(
           entryFile,
@@ -213,7 +190,7 @@ export class StartAction extends BuildAction {
       const envFileNodeArgs = options.envFile.map(
         (envFilePath) => `--env-file=${envFilePath}`,
       );
-      processArgs.unshift(envFileNodeArgs.join(' '));
+      processArgs.unshift(...envFileNodeArgs);
     }
 
     processArgs.unshift('--enable-source-maps');

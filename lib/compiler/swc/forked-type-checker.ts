@@ -1,15 +1,15 @@
 import * as ts from 'typescript';
-import { Configuration } from '../../configuration';
-import { ERROR_PREFIX } from '../../ui';
-import { BaseCompiler } from '../base-compiler';
-import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator';
-import { PluginsLoader } from '../plugins/plugins-loader';
+import { Configuration } from '../../configuration/index.js';
+import { ERROR_PREFIX } from '../../ui/index.js';
+import { BaseCompiler } from '../base-compiler.js';
+import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
+import { PluginsLoader } from '../plugins/plugins-loader.js';
 import {
   FOUND_NO_ISSUES_GENERATING_METADATA,
   FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED,
-} from './constants';
-import { SwcCompilerExtras } from './swc-compiler';
-import { TypeCheckerHost } from './type-checker-host';
+} from './constants.js';
+import { SwcCompilerExtras } from './swc-compiler.js';
+import { TypeCheckerHost } from './type-checker-host.js';
 
 const [tsConfigPath, appName, sourceRoot, plugins] = process.argv.slice(2);
 
@@ -54,7 +54,7 @@ class ForkedTypeChecker extends BaseCompiler {
         onProgramInit: onTypeCheckOrProgramInit,
       });
     } catch (err) {
-      console.log(ERROR_PREFIX, err.message);
+      console.error(ERROR_PREFIX, (err as Error).message);
     }
   }
 }

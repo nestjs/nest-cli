@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { Configuration } from '../../configuration';
+import { Configuration } from '../../configuration/index.js';
 
 export const swcDefaultsFactory = (
   tsOptions?: ts.CompilerOptions,
@@ -45,7 +45,7 @@ export const swcDefaultsFactory = (
       includeDotfiles: false,
       quiet: false,
       watch: false,
-      stripLeadingPaths: true,
+      stripLeadingPaths: !tsOptions?.rootDir,
       ...builderOptions,
     },
   };

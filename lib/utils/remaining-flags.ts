@@ -1,7 +1,7 @@
-import { CommanderStatic } from 'commander';
+import { Command } from 'commander';
 
-export function getRemainingFlags(cli: CommanderStatic) {
-  const rawArgs = [...cli.rawArgs];
+export function getRemainingFlags(cli: Command) {
+  const rawArgs = [...(cli as any).rawArgs];
   return rawArgs
     .splice(
       Math.max(
@@ -22,7 +22,7 @@ export function getRemainingFlags(cli: CommanderStatic) {
         const previousKey = camelCase(
           prevKeyRaw.replace(/--/g, '').replace('no', ''),
         );
-        if (cli[previousKey] === item) {
+        if (cli.getOptionValue(previousKey) === item) {
           return false;
         }
       }
@@ -40,7 +40,10 @@ export function getRemainingFlags(cli: CommanderStatic) {
  */
 
 function camelCase(flag: string) {
-  return flag.split('-').reduce((str, word) => {
-    return str + word[0].toUpperCase() + word.slice(1);
-  });
+  return flag
+    .split('-')
+    .filter((word) => word.length > 0)
+    .reduce((str, word) => {
+      return str + word[0].toUpperCase() + word.slice(1);
+    });
 }

@@ -6,8 +6,8 @@ export function treeKillSync(pid: number, signal?: string | number): void {
     return;
   }
 
-  const childs = getAllChilds(pid);
-  childs.forEach(function (pid) {
+  const children = getAllChildren(pid);
+  children.forEach(function (pid) {
     killPid(pid, signal);
   });
 
@@ -48,7 +48,7 @@ function getAllPid(): {
     });
 }
 
-function getAllChilds(pid: number) {
+function getAllChildren(pid: number) {
   const allpid = getAllPid();
 
   const ppidHash: {
@@ -78,7 +78,7 @@ function killPid(pid: number, signal?: string | number) {
   try {
     process.kill(pid, signal);
   } catch (err) {
-    if (err.code !== 'ESRCH') {
+    if ((err as NodeJS.ErrnoException).code !== 'ESRCH') {
       throw err;
     }
   }

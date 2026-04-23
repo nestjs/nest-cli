@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "module": "commonjs",
-    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
     "skipLibCheck": true,
     "sourceMap": false,
     "allowJs": true,
     "strict": true,
+    "esModuleInterop": true,
     "useUnknownInCatchVariables": false,
     "types": [
-      "node",
-      "jest"
+      "node"
     ]
   },
   "include": ["actions", "bin", "commands", "lib"],

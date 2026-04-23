@@ -1,13 +1,13 @@
 import { red } from 'ansis';
-import * as ora from 'ora';
+import ora from 'ora';
 import * as ts from 'typescript';
-import { TsConfigProvider } from '../helpers/tsconfig-provider';
-import { TypeScriptBinaryLoader } from '../typescript-loader';
+import { TsConfigProvider } from '../helpers/tsconfig-provider.js';
+import { TypeScriptBinaryLoader } from '../typescript-loader.js';
 import {
   INITIALIZING_TYPE_CHECKER,
   TSC_LOG_ERROR_PREFIX,
   TSC_NO_ERRORS_MESSAGE,
-} from './constants';
+} from './constants.js';
 
 export interface TypeCheckerHostRunOptions {
   watch?: boolean;
@@ -45,8 +45,13 @@ export class TypeCheckerHost {
       return;
     }
     spinner.start();
-    this.runOnce(tsconfigPath, tsBinary, options);
-    spinner.succeed();
+    try {
+      this.runOnce(tsconfigPath, tsBinary, options);
+      spinner.succeed();
+    } catch (err) {
+      spinner.fail();
+      throw err;
+    }
   }
 
   private runInWatchMode(
@@ -63,7 +68,10 @@ export class TypeCheckerHost {
     const reportWatchStatusCallback = (diagnostic: ts.Diagnostic) => {
       if (diagnostic.messageText !== TSC_NO_ERRORS_MESSAGE) {
         if ((diagnostic.messageText as string)?.includes('Found')) {
-          console.log(TSC_LOG_ERROR_PREFIX, red(diagnostic.messageText.toString()));
+          console.error(
+            TSC_LOG_ERROR_PREFIX,
+            red(diagnostic.messageText.toString()),
+          );
         }
         return;
       }
@@ -118,14 +126,17 @@ export class TypeCheckerHost {
         getNewLine: () => tsBinary.sys.newLine,
       };
 
-      console.log();
-      console.log(
+      const formattedDiagnostics =
         tsBinary.formatDiagnosticsWithColorAndContext(
           diagnostics,
           formatDiagnosticsHost,
-        ),
+        );
+
+      console.log();
+      console.log(formattedDiagnostics);
+      throw new Error(
+        `Found ${diagnostics.length} type error(s) during compilation.`,
       );
-      process.exit(1);
     }
     options.onTypeCheck?.(programRef);
   }

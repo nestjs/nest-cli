@@ -1,8 +1,10 @@
-import * as os from 'os';
+import { createRequire } from 'module';
 import { dirname, posix } from 'path';
+import * as tsPaths from 'tsconfig-paths';
 import * as ts from 'typescript';
-import { TypeScriptBinaryLoader } from '../typescript-loader';
-import tsPaths = require('tsconfig-paths');
+import { TypeScriptBinaryLoader } from '../typescript-loader.js';
+
+const require = createRequire(import.meta.url);
 
 export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
@@ -86,19 +88,21 @@ function getNotAliasedPath(
   if (!result) {
     return;
   }
-  if (os.platform() === 'win32') {
+  if (process.platform === 'win32') {
     result = result.replace(/\\/g, '/');
   }
   try {
     // Installed packages (node modules) should take precedence over root files with the same name.
     // Ref: https://github.com/nestjs/nest-cli/issues/838
     const packagePath = require.resolve(text, {
-      paths: [process.cwd(), ...module.paths],
+      paths: [process.cwd(), ...(require.resolve.paths(text) ?? [])],
     });
     if (packagePath) {
       return text;
     }
-  } catch {}
+  } catch {
+    // package resolution failed, fall through to relative path
+  }
 
   const resolvedPath = posix.relative(dirname(sf.fileName), result) || './';
   return resolvedPath[0] === '.' ? resolvedPath : './' + resolvedPath;

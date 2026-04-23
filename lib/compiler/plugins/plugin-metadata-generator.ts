@@ -2,11 +2,11 @@ import * as ts from 'typescript';
 import {
   DeepPluginMeta,
   ReadonlyVisitor,
-} from '../interfaces/readonly-visitor.interface';
-import { FOUND_NO_ISSUES_GENERATING_METADATA } from '../swc/constants';
-import { TypeCheckerHost } from '../swc/type-checker-host';
-import { TypeScriptBinaryLoader } from '../typescript-loader';
-import { PluginMetadataPrinter } from './plugin-metadata-printer';
+} from '../interfaces/readonly-visitor.interface.js';
+import { FOUND_NO_ISSUES_GENERATING_METADATA } from '../swc/constants.js';
+import { TypeCheckerHost } from '../swc/type-checker-host.js';
+import { TypeScriptBinaryLoader } from '../typescript-loader.js';
+import { PluginMetadataPrinter } from './plugin-metadata-printer.js';
 
 export interface PluginMetadataGenerateOptions {
   /**
