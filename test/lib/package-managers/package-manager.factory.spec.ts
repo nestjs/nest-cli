@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterAll, Mock } from 'vitest';
 import * as fs from 'fs';
 import {
+  BunPackageManager,
   NpmPackageManager,
   PackageManagerFactory,
   PnpmPackageManager,
@@ -46,11 +47,27 @@ describe('PackageManagerFactory', () => {
       );
     });
 
+    it('should return BunPackageManager when "bun.lock" file is found', async () => {
+      (fs.promises.readdir as jest.Mock).mockResolvedValue(['bun.lock']);
+
+      const manager = await PackageManagerFactory.find();
+      expect(manager).toBeInstanceOf(BunPackageManager);
+    });
+
+    it('should return BunPackageManager when "bun.lockb" file is found', async () => {
+      (fs.promises.readdir as jest.Mock).mockResolvedValue(['bun.lockb']);
+
+      const manager = await PackageManagerFactory.find();
+      expect(manager).toBeInstanceOf(BunPackageManager);
+    });
+
     describe('when there are all supported lock files', () => {
       it('should prioritize "yarn.lock" file over all the others lock files', async () => {
         (fs.promises.readdir as Mock).mockResolvedValue([
           'pnpm-lock.yaml',
           'package-lock.json',
+          'bun.lock',
+          'bun.lockb',
           // This is intentionally the last element in this array
           'yarn.lock',
         ]);

@@ -134,7 +134,12 @@ const installPackages = async (
 const askForPackageManager = async () => {
   const question = generateSelect('packageManager')(
     MESSAGES.PACKAGE_MANAGER_QUESTION,
-  )([PackageManager.NPM, PackageManager.YARN, PackageManager.PNPM]);
+  )([
+    PackageManager.NPM,
+    PackageManager.YARN,
+    PackageManager.PNPM,
+    PackageManager.BUN,
+  ]);
 
   return select(question).catch(gracefullyExitOnPromptError);
 };
