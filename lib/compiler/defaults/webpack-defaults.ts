@@ -1,10 +1,31 @@
+import { createRequire } from 'module';
 import { join } from 'path';
-import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import { defaultTsconfigFilename } from '../../configuration/defaults';
-import { appendTsExtension } from '../helpers/append-extension';
-import { MultiNestCompilerPlugins } from '../plugins/plugins-loader';
-import webpack = require('webpack');
-import nodeExternals = require('webpack-node-externals');
+import type { TsconfigPathsPlugin as TsconfigPathsPluginType } from 'tsconfig-paths-webpack-plugin';
+import type webpack from 'webpack';
+import type nodeExternals from 'webpack-node-externals';
+import { defaultTsconfigFilename } from '../../configuration/defaults.js';
+import { appendTsExtension } from '../helpers/append-extension.js';
+import { MultiNestCompilerPlugins } from '../plugins/plugins-loader.js';
+
+const require = createRequire(import.meta.url);
+
+function loadWebpackDeps() {
+  try {
+    const wp = require('webpack') as typeof webpack;
+    const externals = require('webpack-node-externals') as typeof nodeExternals;
+    const { TsconfigPathsPlugin } =
+      require('tsconfig-paths-webpack-plugin') as {
+        TsconfigPathsPlugin: typeof TsconfigPathsPluginType;
+      };
+    return { webpack: wp, nodeExternals: externals, TsconfigPathsPlugin };
+  } catch (e: any) {
+    const pkg = e?.message?.match?.(/Cannot find.*'([^']+)'/)?.[1] ?? 'webpack';
+    throw new Error(
+      `The "${pkg}" package is required when using the webpack compiler but could not be found. ` +
+        `Please install it:\n\n  npm install --save-dev webpack webpack-node-externals tsconfig-paths-webpack-plugin ts-loader fork-ts-checker-webpack-plugin\n`,
+    );
+  }
+}
 
 export const webpackDefaultsFactory = (
   sourceRoot: string,
@@ -14,16 +35,25 @@ export const webpackDefaultsFactory = (
   tsConfigFile = defaultTsconfigFilename,
   plugins: MultiNestCompilerPlugins,
 ): webpack.Configuration => {
+  const {
+    webpack: wp,
+    nodeExternals: externals,
+    TsconfigPathsPlugin,
+  } = loadWebpackDeps();
+
   const isPluginRegistered = isAnyPluginRegistered(plugins);
   const webpackConfiguration: webpack.Configuration = {
     entry: appendTsExtension(join(sourceRoot, entryFilename)),
     devtool: isDebugEnabled ? 'inline-source-map' : false,
     target: 'node',
     output: {
-      filename: join(relativeSourceRoot, `${entryFilename}.js`),
+      filename: join(relativeSourceRoot, `${entryFilename}.js`).replace(
+        /\\/g,
+        '/',
+      ),
     },
     ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
-    externals: [nodeExternals() as any],
+    externals: [externals() as any],
     externalsPresets: { node: true },
     module: {
       rules: [
@@ -66,7 +96,7 @@ export const webpackDefaultsFactory = (
       __dirname: false,
     },
     plugins: [
-      new webpack.IgnorePlugin({
+      new wp.IgnorePlugin({
         checkResource(resource: any) {
           const lazyImports = [
             '@nestjs/microservices',
@@ -83,7 +113,7 @@ export const webpackDefaultsFactory = (
             require.resolve(resource, {
               paths: [process.cwd()],
             });
-          } catch (err) {
+          } catch {
             return true;
           }
           return false;
@@ -93,7 +123,6 @@ export const webpackDefaultsFactory = (
   };
 
   if (!isPluginRegistered) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
     webpackConfiguration.plugins!.push(

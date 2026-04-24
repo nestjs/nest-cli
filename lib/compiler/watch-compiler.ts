@@ -1,19 +1,19 @@
 import * as ts from 'typescript';
-import { Configuration } from '../configuration';
-import { CLI_ERRORS } from '../ui/errors';
-import { BaseCompiler } from './base-compiler';
-import { getValueOrDefault } from './helpers/get-value-or-default';
+import { Configuration } from '../configuration/index.js';
+import { CLI_ERRORS } from '../ui/errors.js';
+import { BaseCompiler } from './base-compiler.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import {
   displayManualRestartTip,
   listenForManualRestart,
-} from './helpers/manual-restart';
-import { TsConfigProvider } from './helpers/tsconfig-provider';
-import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
+} from './helpers/manual-restart.js';
+import { TsConfigProvider } from './helpers/tsconfig-provider.js';
+import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook.js';
 import {
   MultiNestCompilerPlugins,
   PluginsLoader,
-} from './plugins/plugins-loader';
-import { TypeScriptBinaryLoader } from './typescript-loader';
+} from './plugins/plugins-loader.js';
+import { TypeScriptBinaryLoader } from './typescript-loader.js';
 
 type TypescriptWatchCompilerExtras = {
   /**

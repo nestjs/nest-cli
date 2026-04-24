@@ -31,16 +31,24 @@ export interface WebpackBuilderOptions {
   configPath?: string;
 }
 
+export interface RspackBuilderOptions {
+  configPath?: string;
+}
+
 export interface TscBuilderOptions {
   configPath?: string;
 }
 
-export type BuilderVariant = 'tsc' | 'swc' | 'webpack';
+export type BuilderVariant = 'tsc' | 'swc' | 'webpack' | 'rspack';
 export type Builder =
   | BuilderVariant
   | {
       type: 'webpack';
       options?: WebpackBuilderOptions;
+    }
+  | {
+      type: 'rspack';
+      options?: RspackBuilderOptions;
     }
   | {
       type: 'swc';
@@ -66,11 +74,17 @@ export interface CompilerOptions {
   deleteOutDir?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
+  emitDeclarations?: boolean;
+  /**
+   * List of library project names whose assets should also be copied
+   * when building this application.
+   */
+  includeLibraryAssets?: string[];
 }
 
 export interface PluginOptions {
   name: string;
-  options: Record<string, any>[];
+  options: Record<string, any>;
 }
 
 export interface GenerateOptions {
@@ -90,7 +104,6 @@ export interface ProjectConfiguration {
 }
 
 export interface Configuration {
-  [key: string]: any;
   language?: string;
   collection?: string;
   sourceRoot?: string;

@@ -1,9 +1,10 @@
 import * as fs from 'fs';
-import { AbstractPackageManager } from './abstract.package-manager';
-import { NpmPackageManager } from './npm.package-manager';
-import { PackageManager } from './package-manager';
-import { YarnPackageManager } from './yarn.package-manager';
-import { PnpmPackageManager } from './pnpm.package-manager';
+import { AbstractPackageManager } from './abstract.package-manager.js';
+import { NpmPackageManager } from './npm.package-manager.js';
+import { PackageManager } from './package-manager.js';
+import { YarnPackageManager } from './yarn.package-manager.js';
+import { PnpmPackageManager } from './pnpm.package-manager.js';
+import { BunPackageManager } from './bun.package-manager.js';
 
 export class PackageManagerFactory {
   public static create(name: PackageManager | string): AbstractPackageManager {
@@ -14,6 +15,8 @@ export class PackageManagerFactory {
         return new YarnPackageManager();
       case PackageManager.PNPM:
         return new PnpmPackageManager();
+      case PackageManager.BUN:
+        return new BunPackageManager();
       default:
         throw new Error(`Package manager ${name} is not managed.`);
     }
@@ -35,8 +38,15 @@ export class PackageManagerFactory {
         return this.create(PackageManager.PNPM);
       }
 
+      const hasBunLockFile = ['bun.lock', 'bun.lockb'].some((lockFile) =>
+        files.includes(lockFile),
+      );
+      if (hasBunLockFile) {
+        return this.create(PackageManager.BUN);
+      }
+
       return this.create(DEFAULT_PACKAGE_MANAGER);
-    } catch (error) {
+    } catch {
       return this.create(DEFAULT_PACKAGE_MANAGER);
     }
   }

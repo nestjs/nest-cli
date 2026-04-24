@@ -1,17 +1,36 @@
+import * as childProcess from 'child_process';
 import * as chokidar from 'chokidar';
-import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader';
-import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler';
+import { stat } from 'fs/promises';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
+import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
+import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
 
-import * as swcDefaults from '../../../../lib/compiler/defaults/swc-defaults';
-import * as getValueOrDefault from '../../../../lib/compiler/helpers/get-value-or-default';
+vi.mock('../../../../lib/compiler/defaults/swc-defaults.js', () => ({
+  swcDefaultsFactory: vi.fn(),
+}));
 
-jest.mock('chokidar');
+vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
+  getValueOrDefault: vi.fn(),
+}));
+
+vi.mock('chokidar');
+vi.mock('child_process', async () => ({
+  ...(await vi.importActual('child_process')),
+  spawnSync: vi.fn(),
+}));
+vi.mock('fs/promises', () => ({
+  stat: vi.fn(),
+}));
 
 describe('SWC Compiler', () => {
   let compiler: SwcCompiler;
-  let swcDefaultsFactoryMock = jest.fn();
-  let getValueOrDefaultMock = jest.fn();
-  let debounceMock = jest.fn();
+  let debounceMock = vi.fn();
+  const swcOptionsFixture = {
+    swcOptions: {},
+    cliOptions: {},
+  } as ReturnType<typeof swcDefaultsFactory>;
 
   const callRunCompiler = async ({
     configuration,
@@ -25,27 +44,24 @@ describe('SWC Compiler', () => {
       tsconfig || '',
       appName || '',
       extras || {},
-      onSuccess ?? jest.fn(),
+      onSuccess ?? vi.fn(),
     );
   };
 
   beforeEach(() => {
     const PluginsLoaderStub = {
-      load: () => jest.fn(),
-      resolvePluginReferences: () => jest.fn(),
+      load: () => vi.fn(),
+      resolvePluginReferences: () => vi.fn(),
     } as unknown as PluginsLoader;
 
     compiler = new SwcCompiler(PluginsLoaderStub);
 
-    (swcDefaults as any).swcDefaultsFactory = swcDefaultsFactoryMock;
-    (getValueOrDefault as any).getValueOrDefault = getValueOrDefaultMock;
-
-    compiler['runSwc'] = jest.fn();
-    compiler['runTypeChecker'] = jest.fn();
+    compiler['runSwc'] = vi.fn();
+    compiler['runTypeChecker'] = vi.fn();
     compiler['debounce'] = debounceMock;
-    compiler['watchFilesInOutDir'] = jest.fn();
+    compiler['watchFilesInOutDir'] = vi.fn();
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('run', () => {
@@ -65,7 +81,7 @@ describe('SWC Compiler', () => {
         configuration: fixture.configuration,
         extras: fixture.extras,
       });
-      expect(swcDefaultsFactoryMock).toHaveBeenCalledWith(
+      expect(vi.mocked(swcDefaultsFactory)).toHaveBeenCalledWith(
         fixture.extras.tsOptions,
         fixture.configuration,
       );
@@ -82,7 +98,7 @@ describe('SWC Compiler', () => {
         appName: fixture.appName,
       });
 
-      expect(getValueOrDefaultMock).toHaveBeenCalledWith(
+      expect(vi.mocked(getValueOrDefault)).toHaveBeenCalledWith(
         fixture.configuration,
         'compilerOptions.builder.options.swcrcPath',
         fixture.appName,
@@ -149,8 +165,8 @@ describe('SWC Compiler', () => {
     });
 
     it('should call runSwc', async () => {
-      swcDefaultsFactoryMock.mockReturnValueOnce('swcOptionsTest');
-      getValueOrDefaultMock.mockReturnValueOnce('swcrcPathTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce(swcOptionsFixture);
+      vi.mocked(getValueOrDefault).mockReturnValueOnce('swcrcPathTest');
 
       const fixture = {
         extras: {
@@ -164,7 +180,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         fixture.extras,
         'swcrcPathTest',
       );
@@ -175,7 +191,7 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['runSwc']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         fixture.extras,
         'swcrcPathTest',
       );
@@ -188,7 +204,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call onSuccess method when is defined', async () => {
-      const onSuccessMock = jest.fn();
+      const onSuccessMock = vi.fn();
       await callRunCompiler({
         onSuccess: onSuccessMock,
         extras: {
@@ -231,7 +247,7 @@ describe('SWC Compiler', () => {
 
     it('should call debounce method with debounceTime and onSuccess method and when extras.watch is true', async () => {
       const fixture = {
-        onSuccess: jest.fn(),
+        onSuccess: vi.fn(),
       };
 
       await callRunCompiler({
@@ -245,7 +261,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call watchFilesInOutDir method with swcOptions and callback when extras.watch is true', async () => {
-      swcDefaultsFactoryMock.mockReturnValueOnce('swcOptionsTest');
+      vi.mocked(swcDefaultsFactory).mockReturnValueOnce(swcOptionsFixture);
       debounceMock.mockReturnValueOnce('debounceTest');
 
       await callRunCompiler({
@@ -255,13 +271,13 @@ describe('SWC Compiler', () => {
       });
 
       expect(compiler['watchFilesInOutDir']).toHaveBeenCalledWith(
-        'swcOptionsTest',
+        swcOptionsFixture,
         'debounceTest',
       );
     });
 
     it('should not call closeWatchers method when extras.watch is true', async () => {
-      const closeWatchersMock = jest.fn();
+      const closeWatchersMock = vi.fn();
       const fixture = {
         extras: {
           watch: true,
@@ -284,7 +300,7 @@ describe('SWC Compiler', () => {
     });
 
     it('should call closeWatchers method when extras.watch is false', async () => {
-      const closeWatchersMock = jest.fn();
+      const closeWatchersMock = vi.fn();
       const fixture = {
         extras: {
           watch: false,
@@ -307,21 +323,125 @@ describe('SWC Compiler', () => {
     });
   });
 
+  describe('emitDeclarations', () => {
+      it('should call emitDeclarations when extras.emitDeclarations is true and watch is false', async () => {
+        compiler['emitDeclarations'] = vi.fn();
+
+        await callRunCompiler({
+          configuration: '_configurationTest',
+          tsconfig: 'tsconfig.json',
+          appName: 'appNameTest',
+          extras: {
+            watch: false,
+            typeCheck: false,
+            emitDeclarations: true,
+            tsOptions: null,
+          },
+        });
+
+        expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
+          'tsconfig.json',
+        );
+      });
+
+      it('should call emitDeclarations when extras.emitDeclarations is true and watch is true', async () => {
+        compiler['emitDeclarations'] = vi.fn();
+
+        await callRunCompiler({
+          configuration: '_configurationTest',
+          tsconfig: 'tsconfig.json',
+          appName: 'appNameTest',
+          extras: {
+            watch: true,
+            typeCheck: false,
+            emitDeclarations: true,
+            tsOptions: null,
+          },
+        });
+
+        expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
+          'tsconfig.json',
+        );
+      });
+
+      it('should not call emitDeclarations when extras.emitDeclarations is false', async () => {
+        compiler['emitDeclarations'] = vi.fn();
+
+        await callRunCompiler({
+          configuration: '_configurationTest',
+          tsconfig: 'tsconfig.json',
+          appName: 'appNameTest',
+          extras: {
+            watch: false,
+            typeCheck: false,
+            emitDeclarations: false,
+            tsOptions: null,
+          },
+        });
+
+        expect(compiler['emitDeclarations']).not.toHaveBeenCalled();
+      });
+
+      it('should spawn tsc with --emitDeclarationOnly flag', async () => {
+        const originalEmitDeclarations =
+          SwcCompiler.prototype['emitDeclarations'];
+        compiler['emitDeclarations'] =
+          originalEmitDeclarations.bind(compiler);
+
+        (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({ status: 0 });
+
+        compiler['emitDeclarations']('tsconfig.json');
+
+        // Flush process.nextTick to avoid "Cannot log after tests are done" warning
+        await new Promise((resolve) => process.nextTick(resolve));
+
+        expect(childProcess.spawnSync).toHaveBeenCalledWith(
+          expect.stringContaining('tsc'),
+          ['--emitDeclarationOnly', '-p', 'tsconfig.json'],
+          expect.objectContaining({
+            cwd: process.cwd(),
+            stdio: 'inherit',
+            shell: true,
+          }),
+        );
+      });
+
+      it('should log error when tsc exits with non-zero status', async () => {
+        const originalEmitDeclarations =
+          SwcCompiler.prototype['emitDeclarations'];
+        compiler['emitDeclarations'] =
+          originalEmitDeclarations.bind(compiler);
+
+        (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({ status: 1 });
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        compiler['emitDeclarations']('tsconfig.json');
+
+        // Flush process.nextTick to avoid "Cannot log after tests are done" warning
+        await new Promise((resolve) => process.nextTick(resolve));
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Failed to emit declaration files'),
+        );
+
+        consoleErrorSpy.mockRestore();
+      });
+    });
+
   describe('watchFilesInOutDir', () => {
     let originalWatchFilesInOutDir: Function;
 
     beforeEach(() => {
       // Restore the real implementation that was mocked in the outer beforeEach
-      originalWatchFilesInOutDir =
-        SwcCompiler.prototype['watchFilesInOutDir'];
+      originalWatchFilesInOutDir = SwcCompiler.prototype['watchFilesInOutDir'];
       compiler['watchFilesInOutDir'] =
         originalWatchFilesInOutDir.bind(compiler);
     });
 
     it('should only register add/change listeners after the watcher is ready', () => {
       const listeners: Record<string, Function[]> = {};
-      const mockWatcher: { on: jest.Mock } = {
-        on: jest.fn((event: string, handler: Function) => {
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: Function) => {
           if (!listeners[event]) {
             listeners[event] = [];
           }
@@ -329,9 +449,9 @@ describe('SWC Compiler', () => {
           return mockWatcher;
         }),
       };
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
 
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       const options = {
         cliOptions: {
           outDir: '/tmp/test-out',
@@ -359,8 +479,8 @@ describe('SWC Compiler', () => {
 
     it('should not trigger onChange for file events that occur before watcher is ready', () => {
       const listeners: Record<string, Function[]> = {};
-      const mockWatcher: { on: jest.Mock } = {
-        on: jest.fn((event: string, handler: Function) => {
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: Function) => {
           if (!listeners[event]) {
             listeners[event] = [];
           }
@@ -368,9 +488,9 @@ describe('SWC Compiler', () => {
           return mockWatcher;
         }),
       };
-      (chokidar.watch as jest.Mock).mockReturnValue(mockWatcher);
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
 
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       const options = {
         cliOptions: {
           outDir: '/tmp/test-out',
@@ -389,6 +509,114 @@ describe('SWC Compiler', () => {
       listeners['add'][0]();
 
       expect(onChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('watchFilesInSrcDir', () => {
+    let originalWatchFilesInSrcDir: Function;
+
+    beforeEach(() => {
+      originalWatchFilesInSrcDir =
+        SwcCompiler.prototype['watchFilesInSrcDir'];
+      compiler['watchFilesInSrcDir'] =
+        originalWatchFilesInSrcDir.bind(compiler);
+
+      vi.mocked(stat).mockResolvedValue({ isDirectory: () => true } as any);
+    });
+
+    it('should not ignore .ts files when extensions include ts', async () => {
+      const mockWatcher = {
+        on: vi.fn().mockReturnThis(),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['js', 'ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const watchOptions = vi.mocked(chokidar.watch).mock.calls[0][1] as any;
+      const ignoredFn = watchOptions.ignored;
+
+      const fileStats = { isFile: () => true };
+
+      // .ts files should NOT be ignored
+      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
+      // .js files should NOT be ignored
+      expect(ignoredFn('src/app.service.js', fileStats)).toBe(false);
+      // Non-matching files should be ignored
+      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
+      // Directories should not be ignored
+      const dirStats = { isFile: () => false };
+      expect(ignoredFn('src/subdir', dirStats)).toBe(false);
+    });
+
+    it('should skip watching if source directory does not exist', async () => {
+      vi.mocked(stat).mockRejectedValue(new Error('ENOENT'));
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
+    });
+
+    it('should skip watching if filenames is empty', async () => {
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: [],
+          extensions: ['ts'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      expect(chokidar.watch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('shouldLogSwcStatus', () => {
+    const originalLogLevel = process.env.npm_config_loglevel;
+
+    afterEach(() => {
+      process.env.npm_config_loglevel = originalLogLevel;
+    });
+
+    it('should return false when extras.silent is true', () => {
+      const result = compiler['shouldLogSwcStatus']({
+        silent: true,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when npm log level is silent', () => {
+      process.env.npm_config_loglevel = 'silent';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when silent mode is not enabled', () => {
+      process.env.npm_config_loglevel = 'warn';
+
+      const result = compiler['shouldLogSwcStatus']({
+        silent: false,
+      } as any);
+      expect(result).toBe(true);
     });
   });
 });

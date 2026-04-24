@@ -1,20 +1,21 @@
-import { Configuration, ConfigurationLoader } from '../../../lib/configuration';
-import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader';
-import { Reader } from '../../../lib/readers';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { Configuration, ConfigurationLoader } from '../../../lib/configuration/index.js';
+import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader.js';
+import { Reader } from '../../../lib/readers/index.js';
 
 describe('Nest Configuration Loader', () => {
   let reader: Reader;
   beforeAll(() => {
-    const mock = jest.fn();
+    const mock = vi.fn();
     mock.mockImplementation(() => {
       return {
-        readAnyOf: jest.fn(() =>
+        readAnyOf: vi.fn(() =>
           JSON.stringify({
             language: 'ts',
             collection: '@nestjs/schematics',
           }),
         ),
-        read: jest.fn(() =>
+        read: vi.fn(() =>
           JSON.stringify({
             language: 'ts',
             collection: '@nestjs/schematics',
@@ -82,6 +83,113 @@ describe('Nest Configuration Loader', () => {
         manualRestart: false,
       },
       generateOptions: {},
+    });
+  });
+
+  it('should deep-merge compilerOptions with defaults', async () => {
+    const readerWithCompilerOpts: Reader = {
+      list: vi.fn(() => []),
+      readAnyOf: vi.fn(),
+      read: vi.fn(() =>
+        JSON.stringify({
+          compilerOptions: {
+            plugins: ['my-plugin'],
+          },
+        }),
+      ),
+    };
+    const loader = new NestConfigurationLoader(readerWithCompilerOpts);
+    const configuration = loader.load('compiler-opts-test.json');
+    expect(configuration.compilerOptions).toEqual({
+      assets: [],
+      builder: {
+        options: {
+          configPath: 'tsconfig.json',
+        },
+        type: 'tsc',
+      },
+      plugins: ['my-plugin'],
+      webpack: false,
+      manualRestart: false,
+    });
+  });
+
+  it('should deep-merge generateOptions with defaults', async () => {
+    const readerWithGenOpts: Reader = {
+      list: vi.fn(() => []),
+      readAnyOf: vi.fn(),
+      read: vi.fn(() =>
+        JSON.stringify({
+          generateOptions: {
+            spec: false,
+          },
+        }),
+      ),
+    };
+    const loader = new NestConfigurationLoader(readerWithGenOpts);
+    const configuration = loader.load('generate-opts-test.json');
+    expect(configuration.generateOptions).toEqual({
+      spec: false,
+    });
+  });
+
+  it('should preserve all generateOptions fields when merging', async () => {
+    const readerWithAllGenOpts: Reader = {
+      list: vi.fn(() => []),
+      readAnyOf: vi.fn(),
+      read: vi.fn(() =>
+        JSON.stringify({
+          generateOptions: {
+            spec: false,
+            flat: true,
+            specFileSuffix: 'test',
+            baseDir: 'src',
+          },
+        }),
+      ),
+    };
+    const loader = new NestConfigurationLoader(readerWithAllGenOpts);
+    const configuration = loader.load('all-generate-opts-test.json');
+    expect(configuration.generateOptions).toEqual({
+      spec: false,
+      flat: true,
+      specFileSuffix: 'test',
+      baseDir: 'src',
+    });
+  });
+
+  it('should deep-merge both compilerOptions and generateOptions simultaneously', async () => {
+    const readerWithBothOpts: Reader = {
+      list: vi.fn(() => []),
+      readAnyOf: vi.fn(),
+      read: vi.fn(() =>
+        JSON.stringify({
+          compilerOptions: {
+            deleteOutDir: true,
+          },
+          generateOptions: {
+            flat: true,
+          },
+        }),
+      ),
+    };
+    const loader = new NestConfigurationLoader(readerWithBothOpts);
+    const configuration = loader.load('both-opts-test.json');
+    expect(configuration.compilerOptions).toEqual({
+      assets: [],
+      builder: {
+        options: {
+          configPath: 'tsconfig.json',
+        },
+        type: 'tsc',
+      },
+      plugins: [],
+      webpack: false,
+      manualRestart: false,
+      deleteOutDir: true,
+    });
+    expect(configuration.generateOptions).toEqual({
+      flat: true,
     });
   });
 });

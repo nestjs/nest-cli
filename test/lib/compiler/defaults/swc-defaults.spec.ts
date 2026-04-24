@@ -1,4 +1,5 @@
-import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults';
+import { describe, expect, it } from 'vitest';
+import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
 
 describe('swcDefaultsFactory', () => {
   it('should set stripLeadingPaths to true when rootDir is not set', () => {

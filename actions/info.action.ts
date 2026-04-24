@@ -1,14 +1,21 @@
 import { blue, bold, green, red, yellow } from 'ansis';
 import { readFileSync } from 'fs';
+import { createRequire } from 'module';
 import { platform, release } from 'os';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import {
   AbstractPackageManager,
   PackageManagerFactory,
-} from '../lib/package-managers';
-import { BANNER, MESSAGES } from '../lib/ui';
-import { AbstractAction } from './abstract.action';
-import osName from '../lib/utils/os-info.utils';
+} from '../lib/package-managers/index.js';
+import { BANNER, MESSAGES } from '../lib/ui/index.js';
+import osName from '../lib/utils/os-info.utils.js';
+import { AbstractAction } from './abstract.action.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 interface LockfileDependency {
   version: string;
@@ -63,42 +70,32 @@ export class InfoAction extends AbstractAction {
     await this.displayPackageManagerVersion();
   }
 
-  async displayPackageManagerVersion() {
+  private async displayPackageManagerVersion() {
     try {
       const version: string = await this.manager.version();
-      console.info(
-        `${this.manager.name} Version    :`,
-        blue(version),
-        '\n',
-      );
+      console.info(`${this.manager.name} Version    :`, blue(version), '\n');
     } catch {
-      console.error(
-        `${this.manager.name} Version    :`,
-        red`Unknown`,
-        '\n',
-      );
+      console.error(`${this.manager.name} Version    :`, red`Unknown`, '\n');
     }
   }
 
-  async displayNestInformation(): Promise<void> {
+  private async displayNestInformation(): Promise<void> {
     this.displayCliVersion();
     console.info(green`[Nest Platform Information]`);
     await this.displayNestInformationFromPackage();
   }
 
-  async displayNestInformationFromPackage(): Promise<void> {
+  private async displayNestInformationFromPackage(): Promise<void> {
     try {
       const dependencies: PackageJsonDependencies =
         this.readProjectPackageDependencies();
       this.displayNestVersions(dependencies);
-    } catch (err) {
-      console.error(
-        red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED),
-      );
+    } catch {
+      console.error(red(MESSAGES.NEST_INFORMATION_PACKAGE_MANAGER_FAILED));
     }
   }
 
-  displayCliVersion(): void {
+  private displayCliVersion(): void {
     console.info(green`[Nest CLI]`);
     console.info(
       'Nest CLI Version :',
@@ -110,7 +107,7 @@ export class InfoAction extends AbstractAction {
     );
   }
 
-  readProjectPackageDependencies(): PackageJsonDependencies {
+  private readProjectPackageDependencies(): PackageJsonDependencies {
     const buffer = readFileSync(join(process.cwd(), 'package.json'));
     const pack = JSON.parse(buffer.toString());
     const dependencies = { ...pack.dependencies, ...pack.devDependencies };
@@ -122,7 +119,7 @@ export class InfoAction extends AbstractAction {
     return dependencies;
   }
 
-  displayNestVersions(dependencies: PackageJsonDependencies) {
+  private displayNestVersions(dependencies: PackageJsonDependencies) {
     const nestDependencies = this.buildNestVersionsMessage(dependencies);
     nestDependencies.forEach((dependency) =>
       console.info(dependency.name, blue(dependency.value)),
@@ -131,7 +128,7 @@ export class InfoAction extends AbstractAction {
     this.displayWarningMessage(nestDependencies);
   }
 
-  displayWarningMessage(nestDependencies: NestDependency[]) {
+  private displayWarningMessage(nestDependencies: NestDependency[]) {
     try {
       const warnings = this.buildNestVersionsWarningMessage(nestDependencies);
       const majorVersions = Object.keys(warnings);
@@ -161,7 +158,7 @@ export class InfoAction extends AbstractAction {
     }
   }
 
-  buildNestVersionsWarningMessage(
+  private buildNestVersionsWarningMessage(
     nestDependencies: NestDependency[],
   ): NestDependencyWarnings {
     const unsortedWarnings = nestDependencies.reduce(
@@ -211,14 +208,14 @@ export class InfoAction extends AbstractAction {
     );
   }
 
-  buildNestVersionsMessage(
+  private buildNestVersionsMessage(
     dependencies: PackageJsonDependencies,
   ): NestDependency[] {
     const nestDependencies = this.collectNestDependencies(dependencies);
     return this.format(nestDependencies);
   }
 
-  collectNestDependencies(
+  private collectNestDependencies(
     dependencies: PackageJsonDependencies,
   ): NestDependency[] {
     const nestDependencies: NestDependency[] = [];
@@ -240,26 +237,17 @@ export class InfoAction extends AbstractAction {
     return nestDependencies;
   }
 
-  format(dependencies: NestDependency[]): NestDependency[] {
+  private format(dependencies: NestDependency[]): NestDependency[] {
     const sorted = dependencies.sort(
       (dependencyA, dependencyB) =>
         dependencyB.name.length - dependencyA.name.length,
     );
     const length = sorted[0].name.length;
     sorted.forEach((dependency) => {
-      if (dependency.name.length < length) {
-        dependency.name = this.rightPad(dependency.name, length);
-      }
+      dependency.name = dependency.name.padEnd(length);
       dependency.name = dependency.name.concat(' :');
-      dependency.value = dependency.value.replace(/(\^|\~)/, '');
+      dependency.value = dependency.value.replace(/([\^~])/, '');
     });
     return sorted;
-  }
-
-  rightPad(name: string, length: number): string {
-    while (name.length < length) {
-      name = name.concat(' ');
-    }
-    return name;
   }
 }

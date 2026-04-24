@@ -1,15 +1,25 @@
 import { Command } from 'commander';
-import { exitIfExtraArgs } from '../../../lib/utils/extra-args-warning';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { exitIfExtraArgs } from '../../../lib/utils/extra-args-warning.js';
+
+function createCommandMock(name: string, args: string[]): Command {
+  return {
+    name: () => name,
+    parent: {
+      args,
+    },
+  } as unknown as Command;
+}
 
 describe('exitIfExtraArgs', () => {
-  let processExitSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    processExitSpy = jest
+    processExitSpy = vi
       .spyOn(process, 'exit')
       .mockImplementation(() => undefined as never);
-    consoleErrorSpy = jest
+    consoleErrorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
   });
@@ -20,48 +30,27 @@ describe('exitIfExtraArgs', () => {
   });
 
   it('should not exit when argument count matches expected', () => {
-    const program = new Command();
-    const sub = program.command('generate <schematic> [name] [path]');
-    sub.action((schematic, name, path, cmd) => {
-      exitIfExtraArgs(cmd, 3);
-    });
-
-    program.parse(['node', 'test', 'generate', 'resource', 'myName', 'myPath']);
+    exitIfExtraArgs(
+      createCommandMock('generate', ['resource', 'myName', 'myPath']),
+      3,
+    );
 
     expect(processExitSpy).not.toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 
   it('should not exit when fewer arguments than expected are passed', () => {
-    const program = new Command();
-    const sub = program.command('generate <schematic> [name] [path]');
-    sub.action((schematic, name, path, cmd) => {
-      exitIfExtraArgs(cmd, 3);
-    });
-
-    program.parse(['node', 'test', 'generate', 'resource']);
+    exitIfExtraArgs(createCommandMock('generate', ['resource']), 3);
 
     expect(processExitSpy).not.toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 
   it('should exit with error when extra arguments are passed to generate', () => {
-    const program = new Command();
-    const sub = program.command('generate <schematic> [name] [path]');
-    sub.action((schematic, name, path, cmd) => {
-      exitIfExtraArgs(cmd, 3);
-    });
-
-    program.parse([
-      'node',
-      'test',
-      'generate',
-      'resource',
-      'aa',
-      'bb',
-      'cc',
-      'dd',
-    ]);
+    exitIfExtraArgs(
+      createCommandMock('generate', ['resource', 'aa', 'bb', 'cc', 'dd']),
+      3,
+    );
 
     expect(processExitSpy).toHaveBeenCalledWith(1);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -73,13 +62,7 @@ describe('exitIfExtraArgs', () => {
   });
 
   it('should exit with error when extra arguments are passed to new', () => {
-    const program = new Command();
-    const sub = program.command('new [name]');
-    sub.action((name, cmd) => {
-      exitIfExtraArgs(cmd, 1);
-    });
-
-    program.parse(['node', 'test', 'new', 'a', 'b', 'c']);
+    exitIfExtraArgs(createCommandMock('new', ['a', 'b', 'c']), 1);
 
     expect(processExitSpy).toHaveBeenCalledWith(1);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -91,13 +74,7 @@ describe('exitIfExtraArgs', () => {
   });
 
   it('should exit with error when extra arguments are passed to info', () => {
-    const program = new Command();
-    const sub = program.command('info');
-    sub.action((cmd) => {
-      exitIfExtraArgs(cmd, 0);
-    });
-
-    program.parse(['node', 'test', 'info', 'extra']);
+    exitIfExtraArgs(createCommandMock('info', ['extra']), 0);
 
     expect(processExitSpy).toHaveBeenCalledWith(1);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -109,21 +86,10 @@ describe('exitIfExtraArgs', () => {
   });
 
   it('should include command name in the help message', () => {
-    const program = new Command();
-    const sub = program.command('generate <schematic> [name] [path]');
-    sub.action((schematic, name, path, cmd) => {
-      exitIfExtraArgs(cmd, 3);
-    });
-
-    program.parse([
-      'node',
-      'test',
-      'generate',
-      'resource',
-      'aa',
-      'bb',
-      'extra',
-    ]);
+    exitIfExtraArgs(
+      createCommandMock('generate', ['resource', 'aa', 'bb', 'extra']),
+      3,
+    );
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('nest generate --help'),
