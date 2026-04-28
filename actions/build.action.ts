@@ -6,6 +6,7 @@ import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
 import { getBuilder } from '../lib/compiler/helpers/get-builder.js';
+import { getEffectiveRootDir } from '../lib/compiler/helpers/get-effective-root-dir.js';
 import { getRspackConfigPath } from '../lib/compiler/helpers/get-rspack-config-path.js';
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path.js';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
@@ -82,9 +83,10 @@ export class BuildAction extends AbstractAction {
 
     const buildApp = async (appName: string | undefined) => {
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
-      const { options: tsOptions } =
+      const { options: tsOptions, fileNames: tsFileNames } =
         this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
+      const tsRootDir = getEffectiveRootDir(tsOptions.rootDir, tsFileNames);
 
       const isWebpackEnabled = getValueOrDefault<boolean>(
         configuration,
@@ -104,6 +106,7 @@ export class BuildAction extends AbstractAction {
         outDir,
         watchAssetsMode,
         onSuccess,
+        tsRootDir,
       );
       this.warnOnIgnoredLibraryAssets(configuration, appName);
 

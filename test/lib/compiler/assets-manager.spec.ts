@@ -2,8 +2,10 @@ import * as chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { copyFileSync, statSync} from 'fs';
 import { sync as globSync } from 'glob';
+import { join, sep } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssetsManager } from '../../../lib/compiler/assets-manager.js';
+import { copyPathResolve } from '../../../lib/compiler/helpers/copy-path-resolve.js';
 import { getValueOrDefault } from '../../../lib/compiler/helpers/get-value-or-default.js';
 
 vi.mock('chokidar', () => ({
@@ -512,6 +514,101 @@ describe('AssetsManager', () => {
         ignore: expectedExclude,
         dot: true,
       });
+    });
+  });
+
+  describe('rootDir-aware path stripping (#3387)', () => {
+    it('strips against the supplied tsconfig rootDir instead of sourceRoot', () => {
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([{ include: '**/*.txt' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('app') // sourceRoot (legacy / wrong for this build)
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+        '/abs/asset.txt',
+      ]);
+
+      const rootDir = join(process.cwd(), 'src');
+      assetsManager.copyAssets(
+        {} as any,
+        undefined,
+        'dist',
+        false,
+        undefined,
+        rootDir,
+      );
+
+      // copyPathResolve must receive the rootDir-derived depth, not sourceRoot.
+      expect(copyPathResolve).toHaveBeenCalledWith(
+        '/abs/asset.txt',
+        'dist',
+        rootDir.split(sep).length,
+      );
+    });
+
+    it('falls back to sourceRoot when rootDir is undefined', () => {
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([{ include: '**/*.txt' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('app') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+        '/abs/asset.txt',
+      ]);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      const expectedSourceRoot = join(process.cwd(), 'app');
+      expect(copyPathResolve).toHaveBeenCalledWith(
+        '/abs/asset.txt',
+        'dist',
+        expectedSourceRoot.split(sep).length,
+      );
+    });
+
+    it('still uses each library asset _sourceRoot even when rootDir is set', () => {
+      const configuration = {
+        projects: {
+          'my-lib': {
+            type: 'library',
+            root: 'libs/my-lib',
+            sourceRoot: 'libs/my-lib/src',
+            compilerOptions: {
+              assets: [{ include: '**/*.graphql' }],
+            },
+          },
+        },
+      } as any;
+
+      (getValueOrDefault as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce([]) // app assets (empty)
+        .mockReturnValueOnce(['my-lib']) // includeLibraryAssets
+        .mockReturnValueOnce('apps/my-app/src') // sourceRoot (unused for the lib path)
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+        '/abs/lib/file.graphql',
+      ]);
+
+      const rootDir = join(process.cwd(), 'apps/my-app/src');
+      assetsManager.copyAssets(
+        configuration,
+        'my-app',
+        'dist',
+        false,
+        undefined,
+        rootDir,
+      );
+
+      const expectedLibSourceRoot = join(process.cwd(), 'libs/my-lib/src');
+      // Library entry must keep its own _sourceRoot, not be replaced by rootDir.
+      expect(copyPathResolve).toHaveBeenCalledWith(
+        '/abs/lib/file.graphql',
+        'dist',
+        expectedLibSourceRoot.split(sep).length,
+      );
     });
   });
 });

@@ -35,6 +35,7 @@ export class AssetsManager {
     outDir: string,
     watchAssetsMode: boolean,
     onSuccess?: () => void,
+    rootDir?: string,
   ) {
     const assets =
       getValueOrDefault<Asset[]>(
@@ -63,6 +64,14 @@ export class AssetsManager {
     try {
       let sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
       sourceRoot = join(process.cwd(), sourceRoot);
+
+      // The asset path stripping must mirror how the TypeScript compiler emits
+      // files. When the effective rootDir (either explicit or computed from
+      // input files) differs from the configured `sourceRoot` — typically the
+      // case when `--path` points at a tsconfig with a different rootDir — we
+      // use that rootDir instead so copied assets stay aligned with the
+      // emitted JavaScript output. See nestjs/nest-cli#3387.
+      const stripRoot = rootDir ? join(rootDir) : sourceRoot;
 
       const filesToCopy = assets.map<AssetEntry>((item) => {
         let includePath = typeof item === 'string' ? item : item.include!;
@@ -109,7 +118,11 @@ export class AssetsManager {
       }
 
       for (const item of allFilesToCopy) {
-        const itemSourceRoot = (item as any)._sourceRoot || sourceRoot;
+        // Library assets carry their own `_sourceRoot` so the per-library
+        // directory layout is preserved verbatim. For application assets we
+        // strip relative to the effective tsconfig rootDir (falls back to
+        // sourceRoot when no rootDir is supplied or computable).
+        const itemSourceRoot = (item as any)._sourceRoot || stripRoot;
         const option: ActionOnFile = {
           action: 'change',
           item,
