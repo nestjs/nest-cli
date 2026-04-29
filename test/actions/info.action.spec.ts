@@ -40,6 +40,56 @@ describe('InfoAction', () => {
     });
   });
 
+  describe('format', () => {
+    it('should return the input untouched when there are no @nestjs/* deps', () => {
+      // Calling `format([])` used to throw `Cannot read properties of
+      // undefined (reading 'name')` because it dereferenced `sorted[0]`
+      // without first checking the array length. That exception would
+      // bubble up to `displayNestInformationFromPackage` and be swallowed
+      // as the misleading "cannot read your project package.json file"
+      // error, even though the file had been read successfully.
+      expect(() => (infoAction as any).format([])).not.toThrow();
+      expect((infoAction as any).format([])).toEqual([]);
+    });
+
+    it('should pad and clean version ranges when deps are present', () => {
+      const result = (infoAction as any).format([
+        { name: 'core', value: '^1.2.3', packageName: '@nestjs/core' },
+        {
+          name: 'platform-express',
+          value: '~1.2.4',
+          packageName: '@nestjs/platform-express',
+        },
+      ]);
+      // Sorted by name length desc; longest gets ' :' appended directly,
+      // shorter names are padded to the longest length before the suffix.
+      expect(result[0].name).toBe('platform-express :');
+      expect(result[1].name).toBe('core             :');
+      expect(result[0].value).toBe('1.2.4');
+      expect(result[1].value).toBe('1.2.3');
+    });
+  });
+
+  describe('displayNestVersions', () => {
+    it('should print a clear note when no @nestjs/* deps are declared', () => {
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      // Empty deps map mirrors a project with no @nestjs/* packages — the
+      // common cause being running `nest info` from a non-Nest project
+      // (or before installing dependencies).
+      (infoAction as any).displayNestVersions({});
+
+      const messages = consoleSpy.mock.calls.map((call) => call.join(' '));
+      expect(
+        messages.some((line) =>
+          line.includes('No @nestjs/* dependencies were found'),
+        ),
+      ).toBe(true);
+
+      consoleSpy.mockRestore();
+    });
+  });
+
   describe('buildNestVersionsWarningMessage', () => {
     it('should return an empty object for one or zero minor versions', () => {
       const dependencies = [
