@@ -121,6 +121,14 @@ export class InfoAction extends AbstractAction {
 
   private displayNestVersions(dependencies: PackageJsonDependencies) {
     const nestDependencies = this.buildNestVersionsMessage(dependencies);
+    if (nestDependencies.length === 0) {
+      // No @nestjs/* packages declared in this package.json. Surfacing this
+      // explicitly is much more useful than letting `format([])` throw and
+      // showing the generic "cannot read your project package.json" error,
+      // which is misleading when the file was actually read successfully.
+      console.info('No @nestjs/* dependencies were found in package.json.');
+      return;
+    }
     nestDependencies.forEach((dependency) =>
       console.info(dependency.name, blue(dependency.value)),
     );
@@ -238,6 +246,9 @@ export class InfoAction extends AbstractAction {
   }
 
   private format(dependencies: NestDependency[]): NestDependency[] {
+    if (dependencies.length === 0) {
+      return dependencies;
+    }
     const sorted = dependencies.sort(
       (dependencyA, dependencyB) =>
         dependencyB.name.length - dependencyA.name.length,
