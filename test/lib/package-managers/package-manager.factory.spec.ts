@@ -48,17 +48,32 @@ describe('PackageManagerFactory', () => {
     });
 
     it('should return BunPackageManager when "bun.lock" file is found', async () => {
-      (fs.promises.readdir as jest.Mock).mockResolvedValue(['bun.lock']);
+      (fs.promises.readdir as Mock).mockResolvedValue(['bun.lock']);
 
-      const manager = await PackageManagerFactory.find();
-      expect(manager).toBeInstanceOf(BunPackageManager);
+      const whenPackageManager = PackageManagerFactory.find();
+      await expect(whenPackageManager).resolves.toBeInstanceOf(
+        BunPackageManager,
+      );
     });
 
     it('should return BunPackageManager when "bun.lockb" file is found', async () => {
-      (fs.promises.readdir as jest.Mock).mockResolvedValue(['bun.lockb']);
+      (fs.promises.readdir as Mock).mockResolvedValue(['bun.lockb']);
 
-      const manager = await PackageManagerFactory.find();
-      expect(manager).toBeInstanceOf(BunPackageManager);
+      const whenPackageManager = PackageManagerFactory.find();
+      await expect(whenPackageManager).resolves.toBeInstanceOf(
+        BunPackageManager,
+      );
+    });
+
+    it('should fall back to NpmPackageManager when readdir rejects', async () => {
+      (fs.promises.readdir as Mock).mockRejectedValue(
+        Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+      );
+
+      const whenPackageManager = PackageManagerFactory.find();
+      await expect(whenPackageManager).resolves.toBeInstanceOf(
+        NpmPackageManager,
+      );
     });
 
     describe('when there are all supported lock files', () => {
