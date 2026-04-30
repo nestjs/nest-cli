@@ -58,8 +58,8 @@
     "webpack-node-externals": "3.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.5.2",
-    "@commitlint/config-angular": "20.5.0",
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-angular": "20.5.3",
     "@swc/cli": "0.8.1",
     "@swc/core": "1.15.32",
     "@types/inquirer": "9.0.9",
