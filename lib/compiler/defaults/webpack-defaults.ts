@@ -19,10 +19,22 @@ function loadWebpackDeps() {
       };
     return { webpack: wp, nodeExternals: externals, TsconfigPathsPlugin };
   } catch (e: any) {
-    const pkg = e?.message?.match?.(/Cannot find.*'([^']+)'/)?.[1] ?? 'webpack';
+    if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ERR_MODULE_NOT_FOUND') {
+      // Only the "package missing" branch is wrapped with install advice.
+      // Surfacing unrelated errors as "package not found" would mislead
+      // users into reinstalling perfectly valid dependencies.
+      throw e;
+    }
+    // Use a non-greedy match so error messages that contain multiple
+    // quoted paths (e.g. ESM "Cannot find package 'foo' imported from
+    // '/abs/path.mjs'") still extract the package name rather than the
+    // importing file path.
+    const pkg =
+      e?.message?.match?.(/Cannot find.*?'([^']+)'/)?.[1] ?? 'webpack';
     throw new Error(
       `The "${pkg}" package is required when using the webpack compiler but could not be found. ` +
         `Please install it:\n\n  npm install --save-dev webpack webpack-node-externals tsconfig-paths-webpack-plugin ts-loader fork-ts-checker-webpack-plugin\n`,
+      { cause: e },
     );
   }
 }

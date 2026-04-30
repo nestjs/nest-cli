@@ -18,12 +18,23 @@ function loadRspackDeps() {
       };
     return { nodeExternals: externals, TsconfigPathsPlugin, rspack };
   } catch (e: any) {
+    if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ERR_MODULE_NOT_FOUND') {
+      // Only the "package missing" branch is wrapped with install advice.
+      // Surfacing unrelated errors as "package not found" would mislead
+      // users into reinstalling perfectly valid dependencies.
+      throw e;
+    }
+    // Use a non-greedy match so error messages that contain multiple
+    // quoted paths (e.g. ESM "Cannot find package 'foo' imported from
+    // '/abs/path.mjs'") still extract the package name rather than the
+    // importing file path.
     const pkg =
-      e?.message?.match?.(/Cannot find.*'([^']+)'/)?.[1] ??
+      e?.message?.match?.(/Cannot find.*?'([^']+)'/)?.[1] ??
       'webpack-node-externals';
     throw new Error(
       `The "${pkg}" package is required when using the rspack compiler but could not be found. ` +
         `Please install it:\n\n  npm install --save-dev @rspack/core webpack-node-externals tsconfig-paths-webpack-plugin\n`,
+      { cause: e },
     );
   }
 }
