@@ -35,7 +35,16 @@ export class NestConfigurationLoader implements ConfigurationLoader {
         process.exit(1);
       }
 
-      const fileConfig = JSON.parse(contentOrError);
+      const configFilename = name ?? 'nest-cli.json';
+      let fileConfig: Configuration;
+      try {
+        fileConfig = JSON.parse(contentOrError);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        throw new Error(
+          `Could not parse Nest CLI configuration file "${configFilename}". Please, ensure that the file contains valid JSON. Reason: ${reason}`,
+        );
+      }
       loadedConfig = {
         ...defaultConfiguration,
         ...fileConfig,
