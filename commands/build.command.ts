@@ -61,6 +61,22 @@ export class BuildCommand extends AbstractCommand {
           return;
         }
 
+        let parallel: number | boolean | undefined;
+        if (options.parallel === true || options.parallel === undefined) {
+          // `--parallel` with no value means unlimited; absent means sequential.
+          parallel = options.parallel;
+        } else {
+          const parsed = parseInt(options.parallel, 10);
+          if (!Number.isFinite(parsed) || parsed < 1) {
+            console.error(
+              ERROR_PREFIX +
+                ` Invalid --parallel value: "${options.parallel}". Expected a positive integer (e.g. --parallel 4) or no value for unlimited concurrency.`,
+            );
+            return;
+          }
+          parallel = parsed;
+        }
+
         const context: BuildCommandContext = {
           apps: apps.length > 0 ? apps : [],
           config: options.config,
@@ -79,11 +95,7 @@ export class BuildCommand extends AbstractCommand {
             !!options.watch &&
             !isWebpackEnabled,
           all: !!options.all,
-          parallel: options.parallel === true
-            ? true
-            : options.parallel
-              ? parseInt(options.parallel, 10)
-              : undefined,
+          parallel,
         };
 
         await this.action.handle(context);

@@ -162,4 +162,64 @@ describe('BuildAction - Rspack', () => {
       expect(RspackCompiler).not.toHaveBeenCalled();
     });
   });
+
+  describe('runBuild parallel concurrency', () => {
+    // Each test in this suite uses three apps so the parallel branch is taken.
+    // We replace `runRspack` with a fast tracker so we can assert how many
+    // apps were built — and, critically, that the loop terminates instead of
+    // spinning forever on a non-positive concurrency value.
+    const buildAllThreeApps = async (parallel: unknown) => {
+      const builtApps: Array<string | undefined> = [];
+      (buildAction as any).runRspack = vi.fn(
+        async (_config: unknown, appName: string | undefined) => {
+          builtApps.push(appName);
+        },
+      );
+
+      await buildAction.runBuild(
+        ['a', 'b', 'c'],
+        { builder: 'rspack', parallel },
+        false,
+        false,
+      );
+
+      return builtApps;
+    };
+
+    it('should build sequentially when parallel is 0 (falsy)', async () => {
+      // 0 is falsy so the action takes the sequential branch — every app
+      // should still build exactly once.
+      const built = await buildAllThreeApps(0);
+
+      expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should not loop forever when parallel is a negative number', async () => {
+      // Without the guard, `concurrency = -1` makes `i += -1` decrement
+      // forever. Vitest will hit the test timeout if the regression returns.
+      const built = await buildAllThreeApps(-1);
+
+      expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should not loop forever when parallel is NaN', async () => {
+      // Without the guard, `i += NaN` keeps `i` at NaN and the loop never
+      // exits.
+      const built = await buildAllThreeApps(Number.NaN);
+
+      expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should respect a positive parallel concurrency and build every app once', async () => {
+      const built = await buildAllThreeApps(2);
+
+      expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should treat `parallel: true` as unlimited and build every app once', async () => {
+      const built = await buildAllThreeApps(true);
+
+      expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+  });
 });
