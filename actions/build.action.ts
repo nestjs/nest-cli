@@ -188,8 +188,15 @@ export class BuildAction extends AbstractAction {
 
     const parallel = options.parallel;
     if (parallel && appNames.length > 1) {
-      const concurrency =
+      // Coerce to a positive integer; fall back to unlimited (= appNames.length)
+      // for any non-positive or non-finite value to guard against an infinite
+      // loop when `i += concurrency` would never advance.
+      const requested =
         typeof parallel === 'number' ? parallel : appNames.length;
+      const concurrency =
+        Number.isFinite(requested) && requested >= 1
+          ? Math.floor(requested)
+          : appNames.length;
       for (let i = 0; i < appNames.length; i += concurrency) {
         const chunk = appNames.slice(i, i + concurrency);
         await Promise.all(chunk.map((appName) => buildApp(appName)));
