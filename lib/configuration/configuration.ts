@@ -66,6 +66,12 @@ export interface CompilerOptions {
   deleteOutDir?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
+  /**
+   * When building an application in a monorepo, also copy assets configured
+   * for sibling library projects into the application's output directory.
+   * Disabled by default to preserve backward compatibility.
+   */
+  includeLibraryAssets?: boolean;
 }
 
 export interface PluginOptions {
