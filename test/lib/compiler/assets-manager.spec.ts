@@ -141,6 +141,71 @@ describe('AssetsManager', () => {
       await new Promise((resolve) => setImmediate(resolve));
       // No error thrown = success
     });
+
+    it('should return a promise that resolves only after all watchers are closed', async () => {
+      // Regression: callers (build.action.ts, swc-compiler.ts) `await
+      // assetsManager.closeWatchers()` and expect the build to wait until
+      // chokidar has fully released its file handles. If closeWatchers
+      // returns a promise that resolves before `watcher.close()` settles,
+      // the build process can race its own exit and leak the watcher.
+      let resolveClose!: () => void;
+      const closeSettled = new Promise<void>((resolve) => {
+        resolveClose = resolve;
+      });
+
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn().mockReturnValue(closeSettled);
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      // Emit ready so the ready-promise gate opens
+      mockWatcher.emit('ready');
+
+      let resolved = false;
+      const closingPromise = assetsManager.closeWatchers().then(() => {
+        resolved = true;
+      });
+
+      // Yield once so the awaited Promise.all(readyPromises) runs and
+      // closeWatchers proceeds to call watcher.close(). Without the fix,
+      // closingPromise would already be resolved here.
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(mockWatcher.close).toHaveBeenCalledTimes(1);
+      expect(resolved).toBe(false);
+
+      // Settle the close promise — only now should closeWatchers resolve.
+      resolveClose();
+      await closingPromise;
+      expect(resolved).toBe(true);
+    });
+
+    it('should reject when a watcher close fails so callers can surface the error', async () => {
+      const mockWatcher = new EventEmitter() as any;
+      const closeError = new Error('close failed');
+      mockWatcher.close = vi.fn().mockRejectedValue(closeError);
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      mockWatcher.emit('ready');
+
+      await expect(assetsManager.closeWatchers()).rejects.toThrow('close failed');
+    });
   });
 
   describe('onSuccess callback on asset change', () => {
