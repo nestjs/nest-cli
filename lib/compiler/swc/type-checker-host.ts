@@ -40,8 +40,13 @@ export class TypeCheckerHost {
       console.log();
 
       spinner.start();
-      this.runInWatchMode(tsconfigPath, tsBinary, options);
-      spinner.succeed();
+      try {
+        this.runInWatchMode(tsconfigPath, tsBinary, options);
+        spinner.succeed();
+      } catch (err) {
+        spinner.fail();
+        throw err;
+      }
       return;
     }
     spinner.start();

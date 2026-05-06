@@ -413,5 +413,61 @@ describe('TypeCheckerHost', () => {
       expect(onProgramInit).toHaveBeenCalledTimes(1);
       expect(onProgramInit).toHaveBeenCalledWith(mockProgram);
     });
+
+    it('should call spinner.succeed and not spinner.fail when watch setup completes', () => {
+      setupWatchMocks();
+
+      typeCheckerHost.run('tsconfig.json', {
+        watch: true,
+        onTypeCheck: vi.fn(),
+      });
+
+      expect(spinnerMock.start).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.succeed).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.fail).not.toHaveBeenCalled();
+    });
+
+    it('should call spinner.fail and rethrow when tsconfig parsing fails in watch mode', () => {
+      setupWatchMocks();
+      const parseError = new Error('Could not parse TypeScript config');
+      Object.defineProperty(typeCheckerHost, 'tsConfigProvider', {
+        value: {
+          getByConfigFilename: vi.fn(() => {
+            throw parseError;
+          }),
+        },
+        writable: true,
+      });
+
+      expect(() => {
+        typeCheckerHost.run('tsconfig.json', {
+          watch: true,
+          onTypeCheck: vi.fn(),
+        });
+      }).toThrow(parseError);
+
+      expect(spinnerMock.start).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.fail).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.succeed).not.toHaveBeenCalled();
+    });
+
+    it('should call spinner.fail and rethrow when createWatchProgram throws in watch mode', () => {
+      const { mockTsBinary } = setupWatchMocks();
+      const watchError = new Error('createWatchProgram failed');
+      mockTsBinary.createWatchProgram = vi.fn(() => {
+        throw watchError;
+      });
+
+      expect(() => {
+        typeCheckerHost.run('tsconfig.json', {
+          watch: true,
+          onTypeCheck: vi.fn(),
+        });
+      }).toThrow(watchError);
+
+      expect(spinnerMock.start).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.fail).toHaveBeenCalledTimes(1);
+      expect(spinnerMock.succeed).not.toHaveBeenCalled();
+    });
   });
 });
