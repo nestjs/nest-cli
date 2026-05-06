@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BunRunner } from '../../../lib/runners/bun.runner.js';
 import { GitRunner } from '../../../lib/runners/git.runner.js';
 import { NpmRunner } from '../../../lib/runners/npm.runner.js';
 import { PnpmRunner } from '../../../lib/runners/pnpm.runner.js';
@@ -38,6 +39,18 @@ describe('Runner Implementations', () => {
     it('should produce the correct full command', () => {
       const runner = new PnpmRunner();
       expect(runner.rawFullCommand('add lodash')).toBe('pnpm add lodash');
+    });
+  });
+
+  describe('BunRunner', () => {
+    it('should use "bun" as the binary', () => {
+      const runner = new BunRunner();
+      expect(runner.rawFullCommand('install')).toContain('bun');
+    });
+
+    it('should produce the correct full command', () => {
+      const runner = new BunRunner();
+      expect(runner.rawFullCommand('add lodash')).toBe('bun add lodash');
     });
   });
 
