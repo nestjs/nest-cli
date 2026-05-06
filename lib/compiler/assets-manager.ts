@@ -22,11 +22,16 @@ export class AssetsManager {
    * Using on `nest build` to close file watch or the build process will not end.
    * Waits for all watchers to complete their initial scan before closing them,
    * ensuring all assets are copied regardless of system speed.
+   *
+   * Returns a Promise that resolves once every watcher has been closed.
+   * Callers (e.g. `build.action.ts`, `swc-compiler.ts`) `await` this method,
+   * so it must surface the underlying close work — otherwise `await` resolves
+   * immediately while file watchers stay open and the build process can race
+   * its own exit, leaving handles dangling.
    */
-  public closeWatchers() {
-    Promise.all(this.watcherReadyPromises).then(() => {
-      this.watchers.forEach((watcher) => watcher.close());
-    });
+  public async closeWatchers(): Promise<void> {
+    await Promise.all(this.watcherReadyPromises);
+    await Promise.all(this.watchers.map((watcher) => watcher.close()));
   }
 
   public copyAssets(
