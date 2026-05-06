@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BunRunner } from '../../../lib/runners/bun.runner.js';
 import { NpmRunner } from '../../../lib/runners/npm.runner.js';
 import { PnpmRunner } from '../../../lib/runners/pnpm.runner.js';
 import { Runner } from '../../../lib/runners/runner.js';
@@ -25,6 +26,11 @@ describe('RunnerFactory', () => {
   it('should create a PnpmRunner for Runner.PNPM', () => {
     const runner = RunnerFactory.create(Runner.PNPM);
     expect(runner).toBeInstanceOf(PnpmRunner);
+  });
+
+  it('should create a BunRunner for Runner.BUN', () => {
+    const runner = RunnerFactory.create(Runner.BUN);
+    expect(runner).toBeInstanceOf(BunRunner);
   });
 
   it('should throw for an unsupported runner', () => {
