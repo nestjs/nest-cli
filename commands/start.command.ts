@@ -84,7 +84,7 @@ export class StartCommand extends AbstractCommand {
                 options.builder
               }. Available builders: ${availableBuilders.join(', ')}`,
           );
-          return;
+          process.exit(1);
         }
 
         const context: StartCommandContext = {

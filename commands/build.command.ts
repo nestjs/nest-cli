@@ -58,7 +58,7 @@ export class BuildCommand extends AbstractCommand {
                 options.builder
               }. Available builders: ${availableBuilders.join(', ')}`,
           );
-          return;
+          process.exit(1);
         }
 
         let parallel: number | boolean | undefined;
@@ -72,7 +72,7 @@ export class BuildCommand extends AbstractCommand {
               ERROR_PREFIX +
                 ` Invalid --parallel value: "${options.parallel}". Expected a positive integer (e.g. --parallel 4) or no value for unlimited concurrency.`,
             );
-            return;
+            process.exit(1);
           }
           parallel = parsed;
         }
