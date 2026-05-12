@@ -3,9 +3,10 @@ import { fork, spawnSync } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
+import { minimatch } from 'minimatch';
 import { createRequire } from 'module';
 import * as path from 'path';
-import { dirname, isAbsolute, join } from 'path';
+import { dirname, isAbsolute, join, posix, relative } from 'path';
 import { fileURLToPath } from 'url';
 import { Configuration } from '../../configuration/index.js';
 import { ERROR_PREFIX } from '../../ui/index.js';
@@ -343,7 +344,37 @@ export class SwcCompiler extends BaseCompiler {
         pollInterval: 10,
       },
     });
-    watcher.on('add', async (file) => onFileAdded(file));
+    watcher.on('add', async (file) => {
+      if (this.isIgnoredBySwc(file, options.cliOptions?.ignore)) {
+        return;
+      }
+
+      await onFileAdded(file);
+    });
+  }
+
+  private isIgnoredBySwc(
+    file: string,
+    ignore: string[] = [],
+    cwd = process.cwd(),
+  ): boolean {
+    if (!ignore.length) {
+      return false;
+    }
+
+    const relativeFile = isAbsolute(file) ? relative(cwd, file) : file;
+    const normalizedFile = this.normalizeSwcIgnorePath(relativeFile);
+    return ignore.some((pattern) => {
+      const normalizedPattern = this.normalizeSwcIgnorePath(pattern);
+
+      return [normalizedPattern, posix.join(normalizedPattern, '**')].some(
+        (pattern) => minimatch(normalizedFile, pattern),
+      );
+    });
+  }
+
+  private normalizeSwcIgnorePath(value: string): string {
+    return posix.normalize(value.replace(/\\/g, '/'));
   }
 
   private watchFilesInOutDir(

@@ -1,6 +1,9 @@
 import * as childProcess from 'child_process';
 import * as chokidar from 'chokidar';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { stat } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
@@ -555,6 +558,220 @@ describe('SWC Compiler', () => {
       // Directories should not be ignored
       const dirStats = { isFile: () => false };
       expect(ignoredFn('src/subdir', dirStats)).toBe(false);
+    });
+
+    it('should not call onFileAdded for files matching swc ignore patterns', async () => {
+      const mockWatcher = {
+        on: vi.fn().mockReturnThis(),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['ts'],
+          ignore: ['src/generated/**'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const addHandler = mockWatcher.on.mock.calls.find(
+        ([event]) => event === 'add',
+      )?.[1];
+
+      await addHandler('src/generated/foo.ts');
+
+      expect(onFileAdded).not.toHaveBeenCalled();
+    });
+
+    it('should call onFileAdded for non-ignored files', async () => {
+      const mockWatcher = {
+        on: vi.fn().mockReturnThis(),
+      };
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
+
+      const onFileAdded = vi.fn();
+      const options = {
+        cliOptions: {
+          filenames: ['src'],
+          extensions: ['ts'],
+          ignore: ['src/generated/**'],
+        },
+      };
+
+      await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
+
+      const addHandler = mockWatcher.on.mock.calls.find(
+        ([event]) => event === 'add',
+      )?.[1];
+
+      await addHandler('src/modules/foo.ts');
+
+      expect(onFileAdded).toHaveBeenCalledWith('src/modules/foo.ts');
+    });
+
+    it('should match ignored absolute file paths relative to the current working directory', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'swc-ignore-'));
+
+      try {
+        mkdirSync(join(cwd, 'src/generated'), { recursive: true });
+        mkdirSync(join(cwd, 'src/modules'), { recursive: true });
+        writeFileSync(join(cwd, 'src/generated/foo.ts'), '');
+        writeFileSync(join(cwd, 'src/modules/foo.ts'), '');
+
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/generated/foo.ts'),
+            ['src/generated/**'],
+            cwd,
+          ),
+        ).toBe(true);
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/modules/foo.ts'),
+            ['src/generated/**'],
+            cwd,
+          ),
+        ).toBe(false);
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    });
+
+    it('should match ignored files under plain directory paths', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'swc-ignore-'));
+
+      try {
+        mkdirSync(join(cwd, 'src/generated'), { recursive: true });
+        mkdirSync(join(cwd, 'src/generated-other'), { recursive: true });
+        writeFileSync(join(cwd, 'src/generated/foo.ts'), '');
+        writeFileSync(join(cwd, 'src/generated-other/foo.ts'), '');
+
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/generated/foo.ts'),
+            ['src/generated'],
+            cwd,
+          ),
+        ).toBe(true);
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/generated-other/foo.ts'),
+            ['src/generated'],
+            cwd,
+          ),
+        ).toBe(false);
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    });
+
+    it('should match ignored exact file paths', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'swc-ignore-'));
+
+      try {
+        mkdirSync(join(cwd, 'src/generated'), { recursive: true });
+        writeFileSync(join(cwd, 'src/generated/foo.ts'), '');
+        writeFileSync(join(cwd, 'src/generated/bar.ts'), '');
+
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/generated/foo.ts'),
+            ['src/generated/foo.ts'],
+            cwd,
+          ),
+        ).toBe(true);
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/generated/bar.ts'),
+            ['src/generated/foo.ts'],
+            cwd,
+          ),
+        ).toBe(false);
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    });
+
+    it('should match DOS-style relative file paths against posix ignore patterns', () => {
+      expect(
+        compiler['isIgnoredBySwc']('src\\generated\\foo.ts', [
+          'src/generated/**',
+        ]),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('src\\modules\\foo.ts', [
+          'src/generated/**',
+        ]),
+      ).toBe(false);
+    });
+
+    it('should match posix file paths against DOS-style ignore patterns', () => {
+      expect(
+        compiler['isIgnoredBySwc']('src/generated/foo.ts', [
+          'src\\generated\\**',
+        ]),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('src/modules/foo.ts', [
+          'src\\generated\\**',
+        ]),
+      ).toBe(false);
+    });
+
+    it('should ignore trailing slashes and backslashes in ignore patterns', () => {
+      expect(
+        compiler['isIgnoredBySwc']('src/generated/foo.ts', ['src/generated/']),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('src/generated/foo.ts', ['src\\generated\\']),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('src/generated-other/foo.ts', [
+          'src/generated/',
+        ]),
+      ).toBe(false);
+    });
+
+    it('should ignore leading dot-slash prefixes in files and ignore patterns', () => {
+      expect(
+        compiler['isIgnoredBySwc']('./src/generated/foo.ts', [
+          'src/generated/**',
+        ]),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('src/generated/foo.ts', [
+          './src/generated/**',
+        ]),
+      ).toBe(true);
+      expect(
+        compiler['isIgnoredBySwc']('./src/modules/foo.ts', [
+          './src/generated/**',
+        ]),
+      ).toBe(false);
+    });
+
+    it('should treat glob metacharacters in file paths literally', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'swc-ignore-'));
+
+      try {
+        mkdirSync(join(cwd, 'src/[generated]'), { recursive: true });
+        mkdirSync(join(cwd, 'src/generated'), { recursive: true });
+        writeFileSync(join(cwd, 'src/[generated]/foo.ts'), '');
+        writeFileSync(join(cwd, 'src/generated/foo.ts'), '');
+
+        expect(
+          compiler['isIgnoredBySwc'](
+            join(cwd, 'src/[generated]/foo.ts'),
+            ['src/generated/**'],
+            cwd,
+          ),
+        ).toBe(false);
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
     });
 
     it('should skip watching if source directory does not exist', async () => {
