@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { existsSync } from 'fs';
+import { join } from 'path';
 import * as ts from 'typescript';
 import { TsConfigProvider } from '../../../../lib/compiler/helpers/tsconfig-provider.js';
 import { TypeScriptBinaryLoader } from '../../../../lib/compiler/typescript-loader.js';
@@ -111,5 +112,150 @@ describe('TsConfigProvider', () => {
       undefined,
       mockTsBinary.sys,
     );
+  });
+
+  it('should handle missing exclude in raw config', () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    mockTsBinary.getParsedCommandLineOfConfigFile.mockReturnValue({
+      options: { outDir: 'dist' },
+      fileNames: ['src/main.ts'],
+      projectReferences: [],
+      raw: {},
+    });
+
+    const result = provider.getByConfigFilename('tsconfig.json');
+
+    expect(result.exclude).toEqual([]);
+  });
+
+  it('should normalize exclude paths relative to the config file', () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    mockTsBinary.getParsedCommandLineOfConfigFile.mockReturnValue({
+      options: { outDir: 'dist' },
+      fileNames: ['apps/api/src/main.ts'],
+      projectReferences: [],
+      raw: { exclude: ['src/generated/**', 'dist'] },
+    });
+
+    const result = provider.getByConfigFilename('apps/api/tsconfig.app.json');
+
+    expect(result.exclude).toEqual([
+      'apps/api/src/generated/**',
+      'apps/api/dist',
+    ]);
+  });
+
+  it('should handle wrongly typed exclude in raw config', () => {
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    const mockParsedCmd = {
+      options: { outDir: 'dist' },
+      fileNames: ['src/main.ts'],
+      projectReferences: [],
+      raw: { exclude: 'not-an-array' as unknown },
+    };
+
+    mockTsBinary.getParsedCommandLineOfConfigFile.mockReturnValue(
+      mockParsedCmd,
+    );
+
+    const result1 = provider.getByConfigFilename('tsconfig.json');
+
+    expect(result1.exclude).toEqual([]);
+
+    mockParsedCmd.raw.exclude = [0, false];
+    mockTsBinary.getParsedCommandLineOfConfigFile.mockReturnValue(
+      mockParsedCmd,
+    );
+
+    const result2 = provider.getByConfigFilename('tsconfig.json');
+
+    expect(result2.exclude).toEqual([]);
+  });
+
+  it('should correctly parse exclude from the real TS binary', () => {
+    const configFilename = 'tsconfig.json';
+    const configPath = join(process.cwd(), configFilename);
+    const tsconfigContent = JSON.stringify({
+      compilerOptions: {
+        outDir: 'dist',
+      },
+      exclude: ['node_modules', 'dist'],
+    });
+    const parseConfigHost: ts.ParseConfigFileHost = {
+      ...ts.sys,
+      onUnRecoverableConfigFileDiagnostic: vi.fn(),
+      fileExists: vi.fn((filename) => filename === configPath),
+      readDirectory: vi.fn(() => []),
+      readFile: vi.fn((filename) => {
+        if (filename === configPath) {
+          return tsconfigContent;
+        }
+        return undefined;
+      }),
+    };
+
+    vi.mocked(existsSync).mockReturnValue(true);
+    const realTypescriptLoader = {
+      load: vi.fn().mockReturnValue({
+        getParsedCommandLineOfConfigFile: ts.getParsedCommandLineOfConfigFile,
+        sys: parseConfigHost,
+      }),
+    } as unknown as TypeScriptBinaryLoader;
+    provider = new TsConfigProvider(realTypescriptLoader);
+
+    const result = provider.getByConfigFilename(configFilename);
+
+    expect(result.exclude).toEqual(['node_modules', 'dist']);
+  });
+
+  it('should preserve exclude inherited through tsconfig extends', () => {
+    const baseConfigFilename = 'tsconfig.base.json';
+    const configFilename = 'apps/api/tsconfig.app.json';
+    const baseConfigPath = join(process.cwd(), baseConfigFilename);
+    const configPath = join(process.cwd(), configFilename);
+    const tsconfigContent = JSON.stringify({
+      extends: '../../tsconfig.base.json',
+      compilerOptions: {
+        outDir: 'dist',
+      },
+    });
+    const baseTsconfigContent = JSON.stringify({
+      exclude: ['generated/**'],
+    });
+    const parseConfigHost: ts.ParseConfigFileHost = {
+      ...ts.sys,
+      onUnRecoverableConfigFileDiagnostic: vi.fn(),
+      fileExists: vi.fn(
+        (filename) => filename === configPath || filename === baseConfigPath,
+      ),
+      readDirectory: vi.fn(() => []),
+      readFile: vi.fn((filename) => {
+        if (filename === configPath) {
+          return tsconfigContent;
+        }
+
+        if (filename === baseConfigPath) {
+          return baseTsconfigContent;
+        }
+
+        return undefined;
+      }),
+    };
+
+    vi.mocked(existsSync).mockReturnValue(true);
+    const realTypescriptLoader = {
+      load: vi.fn().mockReturnValue({
+        getParsedCommandLineOfConfigFile: ts.getParsedCommandLineOfConfigFile,
+        sys: parseConfigHost,
+      }),
+    } as unknown as TypeScriptBinaryLoader;
+    provider = new TsConfigProvider(realTypescriptLoader);
+
+    const result = provider.getByConfigFilename(configFilename);
+
+    expect(result.exclude).toEqual(['generated/**']);
   });
 });
