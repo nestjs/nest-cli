@@ -62,4 +62,30 @@ describe('swcDefaultsFactory', () => {
     const result = swcDefaultsFactory({}, undefined);
     expect(result.cliOptions.filenames).toEqual(['src']);
   });
+
+  describe('cliOptions', () => {
+    it('should set ignore if tsconfig exclude is provided', () => {
+      const result = swcDefaultsFactory({}, undefined, ['test/**/*.ts']);
+      expect(result.cliOptions.ignore).toEqual(['test/**/*.ts']);
+    });
+
+    it('allows builder options ignore to override tsconfig exclude', () => {
+      const configuration = {
+        compilerOptions: {
+          builder: {
+            type: 'swc' as const,
+            options: {
+              ignore: ['custom/**/*.ts'],
+            },
+          },
+        },
+      };
+
+      const result = swcDefaultsFactory({}, configuration as any, [
+        'tsconfig-excluded/**/*.ts',
+      ]);
+
+      expect(result.cliOptions.ignore).toEqual(['custom/**/*.ts']);
+    });
+  });
 });

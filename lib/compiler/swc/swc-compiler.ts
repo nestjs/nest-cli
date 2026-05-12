@@ -34,6 +34,7 @@ export type SwcCompilerExtras = {
   emitDeclarations: boolean;
   assetsManager: AssetsManager;
   tsOptions: TsConfigProviderOutput['options'];
+  tsConfigExclude: string[];
   silent?: boolean;
 };
 
@@ -52,7 +53,11 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
-    const swcOptions = swcDefaultsFactory(extras.tsOptions, configuration);
+    const swcOptions = swcDefaultsFactory(
+      extras.tsOptions,
+      configuration,
+      extras.tsConfigExclude,
+    );
     const swcrcFilePath = getValueOrDefault<string | undefined>(
       configuration,
       'compilerOptions.builder.options.swcrcPath',

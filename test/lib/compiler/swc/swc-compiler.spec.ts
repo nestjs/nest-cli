@@ -84,6 +84,7 @@ describe('SWC Compiler', () => {
       expect(vi.mocked(swcDefaultsFactory)).toHaveBeenCalledWith(
         fixture.extras.tsOptions,
         fixture.configuration,
+        undefined,
       );
     });
 

@@ -85,8 +85,11 @@ export class BuildAction extends AbstractAction {
 
     const buildApp = async (appName: string | undefined) => {
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
-      const { options: tsOptions, fileNames: tsFileNames } =
-        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
+      const {
+        exclude,
+        options: tsOptions,
+        fileNames: tsFileNames,
+      } = this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       const outDir = tsOptions.outDir || defaultOutDir;
       const tsRootDir = getEffectiveRootDir(tsOptions.rootDir, tsFileNames);
 
@@ -181,6 +184,7 @@ export class BuildAction extends AbstractAction {
             watchMode,
             options,
             tsOptions,
+            exclude,
             emitDeclarations,
             onSuccess,
           );
@@ -217,6 +221,7 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     options: Record<string, any>,
     tsOptions: TsConfigProviderOutput['options'],
+    tsConfigExclude: string[],
     emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
   ) {
@@ -239,6 +244,7 @@ export class BuildAction extends AbstractAction {
         ),
         emitDeclarations,
         tsOptions,
+        tsConfigExclude,
         assetsManager: this.assetsManager,
         silent: isSilent,
       },
