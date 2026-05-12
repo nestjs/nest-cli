@@ -48,6 +48,7 @@ describe('TsConfigProvider', () => {
       options: mockOptions,
       fileNames: mockFileNames,
       projectReferences: mockProjectReferences,
+      raw: { exclude: ['node_modules'] },
     });
 
     const result = provider.getByConfigFilename('tsconfig.json');
@@ -82,10 +83,12 @@ describe('TsConfigProvider', () => {
       options: { strict: true },
       fileNames: ['src/main.ts'],
       projectReferences: undefined,
+      raw: {},
     });
 
     const result = provider.getByConfigFilename('tsconfig.json');
 
+    expect(result.exclude).toEqual([]);
     expect(result.options).toEqual({ strict: true });
     expect(result.fileNames).toEqual(['src/main.ts']);
     expect(result.projectReferences).toBeUndefined();
@@ -98,6 +101,7 @@ describe('TsConfigProvider', () => {
       options: {},
       fileNames: [],
       projectReferences: undefined,
+      raw: {},
     });
 
     provider.getByConfigFilename('custom-tsconfig.json');
