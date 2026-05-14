@@ -4,6 +4,7 @@ import { Configuration } from '../../configuration/index.js';
 export const swcDefaultsFactory = (
   tsOptions?: ts.CompilerOptions,
   configuration?: Configuration,
+  tsConfigExclude: string[] = [],
 ) => {
   const builderOptions =
     typeof configuration?.compilerOptions?.builder !== 'string'
@@ -43,6 +44,7 @@ export const swcDefaultsFactory = (
       extensions: ['.js', '.ts'],
       copyFiles: false,
       includeDotfiles: false,
+      ignore: tsConfigExclude.length ? tsConfigExclude : undefined,
       quiet: false,
       watch: false,
       stripLeadingPaths: !tsOptions?.rootDir,
