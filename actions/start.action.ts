@@ -69,7 +69,6 @@ export class StartAction extends BuildAction {
         {
           shell: useShell,
           envFile,
-          watch: isWatchEnabled,
         },
       );
 
@@ -99,14 +98,29 @@ export class StartAction extends BuildAction {
     options: {
       shell: boolean;
       envFile?: string[];
-      watch?: boolean;
     },
   ) {
     let childProcessRef: ChildProcess | undefined;
+    let shuttingDown = false;
     process.on(
       'exit',
       () => childProcessRef && killProcessSync(childProcessRef.pid!),
     );
+
+    const signalHandler = (signal: NodeJS.Signals) => {
+      shuttingDown = true;
+      if (childProcessRef) {
+        // Forward the signal to the child so async shutdown hooks
+        // (onModuleDestroy, beforeApplicationShutdown, onApplicationShutdown)
+        // can run to completion. The CLI parent will exit when the child
+        // exits, see the child's exit handler below.
+        childProcessRef.kill(signal);
+      } else {
+        process.exit();
+      }
+    };
+    process.on('SIGINT', signalHandler);
+    process.on('SIGTERM', signalHandler);
 
     return () => {
       if (childProcessRef) {
@@ -123,7 +137,15 @@ export class StartAction extends BuildAction {
               envFile: options.envFile,
             },
           );
-          childProcessRef.on('exit', () => (childProcessRef = undefined));
+          childProcessRef.on('exit', (code: number) => {
+            childProcessRef = undefined;
+            // Exit explicitly when shutting down; in watch/cluster mode the
+            // file watcher keeps the event loop alive and would otherwise
+            // require a second Ctrl+C to exit.
+            if (shuttingDown) {
+              process.exit(code ?? 0);
+            }
+          });
         });
 
         (childProcessRef.stdin as NodeJS.ReadableStream | null)?.pause?.();
@@ -143,6 +165,12 @@ export class StartAction extends BuildAction {
         childProcessRef.on('exit', (code: number) => {
           process.exitCode = code;
           childProcessRef = undefined;
+          // Exit explicitly when shutting down; in watch/cluster mode the
+          // file watcher keeps the event loop alive and would otherwise
+          // require a second Ctrl+C to exit.
+          if (shuttingDown) {
+            process.exit(code ?? 0);
+          }
         });
       }
     };

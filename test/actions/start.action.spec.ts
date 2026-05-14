@@ -41,6 +41,14 @@ describe('StartAction', () => {
     Array<(signal?: NodeJS.Signals) => void>
   > = {};
 
+  const createMockChild = () => {
+    const mockChild = new EventEmitter();
+    (mockChild as any).pid = 12345;
+    (mockChild as any).stdin = null;
+    (mockChild as any).kill = vi.fn();
+    return mockChild as any;
+  };
+
   beforeEach(() => {
     startAction = new StartAction();
     (startAction as any).tsConfigProvider = {
@@ -65,6 +73,7 @@ describe('StartAction', () => {
 
     originalArgv = process.argv;
     process.argv = ['node', 'nest', 'start'];
+    vi.mocked(spawn).mockClear();
   });
 
   afterEach(() => {
@@ -74,18 +83,11 @@ describe('StartAction', () => {
   });
 
   describe('spawnChildProcess - env file arguments', () => {
-    beforeEach(() => {
-      vi.mocked(spawn).mockClear();
-    });
-
     it('should pass multiple --env-file flags as separate spawn arguments', () => {
-      const mockChild = new EventEmitter();
-      (mockChild as any).pid = 12345;
-      (mockChild as any).stdin = null;
-      (mockChild as any).kill = vi.fn();
-      vi.mocked(spawn).mockReturnValue(mockChild as any);
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
 
-      const onSuccess = startAction.createOnSuccessHook(
+      const onSuccess = (startAction as any).createOnSuccessHook(
         'main',
         'src',
         false,
@@ -96,29 +98,22 @@ describe('StartAction', () => {
 
       onSuccess();
 
-      const spawnCall = vi.mocked(spawn).mock.calls[0];
-      // Non-shell mode: spawn(binary, args, options)
-      const processArgs = spawnCall[1] as string[];
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
 
-      // Each --env-file flag should be a separate element in the args array
       expect(processArgs).toContain('--env-file=.env');
       expect(processArgs).toContain('--env-file=.env.local');
-
-      // They should NOT be joined into a single string
-      const joinedArg = processArgs.find(
-        (arg) => arg === '--env-file=.env --env-file=.env.local',
-      );
-      expect(joinedArg).toBeUndefined();
+      expect(
+        processArgs.find(
+          (arg) => arg === '--env-file=.env --env-file=.env.local',
+        ),
+      ).toBeUndefined();
     });
 
     it('should pass a single --env-file flag as a separate spawn argument', () => {
-      const mockChild = new EventEmitter();
-      (mockChild as any).pid = 12345;
-      (mockChild as any).stdin = null;
-      (mockChild as any).kill = vi.fn();
-      vi.mocked(spawn).mockReturnValue(mockChild as any);
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
 
-      const onSuccess = startAction.createOnSuccessHook(
+      const onSuccess = (startAction as any).createOnSuccessHook(
         'main',
         'src',
         false,
@@ -129,20 +124,15 @@ describe('StartAction', () => {
 
       onSuccess();
 
-      const spawnCall = vi.mocked(spawn).mock.calls[0];
-      const processArgs = spawnCall[1] as string[];
-
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
       expect(processArgs).toContain('--env-file=.env');
     });
 
     it('should place --env-file flags after --enable-source-maps', () => {
-      const mockChild = new EventEmitter();
-      (mockChild as any).pid = 12345;
-      (mockChild as any).stdin = null;
-      (mockChild as any).kill = vi.fn();
-      vi.mocked(spawn).mockReturnValue(mockChild as any);
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
 
-      const onSuccess = startAction.createOnSuccessHook(
+      const onSuccess = (startAction as any).createOnSuccessHook(
         'main',
         'src',
         false,
@@ -153,24 +143,18 @@ describe('StartAction', () => {
 
       onSuccess();
 
-      const spawnCall = vi.mocked(spawn).mock.calls[0];
-      const processArgs = spawnCall[1] as string[];
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
 
-      const sourceMapIdx = processArgs.indexOf('--enable-source-maps');
-      const envFileIdx = processArgs.indexOf('--env-file=.env');
-
-      // --enable-source-maps is unshifted last, so it should come first
-      expect(sourceMapIdx).toBeLessThan(envFileIdx);
+      expect(processArgs.indexOf('--enable-source-maps')).toBeLessThan(
+        processArgs.indexOf('--env-file=.env'),
+      );
     });
 
     it('should not include --env-file flags when envFile is empty', () => {
-      const mockChild = new EventEmitter();
-      (mockChild as any).pid = 12345;
-      (mockChild as any).stdin = null;
-      (mockChild as any).kill = vi.fn();
-      vi.mocked(spawn).mockReturnValue(mockChild as any);
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
 
-      const onSuccess = startAction.createOnSuccessHook(
+      const onSuccess = (startAction as any).createOnSuccessHook(
         'main',
         'src',
         false,
@@ -181,13 +165,177 @@ describe('StartAction', () => {
 
       onSuccess();
 
-      const spawnCall = vi.mocked(spawn).mock.calls[0];
-      const processArgs = spawnCall[1] as string[];
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
+      expect(
+        processArgs.filter((arg) => arg.startsWith('--env-file')),
+      ).toHaveLength(0);
+    });
+  });
 
-      const envFileArgs = processArgs.filter((arg) =>
-        arg.startsWith('--env-file'),
+  describe('createOnSuccessHook - signal handling', () => {
+    it('should register SIGINT and SIGTERM handlers', () => {
+      (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
       );
-      expect(envFileArgs).toHaveLength(0);
+
+      expect(registeredHandlers['SIGINT']).toBeDefined();
+      expect(registeredHandlers['SIGINT'].length).toBeGreaterThanOrEqual(1);
+      expect(registeredHandlers['SIGTERM']).toBeDefined();
+      expect(registeredHandlers['SIGTERM'].length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should forward SIGINT to the child process', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+
+      expect(mockChild.kill).toHaveBeenCalledWith('SIGINT');
+    });
+
+    it('should forward SIGTERM to the child process', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+
+      const sigtermHandler =
+        registeredHandlers['SIGTERM'][registeredHandlers['SIGTERM'].length - 1];
+      sigtermHandler('SIGTERM');
+
+      expect(mockChild.kill).toHaveBeenCalledWith('SIGTERM');
+    });
+
+    it('should call process.exit when no child process is running on signal', () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+
+      expect(exitSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('createOnSuccessHook - parent exit on child exit during shutdown', () => {
+    it('should call process.exit when child exits after SIGINT', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+      mockChild.emit('exit', 0);
+
+      expect(exitSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should not call process.exit when child exits naturally', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+      mockChild.emit('exit', 0);
+
+      expect(exitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call process.exit on child exit during watch-mode restart after SIGINT', () => {
+      const firstChild = createMockChild();
+      const secondChild = createMockChild();
+      vi.mocked(spawn)
+        .mockReturnValueOnce(firstChild)
+        .mockReturnValueOnce(secondChild);
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+      onSuccess();
+      firstChild.emit('exit', 0);
+
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+      secondChild.emit('exit', 0);
+
+      expect(exitSpy).toHaveBeenCalledWith(0);
     });
   });
 });
