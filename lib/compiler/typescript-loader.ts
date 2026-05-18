@@ -1,4 +1,7 @@
+import { createRequire } from 'module';
 import * as ts from 'typescript';
+
+const require = createRequire(import.meta.url);
 
 export class TypeScriptBinaryLoader {
   private tsBinary?: typeof ts;
@@ -12,7 +15,6 @@ export class TypeScriptBinaryLoader {
       const tsBinaryPath = require.resolve('typescript', {
         paths: [process.cwd(), ...this.getModulePaths()],
       });
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tsBinary = require(tsBinaryPath);
       this.tsBinary = tsBinary;
       return tsBinary;
@@ -24,7 +26,7 @@ export class TypeScriptBinaryLoader {
   }
 
   public getModulePaths() {
-    const modulePaths = module.paths.slice(2, module.paths.length);
+    const modulePaths = require.resolve.paths('typescript') ?? [];
     const packageDeps = modulePaths.slice(0, 3);
     return [
       ...packageDeps.reverse(),

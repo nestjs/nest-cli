@@ -1,14 +1,15 @@
-import { InfoAction } from '../../actions/info.action';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { InfoAction } from '../../actions/info.action.js';
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(() => '{"version": "1.2.3"}'),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(() => '{"version": "1.2.3"}'),
 }));
 
-jest.mock('../../lib/package-managers', () => ({
+vi.mock('../../lib/package-managers/index.js', () => ({
   PackageManagerFactory: {
-    find: jest.fn(() => ({
+    find: vi.fn(() => ({
       name: 'MockedPackageManager',
-      version: jest.fn(() => '1.0.0'),
+      version: vi.fn(() => '1.0.0'),
     })),
   },
 }));
@@ -22,15 +23,12 @@ describe('InfoAction', () => {
 
   describe('displaySystemInformation', () => {
     it('should include a space between the OS name and release version', async () => {
-      const consoleSpy = jest
-        .spyOn(console, 'info')
-        .mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
       await infoAction.handle();
 
       const osVersionCall = consoleSpy.mock.calls.find(
-        (call) =>
-          typeof call[0] === 'string' && call[0].includes('OS Version'),
+        (call) => typeof call[0] === 'string' && call[0].includes('OS Version'),
       );
       expect(osVersionCall).toBeDefined();
       // The second argument (blue-colored string) should have a space
@@ -42,13 +40,65 @@ describe('InfoAction', () => {
     });
   });
 
+  describe('format', () => {
+    it('should return the input untouched when there are no @nestjs/* deps', () => {
+      // Calling `format([])` used to throw `Cannot read properties of
+      // undefined (reading 'name')` because it dereferenced `sorted[0]`
+      // without first checking the array length. That exception would
+      // bubble up to `displayNestInformationFromPackage` and be swallowed
+      // as the misleading "cannot read your project package.json file"
+      // error, even though the file had been read successfully.
+      expect(() => (infoAction as any).format([])).not.toThrow();
+      expect((infoAction as any).format([])).toEqual([]);
+    });
+
+    it('should pad and clean version ranges when deps are present', () => {
+      const result = (infoAction as any).format([
+        { name: 'core', value: '^1.2.3', packageName: '@nestjs/core' },
+        {
+          name: 'platform-express',
+          value: '~1.2.4',
+          packageName: '@nestjs/platform-express',
+        },
+      ]);
+      // Sorted by name length desc; longest gets ' :' appended directly,
+      // shorter names are padded to the longest length before the suffix.
+      expect(result[0].name).toBe('platform-express :');
+      expect(result[1].name).toBe('core             :');
+      expect(result[0].value).toBe('1.2.4');
+      expect(result[1].value).toBe('1.2.3');
+    });
+  });
+
+  describe('displayNestVersions', () => {
+    it('should print a clear note when no @nestjs/* deps are declared', () => {
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      // Empty deps map mirrors a project with no @nestjs/* packages — the
+      // common cause being running `nest info` from a non-Nest project
+      // (or before installing dependencies).
+      (infoAction as any).displayNestVersions({});
+
+      const messages = consoleSpy.mock.calls.map((call) => call.join(' '));
+      expect(
+        messages.some((line) =>
+          line.includes('No @nestjs/* dependencies were found'),
+        ),
+      ).toBe(true);
+
+      consoleSpy.mockRestore();
+    });
+  });
+
   describe('buildNestVersionsWarningMessage', () => {
     it('should return an empty object for one or zero minor versions', () => {
       const dependencies = [
         { packageName: '@nestjs/core', name: 'core', value: '1.2.3' },
         { packageName: '@nestjs/common', name: 'common', value: '1.2.4' },
       ];
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       expect(result).toEqual({});
     });
 
@@ -89,7 +139,9 @@ describe('InfoAction', () => {
         { packageName: '@nestjs/test1', name: 'test1', value: '1.2.4' },
         { packageName: '@nestjs/test2', name: 'test2', value: '1.2.4' },
       ];
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       const expected = {
         '1': [
           { packageName: '@nestjs/core', name: 'core', value: '1.2.3' },
@@ -165,7 +217,9 @@ describe('InfoAction', () => {
         },
       ];
 
-      const result = infoAction.buildNestVersionsWarningMessage(dependencies);
+      const result = (infoAction as any).buildNestVersionsWarningMessage(
+        dependencies,
+      );
       const expected = {
         '2': [
           {

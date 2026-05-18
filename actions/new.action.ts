@@ -1,61 +1,40 @@
 import { input, select } from '@inquirer/prompts';
-import * as ansis from 'ansis';
+import ansis, { type AnsiColors, type AnsiStyles } from 'ansis';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
-import { Answers } from 'inquirer';
 import { join } from 'path';
-import { Input } from '../commands';
-import { defaultGitIgnore } from '../lib/configuration/defaults';
+import { NewCommandContext } from '../commands/index.js';
+import { defaultGitIgnore } from '../lib/configuration/defaults.js';
 import {
   AbstractPackageManager,
   PackageManager,
   PackageManagerFactory,
-} from '../lib/package-managers';
-import { generateInput, generateSelect } from '../lib/questions/questions';
-import { GitRunner } from '../lib/runners/git.runner';
+} from '../lib/package-managers/index.js';
+import { generateInput, generateSelect } from '../lib/questions/questions.js';
+import { GitRunner } from '../lib/runners/git.runner.js';
 import {
   AbstractCollection,
   Collection,
   CollectionFactory,
   SchematicOption,
-} from '../lib/schematics';
-import { EMOJIS, MESSAGES } from '../lib/ui';
-import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting';
-import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error';
-import { AbstractAction } from './abstract.action';
-import { assertNonArray } from '../lib/utils/type-assertions';
+} from '../lib/schematics/index.js';
+import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
+import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting.js';
+import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error.js';
+import { AbstractAction } from './abstract.action.js';
 
 export class NewAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[]) {
-    const directoryOption = options.find(
-      (option) => option.name === 'directory',
-    );
-    const dryRunOption = options.find((option) => option.name === 'dry-run');
-    const isDryRunEnabled = dryRunOption && dryRunOption.value;
+  public async handle(context: NewCommandContext) {
+    await askForMissingInformation(context);
+    await generateApplicationFiles(context).catch(exit);
 
-    await askForMissingInformation(inputs, options);
-    await generateApplicationFiles(inputs, options).catch(exit);
+    const projectDirectory = getProjectDirectory(context);
 
-    const shouldSkipInstall = options.some(
-      (option) => option.name === 'skip-install' && option.value === true,
-    );
-    const shouldSkipGit = options.some(
-      (option) => option.name === 'skip-git' && option.value === true,
-    );
-    const projectDirectory = getProjectDirectory(
-      getApplicationNameInput(inputs)!,
-      directoryOption,
-    );
-
-    if (!shouldSkipInstall) {
-      await installPackages(
-        options,
-        isDryRunEnabled as boolean,
-        projectDirectory,
-      );
+    if (!context.skipInstall) {
+      await installPackages(context, projectDirectory);
     }
-    if (!isDryRunEnabled) {
-      if (!shouldSkipGit) {
+    if (!context.dryRun) {
+      if (!context.skipGit) {
         await initializeGitRepository(projectDirectory);
         await createGitIgnoreFile(projectDirectory);
       }
@@ -66,92 +45,77 @@ export class NewAction extends AbstractAction {
   }
 }
 
-const getApplicationNameInput = (inputs: Input[]) =>
-  inputs.find((input) => input.name === 'name');
-
-const getPackageManagerInput = (inputs: Input[]) =>
-  inputs.find((options) => options.name === 'packageManager');
-
-const getProjectDirectory = (
-  applicationName: Input,
-  directoryOption?: Input,
-): string => {
+const getProjectDirectory = (context: NewCommandContext): string => {
   return (
-    (directoryOption && (directoryOption.value as string)) ||
-    normalizeToKebabOrSnakeCase(applicationName.value as string)
+    context.directory || normalizeToKebabOrSnakeCase(context.name as string)
   );
 };
 
-const askForMissingInformation = async (inputs: Input[], options: Input[]) => {
+const askForMissingInformation = async (context: NewCommandContext) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
   console.info();
 
-  const nameInput = getApplicationNameInput(inputs);
-  if (!nameInput!.value) {
+  if (!context.name) {
     const message = MESSAGES.PROJECT_NAME_QUESTION;
     const question = generateInput('name', message)('nest-app');
-    const answer = await input(question).catch(gracefullyExitOnPromptError);
-    replaceInputMissingInformation(inputs, { name: 'name', value: answer });
+    context.name = (await input(question).catch(
+      gracefullyExitOnPromptError,
+    )) as string | undefined;
   }
 
-  const packageManagerInput = getPackageManagerInput(options);
-
-  if (!packageManagerInput!.value) {
-    const answer = await askForPackageManager();
-    replaceInputMissingInformation(options, {
-      name: 'packageManager',
-      value: answer,
-    });
+  if (!context.packageManager) {
+    context.packageManager = (await askForPackageManager()) as string;
   }
 };
 
-const replaceInputMissingInformation = (
-  inputs: Input[],
-  answer: Answers,
-): void => {
-  const input = inputs.find((input) => input.name === answer.name);
-
-  if (input) {
-    input.value = input.value !== undefined ? input.value : answer.value;
-  }
-};
-
-const generateApplicationFiles = async (args: Input[], options: Input[]) => {
-  const collectionName = options.find(
-    (option) => option.name === 'collection' && option.value != null,
-  )!.value;
+const generateApplicationFiles = async (context: NewCommandContext) => {
   const collection: AbstractCollection = CollectionFactory.create(
-    (collectionName as Collection) || Collection.NESTJS,
+    (context.collection as Collection) || Collection.NESTJS,
   );
-  const schematicOptions: SchematicOption[] = mapSchematicOptions(
-    args.concat(options),
-  );
+  const schematicOptions: SchematicOption[] =
+    mapContextToSchematicOptions(context);
   await collection.execute('application', schematicOptions);
   console.info();
 };
 
-const mapSchematicOptions = (options: Input[]): SchematicOption[] => {
-  return options.reduce(
-    (schematicOptions: SchematicOption[], option: Input) => {
-      if (option.name !== 'skip-install') {
-        assertNonArray(option.value);
-        schematicOptions.push(new SchematicOption(option.name, option.value));
-      }
-      return schematicOptions;
-    },
-    [],
-  );
+const mapContextToSchematicOptions = (
+  context: NewCommandContext,
+): SchematicOption[] => {
+  const options: SchematicOption[] = [];
+
+  if (context.name !== undefined)
+    options.push(new SchematicOption('name', context.name));
+  if (context.directory !== undefined)
+    options.push(new SchematicOption('directory', context.directory));
+
+  if (context.dryRun)
+    options.push(new SchematicOption('dry-run', true));
+  options.push(new SchematicOption('skip-git', context.skipGit));
+  options.push(new SchematicOption('strict', context.strict));
+
+  if (context.skipTests) {
+    options.push(new SchematicOption('spec', false));
+  }
+
+  if (context.packageManager !== undefined)
+    options.push(new SchematicOption('packageManager', context.packageManager));
+  if (context.collection !== undefined)
+    options.push(new SchematicOption('collection', context.collection));
+
+  options.push(new SchematicOption('language', context.language));
+  options.push(new SchematicOption('format', context.format));
+  // note: skip-install is intentionally excluded — not sent to schematics
+  return options;
 };
 
 const installPackages = async (
-  options: Input[],
-  dryRunMode: boolean,
+  context: NewCommandContext,
   installDirectory: string,
 ) => {
-  const inputPackageManager = getPackageManagerInput(options)!.value as string;
+  const inputPackageManager = context.packageManager as string;
 
   let packageManager: AbstractPackageManager;
-  if (dryRunMode) {
+  if (context.dryRun) {
     console.info();
     console.info(ansis.green(MESSAGES.DRY_RUN_MODE));
     console.info();
@@ -161,7 +125,7 @@ const installPackages = async (
     packageManager = PackageManagerFactory.create(inputPackageManager);
     await packageManager.install(installDirectory, inputPackageManager);
   } catch (error) {
-    if (error && error.message) {
+    if (error instanceof Error) {
       console.error(ansis.red(error.message));
     }
   }
@@ -170,7 +134,12 @@ const installPackages = async (
 const askForPackageManager = async () => {
   const question = generateSelect('packageManager')(
     MESSAGES.PACKAGE_MANAGER_QUESTION,
-  )([PackageManager.NPM, PackageManager.YARN, PackageManager.PNPM]);
+  )([
+    PackageManager.NPM,
+    PackageManager.YARN,
+    PackageManager.PNPM,
+    PackageManager.BUN,
+  ]);
 
   return select(question).catch(gracefullyExitOnPromptError);
 };
@@ -222,20 +191,28 @@ const printCollective = () => {
 };
 
 const print =
-  (color: string | null = null) =>
+  (color: AnsiColors | AnsiStyles | null = null) =>
   (str = '') => {
     const terminalCols = retrieveCols();
-    const strLength = str.replace(/\u001b\[[0-9]{2}m/g, '').length;
+    // eslint-disable-next-line no-control-regex
+    const strLength = str.replace(/\x1b\[[0-9]+m/g, '').length;
     const leftPaddingLength = Math.floor((terminalCols - strLength) / 2);
     const leftPadding = ' '.repeat(Math.max(leftPaddingLength, 0));
     if (color) {
-      str = (ansis as any)[color](str);
+      str = ansis[color](str);
     }
     console.log(leftPadding, str);
   };
 
 export const retrieveCols = () => {
   const defaultCols = 80;
+  // Prefer process.stdout.columns: it works on every platform (including
+  // Windows, where `tput` is not available by default) and reflects the
+  // actual terminal size instead of always falling back to the default.
+  const stdoutCols = process.stdout.columns;
+  if (typeof stdoutCols === 'number' && stdoutCols > 0) {
+    return stdoutCols;
+  }
   try {
     const terminalCols = execSync('tput cols', {
       stdio: ['pipe', 'pipe', 'ignore'],
@@ -246,17 +223,6 @@ export const retrieveCols = () => {
   }
 };
 
-const fileExists = (path: string) => {
-  try {
-    fs.accessSync(path);
-    return true;
-  } catch (err: any) {
-    if (err.code === 'ENOENT') {
-      return false;
-    }
-
-    throw err;
-  }
-};
+const fileExists = (path: string) => fs.existsSync(path);
 
 export const exit = () => process.exit(1);

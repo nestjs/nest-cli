@@ -1,8 +1,8 @@
-import { Runner, RunnerFactory } from '../runners';
-import { YarnRunner } from '../runners/yarn.runner';
-import { AbstractPackageManager } from './abstract.package-manager';
-import { PackageManager } from './package-manager';
-import { PackageManagerCommands } from './package-manager-commands';
+import { Runner, RunnerFactory } from '../runners/index.js';
+import { YarnRunner } from '../runners/yarn.runner.js';
+import { AbstractPackageManager } from './abstract.package-manager.js';
+import { PackageManager } from './package-manager.js';
+import { PackageManagerCommands } from './package-manager-commands.js';
 
 export class YarnPackageManager extends AbstractPackageManager {
   constructor() {

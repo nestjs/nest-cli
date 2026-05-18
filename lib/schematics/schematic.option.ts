@@ -1,4 +1,4 @@
-import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
+import { normalizeToKebabOrSnakeCase } from '../utils/formatting.js';
 
 export class SchematicOption {
   constructor(
@@ -21,7 +21,7 @@ export class SchematicOption {
       }
     } else if (typeof this.value === 'boolean') {
       const str = this.normalizedName;
-      return this.value ? `--${str}` : `--no-${str}`;
+      return this.value ? `--${str}` : `--${str}=false`;
     } else {
       return `--${this.normalizedName}=${this.value}`;
     }

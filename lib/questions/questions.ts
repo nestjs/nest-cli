@@ -1,5 +1,5 @@
 export const generateInput = (name: string, message: string) => {
-  return (defaultAnswer: string): any => ({
+  return (defaultAnswer: string) => ({
     name,
     message,
     default: defaultAnswer,

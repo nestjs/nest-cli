@@ -1,7 +1,10 @@
+import { createRequire } from 'module';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { CLI_ERRORS } from '../../ui';
-import { ReadonlyVisitor } from '../interfaces/readonly-visitor.interface';
+import { CLI_ERRORS } from '../../ui/index.js';
+import { ReadonlyVisitor } from '../interfaces/readonly-visitor.interface.js';
+
+const require = createRequire(import.meta.url);
 
 const PLUGIN_ENTRY_FILENAME = 'plugin';
 
@@ -10,7 +13,7 @@ type PluginEntry = string | PluginAndOptions;
 type PluginOptions = Record<string, any>;
 
 interface PluginAndOptions {
-  name: 'string';
+  name: string;
   options: PluginOptions;
 }
 
@@ -92,7 +95,7 @@ export class PluginsLoader {
   private resolvePluginReferences(pluginNames: string[]): NestCompilerPlugin[] {
     const nodeModulePaths = [
       join(process.cwd(), 'node_modules'),
-      ...module.paths,
+      ...(require.resolve.paths('typescript') ?? []),
     ];
 
     return pluginNames.map((item) => {
@@ -105,12 +108,14 @@ export class PluginsLoader {
             },
           );
           return require(binaryPath);
-        } catch {}
+        } catch {
+          // entry-point resolution failed, try bare module resolve
+        }
 
         const binaryPath = require.resolve(item, { paths: nodeModulePaths });
         return require(binaryPath);
       } catch (e) {
-        throw new Error(`"${item}" plugin is not installed.`);
+        throw new Error(`"${item}" plugin is not installed.`, { cause: e });
       }
     });
   }
