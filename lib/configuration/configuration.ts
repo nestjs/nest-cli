@@ -27,6 +27,17 @@ export interface SwcBuilderOptions {
   quiet?: boolean;
 }
 
+export interface OxcBuilderOptions {
+  outDir?: string;
+  filenames?: string[];
+  extensions?: string[];
+  quiet?: boolean;
+  declaration?: boolean;
+  stripLeadingPaths?: boolean;
+  rootDir?: string;
+  transformOptions?: Record<string, any>;
+}
+
 export interface WebpackBuilderOptions {
   configPath?: string;
 }
@@ -35,7 +46,7 @@ export interface TscBuilderOptions {
   configPath?: string;
 }
 
-export type BuilderVariant = 'tsc' | 'swc' | 'webpack';
+export type BuilderVariant = 'tsc' | 'swc' | 'oxc' | 'webpack';
 export type Builder =
   | BuilderVariant
   | {
@@ -45,6 +56,10 @@ export type Builder =
   | {
       type: 'swc';
       options?: SwcBuilderOptions;
+    }
+  | {
+      type: 'oxc';
+      options?: OxcBuilderOptions;
     }
   | {
       type: 'tsc';
