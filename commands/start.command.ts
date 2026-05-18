@@ -16,7 +16,10 @@ export class StartCommand extends AbstractCommand {
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
-      .option('-b, --builder [name]', 'Builder to be used (tsc, webpack, swc).')
+      .option(
+        '-b, --builder [name]',
+        'Builder to be used (tsc, webpack, swc, oxc).',
+      )
       .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option(
         '-d, --debug [hostport] ',
@@ -27,7 +30,7 @@ export class StartCommand extends AbstractCommand {
         'Use webpack for compilation (deprecated option, use --builder instead).',
       )
       .option('--webpackPath [path]', 'Path to webpack configuration.')
-      .option('--type-check', 'Enable type checking (when SWC is used).')
+      .option('--type-check', 'Enable type checking (when SWC or OXC is used).')
       .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
         '--sourceRoot [sourceRoot]',
@@ -104,7 +107,7 @@ export class StartCommand extends AbstractCommand {
           value: command.envFile,
         });
 
-        const availableBuilders = ['tsc', 'webpack', 'swc'];
+        const availableBuilders = ['tsc', 'webpack', 'swc', 'oxc'];
         if (command.builder && !availableBuilders.includes(command.builder)) {
           console.error(
             ERROR_PREFIX +

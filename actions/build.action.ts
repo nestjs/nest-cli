@@ -135,10 +135,10 @@ export class BuildAction extends AbstractAction {
         'typeCheck',
         commandOptions,
       );
-      if (typeCheck && builder.type !== 'swc') {
+      if (typeCheck && !['swc', 'oxc'].includes(builder.type)) {
         console.warn(
           INFO_PREFIX +
-            ` "typeCheck" will not have any effect when "builder" is not "swc".`,
+            ` "typeCheck" will not have any effect when "builder" is not "swc" or "oxc".`,
         );
       }
 
@@ -175,8 +175,51 @@ export class BuildAction extends AbstractAction {
             onSuccess,
           );
           break;
+        case 'oxc':
+          await this.runOxc(
+            configuration,
+            appName,
+            pathToTsconfig,
+            watchMode,
+            commandOptions,
+            tsOptions,
+            onSuccess,
+          );
+          break;
       }
     }
+  }
+
+  private async runOxc(
+    configuration: Required<Configuration>,
+    appName: string | undefined,
+    pathToTsconfig: string,
+    watchMode: boolean,
+    options: Input[],
+    tsOptions: ts.CompilerOptions,
+    onSuccess: (() => void) | undefined,
+  ) {
+    const { OxcCompiler } = await import('../lib/compiler/oxc/oxc-compiler');
+    const oxc = new OxcCompiler(this.pluginsLoader);
+
+    await oxc.run(
+      configuration,
+      pathToTsconfig,
+      appName,
+      {
+        watch: watchMode,
+        typeCheck: getValueOrDefault<boolean>(
+          configuration,
+          'compilerOptions.typeCheck',
+          appName,
+          'typeCheck',
+          options,
+        ),
+        tsOptions,
+        assetsManager: this.assetsManager,
+      },
+      onSuccess,
+    );
   }
 
   private async runSwc(
@@ -220,9 +263,8 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
   ) {
-    const { WebpackCompiler } = await import(
-      '../lib/compiler/webpack-compiler'
-    );
+    const { WebpackCompiler } =
+      await import('../lib/compiler/webpack-compiler');
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
     const webpackPath =
