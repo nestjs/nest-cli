@@ -72,7 +72,9 @@ describe('NewAction', () => {
     process.exit = originalExit;
   });
 
-  const baseContext = (overrides: Partial<NewCommandContext> = {}): NewCommandContext => ({
+  const baseContext = (
+    overrides: Partial<NewCommandContext> = {},
+  ): NewCommandContext => ({
     name: 'test-project',
     directory: undefined,
     dryRun: false,
@@ -102,6 +104,19 @@ describe('NewAction', () => {
       expect(specOption).toBeDefined();
     });
 
+    it('should pass --skipTesting=true to schematics when --skip-tests is true', async () => {
+      const context = baseContext({ skipTests: true });
+      await action.handle(context);
+
+      expect(mockExecute).toHaveBeenCalledTimes(1);
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+
+      const skipTestingOption = schematicOptions.find(
+        (opt: SchematicOption) => opt.toCommandString() === '--skip-testing',
+      );
+      expect(skipTestingOption).toBeDefined();
+    });
+
     it('should not pass spec option to schematics when --skip-tests is false', async () => {
       const context = baseContext({ skipTests: false });
       await action.handle(context);
@@ -123,9 +138,8 @@ describe('NewAction', () => {
 
       const [, schematicOptions] = mockExecute.mock.calls[0];
 
-      const skipTestsOption = schematicOptions.find(
-        (opt: SchematicOption) =>
-          opt.toCommandString().includes('skip-tests'),
+      const skipTestsOption = schematicOptions.find((opt: SchematicOption) =>
+        opt.toCommandString().includes('skip-tests'),
       );
       expect(skipTestsOption).toBeUndefined();
     });
