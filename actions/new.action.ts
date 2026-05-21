@@ -88,13 +88,13 @@ const mapContextToSchematicOptions = (
   if (context.directory !== undefined)
     options.push(new SchematicOption('directory', context.directory));
 
-  if (context.dryRun)
-    options.push(new SchematicOption('dry-run', true));
+  if (context.dryRun) options.push(new SchematicOption('dry-run', true));
   options.push(new SchematicOption('skip-git', context.skipGit));
   options.push(new SchematicOption('strict', context.strict));
 
   if (context.skipTests) {
     options.push(new SchematicOption('spec', false));
+    options.push(new SchematicOption('skipTesting', true));
   }
 
   if (context.packageManager !== undefined)
