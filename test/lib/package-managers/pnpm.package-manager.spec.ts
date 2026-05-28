@@ -29,7 +29,7 @@ describe('PnpmPackageManager', () => {
       remove: 'uninstall',
       saveFlag: '--save',
       saveDevFlag: '--save-dev',
-      silentFlag: '--reporter=silent',
+      silentFlag: '--reporter=silent --dangerously-allow-all-builds',
     };
     expect(packageManager.cli).toMatchObject(expectedValues);
   });
@@ -40,7 +40,7 @@ describe('PnpmPackageManager', () => {
       const testDir = join(process.cwd(), dirName);
       packageManager.install(dirName, 'pnpm');
       expect(spy).toBeCalledWith(
-        'install --strict-peer-dependencies=false --reporter=silent',
+        'install --strict-peer-dependencies=false --reporter=silent --dangerously-allow-all-builds',
         true,
         testDir,
       );
