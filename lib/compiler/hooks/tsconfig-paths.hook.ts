@@ -19,16 +19,11 @@ export function tsconfigPathsBeforeHookFactory(
           (tsBinary.isExportDeclaration(node) && node.moduleSpecifier)
         ) {
           try {
-            const importPathWithQuotes =
-              node.moduleSpecifier && node.moduleSpecifier.getText();
+            const text = getModuleSpecifierText(node.moduleSpecifier, sf);
 
-            if (!importPathWithQuotes) {
+            if (!text) {
               return node;
             }
-            const text = importPathWithQuotes.substring(
-              1,
-              importPathWithQuotes.length - 1,
-            );
             const result = getNotAliasedPath(sf, matcher, text);
             if (!result) {
               return node;
@@ -70,6 +65,24 @@ export function tsconfigPathsBeforeHookFactory(
       return tsBinary.visitNode(sf, visitNode);
     };
   };
+}
+
+function getModuleSpecifierText(
+  moduleSpecifier: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+) {
+  if (!moduleSpecifier) {
+    return;
+  }
+  if (typeof (moduleSpecifier as ts.StringLiteral).text === 'string') {
+    return (moduleSpecifier as ts.StringLiteral).text;
+  }
+
+  const importPathWithQuotes = moduleSpecifier.getText(sourceFile);
+  if (!importPathWithQuotes) {
+    return;
+  }
+  return importPathWithQuotes.substring(1, importPathWithQuotes.length - 1);
 }
 
 function getNotAliasedPath(

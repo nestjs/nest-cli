@@ -71,6 +71,49 @@ function createSpecWithDeclarations(
   return output;
 }
 
+function transformSyntheticImport(
+  baseUrl: string,
+  compilerOptions?: ts.CompilerOptions,
+) {
+  const options: ts.CompilerOptions = {
+    baseUrl,
+    outDir: path.join(baseUrl, 'dist'),
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.CommonJS,
+    ...compilerOptions,
+  };
+
+  const sourceFile = ts.createSourceFile(
+    path.join(baseUrl, 'src/synthetic-main.ts'),
+    'import value from "~/foo";',
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const originalImport = sourceFile.statements[0] as ts.ImportDeclaration;
+  const syntheticSpecifier = ts.factory.createStringLiteral('~/foo');
+  syntheticSpecifier.getText = () => {
+    throw new Error('getText should not be called for synthetic literals');
+  };
+  (syntheticSpecifier as any).parent = originalImport.moduleSpecifier.parent;
+
+  const updatedImport = ts.factory.updateImportDeclaration(
+    originalImport,
+    originalImport.modifiers,
+    originalImport.importClause,
+    syntheticSpecifier,
+    originalImport.assertClause,
+  );
+  const updatedSourceFile = ts.factory.updateSourceFile(sourceFile, [
+    updatedImport,
+  ]);
+  const transformer = tsconfigPathsBeforeHookFactory(options);
+  const transformed = ts.transform(updatedSourceFile, [transformer])
+    .transformed[0] as ts.SourceFile;
+
+  return (transformed.statements[0] as ts.ImportDeclaration).moduleSpecifier as ts.StringLiteral;
+}
+
 /**
  * This test is temporarily skipped because it's flaky on CI.
  * Not yet clear why but it's not a blocker.
@@ -110,6 +153,15 @@ describe.skip('tsconfig paths hooks', () => {
 });
 
 describe('tsconfig paths hooks - declaration files', () => {
+  it('should rewrite aliased synthetic module specifiers without reading getText()', () => {
+    const moduleSpecifier = transformSyntheticImport(
+      path.join(__dirname, './fixtures/aliased-imports'),
+      { paths: { '~/*': ['./src/*'] } },
+    );
+
+    expect(moduleSpecifier.text).toBe('./foo');
+  });
+
   it('should replace path aliases in .d.ts files when transformer is applied to afterDeclarations', () => {
     const output = createSpecWithDeclarations(
       path.join(__dirname, './fixtures/aliased-dts-imports'),
