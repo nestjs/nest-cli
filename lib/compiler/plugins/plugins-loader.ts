@@ -99,7 +99,7 @@ export class PluginsLoader {
       try {
         try {
           const binaryPath = require.resolve(
-            join(item, PLUGIN_ENTRY_FILENAME),
+            `${item}/${PLUGIN_ENTRY_FILENAME}`,
             {
               paths: nodeModulePaths,
             },
