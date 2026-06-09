@@ -128,6 +128,37 @@ export class BuildAction extends AbstractAction {
         watchAssetsMode,
       );
 
+      const includeLibraryAssets = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.includeLibraryAssets',
+        appName,
+        'includeLibraryAssets',
+        commandOptions,
+      );
+      if (includeLibraryAssets && configuration.projects) {
+        for (const [projectName, project] of Object.entries(
+          configuration.projects,
+        )) {
+          if (projectName === appName) {
+            continue;
+          }
+          if (
+            project &&
+            project.type === 'library' &&
+            project.compilerOptions &&
+            Array.isArray(project.compilerOptions.assets) &&
+            project.compilerOptions.assets.length > 0
+          ) {
+            this.assetsManager.copyAssets(
+              configuration,
+              projectName,
+              outDir,
+              watchAssetsMode,
+            );
+          }
+        }
+      }
+
       const typeCheck = getValueOrDefault<boolean>(
         configuration,
         'compilerOptions.typeCheck',
@@ -220,9 +251,8 @@ export class BuildAction extends AbstractAction {
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
   ) {
-    const { WebpackCompiler } = await import(
-      '../lib/compiler/webpack-compiler'
-    );
+    const { WebpackCompiler } =
+      await import('../lib/compiler/webpack-compiler');
     const webpackCompiler = new WebpackCompiler(this.pluginsLoader);
 
     const webpackPath =
