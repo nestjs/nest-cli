@@ -64,6 +64,7 @@ export interface CompilerOptions {
   plugins?: string[] | PluginOptions[];
   assets?: Asset[];
   deleteOutDir?: boolean;
+  allowOutsidePaths?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
 }
