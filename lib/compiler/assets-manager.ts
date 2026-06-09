@@ -1,7 +1,7 @@
 import * as chokidar from 'chokidar';
 import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
 import { sync } from 'glob';
-import { dirname, join, sep } from 'path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'path';
 import {
   ActionOnFile,
   Asset,
@@ -15,6 +15,7 @@ export class AssetsManager {
   private watchAssetsKeyValue: { [key: string]: boolean } = {};
   private watchers: chokidar.FSWatcher[] = [];
   private actionInProgress = false;
+  private allowOutsidePaths: boolean | undefined = undefined;
 
   /**
    * Using on `nest build` to close file watch or the build process will not end
@@ -53,6 +54,12 @@ export class AssetsManager {
     if (assets.length <= 0) {
       return;
     }
+
+    this.allowOutsidePaths = getValueOrDefault<boolean>(
+      configuration,
+      'compilerOptions.allowOutsidePaths',
+      appName,
+    );
 
     try {
       let sourceRoot = getValueOrDefault(configuration, 'sourceRoot', appName);
@@ -147,11 +154,10 @@ export class AssetsManager {
     // Set action to true to avoid watches getting cutoff
     this.actionInProgress = true;
 
-    const dest = copyPathResolve(
-      path,
-      item.outDir!,
-      sourceRoot.split(sep).length,
-    );
+    const dest =
+      this.allowOutsidePaths === false
+        ? this.resolveAssetDestination(path, item.outDir!, sourceRoot)
+        : copyPathResolve(path, item.outDir!, sourceRoot.split(sep).length);
 
     // Copy to output dir if file is changed or added
     if (action === 'change') {
@@ -161,5 +167,28 @@ export class AssetsManager {
       // Remove from output dir if file is deleted
       rmSync(dest, { force: true });
     }
+  }
+
+  private resolveAssetDestination(
+    filePath: string,
+    outDir: string,
+    sourceRoot: string,
+  ) {
+    const dest = copyPathResolve(filePath, outDir, sourceRoot.split(sep).length);
+    const projectRoot = process.cwd();
+    const resolvedDest = resolve(projectRoot, dest);
+    const relativeDest = relative(projectRoot, resolvedDest);
+    const isProjectRoot = relativeDest === '';
+    const isOutsideProject =
+      relativeDest === '..' ||
+      relativeDest.startsWith(`..${sep}`) ||
+      isAbsolute(relativeDest);
+
+    if (isProjectRoot || isOutsideProject) {
+      throw new Error(
+        `Refusing to process asset outside of or equal to the project directory: ${dest}`,
+      );
+    }
+    return resolvedDest;
   }
 }
