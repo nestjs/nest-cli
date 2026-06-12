@@ -21,13 +21,21 @@ describe('getRemainingFlags', () => {
     expect(remaining).toContain('--extra');
   });
 
-  it('should return all args when no flags start with dashes', () => {
+  it('should return an empty array when no flags start with dashes', () => {
     const program = new Command();
     program.parse(['node', 'nest', 'build']);
 
     const remaining = getRemainingFlags(program as any);
-    // When no --flag is found, splice(0) returns all raw args
-    expect(remaining).toEqual(['node', 'nest', 'build']);
+    // When no --flag is found, should terminate early and return []
+    expect(remaining).toEqual([]);
+  });
+
+  it('should not crash when a flag contains -no-', () => {
+    const program = new Command();
+    program.parse(['node', 'nest', 'build', '--custom-no-custom', '--custom']);
+
+    const remaining = getRemainingFlags(program as any);
+    expect(remaining).toEqual(['--custom-no-custom', '--custom']);
   });
 
   it('should handle multiple unknown flags', () => {

@@ -2,13 +2,16 @@ import { CommanderStatic } from 'commander';
 
 export function getRemainingFlags(cli: CommanderStatic) {
   const rawArgs = [...cli.rawArgs];
+
+  const spliceIndex = rawArgs.findIndex((item: string) =>
+    item.startsWith('--'),
+  );
+  if (spliceIndex === -1) {
+    return [];
+  }
+
   return rawArgs
-    .splice(
-      Math.max(
-        rawArgs.findIndex((item: string) => item.startsWith('--')),
-        0,
-      ),
-    )
+    .splice(spliceIndex)
     .filter((item: string, index: number, array: string[]) => {
       // If the option is consumed by commander.js, then we skip it
       if (cli.options.find((o: any) => o.short === item || o.long === item)) {
@@ -18,7 +21,7 @@ export function getRemainingFlags(cli: CommanderStatic) {
       // If it's an argument of an option consumed by commander.js, then we
       // skip it too
       const prevKeyRaw = array[index - 1];
-      if (prevKeyRaw) {
+      if (prevKeyRaw?.startsWith('-')) {
         const previousKey = camelCase(
           prevKeyRaw.replace(/--/g, '').replace('no', ''),
         );
@@ -40,7 +43,9 @@ export function getRemainingFlags(cli: CommanderStatic) {
  */
 
 function camelCase(flag: string) {
-  return flag.split('-').reduce((str, word) => {
-    return str + word[0].toUpperCase() + word.slice(1);
-  });
+  return flag
+    .split('-')
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join('');
 }
