@@ -2,13 +2,16 @@ import { Command } from 'commander';
 
 export function getRemainingFlags(cli: Command) {
   const rawArgs = [...(cli as any).rawArgs];
+
+  const spliceIndex = rawArgs.findIndex((item: string) =>
+    item.startsWith('--'),
+  );
+  if (spliceIndex === -1) {
+    return [];
+  }
+
   return rawArgs
-    .splice(
-      Math.max(
-        rawArgs.findIndex((item: string) => item.startsWith('--')),
-        0,
-      ),
-    )
+    .splice(spliceIndex)
     .filter((item: string, index: number, array: string[]) => {
       // If the option is consumed by commander.js, then we skip it
       if (cli.options.find((o: any) => o.short === item || o.long === item)) {
@@ -18,7 +21,7 @@ export function getRemainingFlags(cli: Command) {
       // If it's an argument of an option consumed by commander.js, then we
       // skip it too
       const prevKeyRaw = array[index - 1];
-      if (prevKeyRaw) {
+      if (prevKeyRaw?.startsWith('-')) {
         const previousKey = camelCase(
           prevKeyRaw.replace(/--/g, '').replace('no', ''),
         );
