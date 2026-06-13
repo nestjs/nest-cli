@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   convertToCjs,
@@ -11,6 +12,7 @@ import {
   installWebpackDeps,
   readFileContent,
   removeLocalCli,
+  removelink,
   removeTempDir,
   runNest,
   runNestRaw,
@@ -20,6 +22,7 @@ import {
   spawnNest,
   waitFor,
   writeFileContent,
+  createCliSymlink,
 } from './helpers.js';
 
 describe('Start Command - CJS project (e2e)', () => {
@@ -175,6 +178,35 @@ describe('Start Command - CJS project (e2e)', () => {
       proc.kill();
       // Restore the original source file for subsequent tests
       writeFileContent(servicePath, original);
+    }
+  });
+
+  it('should start when the cli path contains "-no-"', async () => {
+    const port = 4070;
+
+    const randomChars = crypto.randomBytes(8).toString('hex');
+    const pathWithNo = path.join(tmpDir, `nest-no-test-cli${randomChars}`);
+
+    createCliSymlink(pathWithNo);
+
+    const proc = spawnNest(
+      'start',
+      appPath,
+      { PORT: String(port) },
+      pathWithNo,
+    );
+
+    try {
+      await waitFor(
+        () => proc.output().includes('Nest application successfully started'),
+        60_000,
+      );
+
+      const response = await httpGet(`http://127.0.0.1:${port}`);
+      expect(response.status).toBe(200);
+    } finally {
+      proc.kill();
+      removelink(pathWithNo);
     }
   });
 
