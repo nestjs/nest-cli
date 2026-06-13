@@ -42,14 +42,14 @@ describe('getRemainingFlags', () => {
     expect(result).toEqual([]);
   });
 
-  it('should return all raw args when no flags starting with "--" are present', () => {
-    // When no "--" flags exist, findIndex returns -1, Math.max(-1, 0) = 0,
-    // so splice(0) returns all elements from the rawArgs array
+  it('should return an empty array when no flags starting with "--" are present', () => {
+    // When no "--" flags exist, findIndex returns -1, which means no flags are present.
+    // terminate early when no flags are found
     const cmd = createCommand(['node', 'nest', 'start'], []);
 
     const result = getRemainingFlags(cmd);
 
-    expect(result).toEqual(['node', 'nest', 'start']);
+    expect(result).toEqual([]);
   });
 
   it('should filter out short option flags consumed by commander', () => {
