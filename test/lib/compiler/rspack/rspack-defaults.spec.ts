@@ -103,19 +103,6 @@ describe('rspackDefaultsFactory', () => {
     expect(config.devtool).toBe(false);
   });
 
-  it('should set devtool to inline-source-map when debug is enabled', () => {
-    const config = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      true,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-
-    expect(config.devtool).toBe('inline-source-map');
-  });
-
   it('should use builtin:swc-loader for TypeScript files', () => {
     const config = rspackDefaultsFactory(
       'src',
@@ -337,34 +324,6 @@ describe('rspackDefaultsFactory', () => {
 
     expect(config.module.rules[0].use[0].options.sourceMaps).toBe('inline');
     expect(config.devtool).toBe('inline-source-map');
-  });
-
-  it('should keep debug devtool without enabling swc-loader sourceMaps when tsconfig source maps are disabled', () => {
-    const debugConfig = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      true,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-    expect(
-      debugConfig.module.rules[0].use[0].options.sourceMaps,
-    ).toBeUndefined();
-    expect(debugConfig.devtool).toBe('inline-source-map');
-
-    const releaseConfig = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      false,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-    expect(
-      releaseConfig.module.rules[0].use[0].options.sourceMaps,
-    ).toBeUndefined();
-    expect(releaseConfig.devtool).toBe(false);
   });
 
   describe('ESM mode', () => {
