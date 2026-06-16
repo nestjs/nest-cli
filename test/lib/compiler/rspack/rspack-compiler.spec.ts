@@ -172,6 +172,7 @@ describe('Rspack Compiler', () => {
           afterDeclarationsHooks: [],
         }),
         false,
+        undefined,
       );
     });
 
@@ -197,6 +198,7 @@ describe('Rspack Compiler', () => {
         'tsconfig.json',
         expect.anything(),
         true,
+        undefined,
       );
     });
 
@@ -220,6 +222,34 @@ describe('Rspack Compiler', () => {
         'tsconfig.json',
         expect.anything(),
         false,
+        undefined,
+      );
+    });
+
+    it('should pass tsconfig compiler options to rspackDefaultsFactory', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      const tsOptions = { sourceMap: true };
+
+      compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras({ tsOptions }),
+      );
+
+      expect(vi.mocked(rspackDefaultsFactory)).toHaveBeenCalledWith(
+        'src',
+        '',
+        'main',
+        false,
+        'tsconfig.json',
+        expect.anything(),
+        false,
+        tsOptions,
       );
     });
 
