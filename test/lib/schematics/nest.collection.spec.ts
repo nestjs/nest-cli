@@ -1,5 +1,23 @@
 import { AbstractRunner } from '../../../lib/runners';
 import { NestCollection } from '../../../lib/schematics/nest.collection';
+import * as path from 'path';
+
+const getResolvedNestCollectionPath = () => {
+  const packageJsonPath = require.resolve('@nestjs/schematics/package.json');
+  const packageJson = require(packageJsonPath);
+
+  return path.resolve(path.dirname(packageJsonPath), packageJson.schematics);
+};
+
+const quoteCollectionPath = (collectionPath: string) => {
+  if (process.platform === 'win32') {
+    return `"${collectionPath.replace(/"/g, '\\"')}"`;
+  }
+  return `'${collectionPath.replace(/'/g, `'\\''`)}'`;
+};
+
+const getExpectedNestCollectionCommand = (schematic: string) =>
+  `${quoteCollectionPath(getResolvedNestCollectionPath())}:${schematic} --no-debug`;
 
 describe('Nest Collection', () => {
   [
@@ -35,7 +53,7 @@ describe('Nest Collection', () => {
       const collection = new NestCollection(mockedRunner as AbstractRunner);
       await collection.execute(schematic, []);
       expect(mockedRunner.run).toHaveBeenCalledWith(
-        `@nestjs/schematics:${schematic}`,
+        getExpectedNestCollectionCommand(schematic),
       );
     });
   });
@@ -72,7 +90,7 @@ describe('Nest Collection', () => {
       const collection = new NestCollection(mockedRunner as AbstractRunner);
       await collection.execute(schematic.alias, []);
       expect(mockedRunner.run).toHaveBeenCalledWith(
-        `@nestjs/schematics:${schematic.name}`,
+        getExpectedNestCollectionCommand(schematic.name),
       );
     });
   });
@@ -92,6 +110,39 @@ describe('Nest Collection', () => {
       expect(error.message).toEqual(
         'Invalid schematic "name". Please, ensure that "name" exists in this collection.',
       );
+    }
+  });
+
+  it('should quote collection paths that contain shell special characters', async () => {
+    if (process.platform === 'win32') {
+      return;
+    }
+
+    const packageJsonPath = require.resolve('@nestjs/schematics/package.json');
+    const originalDirname = path.dirname;
+    const dirname = jest.spyOn(path, 'dirname').mockImplementation((value) => {
+      if (value === packageJsonPath) {
+        return "/tmp/nest $(echo unsafe) path's";
+      }
+      return originalDirname(value);
+    });
+
+    const mockedRunner = {
+      run: jest.fn().mockImplementation(() => Promise.resolve()),
+    };
+
+    try {
+      const collection = new NestCollection(
+        mockedRunner as unknown as AbstractRunner,
+      );
+
+      await collection.execute('application', []);
+
+      expect(mockedRunner.run).toHaveBeenCalledWith(
+        "'/tmp/nest $(echo unsafe) path'\\''s/dist/collection.json':application --no-debug",
+      );
+    } finally {
+      dirname.mockRestore();
     }
   });
 });

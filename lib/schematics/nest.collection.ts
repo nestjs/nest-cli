@@ -1,6 +1,7 @@
 import { AbstractRunner } from '../runners';
 import { AbstractCollection } from './abstract.collection';
 import { SchematicOption } from './schematic.option';
+import * as path from 'path';
 
 export interface Schematic {
   name: string;
@@ -113,12 +114,17 @@ export class NestCollection extends AbstractCollection {
   ];
 
   constructor(runner: AbstractRunner) {
-    super('@nestjs/schematics', runner);
+    super(NestCollection.getCollectionPath(), runner);
   }
 
   public async execute(name: string, options: SchematicOption[]) {
     const schematic: string = this.validate(name);
-    await super.execute(schematic, options);
+    await super.execute(schematic, [
+      ...options,
+      // Absolute collection paths are treated as local collections by
+      // schematics-cli, which enables debug/dry-run defaults unless disabled.
+      new SchematicOption('debug', false),
+    ]);
   }
 
   public getSchematics(): Schematic[] {
@@ -138,5 +144,19 @@ export class NestCollection extends AbstractCollection {
       );
     }
     return schematic.name;
+  }
+
+  private static getCollectionPath(): string {
+    const packageJsonPath = require.resolve('@nestjs/schematics/package.json');
+    const packageJson = require(packageJsonPath);
+    const collectionPath = path.resolve(
+      path.dirname(packageJsonPath),
+      packageJson.schematics,
+    );
+
+    if (process.platform === 'win32') {
+      return `"${collectionPath.replace(/"/g, '\\"')}"`;
+    }
+    return `'${collectionPath.replace(/'/g, `'\\''`)}'`;
   }
 }
