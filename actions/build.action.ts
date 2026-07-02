@@ -132,8 +132,6 @@ export class BuildAction extends AbstractAction {
         configuration,
         'compilerOptions.includeLibraryAssets',
         appName,
-        'includeLibraryAssets',
-        commandOptions,
       );
       if (includeLibraryAssets && configuration.projects) {
         for (const [projectName, project] of Object.entries(

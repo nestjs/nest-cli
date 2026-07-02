@@ -87,7 +87,6 @@ const buildOptions = (
     typeCheck: undefined,
     preserveWatchOutput: false,
     all: false,
-    includeLibraryAssets: undefined,
   };
   const merged = { ...defaults, ...overrides };
   return Object.entries(merged).map(([name, value]) => ({
@@ -132,36 +131,6 @@ describe('BuildAction - includeLibraryAssets', () => {
     expect(action.copyAssetsCalls[0].appName).toEqual('api');
   });
 
-  it('should copy library assets when includeLibraryAssets flag is true via CLI', async () => {
-    action.configurationOverride = baseConfig({
-      projects: {
-        api: {
-          type: 'application',
-          sourceRoot: 'apps/api/src',
-          compilerOptions: { assets: ['app-assets/*'] },
-        },
-        'my-lib': {
-          type: 'library',
-          sourceRoot: 'libs/my-lib/src',
-          compilerOptions: { assets: ['library-assets/*'] },
-        },
-      },
-    });
-
-    await action.runBuild(
-      [{ name: 'app', value: 'api' }],
-      buildOptions({ includeLibraryAssets: true }),
-      false,
-      false,
-    );
-
-    expect(action.copyAssetsCalls).toHaveLength(2);
-    expect(action.copyAssetsCalls[0].appName).toEqual('api');
-    expect(action.copyAssetsCalls[1].appName).toEqual('my-lib');
-    // Library assets should be copied into the app's outDir.
-    expect(action.copyAssetsCalls[1].outDir).toEqual('dist');
-  });
-
   it('should copy library assets when includeLibraryAssets is true in compilerOptions', async () => {
     action.configurationOverride = baseConfig({
       compilerOptions: { includeLibraryAssets: true },
@@ -191,10 +160,13 @@ describe('BuildAction - includeLibraryAssets', () => {
       'api',
       'my-lib',
     ]);
+    // Library assets should be copied into the app's outDir.
+    expect(action.copyAssetsCalls[1].outDir).toEqual('dist');
   });
 
   it('should copy assets from multiple libraries when configured', async () => {
     action.configurationOverride = baseConfig({
+      compilerOptions: { includeLibraryAssets: true },
       projects: {
         api: {
           type: 'application',
@@ -216,7 +188,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
     await action.runBuild(
       [{ name: 'app', value: 'api' }],
-      buildOptions({ includeLibraryAssets: true }),
+      buildOptions(),
       false,
       false,
     );
@@ -230,6 +202,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
   it('should skip libraries without assets configured', async () => {
     action.configurationOverride = baseConfig({
+      compilerOptions: { includeLibraryAssets: true },
       projects: {
         api: {
           type: 'application',
@@ -251,7 +224,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
     await action.runBuild(
       [{ name: 'app', value: 'api' }],
-      buildOptions({ includeLibraryAssets: true }),
+      buildOptions(),
       false,
       false,
     );
@@ -260,7 +233,7 @@ describe('BuildAction - includeLibraryAssets', () => {
     expect(names).toEqual(['api', 'lib-with-assets']);
   });
 
-  it('should not crash for a single-project (no monorepo) configuration when flag is enabled', async () => {
+  it('should not crash for a single-project (no monorepo) configuration when option is enabled', async () => {
     action.configurationOverride = baseConfig({
       monorepo: false,
       projects: {},
@@ -272,7 +245,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
     await action.runBuild(
       [{ name: 'app', value: undefined as unknown as string }],
-      buildOptions({ includeLibraryAssets: true }),
+      buildOptions(),
       false,
       false,
     );
@@ -284,6 +257,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
   it('should skip application-type sibling projects', async () => {
     action.configurationOverride = baseConfig({
+      compilerOptions: { includeLibraryAssets: true },
       projects: {
         api: {
           type: 'application',
@@ -305,7 +279,7 @@ describe('BuildAction - includeLibraryAssets', () => {
 
     await action.runBuild(
       [{ name: 'app', value: 'api' }],
-      buildOptions({ includeLibraryAssets: true }),
+      buildOptions(),
       false,
       false,
     );

@@ -13,8 +13,7 @@ export function getValueOrDefault<T = any>(
     | 'sourceRoot'
     | 'exec'
     | 'builder'
-    | 'typeCheck'
-    | 'includeLibraryAssets',
+    | 'typeCheck',
   options: Input[] = [],
   defaultValue?: T,
 ): T {

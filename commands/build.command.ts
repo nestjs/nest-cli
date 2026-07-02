@@ -24,10 +24,6 @@ export class BuildCommand extends AbstractCommand {
         'Use "preserveWatchOutput" option when using tsc watch mode.',
       )
       .option('--all', 'Build all projects in a monorepo.')
-      .option(
-        '--include-library-assets',
-        'Also copy assets from library projects when building an app in a monorepo.',
-      )
       .description('Build Nest application.')
       .action(async (apps: string[], command: Command) => {
         const options: Input[] = [];
@@ -79,11 +75,6 @@ export class BuildCommand extends AbstractCommand {
         });
 
         options.push({ name: 'all', value: !!command.all });
-
-        options.push({
-          name: 'includeLibraryAssets',
-          value: command.includeLibraryAssets,
-        });
 
         const inputs: Input[] = apps.map((app) => ({
           name: 'app',
