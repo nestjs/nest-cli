@@ -1,6 +1,7 @@
 import { existsSync } from 'fs';
 import { createRequire } from 'module';
 import { join } from 'path';
+import type * as ts from 'typescript';
 import { Configuration } from '../configuration/index.js';
 import { INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
@@ -27,6 +28,7 @@ type RspackCompilerExtras = {
     | RspackConfigFactoryOrConfig[];
   debug?: boolean;
   watchMode?: boolean;
+  tsOptions?: ts.CompilerOptions;
 };
 
 export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
@@ -73,6 +75,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       tsConfigPath,
       plugins,
       isEsmProject(),
+      extras.tsOptions,
     );
 
     let rspack: any;
