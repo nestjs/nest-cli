@@ -1,5 +1,6 @@
 import { createRequire } from 'module';
 import { join } from 'path';
+import { readFileSync } from 'fs';
 import type { TsconfigPathsPlugin as TsconfigPathsPluginType } from 'tsconfig-paths-webpack-plugin';
 import type webpack from 'webpack';
 import type nodeExternals from 'webpack-node-externals';
@@ -36,6 +37,15 @@ function loadWebpackDeps() {
         `Please install it:\n\n  npm install --save-dev webpack webpack-node-externals tsconfig-paths-webpack-plugin ts-loader fork-ts-checker-webpack-plugin\n`,
       { cause: e },
     );
+  }
+}
+
+function getBaseUrl(tsConfigFile: string) {
+  try {
+    const { compilerOptions } = JSON.parse(readFileSync(tsConfigFile, 'utf8'));
+    return compilerOptions?.baseUrl ?? '.';
+  } catch {
+    return '.';
   }
 }
 
@@ -96,6 +106,7 @@ export const webpackDefaultsFactory = (
       plugins: [
         new TsconfigPathsPlugin({
           configFile: tsConfigFile,
+          baseUrl: getBaseUrl(tsConfigFile),
         }),
       ],
     },

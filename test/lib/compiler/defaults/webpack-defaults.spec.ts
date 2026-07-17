@@ -1,4 +1,13 @@
+import * as fs from 'fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    readFileSync: vi.fn(),
+  };
+});
 
 // Hoisted module mocks. Each test resets the implementation of these
 // functions to simulate either a successful require (mock module returned)
@@ -41,6 +50,7 @@ const emptyPlugins: MultiNestCompilerPlugins = {
   beforeHooks: [],
   afterHooks: [],
   afterDeclarationsHooks: [],
+  readonlyVisitors: [],
 };
 
 // vi.fn() can be used with `new`; arrow functions cannot. Webpack and
@@ -144,6 +154,7 @@ describe('webpackDefaultsFactory', () => {
           beforeHooks: [vi.fn()],
           afterHooks: [],
           afterDeclarationsHooks: [],
+          readonlyVisitors: [],
         },
       );
 
@@ -152,6 +163,85 @@ describe('webpackDefaultsFactory', () => {
       ).not.toHaveBeenCalled();
       // IgnorePlugin only
       expect((config.plugins as any[]).length).toBe(1);
+    });
+
+    it('should pass baseUrl from tsconfig.json to TsconfigPathsPlugin', () => {
+      const mockReadFileSync = vi.mocked(fs.readFileSync);
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          compilerOptions: {
+            baseUrl: './src-custom',
+          },
+        }),
+      );
+
+      webpackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+      );
+
+      const { TsconfigPathsPlugin } = (
+        requireFns['tsconfig-paths-webpack-plugin'] as any
+      )();
+      expect(TsconfigPathsPlugin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseUrl: './src-custom',
+        }),
+      );
+    });
+
+    it('should default baseUrl to "." if not present in tsconfig.json', () => {
+      const mockReadFileSync = vi.mocked(fs.readFileSync);
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          compilerOptions: {},
+        }),
+      );
+
+      webpackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+      );
+
+      const { TsconfigPathsPlugin } = (
+        requireFns['tsconfig-paths-webpack-plugin'] as any
+      )();
+      expect(TsconfigPathsPlugin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseUrl: '.',
+        }),
+      );
+    });
+
+    it('should default baseUrl to "." if tsconfig.json is invalid JSON', () => {
+      const mockReadFileSync = vi.mocked(fs.readFileSync);
+      mockReadFileSync.mockReturnValue('invalid json');
+
+      webpackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+      );
+
+      const { TsconfigPathsPlugin } = (
+        requireFns['tsconfig-paths-webpack-plugin'] as any
+      )();
+      expect(TsconfigPathsPlugin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseUrl: '.',
+        }),
+      );
     });
   });
 
