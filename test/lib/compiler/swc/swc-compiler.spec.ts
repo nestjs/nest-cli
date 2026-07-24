@@ -391,4 +391,63 @@ describe('SWC Compiler', () => {
       expect(onChange).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('runSwc', () => {
+    let originalRunSwc: Function;
+
+    beforeEach(() => {
+      // Restore the real implementation that was mocked in the outer beforeEach
+      originalRunSwc = SwcCompiler.prototype['runSwc'];
+      compiler['runSwc'] = originalRunSwc.bind(compiler);
+    });
+
+    it('should transpile newly added files without inheriting watch mode', async () => {
+      const swcCliMock = jest.fn().mockResolvedValue(undefined);
+      let onFileAdded: Function = () => {};
+
+      compiler['loadSwcCliBinary'] = jest.fn(() => ({
+        default: swcCliMock,
+      })) as any;
+      compiler['getSwcRcFileContentIfExists'] = jest
+        .fn()
+        .mockReturnValue({}) as any;
+      compiler['watchFilesInSrcDir'] = jest.fn(
+        async (_options: any, callback: Function) => {
+          onFileAdded = callback;
+        },
+      ) as any;
+
+      const options = {
+        swcOptions: {},
+        cliOptions: {
+          filenames: ['src'],
+          sync: false,
+          watch: false,
+        },
+      };
+
+      await compiler['runSwc'](options as any, { watch: true } as any);
+
+      // The main invocation keeps watch mode enabled
+      expect(swcCliMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cliOptions: expect.objectContaining({ watch: true }),
+        }),
+      );
+
+      await onFileAdded('src/added.ts');
+
+      // The added-file invocation must be one-shot: inheriting watch would
+      // register a permanent extra watcher (and leak a worker pool) per added file
+      expect(swcCliMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          cliOptions: expect.objectContaining({
+            filenames: ['src/added.ts'],
+            watch: false,
+            sync: true,
+          }),
+        }),
+      );
+    });
+  });
 });
