@@ -88,7 +88,9 @@ export class BuildCommand extends AbstractCommand {
           rspackPath: options.rspackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
-          emitDeclarations: !!options.emitDeclarations,
+          // Left undefined when the flag is absent so `getValueOrDefault` can
+          // still fall through to `compilerOptions.emitDeclarations`.
+          emitDeclarations: options.emitDeclarations,
           silent: !!options.silent,
           preserveWatchOutput:
             !!options.preserveWatchOutput &&

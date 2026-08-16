@@ -21,6 +21,9 @@ export class SchematicOption {
       }
     } else if (typeof this.value === 'boolean') {
       const str = this.normalizedName;
+      // Must stay `=false` rather than `--no-<flag>`: schematics-cli parses
+      // with parseArgs under `allowNegative`, which turns `--no-x` into `x`
+      // with no value and then coerces it to true — inverting the option.
       return this.value ? `--${str}` : `--${str}=false`;
     } else {
       return `--${this.normalizedName}=${this.value}`;

@@ -4,6 +4,7 @@ import { Configuration } from '../../lib/configuration/index.js';
 import { RspackCompiler } from '../../lib/compiler/rspack-compiler.js';
 import { WebpackCompiler } from '../../lib/compiler/webpack-compiler.js';
 import { getRspackConfigPath } from '../../lib/compiler/helpers/get-rspack-config-path.js';
+import { deleteOutDirIfEnabled } from '../../lib/compiler/helpers/delete-out-dir.js';
 
 vi.mock('../../lib/compiler/rspack-compiler.js', () => ({
   RspackCompiler: vi.fn().mockImplementation(function () {
@@ -27,6 +28,10 @@ vi.mock('../../lib/compiler/webpack-compiler.js', () => ({
 
 vi.mock('../../lib/compiler/helpers/get-webpack-config-path.js', () => ({
   getWebpackConfigPath: vi.fn(),
+}));
+
+vi.mock('../../lib/compiler/helpers/delete-out-dir.js', () => ({
+  deleteOutDirIfEnabled: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('BuildAction - Rspack', () => {
@@ -69,11 +74,11 @@ describe('BuildAction - Rspack', () => {
       }),
     };
 
-    // Stub assets manager
-    (buildAction as any).assetsManager = {
+    // Stub the per-app assets manager factory
+    (buildAction as any).createAssetsManager = vi.fn(() => ({
       copyAssets: vi.fn(),
-      closeWatchers: vi.fn(),
-    };
+      closeWatchers: vi.fn().mockResolvedValue(undefined),
+    }));
 
     vi.clearAllMocks();
   });
@@ -220,6 +225,217 @@ describe('BuildAction - Rspack', () => {
       const built = await buildAllThreeApps(true);
 
       expect(built.sort()).toEqual(['a', 'b', 'c']);
+    });
+  });
+
+  describe('output directory cleanup', () => {
+    it('should clean every outDir before the first app starts building', async () => {
+      // Apps in a monorepo share `dist` by default, so a delete that runs
+      // inside a per-app build wipes output another app already emitted.
+      const events: string[] = [];
+      vi.mocked(deleteOutDirIfEnabled).mockImplementation(async () => {
+        events.push('delete');
+      });
+      (buildAction as any).runRspack = vi.fn(async () => {
+        events.push('build');
+      });
+
+      await buildAction.runBuild(
+        ['a', 'b', 'c'],
+        { builder: 'rspack' },
+        false,
+        false,
+      );
+
+      expect(events).toEqual([
+        'delete',
+        'delete',
+        'delete',
+        'build',
+        'build',
+        'build',
+      ]);
+    });
+
+    it('should clean every outDir before any app starts building in parallel mode', async () => {
+      const events: string[] = [];
+      vi.mocked(deleteOutDirIfEnabled).mockImplementation(async () => {
+        events.push('delete');
+      });
+      (buildAction as any).runRspack = vi.fn(async () => {
+        events.push('build');
+      });
+
+      await buildAction.runBuild(
+        ['a', 'b', 'c'],
+        { builder: 'rspack', parallel: true },
+        false,
+        false,
+      );
+
+      expect(events.indexOf('build')).toBe(3);
+    });
+  });
+
+  describe('assets manager scoping', () => {
+    it('should give every app its own assets manager', async () => {
+      // A shared manager lets the first app to finish close the asset
+      // watchers of apps that are still building under --parallel.
+      (buildAction as any).runRspack = vi.fn();
+
+      await buildAction.runBuild(
+        ['a', 'b', 'c'],
+        { builder: 'rspack', parallel: true },
+        false,
+        false,
+      );
+
+      expect((buildAction as any).createAssetsManager).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('warnOnIgnoredLibraryAssets', () => {
+    const configurationWithLibrary = (includeLibraryAssets?: string[]) =>
+      makeConfiguration({
+        compilerOptions: {
+          builder: { type: 'rspack' },
+          webpack: false,
+          plugins: [],
+          assets: [],
+          manualRestart: false,
+          ...(includeLibraryAssets ? { includeLibraryAssets } : {}),
+        } as any,
+        projects: {
+          api: { type: 'application', compilerOptions: {} },
+          shared: {
+            type: 'library',
+            compilerOptions: { assets: ['**/*.graphql'] },
+          },
+        } as any,
+      });
+
+    const buildApiApp = async (includeLibraryAssets?: string[]) => {
+      (buildAction as any).loader = {
+        load: vi
+          .fn()
+          .mockResolvedValue(configurationWithLibrary(includeLibraryAssets)),
+      };
+      (buildAction as any).runRspack = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild(['api'], { builder: 'rspack' }, false, false);
+
+      const warnings = warn.mock.calls.map((call) => String(call[0]));
+      warn.mockRestore();
+      return warnings.filter((message) => message.includes('shared'));
+    };
+
+    it('should warn when a library with assets is not included', async () => {
+      expect(await buildApiApp()).toHaveLength(1);
+    });
+
+    it('should not warn when the library is listed in includeLibraryAssets', async () => {
+      // Those assets *are* copied, so the warning would be plainly wrong.
+      expect(await buildApiApp(['shared'])).toHaveLength(0);
+    });
+
+    it('should warn only once per build rather than once per app', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(configurationWithLibrary()),
+      };
+      (buildAction as any).runRspack = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild(
+        ['api', 'api2'],
+        { builder: 'rspack' },
+        false,
+        false,
+      );
+
+      const warnings = warn.mock.calls
+        .map((call) => String(call[0]))
+        .filter((message) => message.includes('shared'));
+      warn.mockRestore();
+
+      expect(warnings).toHaveLength(1);
+    });
+  });
+
+  describe('emitDeclarations resolution', () => {
+    // getValueOrDefault returns the CLI value whenever it is not null or
+    // undefined, so the command layer must leave the option undefined when the
+    // flag is absent — otherwise nest-cli.json can never enable it.
+    const emitDeclarationsPassedToSwc = async (
+      configEmitDeclarations: boolean | undefined,
+      cliEmitDeclarations: boolean | undefined,
+    ) => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              builder: { type: 'swc' },
+              webpack: false,
+              plugins: [],
+              assets: [],
+              manualRestart: false,
+              ...(configEmitDeclarations !== undefined
+                ? { emitDeclarations: configEmitDeclarations }
+                : {}),
+            } as any,
+          }),
+        ),
+      };
+      const runSwc = vi.fn();
+      (buildAction as any).runSwc = runSwc;
+
+      await buildAction.runBuild(
+        [undefined],
+        { builder: 'swc', emitDeclarations: cliEmitDeclarations },
+        false,
+        false,
+      );
+
+      // runSwc(configuration, appName, tsconfig, watch, options, tsOptions,
+      //        emitDeclarations, onSuccess, assetsManager)
+      return runSwc.mock.calls[0][6];
+    };
+
+    it('honours compilerOptions.emitDeclarations when the flag is absent', async () => {
+      expect(await emitDeclarationsPassedToSwc(true, undefined)).toBe(true);
+    });
+
+    it('stays falsy when neither the config nor the flag enable it', async () => {
+      expect(
+        await emitDeclarationsPassedToSwc(undefined, undefined),
+      ).toBeFalsy();
+    });
+
+    it('honours the CLI flag when the config says nothing', async () => {
+      expect(await emitDeclarationsPassedToSwc(undefined, true)).toBe(true);
+    });
+
+    it('lets the CLI flag win over the config', async () => {
+      expect(await emitDeclarationsPassedToSwc(false, true)).toBe(true);
+    });
+
+    it('warns when emitDeclarations is requested for a non-swc builder', async () => {
+      (buildAction as any).runRspack = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild(
+        [undefined],
+        { builder: 'rspack', emitDeclarations: true },
+        false,
+        false,
+      );
+
+      const warnings = warn.mock.calls.map((call) => String(call[0]));
+      warn.mockRestore();
+
+      expect(
+        warnings.some((message) => message.includes('"emitDeclarations"')),
+      ).toBe(true);
     });
   });
 });

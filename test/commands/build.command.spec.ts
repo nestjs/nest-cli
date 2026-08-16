@@ -121,4 +121,33 @@ describe('BuildCommand', () => {
       );
     });
   });
+
+  describe('--emit-declarations', () => {
+    it('leaves emitDeclarations undefined when the flag is absent', async () => {
+      // A materialized `false` wins over `compilerOptions.emitDeclarations` in
+      // getValueOrDefault, permanently shadowing the nest-cli.json setting.
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'build']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ emitDeclarations: undefined }),
+      );
+    });
+
+    it('forwards true when the flag is passed', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'build',
+        '--emit-declarations',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ emitDeclarations: true }),
+      );
+    });
+  });
 });

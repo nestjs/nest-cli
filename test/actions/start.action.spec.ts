@@ -338,4 +338,32 @@ describe('StartAction', () => {
       expect(exitSpy).toHaveBeenCalledWith(0);
     });
   });
+
+  describe('handle - build failure exit code', () => {
+    it('should exit with code 1 when the build fails', async () => {
+      // The SWC type checker rejects rather than exiting the process itself,
+      // so swallowing the error here would report success to CI while the
+      // application never started.
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as never);
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      (startAction as any).loader = {
+        load: vi.fn().mockRejectedValue(new Error('Found 2 type error(s)')),
+      };
+
+      await startAction.handle({} as any);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Found 2 type error(s)'),
+      );
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });

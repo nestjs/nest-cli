@@ -186,6 +186,40 @@ describe('AbstractRunner', () => {
       await expect(promise).rejects.toBeUndefined();
     });
 
+    it('should consume stderr when collect is true', async () => {
+      // stderr is piped in collect mode; leaving it unread blocks the child
+      // once the OS pipe buffer fills, so `close` would never arrive.
+      const child = createMockChildProcess();
+      spawnMock.mockReturnValue(child);
+
+      const runner = new TestRunner('npm');
+      const promise = runner.run('install', true);
+
+      expect(child.stderr!.listenerCount('data')).toBeGreaterThan(0);
+
+      child.stderr!.emit('data', Buffer.from('npm warn deprecated foo@1.0.0'));
+      child.stdout!.emit('data', Buffer.from('10.0.0\n'));
+      child.emit('close', 0);
+
+      await expect(promise).resolves.toBe('10.0.0');
+    });
+
+    it('should report collected stderr when the command fails', async () => {
+      const child = createMockChildProcess();
+      spawnMock.mockReturnValue(child);
+
+      const runner = new TestRunner('npm');
+      const promise = runner.run('install bad-pkg', true);
+
+      child.stderr!.emit('data', Buffer.from('npm ERR! 404 Not Found\n'));
+      child.emit('close', 1);
+
+      await expect(promise).rejects.toBeUndefined();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('npm ERR! 404 Not Found'),
+      );
+    });
+
     it('should use the provided cwd option', async () => {
       const child = createMockChildProcess();
       spawnMock.mockReturnValue(child);

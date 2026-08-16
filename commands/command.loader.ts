@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import {
   AddAction,
   BuildAction,
+  DeployAction,
   GenerateAction,
   InfoAction,
   NewAction,
@@ -11,6 +12,7 @@ import {
 import { ERROR_PREFIX } from '../lib/ui/index.js';
 import { AddCommand } from './add.command.js';
 import { BuildCommand } from './build.command.js';
+import { DeployCommand } from './deploy.command.js';
 import { GenerateCommand } from './generate.command.js';
 import { InfoCommand } from './info.command.js';
 import { NewCommand } from './new.command.js';
@@ -33,6 +35,7 @@ export class CommandLoader {
     new StartCommand(new StartAction()).load(program);
     new InfoCommand(new InfoAction()).load(program);
     new AddCommand(new AddAction()).load(program);
+    new DeployCommand(new DeployAction()).load(program);
     await new GenerateCommand(new GenerateAction()).load(program);
 
     this.handleInvalidCommand(program);

@@ -9,15 +9,15 @@ import { MultiNestCompilerPlugins } from '../plugins/plugins-loader.js';
 
 const require = createRequire(import.meta.url);
 
-function loadWebpackDeps() {
+/**
+ * Wraps a `require` of an optional webpack dependency so a missing package
+ * reports the install command instead of a raw MODULE_NOT_FOUND. Every
+ * optional webpack dependency must be loaded through here — they are declared
+ * as optional peers, so any unguarded `require` surfaces as a bare crash.
+ */
+function withInstallAdvice<T>(load: () => T): T {
   try {
-    const wp = require('webpack') as typeof webpack;
-    const externals = require('webpack-node-externals') as typeof nodeExternals;
-    const { TsconfigPathsPlugin } =
-      require('tsconfig-paths-webpack-plugin') as {
-        TsconfigPathsPlugin: typeof TsconfigPathsPluginType;
-      };
-    return { webpack: wp, nodeExternals: externals, TsconfigPathsPlugin };
+    return load();
   } catch (e: any) {
     if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ERR_MODULE_NOT_FOUND') {
       // Only the "package missing" branch is wrapped with install advice.
@@ -37,6 +37,18 @@ function loadWebpackDeps() {
       { cause: e },
     );
   }
+}
+
+function loadWebpackDeps() {
+  return withInstallAdvice(() => {
+    const wp = require('webpack') as typeof webpack;
+    const externals = require('webpack-node-externals') as typeof nodeExternals;
+    const { TsconfigPathsPlugin } =
+      require('tsconfig-paths-webpack-plugin') as {
+        TsconfigPathsPlugin: typeof TsconfigPathsPluginType;
+      };
+    return { webpack: wp, nodeExternals: externals, TsconfigPathsPlugin };
+  });
 }
 
 export const webpackDefaultsFactory = (
@@ -135,7 +147,9 @@ export const webpackDefaultsFactory = (
   };
 
   if (!isPluginRegistered) {
-    const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+    const ForkTsCheckerWebpackPlugin = withInstallAdvice(() =>
+      require('fork-ts-checker-webpack-plugin'),
+    );
 
     webpackConfiguration.plugins!.push(
       new ForkTsCheckerWebpackPlugin({

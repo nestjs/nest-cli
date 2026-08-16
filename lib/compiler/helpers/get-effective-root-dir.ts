@@ -32,7 +32,16 @@ export function getEffectiveRootDir(
     return undefined;
   }
 
-  const absolutePaths = fileNames.map((file) =>
+  // Declaration files are excluded from the common source directory, matching
+  // TypeScript: they produce no emit, so a `typings/**/*.d.ts` entry outside
+  // `src` must not drag the computed root up to the project root and push
+  // every copied asset into a `dist/src` subdirectory.
+  const emittedFiles = fileNames.filter((file) => !isDeclarationFileName(file));
+  if (emittedFiles.length === 0) {
+    return undefined;
+  }
+
+  const absolutePaths = emittedFiles.map((file) =>
     normalize(isAbsolute(file) ? file : resolve(cwd, file)),
   );
 
@@ -44,6 +53,10 @@ export function getEffectiveRootDir(
     }
   }
   return commonDir;
+}
+
+function isDeclarationFileName(fileName: string): boolean {
+  return /\.d\.[cm]?ts$/i.test(fileName);
 }
 
 function commonParentDir(a: string, b: string): string {

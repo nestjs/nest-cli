@@ -8,6 +8,10 @@ export class AddCommand extends AbstractCommand {
     program
       .command('add <library>')
       .allowUnknownOption()
+      // Unknown options are collected into `args`, which commander otherwise
+      // rejects as excess arguments — that would break the documented
+      // library-specific options this command forwards via `extraFlags`.
+      .allowExcessArguments()
       .description('Adds support for an external library to your project.')
       .option(
         '-d, --dry-run',

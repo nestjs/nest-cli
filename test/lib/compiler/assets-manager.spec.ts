@@ -1,6 +1,6 @@
 import * as chokidar from 'chokidar';
 import { EventEmitter } from 'events';
-import { copyFileSync, statSync} from 'fs';
+import { copyFileSync, statSync } from 'fs';
 import { sync as globSync } from 'glob';
 import { join, sep } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -40,6 +40,40 @@ describe('AssetsManager', () => {
   });
 
   describe('closeWatchers', () => {
+    it('should settle when a watcher errors instead of becoming ready', async () => {
+      // Without an 'error' listener chokidar rethrows as an uncaught
+      // exception, and the watcher never reaches 'ready' — leaving
+      // closeWatchers() awaiting a promise that can no longer settle.
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn().mockResolvedValue(undefined);
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false); // compilerOptions.watchAssets
+
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      expect(() =>
+        mockWatcher.emit('error', new Error('EMFILE: too many open files')),
+      ).not.toThrow();
+
+      await assetsManager.closeWatchers();
+
+      expect(mockWatcher.close).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('EMFILE: too many open files'),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
     it('should wait for all watchers to be ready before closing them', async () => {
       // Simulate a watcher that takes time to become ready
       const mockWatcher = new EventEmitter() as any;
@@ -204,7 +238,9 @@ describe('AssetsManager', () => {
 
       mockWatcher.emit('ready');
 
-      await expect(assetsManager.closeWatchers()).rejects.toThrow('close failed');
+      await expect(assetsManager.closeWatchers()).rejects.toThrow(
+        'close failed',
+      );
     });
   });
 
@@ -441,7 +477,10 @@ describe('AssetsManager', () => {
 
       (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([]);
       const statMock = statSync as ReturnType<typeof vi.fn>;
-      statMock.mockReturnValue({ isFile: () => true, isDirectory: () => false });
+      statMock.mockReturnValue({
+        isFile: () => true,
+        isDirectory: () => false,
+      });
 
       assetsManager.copyAssets(configuration, 'my-app', 'dist', false);
 
@@ -471,9 +510,14 @@ describe('AssetsManager', () => {
         .mockReturnValueOnce(false); // compilerOptions.watchAssets
 
       const matchedFiles = ['/cwd/libs/shared-lib/src/schema.proto'];
-      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(matchedFiles);
+      (globSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        matchedFiles,
+      );
       const statMock = statSync as ReturnType<typeof vi.fn>;
-      statMock.mockReturnValue({ isFile: () => true, isDirectory: () => false });
+      statMock.mockReturnValue({
+        isFile: () => true,
+        isDirectory: () => false,
+      });
 
       assetsManager.copyAssets(configuration, 'my-app', 'dist', false);
 
@@ -549,7 +593,9 @@ describe('AssetsManager', () => {
             root: 'libs/my-lib',
             sourceRoot: 'libs/my-lib/src',
             compilerOptions: {
-              assets: [{ include: '**/*.graphql', exclude: '**/*.test.graphql' }],
+              assets: [
+                { include: '**/*.graphql', exclude: '**/*.test.graphql' },
+              ],
             },
           },
         },

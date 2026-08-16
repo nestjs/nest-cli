@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
 import { RspackCompiler } from '../../../../lib/compiler/rspack-compiler.js';
 
@@ -110,7 +118,9 @@ describe('Rspack Compiler', () => {
 
   const makeExtras = (overrides: Record<string, any> = {}) => ({
     options: {},
-    assetsManager: { closeWatchers: vi.fn() } as any,
+    assetsManager: {
+      closeWatchers: vi.fn().mockResolvedValue(undefined),
+    } as any,
     rspackConfigFactoryOrConfig: {},
     debug: false,
     watchMode: false,
@@ -202,8 +212,9 @@ describe('Rspack Compiler', () => {
 
     it('should call rspackDefaultsFactory with debug=true when debug is enabled', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
-
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       compiler.run(
         makeConfiguration(),
@@ -225,10 +236,11 @@ describe('Rspack Compiler', () => {
 
     it('should use config factory function when provided', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       const configFactory = vi.fn().mockReturnValue({ entry: 'custom.ts' });
-
 
       compiler.run(
         makeConfiguration(),
@@ -245,10 +257,11 @@ describe('Rspack Compiler', () => {
 
     it('should merge plain config object when provided', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       const plainConfig = { entry: 'custom.ts' };
-
 
       compiler.run(
         makeConfiguration(),
@@ -265,10 +278,11 @@ describe('Rspack Compiler', () => {
 
     it('should handle array of configurations (multi-compiler)', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       const configs = [{ entry: 'first.ts' }, { entry: 'second.ts' }];
-
 
       compiler.run(
         makeConfiguration(),
@@ -287,8 +301,9 @@ describe('Rspack Compiler', () => {
 
     it('should set mode to development in watch mode', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
-
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       compiler.run(
         makeConfiguration(),
@@ -304,8 +319,9 @@ describe('Rspack Compiler', () => {
 
     it('should call compiler.watch when watchMode is true', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
-
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       compiler.run(
         makeConfiguration(),
@@ -324,8 +340,9 @@ describe('Rspack Compiler', () => {
 
     it('should call compiler.run when watchMode is false', () => {
       vi.mocked(existsSync).mockReturnValue(true);
-      vi.mocked(getValueOrDefault).mockReturnValueOnce('main').mockReturnValueOnce('');
-
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
 
       compiler.run(
         makeConfiguration(),
@@ -342,7 +359,9 @@ describe('Rspack Compiler', () => {
   describe('createAfterCallback', () => {
     it('should call onSuccess when compilation succeeds', () => {
       const onSuccess = vi.fn();
-      const assetsManager = { closeWatchers: vi.fn() };
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
 
       const callback = (compiler as any).createAfterCallback(
         onSuccess,
@@ -363,7 +382,9 @@ describe('Rspack Compiler', () => {
     });
 
     it('should close watchers when onSuccess is not defined', () => {
-      const assetsManager = { closeWatchers: vi.fn() };
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
@@ -382,6 +403,38 @@ describe('Rspack Compiler', () => {
       expect(assetsManager.closeWatchers).toHaveBeenCalled();
     });
 
+    it('should report a closeWatchers rejection instead of leaving it unhandled', async () => {
+      // rspack ignores this callback's return value, so the close cannot be
+      // awaited; an unhandled rejection here would terminate the CLI after a
+      // compilation that actually succeeded.
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const assetsManager = {
+        closeWatchers: vi.fn().mockRejectedValue(new Error('close failed')),
+      };
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        assetsManager,
+        false,
+        false,
+      );
+
+      const mockStats = {
+        hasErrors: () => false,
+        toString: () => 'compiled successfully',
+      };
+
+      expect(() => callback(null, mockStats)).not.toThrow();
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('close failed'),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
     it('should exit with code 1 when err is set and stats is undefined', () => {
       const mockExit = vi
         .spyOn(process, 'exit')
@@ -390,7 +443,7 @@ describe('Rspack Compiler', () => {
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        { closeWatchers: vi.fn() },
+        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
         false,
         false,
       );
@@ -411,7 +464,7 @@ describe('Rspack Compiler', () => {
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        { closeWatchers: vi.fn() },
+        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
         false,
         false,
       );
@@ -437,7 +490,7 @@ describe('Rspack Compiler', () => {
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        { closeWatchers: vi.fn() },
+        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
         true,
         false,
       );

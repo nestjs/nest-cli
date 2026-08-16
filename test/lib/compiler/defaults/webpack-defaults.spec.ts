@@ -190,6 +190,26 @@ describe('webpackDefaultsFactory', () => {
       ).toThrow(/"webpack-node-externals" package is required/);
     });
 
+    it('should report the missing package name when fork-ts-checker-webpack-plugin is not installed', () => {
+      // It is an optional peer dependency loaded lazily, outside the initial
+      // dependency load, so an unguarded require surfaces as a bare
+      // MODULE_NOT_FOUND with no hint about what to install.
+      requireFns['fork-ts-checker-webpack-plugin'].mockImplementation(() => {
+        throw moduleNotFoundError('fork-ts-checker-webpack-plugin');
+      });
+
+      expect(() =>
+        webpackDefaultsFactory(
+          '/abs/src',
+          'src',
+          'main',
+          false,
+          'tsconfig.json',
+          emptyPlugins,
+        ),
+      ).toThrow(/"fork-ts-checker-webpack-plugin" package is required/);
+    });
+
     it('should report the missing package name from an ESM-style "Cannot find package" error', () => {
       // Node's ESM resolver formats missing-package errors with two quoted
       // segments: the missing package and the importing file. The earlier

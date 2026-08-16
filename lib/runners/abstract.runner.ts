@@ -24,7 +24,12 @@ export class AbstractRunner {
       const child: ChildProcess = spawn(fullCommand, options);
       if (collect) {
         const chunks: Buffer[] = [];
+        const errorChunks: Buffer[] = [];
         child.stdout!.on('data', (data) => chunks.push(data));
+        // stderr is piped in collect mode and must be consumed too: an unread
+        // pipe blocks the child once the OS buffer fills (e.g. npm printing
+        // peer-dependency warnings), and `close` would then never fire.
+        child.stderr!.on('data', (data) => errorChunks.push(data));
         child.on('close', (code) => {
           if (code === 0) {
             resolve(
@@ -34,6 +39,10 @@ export class AbstractRunner {
             );
           } else {
             console.error(red(MESSAGES.RUNNER_EXECUTION_ERROR(fullCommand)));
+            const errorOutput = Buffer.concat(errorChunks).toString().trim();
+            if (errorOutput) {
+              console.error(red(errorOutput));
+            }
             reject();
           }
         });

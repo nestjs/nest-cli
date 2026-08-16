@@ -86,6 +86,9 @@ export class StartAction extends BuildAction {
       } else {
         console.error(`\n${red(err)}\n`);
       }
+      // A failed build (e.g. SWC type-check errors, which now reject instead of
+      // exiting the process themselves) must not report success to the caller.
+      process.exit(1);
     }
   }
 

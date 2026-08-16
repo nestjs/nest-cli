@@ -13,6 +13,9 @@ export class StartCommand extends AbstractCommand {
     program
       .command('start [app]')
       .allowUnknownOption()
+      // Unknown options are collected into `args`, which commander otherwise
+      // rejects as excess arguments once an app name is also present.
+      .allowExcessArguments()
       .option('-c, --config [path]', 'Path to nest-cli configuration file.')
       .option('-p, --path [path]', 'Path to tsconfig file.')
       .option('-w, --watch', 'Run in watch mode (live-reload).')
@@ -98,7 +101,9 @@ export class StartCommand extends AbstractCommand {
           rspackPath: options.rspackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
-          emitDeclarations: !!options.emitDeclarations,
+          // Left undefined when the flag is absent so `getValueOrDefault` can
+          // still fall through to `compilerOptions.emitDeclarations`.
+          emitDeclarations: options.emitDeclarations,
           silent: !!options.silent,
           preserveWatchOutput:
             !!options.preserveWatchOutput &&

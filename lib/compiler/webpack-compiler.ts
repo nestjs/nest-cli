@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { createRequire } from 'module';
 import { join } from 'path';
 import { Configuration } from '../configuration/index.js';
-import { INFO_PREFIX } from '../ui/index.js';
+import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
@@ -188,7 +188,15 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       });
       if (!err && !stats!.hasErrors()) {
         if (!onSuccess) {
-          assetsManager.closeWatchers();
+          // webpack ignores whatever this callback returns, so the close is
+          // handled here rather than awaited — but its rejection still has to
+          // be caught or it terminates the CLI after a successful compile.
+          assetsManager.closeWatchers().catch((error: unknown) => {
+            console.error(
+              `${ERROR_PREFIX} Failed to close asset watchers. ` +
+                `${error instanceof Error ? error.message : String(error)}`,
+            );
+          });
         } else {
           onSuccess();
         }

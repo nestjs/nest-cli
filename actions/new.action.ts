@@ -1,4 +1,4 @@
-import { input, select } from '@inquirer/prompts';
+import { confirm, input, select } from '@inquirer/prompts';
 import ansis, { type AnsiColors, type AnsiStyles } from 'ansis';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
@@ -21,6 +21,7 @@ import {
 import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting.js';
 import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error.js';
+import { isInteractive } from '../lib/utils/is-interactive.js';
 import { AbstractAction } from './abstract.action.js';
 
 export class NewAction extends AbstractAction {
@@ -66,6 +67,10 @@ const askForMissingInformation = async (context: NewCommandContext) => {
   if (!context.packageManager) {
     context.packageManager = (await askForPackageManager()) as string;
   }
+
+  if (context.observe === undefined) {
+    context.observe = await askForObservability();
+  }
 };
 
 const generateApplicationFiles = async (context: NewCommandContext) => {
@@ -88,8 +93,7 @@ const mapContextToSchematicOptions = (
   if (context.directory !== undefined)
     options.push(new SchematicOption('directory', context.directory));
 
-  if (context.dryRun)
-    options.push(new SchematicOption('dry-run', true));
+  if (context.dryRun) options.push(new SchematicOption('dry-run', true));
   options.push(new SchematicOption('skip-git', context.skipGit));
   options.push(new SchematicOption('strict', context.strict));
 
@@ -104,6 +108,10 @@ const mapContextToSchematicOptions = (
 
   options.push(new SchematicOption('language', context.language));
   options.push(new SchematicOption('format', context.format));
+
+  if (context.observe) {
+    options.push(new SchematicOption('observe', true));
+  }
   // note: skip-install is intentionally excluded — not sent to schematics
   return options;
 };
@@ -129,6 +137,19 @@ const installPackages = async (
       console.error(ansis.red(error.message));
     }
   }
+};
+
+const askForObservability = async (): Promise<boolean> => {
+  // Without a TTY (CI, piped input, `execSync`) there is nobody to answer, so
+  // fall back to the opt-out default instead of blocking the scaffold.
+  if (!isInteractive()) {
+    return false;
+  }
+
+  return (await confirm({
+    message: MESSAGES.OBSERVABILITY_QUESTION,
+    default: false,
+  }).catch(gracefullyExitOnPromptError)) as boolean;
 };
 
 const askForPackageManager = async () => {

@@ -77,7 +77,13 @@ export class GenerateCommand extends AbstractCommand {
             skipImport: options.skipImport,
             format: options.format === true,
             type: options.type,
-            crud: options.crud === true ? true : undefined,
+            // `--crud [value]` yields a string whenever a value is supplied,
+            // so `--crud false` must still be forwarded (as false) rather than
+            // dropped, which would let the schematic apply its own default.
+            crud:
+              options.crud === undefined
+                ? undefined
+                : options.crud === true || options.crud === 'true',
           };
 
           await this.action.handle(context);
