@@ -73,9 +73,25 @@ describe('AddCommand', () => {
     expect(context.project).toBe('api');
   });
 
+  it('honors the short -d / -s / -p aliases for documented flags', async () => {
+    const context = await run(
+      'add',
+      '@nestjs/swagger',
+      '-d',
+      '-s',
+      '-p',
+      'apps/api',
+    );
+
+    expect(context.dryRun).toBe(true);
+    expect(context.skipInstall).toBe(true);
+    expect(context.project).toBe('apps/api');
+  });
+
   it('collects library-specific unknown flags as extra flags', async () => {
-    // `allowUnknownOption` lets library-specific flags through so they can be
-    // forwarded to the library's own schematic rather than being rejected.
+    // `allowUnknownOption` + `allowExcessArguments` let library-specific
+    // flags through so they can be forwarded to the library's own schematic
+    // rather than being rejected by commander as excess arguments.
     const context = await run('add', '@nestjs/swagger', '--custom-lib-flag');
 
     expect(context.extraFlags).toContain('--custom-lib-flag');

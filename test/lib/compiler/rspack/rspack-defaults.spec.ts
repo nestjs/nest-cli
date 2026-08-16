@@ -4,7 +4,12 @@ import { rspackDefaultsFactory } from '../../../../lib/compiler/defaults/rspack-
 import { MultiNestCompilerPlugins } from '../../../../lib/compiler/plugins/plugins-loader.js';
 
 // Hoist mocks so they can be referenced in vi.mock factories
-const { mockIgnorePlugin, mockForkTsChecker, mockNodeExternals, mockTsconfigPathsPlugin } = vi.hoisted(() => ({
+const {
+  mockIgnorePlugin,
+  mockForkTsChecker,
+  mockNodeExternals,
+  mockTsconfigPathsPlugin,
+} = vi.hoisted(() => ({
   mockIgnorePlugin: vi.fn().mockImplementation(function (opts: any) {
     return { __type: 'IgnorePlugin', ...opts };
   }),
@@ -37,7 +42,8 @@ vi.mock('module', async (importOriginal) => {
         if (id === '@rspack/core') return { IgnorePlugin: mockIgnorePlugin };
         if (id === 'fork-ts-checker-webpack-plugin') return mockForkTsChecker;
         if (id === 'webpack-node-externals') return mockNodeExternals;
-        if (id === 'tsconfig-paths-webpack-plugin') return { TsconfigPathsPlugin: mockTsconfigPathsPlugin };
+        if (id === 'tsconfig-paths-webpack-plugin')
+          return { TsconfigPathsPlugin: mockTsconfigPathsPlugin };
         return realReq(id);
       };
       mockedReq.resolve = realReq.resolve.bind(realReq);
@@ -101,19 +107,6 @@ describe('rspackDefaultsFactory', () => {
     );
 
     expect(config.devtool).toBe(false);
-  });
-
-  it('should set devtool to inline-source-map when debug is enabled', () => {
-    const config = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      true,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-
-    expect(config.devtool).toBe('inline-source-map');
   });
 
   it('should use builtin:swc-loader for TypeScript files', () => {
@@ -307,26 +300,36 @@ describe('rspackDefaultsFactory', () => {
     expect(config.output.filename).toContain('main.js');
   });
 
-  it('should set sourceMaps in swc-loader based on debug flag', () => {
-    const debugConfig = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      true,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-    expect(debugConfig.module.rules[0].use[0].options.sourceMaps).toBe(true);
-
-    const releaseConfig = rspackDefaultsFactory(
+  it('should set sourceMaps in swc-loader based on tsconfig sourceMap', () => {
+    const config = rspackDefaultsFactory(
       'src',
       '',
       'main',
       false,
       'tsconfig.json',
       emptyPlugins,
+      false,
+      { sourceMap: true },
     );
-    expect(releaseConfig.module.rules[0].use[0].options.sourceMaps).toBe(false);
+
+    expect(config.module.rules[0].use[0].options.sourceMaps).toBe(true);
+    expect(config.devtool).toBe('source-map');
+  });
+
+  it('should set inline sourceMaps in swc-loader based on tsconfig inlineSourceMap', () => {
+    const config = rspackDefaultsFactory(
+      'src',
+      '',
+      'main',
+      false,
+      'tsconfig.json',
+      emptyPlugins,
+      false,
+      { inlineSourceMap: true },
+    );
+
+    expect(config.module.rules[0].use[0].options.sourceMaps).toBe('inline');
+    expect(config.devtool).toBe('inline-source-map');
   });
 
   describe('ESM mode', () => {
@@ -423,15 +426,21 @@ describe('rspackDefaultsFactory', () => {
       // Test the builtins handler function
       const builtinsHandler = config.externals[1];
       const results: any[] = [];
-      builtinsHandler({ request: 'fs' }, (...args: any[]) => results.push(args));
+      builtinsHandler({ request: 'fs' }, (...args: any[]) =>
+        results.push(args),
+      );
       expect(results[0]).toEqual([null, 'module fs']);
 
       results.length = 0;
-      builtinsHandler({ request: 'node:path' }, (...args: any[]) => results.push(args));
+      builtinsHandler({ request: 'node:path' }, (...args: any[]) =>
+        results.push(args),
+      );
       expect(results[0]).toEqual([null, 'module node:path']);
 
       results.length = 0;
-      builtinsHandler({ request: 'some-pkg' }, (...args: any[]) => results.push(args));
+      builtinsHandler({ request: 'some-pkg' }, (...args: any[]) =>
+        results.push(args),
+      );
       expect(results[0]).toEqual([]);
     });
 

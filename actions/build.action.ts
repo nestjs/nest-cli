@@ -1,7 +1,6 @@
 import { createRequire } from 'module';
 import { red } from 'ansis';
 import { join } from 'path';
-import type * as ts from 'typescript';
 import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
@@ -11,7 +10,10 @@ import { getRspackConfigPath } from '../lib/compiler/helpers/get-rspack-config-p
 import { getTscConfigPath } from '../lib/compiler/helpers/get-tsc-config.path.js';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import { getWebpackConfigPath } from '../lib/compiler/helpers/get-webpack-config-path.js';
-import { TsConfigProvider } from '../lib/compiler/helpers/tsconfig-provider.js';
+import {
+  TsConfigProvider,
+  TsConfigProviderOutput,
+} from '../lib/compiler/helpers/tsconfig-provider.js';
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader.js';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader.js';
 import {
@@ -90,12 +92,16 @@ export class BuildAction extends AbstractAction {
 
     const appBuildContexts = appNames.map((appName) => {
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
-      const { options: tsOptions, fileNames: tsFileNames } =
-        this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
+      const {
+        exclude,
+        options: tsOptions,
+        fileNames: tsFileNames,
+      } = this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       return {
         appName,
         pathToTsconfig,
         tsOptions,
+        exclude,
         outDir: tsOptions.outDir || defaultOutDir,
         tsRootDir: getEffectiveRootDir(tsOptions.rootDir, tsFileNames),
       };
@@ -115,6 +121,7 @@ export class BuildAction extends AbstractAction {
       appName,
       pathToTsconfig,
       tsOptions,
+      exclude,
       outDir,
       tsRootDir,
     }: (typeof appBuildContexts)[number]) => {
@@ -198,6 +205,7 @@ export class BuildAction extends AbstractAction {
             appName,
             options,
             pathToTsconfig,
+            tsOptions,
             isDebugEnabled,
             watchMode,
             onSuccess,
@@ -212,6 +220,7 @@ export class BuildAction extends AbstractAction {
             watchMode,
             options,
             tsOptions,
+            exclude,
             emitDeclarations,
             onSuccess,
             assetsManager,
@@ -248,7 +257,8 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     watchMode: boolean,
     options: Record<string, any>,
-    tsOptions: ts.CompilerOptions,
+    tsOptions: TsConfigProviderOutput['options'],
+    tsConfigExclude: string[],
     emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
     assetsManager: AssetsManager,
@@ -272,6 +282,7 @@ export class BuildAction extends AbstractAction {
         ),
         emitDeclarations,
         tsOptions,
+        tsConfigExclude,
         assetsManager,
         silent: isSilent,
       },
@@ -382,6 +393,7 @@ export class BuildAction extends AbstractAction {
     appName: string | undefined,
     options: Record<string, any>,
     pathToTsconfig: string,
+    tsOptions: TsConfigProviderOutput['options'],
     debug: boolean,
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
@@ -409,6 +421,7 @@ export class BuildAction extends AbstractAction {
         rspackConfigFactoryOrConfig,
         debug,
         watchMode,
+        tsOptions,
         assetsManager,
       },
       onSuccess,

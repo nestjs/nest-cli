@@ -42,14 +42,22 @@ const ProcessExitError = class extends Error {
   }
 };
 
+const buildProgram = (esm: boolean) => {
+  const program = new Command();
+  program.exitOverride();
+  if (esm) {
+    (program as any).__nestCliEsm = true;
+  }
+  return program;
+};
+
 describe('CommandLoader', () => {
   let program: Command;
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    program = new Command();
-    program.exitOverride();
+    program = buildProgram(false);
     exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new ProcessExitError(code);
     }) as never);
@@ -76,8 +84,27 @@ describe('CommandLoader', () => {
       );
     });
 
+    it('logs a clear upgrade hint when the ESM guard fails', async () => {
+      await expect(CommandLoader.load(program)).rejects.toBeInstanceOf(
+        ProcessExitError,
+      );
+
+      const message = consoleErrorSpy.mock.calls[0][0] as string;
+      expect(message).toContain('globally installed');
+      expect(message).toContain('@nestjs/cli');
+      expect(message).toContain('npm i -g @nestjs/cli');
+    });
+
+    it('does not register any commands when the ESM guard fails', async () => {
+      await expect(CommandLoader.load(program)).rejects.toBeInstanceOf(
+        ProcessExitError,
+      );
+
+      expect(program.commands).toHaveLength(0);
+    });
+
     it('proceeds when the program carries the ESM marker', async () => {
-      (program as any).__nestCliEsm = true;
+      program = buildProgram(true);
 
       await CommandLoader.load(program);
 
@@ -87,7 +114,7 @@ describe('CommandLoader', () => {
 
   describe('registered commands', () => {
     beforeEach(async () => {
-      (program as any).__nestCliEsm = true;
+      program = buildProgram(true);
       await CommandLoader.load(program);
     });
 
@@ -113,20 +140,35 @@ describe('CommandLoader', () => {
 
       expect(new Set(names).size).toBe(names.length);
     });
+
+    it('registers exactly the supported set of commands', () => {
+      const commandNames = program.commands.map((cmd) => cmd.name()).sort();
+
+      expect(commandNames).toEqual(
+        ['add', 'build', 'deploy', 'generate', 'info', 'new', 'start'].sort(),
+      );
+    });
   });
 
   describe('invalid commands', () => {
     it('exits with an error listing how to get help', async () => {
-      (program as any).__nestCliEsm = true;
+      program = buildProgram(true);
       await CommandLoader.load(program);
 
+      consoleErrorSpy.mockClear();
+
       // `command:*` fires for names that match no registered command.
-      expect(() => program.emit('command:*')).toThrow(ProcessExitError);
+      expect(() => program.emit('command:*', 'unknown-cmd', [])).toThrow(
+        ProcessExitError,
+      );
 
       expect(exitSpy).toHaveBeenCalledWith(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining('Invalid command'),
-        expect.anything(),
+        expect.any(String),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('--help'),
       );
     });
   });

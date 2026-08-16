@@ -1,5 +1,5 @@
-import { Command } from 'commander';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Command, CommanderError } from 'commander';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { InfoCommand } from '../../commands/info.command.js';
 
@@ -16,45 +16,44 @@ const buildProgram = (action: FakeAction) => {
 
 describe('InfoCommand', () => {
   let action: FakeAction;
-  let exitSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     action = new FakeAction();
-    exitSpy = vi
-      .spyOn(process, 'exit')
-      .mockImplementation((() => undefined) as never);
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  afterEach(() => {
-    exitSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
-  });
-
-  it('runs the action when invoked without arguments', async () => {
+  it('invokes the action when called without extra args', async () => {
     const program = buildProgram(action);
 
     await program.parseAsync(['node', 'nest', 'info']);
 
     expect(action.handle).toHaveBeenCalledTimes(1);
-    expect(exitSpy).not.toHaveBeenCalled();
+    expect(action.handle).toHaveBeenCalledWith();
   });
 
-  it('is reachable through the "i" alias', async () => {
+  it('responds to the "i" alias', async () => {
     const program = buildProgram(action);
 
     await program.parseAsync(['node', 'nest', 'i']);
 
     expect(action.handle).toHaveBeenCalledTimes(1);
+    expect(action.handle).toHaveBeenCalledWith();
   });
 
-  it('rejects unexpected positional arguments rather than ignoring them', async () => {
+  it('exposes the expected description on the registered command', () => {
+    const program = buildProgram(action);
+
+    const info = program.commands.find((cmd) => cmd.name() === 'info');
+
+    expect(info).toBeDefined();
+    expect(info!.description()).toBe('Display Nest project details.');
+  });
+
+  it('rejects extra positional arguments via commander', async () => {
     const program = buildProgram(action);
 
     await expect(
       program.parseAsync(['node', 'nest', 'info', 'unexpected']),
-    ).rejects.toThrow(/too many arguments/i);
+    ).rejects.toBeInstanceOf(CommanderError);
 
     expect(action.handle).not.toHaveBeenCalled();
   });

@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
 import { join } from 'path';
 import type { TsconfigPathsPlugin as TsconfigPathsPluginType } from 'tsconfig-paths-webpack-plugin';
@@ -49,6 +50,15 @@ function loadWebpackDeps() {
       };
     return { webpack: wp, nodeExternals: externals, TsconfigPathsPlugin };
   });
+}
+
+function getBaseUrl(tsConfigFile: string) {
+  try {
+    const { compilerOptions } = JSON.parse(readFileSync(tsConfigFile, 'utf8'));
+    return compilerOptions?.baseUrl ?? '.';
+  } catch {
+    return '.';
+  }
 }
 
 export const webpackDefaultsFactory = (
@@ -108,6 +118,7 @@ export const webpackDefaultsFactory = (
       plugins: [
         new TsconfigPathsPlugin({
           configFile: tsConfigFile,
+          baseUrl: getBaseUrl(tsConfigFile),
         }),
       ],
     },

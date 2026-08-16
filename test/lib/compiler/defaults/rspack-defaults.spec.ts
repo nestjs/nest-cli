@@ -140,6 +140,38 @@ describe('rspackDefaultsFactory', () => {
       expect(config.output.module).toBeUndefined();
       expect(config.externalsPresets).toEqual({ node: true });
     });
+
+    it('should configure separate source maps from tsconfig sourceMap', () => {
+      const config = rspackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+        { sourceMap: true },
+      );
+
+      expect(config.devtool).toBe('source-map');
+      expect(config.module.rules[0].use[0].options.sourceMaps).toBe(true);
+    });
+
+    it('should configure inline source maps from tsconfig inlineSourceMap', () => {
+      const config = rspackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        false,
+        { inlineSourceMap: true },
+      );
+
+      expect(config.devtool).toBe('inline-source-map');
+      expect(config.module.rules[0].use[0].options.sourceMaps).toBe('inline');
+    });
   });
 
   describe('error handling for missing peer dependencies', () => {

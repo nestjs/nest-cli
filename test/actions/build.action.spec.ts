@@ -397,8 +397,8 @@ describe('BuildAction - Rspack', () => {
       );
 
       // runSwc(configuration, appName, tsconfig, watch, options, tsOptions,
-      //        emitDeclarations, onSuccess, assetsManager)
-      return runSwc.mock.calls[0][6];
+      //        tsConfigExclude, emitDeclarations, onSuccess, assetsManager)
+      return runSwc.mock.calls[0][7];
     };
 
     it('honours compilerOptions.emitDeclarations when the flag is absent', async () => {
