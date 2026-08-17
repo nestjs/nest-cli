@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   convertToCjs,
+  createCliSymlink,
   createTempDir,
   enableRspack,
   enableWebpack,
@@ -11,8 +12,8 @@ import {
   httpGet,
   installWebpackDeps,
   readFileContent,
+  removeLink,
   removeLocalCli,
-  removelink,
   removeTempDir,
   runNest,
   runNestRaw,
@@ -22,7 +23,6 @@ import {
   spawnNest,
   waitFor,
   writeFileContent,
-  createCliSymlink,
 } from './helpers.js';
 
 describe('Start Command - CJS project (e2e)', () => {
@@ -178,35 +178,6 @@ describe('Start Command - CJS project (e2e)', () => {
       proc.kill();
       // Restore the original source file for subsequent tests
       writeFileContent(servicePath, original);
-    }
-  });
-
-  it('should start when the cli path contains "-no-"', async () => {
-    const port = 4070;
-
-    const randomChars = crypto.randomBytes(8).toString('hex');
-    const pathWithNo = path.join(tmpDir, `nest-no-test-cli${randomChars}`);
-
-    createCliSymlink(pathWithNo);
-
-    const proc = spawnNest(
-      'start',
-      appPath,
-      { PORT: String(port) },
-      pathWithNo,
-    );
-
-    try {
-      await waitFor(
-        () => proc.output().includes('Nest application successfully started'),
-        60_000,
-      );
-
-      const response = await httpGet(`http://127.0.0.1:${port}`);
-      expect(response.status).toBe(200);
-    } finally {
-      proc.kill();
-      removelink(pathWithNo);
     }
   });
 
@@ -593,5 +564,52 @@ describe('Start Command - ESM project with webpack should error (e2e)', () => {
     expect(exitCode).not.toBe(0);
     expect(stderr).toContain('webpack compiler does not support ESM projects');
     expect(stderr).toContain('rspack');
+  });
+});
+
+describe('Start Command - CLI path containing "-no-" (e2e)', () => {
+  let tmpDir: string;
+  let appPath: string;
+  let cliSymlink: string;
+
+  beforeAll(() => {
+    tmpDir = createTempDir('nest-e2e-start-no-');
+    appPath = scaffoldAppWithDeps(tmpDir, 'start-no-app');
+    convertToCjs(appPath);
+    // The local binary would shadow the CLI under test, so the symlinked path
+    // below would never be the one parsing the arguments.
+    removeLocalCli(appPath);
+    runNest('build', appPath);
+
+    const randomChars = crypto.randomBytes(8).toString('hex');
+    cliSymlink = path.join(tmpDir, `nest-no-test-cli${randomChars}`);
+    createCliSymlink(cliSymlink);
+  });
+
+  afterAll(() => {
+    removeLink(cliSymlink);
+    removeTempDir(tmpDir);
+  });
+
+  it('should start when the cli path contains "-no-"', async () => {
+    const port = 4070;
+    const proc = spawnNest(
+      'start',
+      appPath,
+      { PORT: String(port) },
+      cliSymlink,
+    );
+
+    try {
+      await waitFor(
+        () => proc.output().includes('Nest application successfully started'),
+        60_000,
+      );
+
+      const response = await httpGet(`http://127.0.0.1:${port}`);
+      expect(response.status).toBe(200);
+    } finally {
+      proc.kill();
+    }
   });
 });

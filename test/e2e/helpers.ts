@@ -555,7 +555,8 @@ export function removeLocalCli(appPath: string): void {
 
 /**
  * Creates a symlink for the nest cli script path,
- * useful when testing different execution paths
+ * useful when testing different execution paths.
+ * Note: on Windows this requires Developer Mode or elevated privileges.
  * @param linkPath the desired symlink path
  */
 export function createCliSymlink(linkPath: string) {
@@ -563,11 +564,9 @@ export function createCliSymlink(linkPath: string) {
 }
 
 /**
- * removes an existing link
+ * Removes an existing link, if any.
  * @param linkPath the link
  */
-export function removelink(linkPath: string) {
-  if (fs.existsSync(linkPath)) {
-    fs.unlinkSync(linkPath);
-  }
+export function removeLink(linkPath: string) {
+  fs.rmSync(linkPath, { force: true });
 }

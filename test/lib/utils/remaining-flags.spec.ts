@@ -52,6 +52,19 @@ describe('getRemainingFlags', () => {
     expect(result).toEqual([]);
   });
 
+  it('should never forward the argv preamble as extra flags', () => {
+    const cmd = createCommand([
+      '/usr/local/bin/node',
+      '/home/u/broken-dir-no-broken/node_modules/.bin/nest',
+      'add',
+      '@nestjs/config',
+    ]);
+
+    const result = getRemainingFlags(cmd);
+
+    expect(result).toEqual([]);
+  });
+
   it('should not crash when flags containing -no- exist', () => {
     const cmd = createCommand([
       'node',
