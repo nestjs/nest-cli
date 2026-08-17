@@ -69,8 +69,9 @@ export function spawnNest(
   args: string,
   cwd?: string,
   env?: NodeJS.ProcessEnv,
+  cliPath?: string,
 ): { child: ChildProcess; output: () => string; kill: () => void } {
-  const child = spawn('node', [CLI_PATH, ...args.split(/\s+/)], {
+  const child = spawn('node', [cliPath ?? CLI_PATH, ...args.split(/\s+/)], {
     cwd: cwd ?? process.cwd(),
     env: { ...process.env, ...env },
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -550,4 +551,22 @@ export function removeLocalCli(appPath: string): void {
   if (fs.existsSync(localCli)) {
     fs.rmSync(localCli, { recursive: true, force: true });
   }
+}
+
+/**
+ * Creates a symlink for the nest cli script path,
+ * useful when testing different execution paths.
+ * Note: on Windows this requires Developer Mode or elevated privileges.
+ * @param linkPath the desired symlink path
+ */
+export function createCliSymlink(linkPath: string) {
+  fs.symlinkSync(CLI_PATH, linkPath, 'file');
+}
+
+/**
+ * Removes an existing link, if any.
+ * @param linkPath the link
+ */
+export function removeLink(linkPath: string) {
+  fs.rmSync(linkPath, { force: true });
 }

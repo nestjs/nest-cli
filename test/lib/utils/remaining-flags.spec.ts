@@ -42,14 +42,42 @@ describe('getRemainingFlags', () => {
     expect(result).toEqual([]);
   });
 
-  it('should return all raw args when no flags starting with "--" are present', () => {
-    // When no "--" flags exist, findIndex returns -1, Math.max(-1, 0) = 0,
-    // so splice(0) returns all elements from the rawArgs array
+  it('should return an empty array when no flags starting with "--" are present', () => {
+    // When no "--" flags exist, findIndex returns -1, which means no flags are present.
+    // terminate early when no flags are found
     const cmd = createCommand(['node', 'nest', 'start'], []);
 
     const result = getRemainingFlags(cmd);
 
-    expect(result).toEqual(['node', 'nest', 'start']);
+    expect(result).toEqual([]);
+  });
+
+  it('should never forward the argv preamble as extra flags', () => {
+    const cmd = createCommand([
+      '/usr/local/bin/node',
+      '/home/u/broken-dir-no-broken/node_modules/.bin/nest',
+      'add',
+      '@nestjs/config',
+    ]);
+
+    const result = getRemainingFlags(cmd);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should not crash when flags containing -no- exist', () => {
+    const cmd = createCommand([
+      'node',
+      'nest',
+      'start',
+      '--watch',
+      '-no-',
+      'value',
+    ]);
+
+    const result = getRemainingFlags(cmd);
+
+    expect(result).toEqual(['--watch', '-no-', 'value']);
   });
 
   it('should filter out short option flags consumed by commander', () => {
