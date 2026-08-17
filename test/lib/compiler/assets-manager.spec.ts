@@ -24,7 +24,9 @@ vi.mock('fs', () => ({
 }));
 
 vi.mock('../../../lib/compiler/helpers/copy-path-resolve.js', () => ({
-  copyPathResolve: vi.fn().mockReturnValue('/dest/file.txt'),
+  // Inside the project directory: asset destinations are confined to it unless
+  // "compilerOptions.allowOutsidePaths" is enabled.
+  copyPathResolve: vi.fn().mockReturnValue(`${process.cwd()}/dist/file.txt`),
 }));
 
 vi.mock('../../../lib/compiler/helpers/get-value-or-default.js', () => ({
@@ -486,7 +488,8 @@ describe('AssetsManager', () => {
 
       // The method should not throw and should process the library assets
       // Since globSync returns empty, no files are copied, but the flow completes
-      expect(getValueOrDefault).toHaveBeenCalledTimes(4);
+      // (assets, includeLibraryAssets, sourceRoot, watchAssets, allowOutsidePaths)
+      expect(getValueOrDefault).toHaveBeenCalledTimes(5);
     });
 
     it('should copy library assets alongside app assets', () => {
@@ -719,6 +722,82 @@ describe('AssetsManager', () => {
         '/abs/lib/file.graphql',
         'dist',
         expectedLibSourceRoot.split(sep).length,
+      );
+    });
+  });
+
+  describe('path confinement', () => {
+    it('should reject an asset outDir outside the project before watching', () => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', outDir: '../../etc' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(true) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', true),
+      ).toThrow(/outside of or equal to the project directory/);
+
+      // The configured destination is checked up front, so no watcher is
+      // registered and no file is copied
+      expect(chokidar.watch).not.toHaveBeenCalled();
+      expect(copyFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should allow an asset outDir outside the project when opted in', () => {
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(statSync).mockReturnValue({
+        isFile: () => true,
+        isDirectory: () => false,
+      } as any);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', outDir: '../outside' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(true); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).not.toThrow();
+      expect(copyFileSync).toHaveBeenCalled();
+    });
+
+    it('should not tear down the watch session when a watched write is refused', () => {
+      // chokidar emits synchronously, so a throw from the asset handler would
+      // surface as an uncaught exception and kill `nest start --watch`
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.hbs']);
+      vi.mocked(copyPathResolve).mockReturnValue('/outside/file.txt');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '**/*.hbs', watchAssets: true }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(true) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', true);
+
+      expect(() => mockWatcher.emit('add', '/src/file.hbs')).not.toThrow();
+      expect(copyFileSync).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('outside of or equal to the project directory'),
+      );
+
+      consoleErrorSpy.mockRestore();
+      vi.mocked(copyPathResolve).mockReturnValue(
+        `${process.cwd()}/dist/file.txt`,
       );
     });
   });

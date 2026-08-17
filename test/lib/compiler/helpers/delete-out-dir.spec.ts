@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import { resolve } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deleteOutDirIfEnabled } from '../../../../lib/compiler/helpers/delete-out-dir.js';
 import { Configuration } from '../../../../lib/configuration/index.js';
@@ -9,8 +10,11 @@ vi.mock('fs/promises', () => ({
 
 const mockedRm = vi.mocked(fs.rm);
 
+const fromProjectRoot = (value: string) => resolve(process.cwd(), value);
+
 function createConfiguration(
   deleteOutDir: boolean,
+  allowOutsidePaths?: boolean,
 ): Required<Configuration> {
   return {
     monorepo: false,
@@ -22,6 +26,7 @@ function createConfiguration(
     collection: '@nestjs/schematics',
     compilerOptions: {
       deleteOutDir,
+      ...(allowOutsidePaths === undefined ? {} : { allowOutsidePaths }),
     },
     generateOptions: {},
   };
@@ -42,7 +47,7 @@ describe('deleteOutDirIfEnabled', () => {
   it('should delete the output directory when deleteOutDir is enabled', async () => {
     const config = createConfiguration(true);
     await deleteOutDirIfEnabled(config, undefined, 'dist');
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
@@ -55,12 +60,12 @@ describe('deleteOutDirIfEnabled', () => {
     };
     await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
     expect(mockedRm).toHaveBeenCalledTimes(2);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
     expect(mockedRm).toHaveBeenCalledWith(
-      './node_modules/.tmp/tsconfig.tsbuildinfo',
+      fromProjectRoot('./node_modules/.tmp/tsconfig.tsbuildinfo'),
       { force: true },
     );
   });
@@ -69,7 +74,7 @@ describe('deleteOutDirIfEnabled', () => {
     const config = createConfiguration(true);
     await deleteOutDirIfEnabled(config, undefined, 'dist');
     expect(mockedRm).toHaveBeenCalledTimes(1);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
@@ -80,9 +85,48 @@ describe('deleteOutDirIfEnabled', () => {
     const tsOptions = {};
     await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
     expect(mockedRm).toHaveBeenCalledTimes(1);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
+    });
+  });
+
+  describe('path confinement', () => {
+    it('should refuse to delete an outDir outside the project by default', async () => {
+      const config = createConfiguration(true);
+      await expect(
+        deleteOutDirIfEnabled(config, undefined, '../../etc'),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
+      expect(mockedRm).not.toHaveBeenCalled();
+    });
+
+    it('should refuse to delete the project directory itself', async () => {
+      const config = createConfiguration(true);
+      await expect(
+        deleteOutDirIfEnabled(config, undefined, '.'),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
+      expect(mockedRm).not.toHaveBeenCalled();
+    });
+
+    it('should refuse to delete a tsBuildInfoFile outside the project', async () => {
+      const config = createConfiguration(true);
+      await expect(
+        deleteOutDirIfEnabled(config, undefined, 'dist', {
+          tsBuildInfoFile: '../../etc/passwd',
+        }),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
+      // The outDir is validated together with tsBuildInfoFile, so a rejected
+      // build info path cannot leave a half-deleted output directory behind
+      expect(mockedRm).not.toHaveBeenCalled();
+    });
+
+    it('should delete outside paths when allowOutsidePaths is enabled', async () => {
+      const config = createConfiguration(true, true);
+      await deleteOutDirIfEnabled(config, undefined, '../outside-dist');
+      expect(mockedRm).toHaveBeenCalledWith('../outside-dist', {
+        recursive: true,
+        force: true,
+      });
     });
   });
 });

@@ -14,6 +14,7 @@ export interface ActionOnFile {
   path: string;
   sourceRoot: string;
   watchAssetsMode: boolean;
+  confinePathsToProject: boolean;
 }
 
 export interface SwcBuilderOptions {
@@ -72,6 +73,7 @@ export interface CompilerOptions {
   plugins?: string[] | PluginOptions[];
   assets?: Asset[];
   deleteOutDir?: boolean;
+  allowOutsidePaths?: boolean;
   manualRestart?: boolean;
   builder?: Builder;
   emitDeclarations?: boolean;

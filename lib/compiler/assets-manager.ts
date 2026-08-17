@@ -11,6 +11,10 @@ import {
 import { ERROR_PREFIX } from '../ui/index.js';
 import { copyPathResolve } from './helpers/copy-path-resolve.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
+import {
+  areOutsidePathsAllowed,
+  assertPathInsideProject,
+} from './helpers/path-confinement.js';
 
 const ASSET_CHANGE_RESTART_DEBOUNCE_MS = 150;
 
@@ -107,6 +111,25 @@ export class AssetsManager {
           appName,
         ) || watchAssetsMode;
 
+      const confinePathsToProject = !areOutsidePathsAllowed(
+        configuration,
+        appName,
+      );
+      if (confinePathsToProject) {
+        // Validate the configured destinations once, before any watcher is
+        // registered, so that a misconfigured "outDir" surfaces as a single
+        // build error rather than as a failure per copied file.
+        const seenOutDirs = new Set<string>();
+        for (const item of allFilesToCopy) {
+          if (item.outDir && !seenOutDirs.has(item.outDir)) {
+            seenOutDirs.add(item.outDir);
+            assertPathInsideProject(item.outDir, 'assets[].outDir', {
+              resolveSymlinks: true,
+            });
+          }
+        }
+      }
+
       // Debounce onSuccess so that a burst of asset changes (e.g. a git
       // checkout touching many files at once) only triggers a single restart.
       let debouncedOnSuccess: (() => void) | undefined;
@@ -135,6 +158,7 @@ export class AssetsManager {
           path: '',
           sourceRoot: itemSourceRoot,
           watchAssetsMode: isWatchEnabled,
+          confinePathsToProject,
         };
 
         if (isWatchEnabled || item.watchAssets) {
@@ -160,19 +184,19 @@ export class AssetsManager {
           const watcher = chokidar
             .watch(matchedPaths)
             .on('add', (path: string) => {
-              this.actionOnFile({ ...option, path, action: 'change' });
+              this.safeActionOnFile({ ...option, path, action: 'change' });
               if (ready && debouncedOnSuccess) {
                 debouncedOnSuccess();
               }
             })
             .on('change', (path: string) => {
-              this.actionOnFile({ ...option, path, action: 'change' });
+              this.safeActionOnFile({ ...option, path, action: 'change' });
               if (ready && debouncedOnSuccess) {
                 debouncedOnSuccess();
               }
             })
             .on('unlink', (path: string) => {
-              this.actionOnFile({ ...option, path, action: 'unlink' });
+              this.safeActionOnFile({ ...option, path, action: 'unlink' });
               if (ready && debouncedOnSuccess) {
                 debouncedOnSuccess();
               }
@@ -286,8 +310,30 @@ export class AssetsManager {
     return result;
   }
 
+  /**
+   * Runs `actionOnFile` from a watcher callback. A rejected destination must not
+   * escalate into an uncaught exception: chokidar emits synchronously, so a
+   * throw here would tear down the whole watch session.
+   */
+  private safeActionOnFile(option: ActionOnFile) {
+    try {
+      this.actionOnFile(option);
+    } catch (err) {
+      console.error(
+        `${ERROR_PREFIX} ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
   private actionOnFile(option: ActionOnFile) {
-    const { action, item, path, sourceRoot, watchAssetsMode } = option;
+    const {
+      action,
+      item,
+      path,
+      sourceRoot,
+      watchAssetsMode,
+      confinePathsToProject,
+    } = option;
     const isWatchEnabled = watchAssetsMode || item.watchAssets;
 
     const assetCheckKey = path + (item.outDir ?? '');
@@ -298,11 +344,20 @@ export class AssetsManager {
     // Set path value to true for watching the first time
     this.watchAssetsKeyValue[assetCheckKey] = true;
 
-    const dest = copyPathResolve(
+    let dest = copyPathResolve(
       path,
       item.outDir!,
       sourceRoot.split(sep).length,
     );
+
+    // The destination is re-checked per file: the configured "outDir" is
+    // validated up front, but a symlinked directory *inside* it would still
+    // redirect an individual write out of the project.
+    if (confinePathsToProject) {
+      dest = assertPathInsideProject(dest, 'assets[].outDir', {
+        resolveSymlinks: true,
+      });
+    }
 
     // Copy to output dir if file is changed or added
     if (action === 'change') {
