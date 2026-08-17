@@ -57,11 +57,11 @@
     "typescript": "~6.0.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.4.3",
-    "@commitlint/config-angular": "20.4.3",
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-angular": "20.5.3",
     "@rspack/core": "^1.7.7",
-    "@swc/cli": "0.8.0",
-    "@swc/core": "1.15.18",
+    "@swc/cli": "0.8.1",
+    "@swc/core": "1.16.0",
     "@types/node": "25.3.5",
     "@types/webpack-node-externals": "3.0.4",
     "delete-empty": "3.0.0",
@@ -75,7 +75,7 @@
     "release-it": "19.2.4",
     "ts-loader": "9.5.4",
     "tsconfig-paths-webpack-plugin": "4.2.0",
-    "vitest": "4.0.18",
+    "vitest": "4.1.0",
     "webpack": "5.105.4",
     "webpack-node-externals": "3.0.0"
   },

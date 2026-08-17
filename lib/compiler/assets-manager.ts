@@ -8,6 +8,7 @@ import {
   AssetEntry,
   Configuration,
 } from '../configuration/index.js';
+import { ERROR_PREFIX } from '../ui/index.js';
 import { copyPathResolve } from './helpers/copy-path-resolve.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 
@@ -177,14 +178,30 @@ export class AssetsManager {
               }
             });
 
+          let markSettled!: () => void;
+          const settled = new Promise<void>((resolve) => {
+            markSettled = resolve;
+          });
+
           watcher.on('ready', () => {
             ready = true;
+            markSettled();
+          });
+
+          // Without an 'error' listener chokidar rethrows as an uncaught
+          // exception (EMFILE, ENOSPC, EPERM on network shares), and the
+          // watcher never reaches 'ready' — which would leave closeWatchers()
+          // waiting on a promise that can no longer settle.
+          watcher.on('error', (error: unknown) => {
+            console.error(
+              `${ERROR_PREFIX} Asset watcher failed for "${item.glob}". ` +
+                `${error instanceof Error ? error.message : String(error)}`,
+            );
+            markSettled();
           });
 
           this.watchers.push(watcher);
-          this.watcherReadyPromises.push(
-            new Promise<void>((resolve) => watcher.on('ready', resolve)),
-          );
+          this.watcherReadyPromises.push(settled);
         } else {
           const matchedPaths = sync(item.glob, {
             ignore: item.exclude,

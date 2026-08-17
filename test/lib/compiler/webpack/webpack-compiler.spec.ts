@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
 import { WebpackCompiler } from '../../../../lib/compiler/webpack-compiler.js';
 
@@ -105,7 +113,9 @@ describe('Webpack Compiler', () => {
 
   const makeExtras = (overrides: Record<string, any> = {}) => ({
     options: {},
-    assetsManager: { closeWatchers: vi.fn() } as any,
+    assetsManager: {
+      closeWatchers: vi.fn().mockResolvedValue(undefined),
+    } as any,
     webpackConfigFactoryOrConfig: {},
     debug: false,
     watchMode: false,
@@ -136,9 +146,7 @@ describe('Webpack Compiler', () => {
           undefined,
           makeExtras(),
         ),
-      ).toThrow(
-        'The webpack compiler does not support ESM projects',
-      );
+      ).toThrow('The webpack compiler does not support ESM projects');
     });
 
     it('should suggest using rspack in the error message', () => {
@@ -187,9 +195,7 @@ describe('Webpack Compiler', () => {
         makeExtras(),
       );
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('rspack'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('rspack'));
     });
   });
 
@@ -246,6 +252,136 @@ describe('Webpack Compiler', () => {
       );
 
       expect(mockRun).toHaveBeenCalled();
+    });
+  });
+
+  describe('createAfterCallback', () => {
+    const makeStats = (hasErrors: boolean) => ({
+      hasErrors: () => hasErrors,
+      toString: () => (hasErrors ? 'errors found' : 'compiled successfully'),
+    });
+
+    const makeAssetsManager = () => ({
+      closeWatchers: vi.fn().mockResolvedValue(undefined),
+    });
+
+    it('should call onSuccess and leave watchers open when compilation succeeds', () => {
+      const onSuccess = vi.fn();
+      const assetsManager = makeAssetsManager();
+      const callback = (compiler as any).createAfterCallback(
+        onSuccess,
+        assetsManager,
+        false,
+        false,
+      );
+
+      callback(null, makeStats(false));
+
+      expect(onSuccess).toHaveBeenCalled();
+      expect(assetsManager.closeWatchers).not.toHaveBeenCalled();
+    });
+
+    it('should close watchers when there is no onSuccess hook', () => {
+      const assetsManager = makeAssetsManager();
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        assetsManager,
+        false,
+        false,
+      );
+
+      callback(null, makeStats(false));
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalled();
+    });
+
+    it('should report a closeWatchers rejection instead of leaving it unhandled', async () => {
+      // webpack ignores this callback's return value, so the close cannot be
+      // awaited; an unhandled rejection here would terminate the CLI after a
+      // compilation that actually succeeded.
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const assetsManager = {
+        closeWatchers: vi.fn().mockRejectedValue(new Error('close failed')),
+      };
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        assetsManager,
+        false,
+        false,
+      );
+
+      expect(() => callback(null, makeStats(false))).not.toThrow();
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('close failed'),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should exit with code 1 when err is set and stats is undefined', () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        makeAssetsManager(),
+        false,
+        false,
+      );
+
+      callback(new Error('compile error'), undefined);
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    it('should exit with code 1 when the build has errors in non-watch mode', () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        makeAssetsManager(),
+        false,
+        false,
+      );
+
+      callback(null, makeStats(true));
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    it('should keep the process alive on errors in watch mode', () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        makeAssetsManager(),
+        true,
+        false,
+      );
+
+      callback(null, makeStats(true));
+
+      expect(exitSpy).not.toHaveBeenCalled();
+
+      exitSpy.mockRestore();
+      logSpy.mockRestore();
     });
   });
 });

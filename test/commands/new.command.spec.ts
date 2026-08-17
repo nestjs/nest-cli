@@ -173,4 +173,38 @@ describe('NewCommand', () => {
       );
     });
   });
+
+  describe('--observe / --no-observe', () => {
+    // `undefined` is meaningful here: it is what tells the action that the
+    // user has not decided yet and should be prompted.
+    it('leaves observe undefined when neither flag is given', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ observe: undefined }),
+      );
+    });
+
+    it('passes observe: true for --observe', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new', '--observe']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ observe: true }),
+      );
+    });
+
+    it('passes observe: false for --no-observe', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new', '--no-observe']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ observe: false }),
+      );
+    });
+  });
 });

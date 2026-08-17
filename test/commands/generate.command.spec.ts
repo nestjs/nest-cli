@@ -1,43 +1,29 @@
+import { Command } from 'commander';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('../../lib/schematics/index.js', () => ({
-  Collection: { NESTJS: '@nestjs/schematics' },
-  CollectionFactory: {
-    create: () => ({
-      execute: vi.fn().mockResolvedValue(undefined),
-      getSchematics: () => [
-        {
-          name: 'controller',
-          alias: 'co',
-          description: 'Generate a controller declaration',
-        },
-        {
-          name: 'service',
-          alias: 's',
-          description: 'Generate a service declaration',
-        },
-      ],
-    }),
-  },
-}));
 
 vi.mock('../../lib/utils/load-configuration.js', () => ({
   loadConfiguration: vi.fn().mockResolvedValue({
     collection: '@nestjs/schematics',
-    sourceRoot: 'src',
-    entryFile: 'main',
-    exec: 'node',
-    projects: {},
-    monorepo: false,
-    compilerOptions: {},
-    generateOptions: {},
-    language: 'ts',
   }),
 }));
 
-import { Command } from 'commander';
+vi.mock('../../lib/schematics/index.js', async () => {
+  const original = await vi.importActual('../../lib/schematics/index.js');
+  return {
+    ...original,
+    CollectionFactory: {
+      create: () => ({
+        getSchematics: () => [
+          { name: 'controller', alias: 'co', description: 'A controller' },
+        ],
+      }),
+    },
+  };
+});
+
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { GenerateCommand } from '../../commands/generate.command.js';
+import { GenerateCommandContext } from '../../commands/context/generate.context.js';
 
 class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
@@ -53,286 +39,219 @@ const buildProgram = async (action: FakeAction) => {
 describe('GenerateCommand', () => {
   let action: FakeAction;
 
+  const run = async (...args: string[]): Promise<GenerateCommandContext> => {
+    const program = await buildProgram(action);
+    await program.parseAsync(['node', 'nest', ...args]);
+    expect(action.handle).toHaveBeenCalledTimes(1);
+    return action.handle.mock.calls[0][0];
+  };
+
   beforeEach(() => {
     action = new FakeAction();
   });
 
   describe('positional arguments', () => {
-    it('forwards the schematic, name and path positionals to the action context', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('forwards the schematic, name and path', async () => {
+      const context = await run(
         'generate',
         'controller',
-        'cats',
-        'modules/cats',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledTimes(1);
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          schematic: 'controller',
-          name: 'cats',
-          path: 'modules/cats',
-        }),
+        'users',
+        'src/modules',
       );
+
+      expect(context.schematic).toBe('controller');
+      expect(context.name).toBe('users');
+      expect(context.path).toBe('src/modules');
     });
 
-    it('responds to the "g" alias', async () => {
-      const program = await buildProgram(action);
+    it('leaves name and path undefined when omitted', async () => {
+      const context = await run('generate', 'controller');
 
-      await program.parseAsync(['node', 'nest', 'g', 'service', 'cats']);
+      expect(context.schematic).toBe('controller');
+      expect(context.name).toBeUndefined();
+      expect(context.path).toBeUndefined();
+    });
 
-      expect(action.handle).toHaveBeenCalledTimes(1);
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ schematic: 'service', name: 'cats' }),
-      );
+    it('is reachable through the "g" alias', async () => {
+      const context = await run('g', 'service', 'users');
+
+      expect(context.schematic).toBe('service');
+      expect(context.name).toBe('users');
     });
   });
 
-  describe('--spec / --no-spec', () => {
-    it('defaults spec to { value: true, passedAsInput: false }', async () => {
-      const program = await buildProgram(action);
+  describe('--crud', () => {
+    // `--crud [value]` takes an optional value, so commander hands back a
+    // string whenever one is supplied. Both forms have to survive the mapping
+    // or an explicit choice silently falls back to the schematic default.
+    it('is true for the bare flag', async () => {
+      const context = await run('generate', 'resource', 'users', '--crud');
 
-      await program.parseAsync(['node', 'nest', 'generate', 'service', 'cats']);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          spec: { value: true, passedAsInput: false },
-        }),
-      );
+      expect(context.crud).toBe(true);
     });
 
-    it('records passedAsInput: true when --spec is supplied explicitly', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('is true for the string "true"', async () => {
+      const context = await run(
         'generate',
-        'service',
-        'cats',
-        '--spec',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          spec: { value: true, passedAsInput: true },
-        }),
+        'resource',
+        'users',
+        '--crud',
+        'true',
       );
+
+      expect(context.crud).toBe(true);
     });
 
-    it('records value: false and passedAsInput: true when --no-spec is supplied', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('is false for the string "false"', async () => {
+      const context = await run(
         'generate',
-        'service',
-        'cats',
-        '--no-spec',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          spec: { value: false, passedAsInput: true },
-        }),
+        'resource',
+        'users',
+        '--crud',
+        'false',
       );
+
+      expect(context.crud).toBe(false);
     });
 
-    it('forwards --spec-file-suffix as specFileSuffix', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('is false for the inline "--crud=false" form', async () => {
+      const context = await run(
         'generate',
-        'service',
-        'cats',
-        '--spec-file-suffix',
-        'unit',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ specFileSuffix: 'unit' }),
+        'resource',
+        'users',
+        '--crud=false',
       );
+
+      expect(context.crud).toBe(false);
+    });
+
+    it('is undefined when the flag is omitted', async () => {
+      const context = await run('generate', 'resource', 'users');
+
+      expect(context.crud).toBeUndefined();
     });
   });
 
   describe('--flat / --no-flat', () => {
-    it('defaults flat to undefined when neither flag is supplied', async () => {
-      const program = await buildProgram(action);
+    it('is true for --flat', async () => {
+      const context = await run('generate', 'controller', 'users', '--flat');
 
-      await program.parseAsync(['node', 'nest', 'generate', 'service', 'cats']);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ flat: undefined }),
-      );
+      expect(context.flat).toBe(true);
     });
 
-    it('passes flat: true when --flat is supplied', async () => {
-      const program = await buildProgram(action);
+    it('is false for --no-flat', async () => {
+      const context = await run('generate', 'controller', 'users', '--no-flat');
 
-      await program.parseAsync([
-        'node',
-        'nest',
-        'generate',
-        'service',
-        'cats',
-        '--flat',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ flat: true }),
-      );
+      expect(context.flat).toBe(false);
     });
 
-    it('passes flat: false when --no-flat is supplied', async () => {
-      const program = await buildProgram(action);
+    it('is undefined when neither flag is passed, so config can decide', async () => {
+      const context = await run('generate', 'controller', 'users');
 
-      await program.parseAsync([
-        'node',
-        'nest',
-        'generate',
-        'service',
-        'cats',
-        '--no-flat',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ flat: false }),
-      );
+      expect(context.flat).toBeUndefined();
     });
   });
 
-  describe('--type and --crud', () => {
-    it('forwards --type as a string', async () => {
-      const program = await buildProgram(action);
+  describe('--spec / --no-spec', () => {
+    // The action distinguishes "user asked for this" from "this is the
+    // default" so nest-cli.json generateOptions can win when the user stayed
+    // silent — hence the {value, passedAsInput} shape rather than a boolean.
+    it('defaults to spec enabled, not passed as input', async () => {
+      const context = await run('generate', 'controller', 'users');
 
-      await program.parseAsync([
-        'node',
-        'nest',
+      expect(context.spec).toEqual({ value: true, passedAsInput: false });
+    });
+
+    it('marks --spec as passed as input', async () => {
+      const context = await run('generate', 'controller', 'users', '--spec');
+
+      expect(context.spec).toEqual({ value: true, passedAsInput: true });
+    });
+
+    it('marks --no-spec as passed as input with value false', async () => {
+      const context = await run('generate', 'controller', 'users', '--no-spec');
+
+      expect(context.spec).toEqual({ value: false, passedAsInput: true });
+    });
+  });
+
+  describe('remaining options', () => {
+    it('defaults dryRun to false and sets it for -d', async () => {
+      expect((await run('generate', 'controller', 'users')).dryRun).toBe(false);
+
+      action = new FakeAction();
+      expect((await run('generate', 'controller', 'users', '-d')).dryRun).toBe(
+        true,
+      );
+    });
+
+    it('defaults skipImport to false and sets it for --skip-import', async () => {
+      expect((await run('generate', 'controller', 'users')).skipImport).toBe(
+        false,
+      );
+
+      action = new FakeAction();
+      expect(
+        (await run('generate', 'controller', 'users', '--skip-import'))
+          .skipImport,
+      ).toBe(true);
+    });
+
+    it('defaults format to false and sets it for --format', async () => {
+      expect((await run('generate', 'controller', 'users')).format).toBe(false);
+
+      action = new FakeAction();
+      expect(
+        (await run('generate', 'controller', 'users', '--format')).format,
+      ).toBe(true);
+    });
+
+    it('forwards --type', async () => {
+      const context = await run(
         'generate',
         'resource',
-        'cats',
+        'users',
         '--type',
         'graphql',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'graphql' }),
       );
+
+      expect(context.type).toBe('graphql');
     });
 
-    it('passes crud: true when --crud is supplied with no value', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('forwards --project', async () => {
+      const context = await run(
         'generate',
-        'resource',
-        'cats',
-        '--crud',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ crud: true }),
-      );
-    });
-
-    it('passes crud: undefined when no --crud flag is present', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
-        'generate',
-        'resource',
-        'cats',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ crud: undefined }),
-      );
-    });
-  });
-
-  describe('miscellaneous flags', () => {
-    it('forwards --dry-run, --project and --collection', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
-        'generate',
-        'service',
-        'cats',
-        '--dry-run',
+        'controller',
+        'users',
         '--project',
-        'apps/api',
+        'api',
+      );
+
+      expect(context.project).toBe('api');
+    });
+
+    it('forwards --collection', async () => {
+      const context = await run(
+        'generate',
+        'controller',
+        'users',
         '--collection',
-        '@custom/schematics',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dryRun: true,
-          project: 'apps/api',
-          collection: '@custom/schematics',
-        }),
+        '@my/schematics',
       );
+
+      expect(context.collection).toBe('@my/schematics');
     });
 
-    it('passes skipImport: true when --skip-import is supplied', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync([
-        'node',
-        'nest',
+    it('forwards --spec-file-suffix', async () => {
+      const context = await run(
         'generate',
-        'service',
-        'cats',
-        '--skip-import',
-      ]);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ skipImport: true }),
-      );
-    });
-
-    it('defaults skipImport to false when --skip-import is omitted', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync(['node', 'nest', 'generate', 'service', 'cats']);
-
-      expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ skipImport: false }),
-      );
-    });
-
-    it('passes format: true only when --format is provided, false otherwise', async () => {
-      const program = await buildProgram(action);
-
-      await program.parseAsync(['node', 'nest', 'generate', 'service', 'cats']);
-      expect(action.handle).toHaveBeenLastCalledWith(
-        expect.objectContaining({ format: false }),
+        'controller',
+        'users',
+        '--spec-file-suffix',
+        'test',
       );
 
-      await program.parseAsync([
-        'node',
-        'nest',
-        'generate',
-        'service',
-        'cats',
-        '--format',
-      ]);
-      expect(action.handle).toHaveBeenLastCalledWith(
-        expect.objectContaining({ format: true }),
-      );
+      expect(context.specFileSuffix).toBe('test');
     });
   });
 });

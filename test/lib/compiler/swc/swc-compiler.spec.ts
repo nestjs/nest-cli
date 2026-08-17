@@ -328,109 +328,113 @@ describe('SWC Compiler', () => {
   });
 
   describe('emitDeclarations', () => {
-      it('should call emitDeclarations when extras.emitDeclarations is true and watch is false', async () => {
-        compiler['emitDeclarations'] = vi.fn();
+    it('should call emitDeclarations when extras.emitDeclarations is true and watch is false', async () => {
+      compiler['emitDeclarations'] = vi.fn();
 
-        await callRunCompiler({
-          configuration: '_configurationTest',
-          tsconfig: 'tsconfig.json',
-          appName: 'appNameTest',
-          extras: {
-            watch: false,
-            typeCheck: false,
-            emitDeclarations: true,
-            tsOptions: null,
-          },
-        });
-
-        expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
-          'tsconfig.json',
-        );
+      await callRunCompiler({
+        configuration: '_configurationTest',
+        tsconfig: 'tsconfig.json',
+        appName: 'appNameTest',
+        extras: {
+          watch: false,
+          typeCheck: false,
+          emitDeclarations: true,
+          tsOptions: null,
+        },
       });
 
-      it('should call emitDeclarations when extras.emitDeclarations is true and watch is true', async () => {
-        compiler['emitDeclarations'] = vi.fn();
-
-        await callRunCompiler({
-          configuration: '_configurationTest',
-          tsconfig: 'tsconfig.json',
-          appName: 'appNameTest',
-          extras: {
-            watch: true,
-            typeCheck: false,
-            emitDeclarations: true,
-            tsOptions: null,
-          },
-        });
-
-        expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
-          'tsconfig.json',
-        );
-      });
-
-      it('should not call emitDeclarations when extras.emitDeclarations is false', async () => {
-        compiler['emitDeclarations'] = vi.fn();
-
-        await callRunCompiler({
-          configuration: '_configurationTest',
-          tsconfig: 'tsconfig.json',
-          appName: 'appNameTest',
-          extras: {
-            watch: false,
-            typeCheck: false,
-            emitDeclarations: false,
-            tsOptions: null,
-          },
-        });
-
-        expect(compiler['emitDeclarations']).not.toHaveBeenCalled();
-      });
-
-      it('should spawn tsc with --emitDeclarationOnly flag', async () => {
-        const originalEmitDeclarations =
-          SwcCompiler.prototype['emitDeclarations'];
-        compiler['emitDeclarations'] =
-          originalEmitDeclarations.bind(compiler);
-
-        (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({ status: 0 });
-
-        compiler['emitDeclarations']('tsconfig.json');
-
-        // Flush process.nextTick to avoid "Cannot log after tests are done" warning
-        await new Promise((resolve) => process.nextTick(resolve));
-
-        expect(childProcess.spawnSync).toHaveBeenCalledWith(
-          expect.stringContaining('tsc'),
-          ['--emitDeclarationOnly', '-p', 'tsconfig.json'],
-          expect.objectContaining({
-            cwd: process.cwd(),
-            stdio: 'inherit',
-            shell: true,
-          }),
-        );
-      });
-
-      it('should log error when tsc exits with non-zero status', async () => {
-        const originalEmitDeclarations =
-          SwcCompiler.prototype['emitDeclarations'];
-        compiler['emitDeclarations'] =
-          originalEmitDeclarations.bind(compiler);
-
-        (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({ status: 1 });
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-        compiler['emitDeclarations']('tsconfig.json');
-
-        // Flush process.nextTick to avoid "Cannot log after tests are done" warning
-        await new Promise((resolve) => process.nextTick(resolve));
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Failed to emit declaration files'),
-        );
-
-        consoleErrorSpy.mockRestore();
-      });
+      expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
+        'tsconfig.json',
+      );
     });
+
+    it('should call emitDeclarations when extras.emitDeclarations is true and watch is true', async () => {
+      compiler['emitDeclarations'] = vi.fn();
+
+      await callRunCompiler({
+        configuration: '_configurationTest',
+        tsconfig: 'tsconfig.json',
+        appName: 'appNameTest',
+        extras: {
+          watch: true,
+          typeCheck: false,
+          emitDeclarations: true,
+          tsOptions: null,
+        },
+      });
+
+      expect(compiler['emitDeclarations']).toHaveBeenCalledWith(
+        'tsconfig.json',
+      );
+    });
+
+    it('should not call emitDeclarations when extras.emitDeclarations is false', async () => {
+      compiler['emitDeclarations'] = vi.fn();
+
+      await callRunCompiler({
+        configuration: '_configurationTest',
+        tsconfig: 'tsconfig.json',
+        appName: 'appNameTest',
+        extras: {
+          watch: false,
+          typeCheck: false,
+          emitDeclarations: false,
+          tsOptions: null,
+        },
+      });
+
+      expect(compiler['emitDeclarations']).not.toHaveBeenCalled();
+    });
+
+    it('should spawn tsc with --emitDeclarationOnly flag', async () => {
+      const originalEmitDeclarations =
+        SwcCompiler.prototype['emitDeclarations'];
+      compiler['emitDeclarations'] = originalEmitDeclarations.bind(compiler);
+
+      (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({
+        status: 0,
+      });
+
+      compiler['emitDeclarations']('tsconfig.json');
+
+      // Flush process.nextTick to avoid "Cannot log after tests are done" warning
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(childProcess.spawnSync).toHaveBeenCalledWith(
+        expect.stringContaining('tsc'),
+        ['--emitDeclarationOnly', '-p', 'tsconfig.json'],
+        expect.objectContaining({
+          cwd: process.cwd(),
+          stdio: 'inherit',
+          shell: true,
+        }),
+      );
+    });
+
+    it('should log error when tsc exits with non-zero status', async () => {
+      const originalEmitDeclarations =
+        SwcCompiler.prototype['emitDeclarations'];
+      compiler['emitDeclarations'] = originalEmitDeclarations.bind(compiler);
+
+      (childProcess.spawnSync as ReturnType<typeof vi.fn>).mockReturnValue({
+        status: 1,
+      });
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      compiler['emitDeclarations']('tsconfig.json');
+
+      // Flush process.nextTick to avoid "Cannot log after tests are done" warning
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to emit declaration files'),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
 
   describe('watchFilesInOutDir', () => {
     let originalWatchFilesInOutDir: Function;
@@ -520,8 +524,7 @@ describe('SWC Compiler', () => {
     let originalWatchFilesInSrcDir: Function;
 
     beforeEach(() => {
-      originalWatchFilesInSrcDir =
-        SwcCompiler.prototype['watchFilesInSrcDir'];
+      originalWatchFilesInSrcDir = SwcCompiler.prototype['watchFilesInSrcDir'];
       compiler['watchFilesInSrcDir'] =
         originalWatchFilesInSrcDir.bind(compiler);
 
@@ -726,7 +729,9 @@ describe('SWC Compiler', () => {
         compiler['isIgnoredBySwc']('src/generated/foo.ts', ['src/generated/']),
       ).toBe(true);
       expect(
-        compiler['isIgnoredBySwc']('src/generated/foo.ts', ['src\\generated\\']),
+        compiler['isIgnoredBySwc']('src/generated/foo.ts', [
+          'src\\generated\\',
+        ]),
       ).toBe(true);
       expect(
         compiler['isIgnoredBySwc']('src/generated-other/foo.ts', [

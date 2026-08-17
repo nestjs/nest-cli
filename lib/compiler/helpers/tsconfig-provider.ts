@@ -30,12 +30,7 @@ export class TsConfigProvider {
         `Could not parse TypeScript configuration file "${configFilename}". Please, ensure that the file contains valid JSON and compiler options.`,
       );
     }
-    const {
-      options,
-      fileNames,
-      projectReferences,
-      raw,
-    } = parsedCmd;
+    const { options, fileNames, projectReferences, raw } = parsedCmd;
 
     const exclude = this.normalizeExclude(
       this.parseExclude(raw?.exclude),

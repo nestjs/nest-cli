@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { AddCommand } from '../../commands/add.command.js';
+import { AddCommandContext } from '../../commands/context/index.js';
 
 class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
@@ -23,107 +24,81 @@ const buildProgram = (action: FakeAction) => {
 describe('AddCommand', () => {
   let action: FakeAction;
   let exitSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  const run = async (...args: string[]): Promise<AddCommandContext> => {
+    const program = buildProgram(action);
+    await program.parseAsync(['node', 'nest', ...args]);
+    expect(action.handle).toHaveBeenCalledTimes(1);
+    return action.handle.mock.calls[0][0];
+  };
 
   beforeEach(() => {
     action = new FakeAction();
     exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new ProcessExitError(code);
     }) as never);
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     exitSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
   });
 
-  it('forwards the library positional argument to the action context', async () => {
-    const program = buildProgram(action);
+  it('forwards the library name', async () => {
+    const context = await run('add', '@nestjs/swagger');
 
-    await program.parseAsync(['node', 'nest', 'add', '@nestjs/swagger']);
+    expect(context.library).toBe('@nestjs/swagger');
+  });
 
-    expect(exitSpy).not.toHaveBeenCalled();
-    expect(action.handle).toHaveBeenCalledTimes(1);
-    expect(action.handle).toHaveBeenCalledWith(
-      expect.objectContaining({ library: '@nestjs/swagger' }),
+  it('defaults dryRun to false and sets it for --dry-run', async () => {
+    expect((await run('add', '@nestjs/swagger')).dryRun).toBe(false);
+
+    action = new FakeAction();
+    expect((await run('add', '@nestjs/swagger', '--dry-run')).dryRun).toBe(
+      true,
     );
   });
 
-  it('uses sensible defaults when only the library argument is given', async () => {
-    const program = buildProgram(action);
+  it('defaults skipInstall to false and sets it for --skip-install', async () => {
+    expect((await run('add', '@nestjs/swagger')).skipInstall).toBe(false);
 
-    await program.parseAsync(['node', 'nest', 'add', '@nestjs/swagger']);
-
-    expect(action.handle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        library: '@nestjs/swagger',
-        dryRun: false,
-        skipInstall: false,
-        project: undefined,
-      }),
-    );
+    action = new FakeAction();
+    expect(
+      (await run('add', '@nestjs/swagger', '--skip-install')).skipInstall,
+    ).toBe(true);
   });
 
-  it('forwards every documented flag through to the action context', async () => {
-    const program = buildProgram(action);
+  it('forwards --project', async () => {
+    const context = await run('add', '@nestjs/swagger', '--project', 'api');
 
-    await program.parseAsync([
-      'node',
-      'nest',
-      'add',
-      '@nestjs/swagger',
-      '--dry-run',
-      '--skip-install',
-      '--project',
-      'apps/api',
-    ]);
-
-    expect(action.handle).toHaveBeenCalledTimes(1);
-    expect(action.handle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        library: '@nestjs/swagger',
-        dryRun: true,
-        skipInstall: true,
-        project: 'apps/api',
-      }),
-    );
-  });
-
-  it('always supplies extraFlags (sourced from getRemainingFlags) on the context', async () => {
-    const program = buildProgram(action);
-
-    await program.parseAsync(['node', 'nest', 'add', '@nestjs/swagger']);
-
-    const context = (action.handle as any).mock.calls[0][0];
-    expect(context).toHaveProperty('extraFlags');
+    expect(context.project).toBe('api');
   });
 
   it('honors the short -d / -s / -p aliases for documented flags', async () => {
-    const program = buildProgram(action);
-
-    await program.parseAsync([
-      'node',
-      'nest',
+    const context = await run(
       'add',
       '@nestjs/swagger',
       '-d',
       '-s',
       '-p',
       'apps/api',
-    ]);
-
-    expect(action.handle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dryRun: true,
-        skipInstall: true,
-        project: 'apps/api',
-      }),
     );
+
+    expect(context.dryRun).toBe(true);
+    expect(context.skipInstall).toBe(true);
+    expect(context.project).toBe('apps/api');
   });
 
-  it('exits with code 1 when the action throws', async () => {
-    action.handle.mockRejectedValueOnce(new Error('boom'));
+  it('collects library-specific unknown flags as extra flags', async () => {
+    // `allowUnknownOption` + `allowExcessArguments` let library-specific
+    // flags through so they can be forwarded to the library's own schematic
+    // rather than being rejected by commander as excess arguments.
+    const context = await run('add', '@nestjs/swagger', '--custom-lib-flag');
+
+    expect(context.extraFlags).toContain('--custom-lib-flag');
+  });
+
+  it('exits with code 1 when the action rejects', async () => {
+    action.handle.mockRejectedValueOnce(new Error('install failed'));
     const program = buildProgram(action);
 
     await expect(

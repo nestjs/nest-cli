@@ -1,197 +1,212 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Compiler } from '../../../lib/compiler/compiler.js';
-import { TsConfigProvider } from '../../../lib/compiler/helpers/tsconfig-provider.js';
-import { PluginsLoader } from '../../../lib/compiler/plugins/plugins-loader.js';
-import { TypeScriptBinaryLoader } from '../../../lib/compiler/typescript-loader.js';
 import { Configuration } from '../../../lib/configuration/index.js';
 
-const ProcessExitError = class extends Error {
-  constructor(public code: number | undefined) {
-    super(`process.exit(${code})`);
-  }
-};
+vi.mock('../../../lib/compiler/hooks/tsconfig-paths.hook.js', () => ({
+  tsconfigPathsBeforeHookFactory: vi.fn(() => undefined),
+}));
 
-const makeConfiguration = (): Required<Configuration> =>
-  ({
-    language: 'ts',
+import { tsconfigPathsBeforeHookFactory } from '../../../lib/compiler/hooks/tsconfig-paths.hook.js';
+
+describe('Compiler (tsc)', () => {
+  const configuration = {
     sourceRoot: 'src',
-    collection: '@nestjs/schematics',
-    entryFile: 'main',
-    exec: 'node',
-    projects: {},
-    monorepo: false,
-    compilerOptions: {},
-    generateOptions: {},
-  }) as Required<Configuration>;
+    compilerOptions: { plugins: [] },
+  } as unknown as Required<Configuration>;
 
-interface BuiltCompiler {
-  compiler: Compiler;
-  emitMock: ReturnType<typeof vi.fn>;
-  diagnosticsMock: ReturnType<typeof vi.fn>;
-  formatDiagnosticsMock: ReturnType<typeof vi.fn>;
-  pluginsLoader: PluginsLoader;
-}
-
-const buildCompiler = ({
-  diagnostics = [],
-  emitDiagnostics = [],
-  incremental = false,
-}: {
-  diagnostics?: unknown[];
-  emitDiagnostics?: unknown[];
-  incremental?: boolean;
-} = {}): BuiltCompiler => {
-  const emitMock = vi.fn().mockReturnValue({ diagnostics: emitDiagnostics });
-  const fakeProgram = incremental
-    ? { getProgram: () => ({ __ref: true }), emit: emitMock }
-    : { emit: emitMock };
-
-  const formatDiagnosticsMock = vi.fn().mockReturnValue('<formatted>');
-  const getPreEmitDiagnosticsMock = vi
-    .fn()
-    .mockReturnValue(diagnostics as never[]);
-
-  const fakeTs = {
-    sys: {
-      getCurrentDirectory: () => process.cwd(),
-      newLine: '\n',
-    },
-    createProgram: incremental ? undefined : vi.fn(() => fakeProgram),
-    createIncrementalProgram: incremental ? vi.fn(() => fakeProgram) : undefined,
-    getPreEmitDiagnostics: getPreEmitDiagnosticsMock,
-    formatDiagnosticsWithColorAndContext: formatDiagnosticsMock,
-  } as any;
-
-  const typescriptLoader = {
-    load: vi.fn().mockReturnValue(fakeTs),
-  } as unknown as TypeScriptBinaryLoader;
-
-  const tsConfigProvider = {
-    getByConfigFilename: vi.fn().mockReturnValue({
-      options: { outDir: 'dist' },
-      fileNames: ['src/main.ts'],
-      projectReferences: undefined,
-    }),
-  } as unknown as TsConfigProvider;
-
-  const pluginsLoader = {
-    load: vi.fn().mockReturnValue({
-      beforeHooks: [],
-      afterHooks: [],
-      afterDeclarationsHooks: [],
-      readonlyVisitors: [],
-    }),
-  } as unknown as PluginsLoader;
-
-  const compiler = new Compiler(
-    pluginsLoader,
-    tsConfigProvider,
-    typescriptLoader,
-  );
-
-  return {
-    compiler,
-    emitMock,
-    diagnosticsMock: getPreEmitDiagnosticsMock,
-    formatDiagnosticsMock,
-    pluginsLoader,
-  };
-};
-
-describe('Compiler', () => {
+  let emit: ReturnType<typeof vi.fn>;
+  let program: Record<string, any>;
+  let tsBinary: Record<string, any>;
+  let pluginsLoader: any;
+  let tsConfigProvider: any;
+  let typescriptLoader: any;
+  let compiler: Compiler;
   let exitSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-  let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+
+  const buildCompiler = (diagnostics: unknown[] = []) => {
+    emit = vi.fn().mockReturnValue({ diagnostics: [] });
+    program = {
+      emit,
+      getProgram: vi.fn(() => ({ __program: true })),
+    };
+
+    tsBinary = {
+      sys: { getCurrentDirectory: () => '/project', newLine: '\n' },
+      createIncrementalProgram: vi.fn(() => program),
+      createProgram: vi.fn(() => program),
+      getPreEmitDiagnostics: vi.fn(() => diagnostics),
+      formatDiagnosticsWithColorAndContext: vi.fn(
+        () => 'formatted diagnostics',
+      ),
+    };
+
+    pluginsLoader = {
+      load: vi.fn(() => ({
+        beforeHooks: [],
+        afterHooks: [],
+        afterDeclarationsHooks: [],
+      })),
+    };
+    tsConfigProvider = {
+      getByConfigFilename: vi.fn(() => ({
+        options: { outDir: 'dist' },
+        fileNames: ['/project/src/main.ts'],
+        projectReferences: undefined,
+      })),
+    };
+    typescriptLoader = { load: vi.fn(() => tsBinary) };
+
+    return new Compiler(pluginsLoader, tsConfigProvider, typescriptLoader);
+  };
 
   beforeEach(() => {
-    exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
-      throw new ProcessExitError(code);
-    }) as never);
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.mocked(tsconfigPathsBeforeHookFactory).mockReturnValue(undefined);
+    exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((() => undefined) as never);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    compiler = buildCompiler();
   });
 
-  afterEach(() => {
-    exitSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
-    consoleInfoSpy.mockRestore();
+  it('reads the compilation inputs from the given tsconfig path', () => {
+    compiler.run(configuration, 'tsconfig.build.json', undefined, undefined);
+
+    expect(tsConfigProvider.getByConfigFilename).toHaveBeenCalledWith(
+      'tsconfig.build.json',
+    );
   });
 
-  it('invokes onSuccess and emits when there are no diagnostics', () => {
-    const { compiler, emitMock } = buildCompiler();
+  it('creates the program from the parsed file names and options', () => {
+    compiler.run(configuration, 'tsconfig.json', undefined, undefined);
+
+    expect(tsBinary.createIncrementalProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rootNames: ['/project/src/main.ts'],
+        options: { outDir: 'dist' },
+      }),
+    );
+  });
+
+  it('falls back to createProgram when incremental programs are unavailable', () => {
+    tsBinary.createIncrementalProgram = undefined;
+
+    compiler.run(configuration, 'tsconfig.json', undefined, undefined);
+
+    expect(tsBinary.createProgram).toHaveBeenCalled();
+    expect(emit).toHaveBeenCalled();
+  });
+
+  it('emits and calls onSuccess when there are no diagnostics', () => {
     const onSuccess = vi.fn();
 
-    compiler.run(makeConfiguration(), 'tsconfig.json', undefined, {}, onSuccess);
+    compiler.run(
+      configuration,
+      'tsconfig.json',
+      undefined,
+      undefined,
+      onSuccess,
+    );
 
-    expect(emitMock).toHaveBeenCalledTimes(1);
+    expect(emit).toHaveBeenCalled();
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  it('falls back to createProgram when createIncrementalProgram is unavailable', () => {
-    const built = buildCompiler({ incremental: false });
-
-    built.compiler.run(
-      makeConfiguration(),
-      'tsconfig.json',
-      undefined,
-      {},
-      vi.fn(),
-    );
-
-    expect(built.emitMock).toHaveBeenCalledTimes(1);
+  it('does not throw when no onSuccess callback is supplied', () => {
+    expect(() =>
+      compiler.run(configuration, 'tsconfig.json', undefined, undefined),
+    ).not.toThrow();
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  it('uses createIncrementalProgram when the loaded TypeScript exposes it', () => {
-    const built = buildCompiler({ incremental: true });
-
-    built.compiler.run(
-      makeConfiguration(),
-      'tsconfig.json',
-      undefined,
-      {},
-      vi.fn(),
-    );
-
-    expect(built.emitMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('exits with code 1 and prints diagnostics when pre-emit diagnostics exist', () => {
-    const { compiler } = buildCompiler({
-      diagnostics: [{ messageText: 'fake diagnostic' }],
-    });
+  it('exits with code 1 and skips onSuccess when diagnostics are reported', () => {
+    compiler = buildCompiler([{ messageText: 'Type error' }]);
     const onSuccess = vi.fn();
 
-    expect(() =>
-      compiler.run(makeConfiguration(), 'tsconfig.json', undefined, {}, onSuccess),
-    ).toThrow(ProcessExitError);
+    compiler.run(
+      configuration,
+      'tsconfig.json',
+      undefined,
+      undefined,
+      onSuccess,
+    );
 
     expect(exitSpy).toHaveBeenCalledWith(1);
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Found 1 error'),
-    );
+    expect(tsBinary.formatDiagnosticsWithColorAndContext).toHaveBeenCalled();
   });
 
-  it('exits with code 1 when emit returns diagnostics', () => {
-    const { compiler } = buildCompiler({
-      emitDiagnostics: [{ messageText: 'emit error' }],
-    });
+  it('reports diagnostics produced by the emit itself', () => {
+    emit.mockReturnValue({ diagnostics: [{ messageText: 'Emit error' }] });
+    const onSuccess = vi.fn();
 
-    expect(() =>
-      compiler.run(makeConfiguration(), 'tsconfig.json', undefined, {}),
-    ).toThrow(ProcessExitError);
+    compiler.run(
+      configuration,
+      'tsconfig.json',
+      undefined,
+      undefined,
+      onSuccess,
+    );
 
     expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it('runs without onSuccess and still emits cleanly', () => {
-    const { compiler, emitMock } = buildCompiler();
+  it('passes the loaded plugin hooks to the emit transformers', () => {
+    const beforeHook = vi.fn(() => 'before-transformer');
+    const afterHook = vi.fn(() => 'after-transformer');
+    const afterDeclarationsHook = vi.fn(() => 'after-declarations-transformer');
+    pluginsLoader.load.mockReturnValue({
+      beforeHooks: [beforeHook],
+      afterHooks: [afterHook],
+      afterDeclarationsHooks: [afterDeclarationsHook],
+    });
 
-    compiler.run(makeConfiguration(), 'tsconfig.json', undefined, {});
+    compiler.run(configuration, 'tsconfig.json', undefined, undefined);
 
-    expect(emitMock).toHaveBeenCalledTimes(1);
-    expect(exitSpy).not.toHaveBeenCalled();
+    // Hooks are instantiated with the resolved ts.Program, not the builder.
+    expect(beforeHook).toHaveBeenCalledWith({ __program: true });
+    const transformers = emit.mock.calls[0][4];
+    expect(transformers.before).toEqual(['before-transformer']);
+    expect(transformers.after).toEqual(['after-transformer']);
+    expect(transformers.afterDeclarations).toEqual([
+      'after-declarations-transformer',
+    ]);
+  });
+
+  it('prepends the tsconfig-paths transformer when path aliases are configured', () => {
+    vi.mocked(tsconfigPathsBeforeHookFactory).mockReturnValue(
+      'paths-transformer' as any,
+    );
+    pluginsLoader.load.mockReturnValue({
+      beforeHooks: [() => 'before-transformer'],
+      afterHooks: [],
+      afterDeclarationsHooks: [],
+    });
+
+    compiler.run(configuration, 'tsconfig.json', undefined, undefined);
+
+    const transformers = emit.mock.calls[0][4];
+    expect(transformers.before).toEqual([
+      'paths-transformer',
+      'before-transformer',
+    ]);
+    expect(transformers.afterDeclarations).toEqual(['paths-transformer']);
+  });
+
+  it('uses the builder program directly when getProgram is unavailable', () => {
+    program.getProgram = undefined;
+    const beforeHook = vi.fn(() => 'before-transformer');
+    pluginsLoader.load.mockReturnValue({
+      beforeHooks: [beforeHook],
+      afterHooks: [],
+      afterDeclarationsHooks: [],
+    });
+
+    compiler.run(configuration, 'tsconfig.json', undefined, undefined);
+
+    expect(beforeHook).toHaveBeenCalledWith(program);
   });
 });

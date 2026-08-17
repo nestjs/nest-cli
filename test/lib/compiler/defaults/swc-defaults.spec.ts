@@ -33,10 +33,7 @@ describe('swcDefaultsFactory', () => {
         },
       },
     };
-    const result = swcDefaultsFactory(
-      { rootDir: '.' },
-      configuration as any,
-    );
+    const result = swcDefaultsFactory({ rootDir: '.' }, configuration as any);
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
   });
 

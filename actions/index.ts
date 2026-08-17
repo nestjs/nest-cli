@@ -5,3 +5,4 @@ export * from './info.action.js';
 export * from './new.action.js';
 export * from './start.action.js';
 export * from './add.action.js';
+export * from './deploy.action.js';

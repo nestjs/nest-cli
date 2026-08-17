@@ -38,6 +38,11 @@ export class NewCommand extends AbstractCommand {
         false,
       )
       .option('--format', 'Format generated files using Prettier.', false)
+      .option('--observe', 'Auto-configure observability with @nestjs/observe.')
+      .option(
+        '--no-observe',
+        'Skip observability setup without being prompted for it.',
+      )
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -75,6 +80,9 @@ export class NewCommand extends AbstractCommand {
           collection: options.collection,
           strict: options.strict,
           format: options.format === true,
+          // Stays undefined unless a flag was given, which is what tells the
+          // action to prompt instead of assuming an answer.
+          observe: options.observe,
         };
 
         await this.action.handle(context);

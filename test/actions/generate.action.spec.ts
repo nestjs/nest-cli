@@ -55,9 +55,10 @@ describe('GenerateAction', () => {
     schematicOptions: SchematicOption[],
     name: string,
   ): SchematicOption | undefined =>
-    schematicOptions.find((opt) =>
-      opt.toCommandString().startsWith(`--${name}=`) ||
-      opt.toCommandString() === `--${name}`,
+    schematicOptions.find(
+      (opt) =>
+        opt.toCommandString().startsWith(`--${name}=`) ||
+        opt.toCommandString() === `--${name}`,
     );
 
   beforeEach(() => {
@@ -95,12 +96,16 @@ describe('GenerateAction', () => {
       expect(crudOption!.toCommandString()).toBe('--crud');
     });
 
-    it('should not forward --crud when falsy', async () => {
+    it('should forward --crud=false when explicitly disabled', async () => {
+      // Dropping an explicit `false` lets the schematic fall back to its own
+      // default (crud: true) and generate the scaffolding the user opted out of.
       await action.handle(baseContext({ crud: false }));
 
       const [, schematicOptions] = mockExecute.mock.calls[0];
-      const crudOption = findOption(schematicOptions, 'crud');
-      expect(crudOption).toBeUndefined();
+      const crudOption = schematicOptions.find(
+        (opt: SchematicOption) => opt.toCommandString() === '--crud=false',
+      );
+      expect(crudOption).toBeDefined();
     });
 
     it('should not forward --crud when undefined', async () => {

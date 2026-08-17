@@ -1,5 +1,6 @@
 import { builtinModules, createRequire } from 'module';
 import { join } from 'path';
+import type * as ts from 'typescript';
 import type { TsconfigPathsPlugin as TsconfigPathsPluginType } from 'tsconfig-paths-webpack-plugin';
 import type nodeExternals from 'webpack-node-externals';
 import { defaultTsconfigFilename } from '../../configuration/defaults.js';
@@ -47,14 +48,23 @@ export const rspackDefaultsFactory = (
   tsConfigFile = defaultTsconfigFilename,
   plugins: MultiNestCompilerPlugins,
   isEsm = false,
+  tsOptions?: ts.CompilerOptions,
 ): Record<string, any> => {
   const { nodeExternals: externals, TsconfigPathsPlugin } = loadRspackDeps();
 
   const isPluginRegistered = isAnyPluginRegistered(plugins);
+  const sourceMaps =
+    tsOptions?.sourceMap || (tsOptions?.inlineSourceMap && 'inline');
+  const devtool =
+    sourceMaps === 'inline'
+      ? 'inline-source-map'
+      : sourceMaps
+        ? 'source-map'
+        : false;
 
   const rspackConfiguration: Record<string, any> = {
     entry: appendTsExtension(join(sourceRoot, entryFilename)),
-    devtool: isDebugEnabled ? 'inline-source-map' : false,
+    devtool,
     target: 'node',
     output: {
       filename: join(relativeSourceRoot, `${entryFilename}.js`).replace(
@@ -109,7 +119,7 @@ export const rspackDefaultsFactory = (
                   },
                   target: 'es2021',
                 },
-                sourceMaps: isDebugEnabled,
+                sourceMaps,
               },
             },
           ],

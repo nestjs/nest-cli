@@ -83,4 +83,134 @@ describe('StartCommand', () => {
       expect(action.handle).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('--emit-declarations', () => {
+    it('leaves emitDeclarations undefined when the flag is absent', async () => {
+      // A materialized `false` would win over compilerOptions.emitDeclarations
+      // in getValueOrDefault and permanently shadow the nest-cli.json setting.
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'start']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ emitDeclarations: undefined }),
+      );
+    });
+
+    it('forwards true when the flag is passed', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--emit-declarations',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ emitDeclarations: true }),
+      );
+    });
+  });
+
+  describe('pass-through of unknown flags', () => {
+    // `nest start` forwards flags it does not recognise to the application,
+    // which requires both allowUnknownOption (so they are not rejected) and
+    // allowExcessArguments (because commander collects them into args).
+    it('accepts an unknown flag and forwards it as an extra flag', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'start', '--custom-flag']);
+
+      expect(exitSpy).not.toHaveBeenCalled();
+      expect(action.handle.mock.calls[0][0].extraFlags).toContain(
+        '--custom-flag',
+      );
+    });
+
+    it('accepts unknown flags alongside an app name', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        'my-app',
+        '--custom-flag',
+        '--another',
+      ]);
+
+      expect(exitSpy).not.toHaveBeenCalled();
+      const context = action.handle.mock.calls[0][0];
+      expect(context.app).toBe('my-app');
+      expect(context.extraFlags).toEqual(
+        expect.arrayContaining(['--custom-flag', '--another']),
+      );
+    });
+  });
+
+  describe('remaining options', () => {
+    it('forwards --exec, --sourceRoot and --entryFile', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--exec',
+        'bun',
+        '--sourceRoot',
+        'apps/api/src',
+        '--entryFile',
+        'bootstrap',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exec: 'bun',
+          sourceRoot: 'apps/api/src',
+          entryFile: 'bootstrap',
+        }),
+      );
+    });
+
+    it('collects repeated --env-file flags into an array', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--env-file',
+        '.env',
+        '--env-file',
+        '.env.local',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ envFile: ['.env', '.env.local'] }),
+      );
+    });
+
+    it('defaults shell to true and disables it with --no-shell', async () => {
+      const program = buildProgram(action);
+      await program.parseAsync(['node', 'nest', 'start']);
+      expect(action.handle.mock.calls[0][0].shell).toBe(true);
+
+      action = new FakeAction();
+      const next = buildProgram(action);
+      await next.parseAsync(['node', 'nest', 'start', '--no-shell']);
+      expect(action.handle.mock.calls[0][0].shell).toBe(false);
+    });
+
+    it('turns off webpack when --tsc is passed', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'start', '--webpack', '--tsc']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ webpack: false }),
+      );
+    });
+  });
 });

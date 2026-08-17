@@ -42,7 +42,14 @@ export class BuildAction extends AbstractAction {
   protected readonly loader: ConfigurationLoader = new NestConfigurationLoader(
     this.fileSystemReader,
   );
-  protected readonly assetsManager = new AssetsManager();
+  /**
+   * Each app build owns its assets manager: `closeWatchers()` closes every
+   * watcher it holds, so a manager shared across a `--parallel` run would let
+   * the first app to finish tear down the watchers of apps still building.
+   */
+  protected createAssetsManager(): AssetsManager {
+    return new AssetsManager();
+  }
 
   public async handle(context: any) {
     const { apps, watch, watchAssets } = context as BuildCommandContext;
@@ -83,15 +90,42 @@ export class BuildAction extends AbstractAction {
       appNames.push(undefined);
     }
 
-    const buildApp = async (appName: string | undefined) => {
+    const appBuildContexts = appNames.map((appName) => {
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
       const {
         exclude,
         options: tsOptions,
         fileNames: tsFileNames,
       } = this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
-      const outDir = tsOptions.outDir || defaultOutDir;
-      const tsRootDir = getEffectiveRootDir(tsOptions.rootDir, tsFileNames);
+      return {
+        appName,
+        pathToTsconfig,
+        tsOptions,
+        exclude,
+        outDir: tsOptions.outDir || defaultOutDir,
+        tsRootDir: getEffectiveRootDir(tsOptions.rootDir, tsFileNames),
+      };
+    });
+
+    // Every output directory is cleaned before any app starts emitting.
+    // Cleaning inside the per-app build deletes output another app already
+    // wrote whenever projects share an outDir (the default monorepo layout):
+    // a race under `--parallel`, and deterministic clobbering under `--all`.
+    for (const { appName, outDir, tsOptions } of appBuildContexts) {
+      await deleteOutDirIfEnabled(configuration, appName, outDir, tsOptions);
+    }
+
+    this.warnOnIgnoredLibraryAssets(configuration, appNames);
+
+    const buildApp = async ({
+      appName,
+      pathToTsconfig,
+      tsOptions,
+      exclude,
+      outDir,
+      tsRootDir,
+    }: (typeof appBuildContexts)[number]) => {
+      const assetsManager = this.createAssetsManager();
 
       const isWebpackEnabled = getValueOrDefault<boolean>(
         configuration,
@@ -104,8 +138,7 @@ export class BuildAction extends AbstractAction {
         ? { type: 'webpack' }
         : getBuilder(configuration, options, appName);
 
-      await deleteOutDirIfEnabled(configuration, appName, outDir, tsOptions);
-      this.assetsManager.copyAssets(
+      assetsManager.copyAssets(
         configuration,
         appName,
         outDir,
@@ -113,7 +146,6 @@ export class BuildAction extends AbstractAction {
         onSuccess,
         tsRootDir,
       );
-      this.warnOnIgnoredLibraryAssets(configuration, appName);
 
       const typeCheck = getValueOrDefault<boolean>(
         configuration,
@@ -152,6 +184,7 @@ export class BuildAction extends AbstractAction {
             pathToTsconfig,
             appName,
             onSuccess,
+            assetsManager,
           );
           break;
         case 'webpack':
@@ -163,6 +196,7 @@ export class BuildAction extends AbstractAction {
             isDebugEnabled,
             watchMode,
             onSuccess,
+            assetsManager,
           );
           break;
         case 'rspack':
@@ -171,9 +205,11 @@ export class BuildAction extends AbstractAction {
             appName,
             options,
             pathToTsconfig,
+            tsOptions,
             isDebugEnabled,
             watchMode,
             onSuccess,
+            assetsManager,
           );
           break;
         case 'swc':
@@ -187,29 +223,30 @@ export class BuildAction extends AbstractAction {
             exclude,
             emitDeclarations,
             onSuccess,
+            assetsManager,
           );
           break;
       }
     };
 
     const parallel = options.parallel;
-    if (parallel && appNames.length > 1) {
-      // Coerce to a positive integer; fall back to unlimited (= appNames.length)
-      // for any non-positive or non-finite value to guard against an infinite
-      // loop when `i += concurrency` would never advance.
+    if (parallel && appBuildContexts.length > 1) {
+      // Coerce to a positive integer; fall back to unlimited for any
+      // non-positive or non-finite value to guard against an infinite loop
+      // when `i += concurrency` would never advance.
       const requested =
-        typeof parallel === 'number' ? parallel : appNames.length;
+        typeof parallel === 'number' ? parallel : appBuildContexts.length;
       const concurrency =
         Number.isFinite(requested) && requested >= 1
           ? Math.floor(requested)
-          : appNames.length;
-      for (let i = 0; i < appNames.length; i += concurrency) {
-        const chunk = appNames.slice(i, i + concurrency);
-        await Promise.all(chunk.map((appName) => buildApp(appName)));
+          : appBuildContexts.length;
+      for (let i = 0; i < appBuildContexts.length; i += concurrency) {
+        const chunk = appBuildContexts.slice(i, i + concurrency);
+        await Promise.all(chunk.map((context) => buildApp(context)));
       }
     } else {
-      for (const appName of appNames) {
-        await buildApp(appName);
+      for (const context of appBuildContexts) {
+        await buildApp(context);
       }
     }
   }
@@ -224,6 +261,7 @@ export class BuildAction extends AbstractAction {
     tsConfigExclude: string[],
     emitDeclarations: boolean,
     onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
   ) {
     const { SwcCompiler } = await import('../lib/compiler/swc/swc-compiler.js');
     const swc = new SwcCompiler(this.pluginsLoader);
@@ -245,7 +283,7 @@ export class BuildAction extends AbstractAction {
         emitDeclarations,
         tsOptions,
         tsConfigExclude,
-        assetsManager: this.assetsManager,
+        assetsManager,
         silent: isSilent,
       },
       onSuccess,
@@ -260,6 +298,7 @@ export class BuildAction extends AbstractAction {
     debug: boolean,
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
   ) {
     const { WebpackCompiler } =
       await import('../lib/compiler/webpack-compiler.js');
@@ -283,7 +322,7 @@ export class BuildAction extends AbstractAction {
         webpackConfigFactoryOrConfig,
         debug,
         watchMode,
-        assetsManager: this.assetsManager,
+        assetsManager,
       },
       onSuccess,
     );
@@ -296,9 +335,11 @@ export class BuildAction extends AbstractAction {
     pathToTsconfig: string,
     appName: string | undefined,
     onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
   ) {
     if (watchMode) {
-      const { WatchCompiler } = await import('../lib/compiler/watch-compiler.js');
+      const { WatchCompiler } =
+        await import('../lib/compiler/watch-compiler.js');
       const watchCompiler = new WatchCompiler(
         this.pluginsLoader,
         this.tsConfigProvider,
@@ -328,7 +369,7 @@ export class BuildAction extends AbstractAction {
         undefined,
         onSuccess,
       );
-      await this.assetsManager.closeWatchers();
+      await assetsManager.closeWatchers();
     }
   }
 
@@ -352,11 +393,14 @@ export class BuildAction extends AbstractAction {
     appName: string | undefined,
     options: Record<string, any>,
     pathToTsconfig: string,
+    tsOptions: TsConfigProviderOutput['options'],
     debug: boolean,
     watchMode: boolean,
     onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
   ) {
-    const { RspackCompiler } = await import('../lib/compiler/rspack-compiler.js');
+    const { RspackCompiler } =
+      await import('../lib/compiler/rspack-compiler.js');
     const rspackCompiler = new RspackCompiler(this.pluginsLoader);
 
     const rspackPath =
@@ -377,7 +421,8 @@ export class BuildAction extends AbstractAction {
         rspackConfigFactoryOrConfig,
         debug,
         watchMode,
-        assetsManager: this.assetsManager,
+        tsOptions,
+        assetsManager,
       },
       onSuccess,
     );
@@ -397,15 +442,34 @@ export class BuildAction extends AbstractAction {
 
   private warnOnIgnoredLibraryAssets(
     configuration: Required<Configuration>,
-    appName: string | undefined,
+    appNames: (string | undefined)[],
   ) {
     if (!configuration.projects) {
       return;
     }
+
+    // A library whose assets any of the apps being built opts into via
+    // `includeLibraryAssets` *is* copied, so warning about it would be wrong.
+    const includedLibraries = new Set<string>();
+    for (const appName of appNames) {
+      const included =
+        getValueOrDefault<string[]>(
+          configuration,
+          'compilerOptions.includeLibraryAssets',
+          appName,
+        ) || [];
+      for (const libraryName of included) {
+        includedLibraries.add(libraryName);
+      }
+    }
+
     for (const [projectName, project] of Object.entries(
       configuration.projects,
     )) {
-      if (projectName === appName) {
+      if (
+        appNames.includes(projectName) ||
+        includedLibraries.has(projectName)
+      ) {
         continue;
       }
       if (
@@ -415,7 +479,7 @@ export class BuildAction extends AbstractAction {
         console.warn(
           INFO_PREFIX +
             ` Assets configured for library "${projectName}" will not be copied during application build.` +
-            ` Build the library separately or move assets to the application configuration.`,
+            ` Add it to "compilerOptions.includeLibraryAssets" or build the library separately.`,
         );
       }
     }

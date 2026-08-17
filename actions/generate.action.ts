@@ -153,8 +153,7 @@ const mapContextToSchematicOptions = (
     options.push(new SchematicOption('name', context.name));
   if (context.path !== undefined)
     options.push(new SchematicOption('path', context.path));
-  if (context.dryRun)
-    options.push(new SchematicOption('dry-run', true));
+  if (context.dryRun) options.push(new SchematicOption('dry-run', true));
   if (context.collection !== undefined)
     options.push(new SchematicOption('collection', context.collection));
   if (context.project !== undefined)
@@ -163,8 +162,8 @@ const mapContextToSchematicOptions = (
     options.push(new SchematicOption('skipImport', context.skipImport));
   if (context.type !== undefined)
     options.push(new SchematicOption('type', context.type));
-  if (context.crud === true)
-    options.push(new SchematicOption('crud', true));
+  if (context.crud !== undefined)
+    options.push(new SchematicOption('crud', context.crud));
   // 'schematic', 'spec', 'flat', 'specFileSuffix' are handled separately
   return options;
 };

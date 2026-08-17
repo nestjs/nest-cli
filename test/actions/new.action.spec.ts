@@ -19,6 +19,11 @@ vi.mock('fs', async () => {
 vi.mock('@inquirer/prompts', () => ({
   input: vi.fn(),
   select: vi.fn(),
+  confirm: vi.fn(),
+}));
+
+vi.mock('../../lib/utils/is-interactive.js', () => ({
+  isInteractive: vi.fn(() => false),
 }));
 
 const mockExecute = vi.fn().mockResolvedValue(undefined);
@@ -57,6 +62,8 @@ import { NewAction, retrieveCols } from '../../actions/new.action.js';
 import { NewCommandContext } from '../../commands/context/new.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
 import { execSync } from 'child_process';
+import { confirm } from '@inquirer/prompts';
+import { isInteractive } from '../../lib/utils/is-interactive.js';
 
 describe('NewAction', () => {
   let action: NewAction;
@@ -72,7 +79,9 @@ describe('NewAction', () => {
     process.exit = originalExit;
   });
 
-  const baseContext = (overrides: Partial<NewCommandContext> = {}): NewCommandContext => ({
+  const baseContext = (
+    overrides: Partial<NewCommandContext> = {},
+  ): NewCommandContext => ({
     name: 'test-project',
     directory: undefined,
     dryRun: false,
@@ -123,9 +132,8 @@ describe('NewAction', () => {
 
       const [, schematicOptions] = mockExecute.mock.calls[0];
 
-      const skipTestsOption = schematicOptions.find(
-        (opt: SchematicOption) =>
-          opt.toCommandString().includes('skip-tests'),
+      const skipTestsOption = schematicOptions.find((opt: SchematicOption) =>
+        opt.toCommandString().includes('skip-tests'),
       );
       expect(skipTestsOption).toBeUndefined();
     });
@@ -188,6 +196,63 @@ describe('NewAction', () => {
       });
 
       expect(retrieveCols()).toBe(80);
+    });
+  });
+
+  describe('observability (@nestjs/observe)', () => {
+    const observeOption = () => {
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      return (schematicOptions as SchematicOption[]).find((opt) =>
+        opt.toCommandString().startsWith('--observe'),
+      );
+    };
+
+    it('forwards --observe to the application schematic when enabled', async () => {
+      await action.handle(baseContext({ observe: true }));
+
+      expect(observeOption()?.toCommandString()).toBe('--observe');
+    });
+
+    it('sends nothing to the schematic when disabled', async () => {
+      await action.handle(baseContext({ observe: false }));
+
+      expect(observeOption()).toBeUndefined();
+    });
+
+    it('does not prompt when the flag already answered the question', async () => {
+      await action.handle(baseContext({ observe: true }));
+
+      expect(confirm).not.toHaveBeenCalled();
+    });
+
+    it('prompts when neither flag was passed and a TTY is available', async () => {
+      vi.mocked(isInteractive).mockReturnValue(true);
+      vi.mocked(confirm).mockResolvedValue(true as never);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(observeOption()?.toCommandString()).toBe('--observe');
+    });
+
+    it('respects a declined prompt', async () => {
+      vi.mocked(isInteractive).mockReturnValue(true);
+      vi.mocked(confirm).mockResolvedValue(false as never);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(observeOption()).toBeUndefined();
+    });
+
+    it('skips the prompt without a TTY so scripted runs cannot hang', async () => {
+      // `nest new` is run non-interactively by CI and by the e2e suite; a
+      // prompt there would block forever with nobody to answer it.
+      vi.mocked(isInteractive).mockReturnValue(false);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(observeOption()).toBeUndefined();
     });
   });
 });

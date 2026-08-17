@@ -63,6 +63,44 @@ describe('getEffectiveRootDir', () => {
       expect(result).toBe(normalize('/project/src/feature'));
     });
 
+    it('ignores declaration files when computing the common dir', () => {
+      // tsc excludes .d.ts inputs from the common source directory because
+      // they produce no emit. Including them would hoist the root to
+      // /project and push every copied asset into a dist/src subdirectory.
+      const result = getEffectiveRootDir(
+        undefined,
+        [
+          '/project/src/main.ts',
+          '/project/src/app.module.ts',
+          '/project/typings/global.d.ts',
+        ],
+        cwd,
+      );
+      expect(result).toBe(normalize('/project/src'));
+    });
+
+    it('ignores .d.mts and .d.cts declaration files as well', () => {
+      const result = getEffectiveRootDir(
+        undefined,
+        [
+          '/project/src/main.ts',
+          '/project/typings/a.d.mts',
+          '/project/typings/b.d.cts',
+        ],
+        cwd,
+      );
+      expect(result).toBe(normalize('/project/src'));
+    });
+
+    it('returns undefined when every input is a declaration file', () => {
+      const result = getEffectiveRootDir(
+        undefined,
+        ['/project/typings/a.d.ts', '/project/typings/b.d.ts'],
+        cwd,
+      );
+      expect(result).toBeUndefined();
+    });
+
     it('resolves relative file paths against cwd before computing common dir', () => {
       const result = getEffectiveRootDir(
         undefined,

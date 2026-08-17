@@ -82,7 +82,68 @@ function createSpecWithDeclarations(
   return output;
 }
 
+/**
+ * Runs the transformer over an import whose module specifier is a *synthetic*
+ * string literal — one produced by another transformer rather than parsed from
+ * source. Those nodes have no position in the file, so calling `getText()` on
+ * them throws; the transformer must read `.text` instead.
+ */
+function transformSyntheticImport(
+  baseUrl: string,
+  compilerOptions?: ts.CompilerOptions,
+) {
+  const options: ts.CompilerOptions = {
+    baseUrl,
+    outDir: path.join(baseUrl, 'dist'),
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.CommonJS,
+    ...compilerOptions,
+  };
+
+  const sourceFile = ts.createSourceFile(
+    path.join(baseUrl, 'src/synthetic-main.ts'),
+    'import value from "~/foo";',
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const originalImport = sourceFile.statements[0] as ts.ImportDeclaration;
+  const syntheticSpecifier = ts.factory.createStringLiteral('~/foo');
+  syntheticSpecifier.getText = () => {
+    throw new Error('getText should not be called for synthetic literals');
+  };
+  (syntheticSpecifier as any).parent = originalImport.moduleSpecifier.parent;
+
+  const updatedImport = ts.factory.updateImportDeclaration(
+    originalImport,
+    originalImport.modifiers,
+    originalImport.importClause,
+    syntheticSpecifier,
+    originalImport.assertClause,
+  );
+  const updatedSourceFile = ts.factory.updateSourceFile(sourceFile, [
+    updatedImport,
+  ]);
+  const transformer = tsconfigPathsBeforeHookFactory(options);
+  const transformed = ts.transform(updatedSourceFile, [transformer])
+    .transformed[0] as ts.SourceFile;
+
+  return (transformed.statements[0] as ts.ImportDeclaration)
+    .moduleSpecifier as ts.StringLiteral;
+}
+
 describe('tsconfig paths hooks', () => {
+  describe('synthetic module specifiers', () => {
+    it('should rewrite aliased synthetic module specifiers without reading getText()', () => {
+      const moduleSpecifier = transformSyntheticImport(
+        path.join(__dirname, './fixtures/aliased-imports'),
+        { paths: { '~/*': ['./src/*'] } },
+      );
+
+      expect(moduleSpecifier.text).toBe('./foo');
+    });
+  });
+
   describe('CJS output (module: CommonJS)', () => {
     it('should remove type imports', () => {
       const output = createSpec(
