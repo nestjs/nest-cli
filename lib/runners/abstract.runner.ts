@@ -1,7 +1,6 @@
 import { red } from 'ansis';
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
-import { platform } from 'os';
-import { MESSAGES } from '../ui';
+import { MESSAGES } from '../ui/index.js';
 
 export class AbstractRunner {
   constructor(
@@ -15,30 +14,48 @@ export class AbstractRunner {
     cwd: string = process.cwd(),
   ): Promise<null | string> {
     const args: string[] = [command];
-    const isWindows = platform() === 'win32';
     const options: SpawnOptions = {
       cwd,
       stdio: collect ? 'pipe' : 'inherit',
       shell: true,
     };
     return new Promise<null | string>((resolve, reject) => {
-      const command = [this.binary, ...this.args, ...args].join(' ');
-      const child: ChildProcess = spawn(command, options);
+      const fullCommand = [this.binary, ...this.args, ...args].join(' ');
+      const child: ChildProcess = spawn(fullCommand, options);
       if (collect) {
-        child.stdout!.on('data', (data) =>
-          resolve(data.toString().replace(/\r\n|\n/, '')),
-        );
+        const chunks: Buffer[] = [];
+        const errorChunks: Buffer[] = [];
+        child.stdout!.on('data', (data) => chunks.push(data));
+        // stderr is piped in collect mode and must be consumed too: an unread
+        // pipe blocks the child once the OS buffer fills (e.g. npm printing
+        // peer-dependency warnings), and `close` would then never fire.
+        child.stderr!.on('data', (data) => errorChunks.push(data));
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve(
+              Buffer.concat(chunks)
+                .toString()
+                .replace(/\r\n|\n/g, ''),
+            );
+          } else {
+            console.error(red(MESSAGES.RUNNER_EXECUTION_ERROR(fullCommand)));
+            const errorOutput = Buffer.concat(errorChunks).toString().trim();
+            if (errorOutput) {
+              console.error(red(errorOutput));
+            }
+            reject();
+          }
+        });
+      } else {
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve(null);
+          } else {
+            console.error(red(MESSAGES.RUNNER_EXECUTION_ERROR(fullCommand)));
+            reject();
+          }
+        });
       }
-      child.on('close', (code) => {
-        if (code === 0) {
-          resolve(null);
-        } else {
-          console.error(
-            red(MESSAGES.RUNNER_EXECUTION_ERROR(`${this.binary} ${command}`)),
-          );
-          reject();
-        }
-      });
     });
   }
 

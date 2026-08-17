@@ -1,10 +1,10 @@
 import * as ts from 'typescript';
-import { Configuration } from '../configuration';
-import { BaseCompiler } from './base-compiler';
-import { TsConfigProvider } from './helpers/tsconfig-provider';
-import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook';
-import { PluginsLoader } from './plugins/plugins-loader';
-import { TypeScriptBinaryLoader } from './typescript-loader';
+import { Configuration } from '../configuration/index.js';
+import { BaseCompiler } from './base-compiler.js';
+import { TsConfigProvider } from './helpers/tsconfig-provider.js';
+import { tsconfigPathsBeforeHookFactory } from './hooks/tsconfig-paths.hook.js';
+import { PluginsLoader } from './plugins/plugins-loader.js';
+import { TypeScriptBinaryLoader } from './typescript-loader.js';
 
 export class Compiler extends BaseCompiler {
   constructor(
@@ -19,7 +19,7 @@ export class Compiler extends BaseCompiler {
     configuration: Required<Configuration>,
     tsConfigPath: string,
     appName: string | undefined,
-    _extras: any,
+    _extras: unknown,
     onSuccess?: () => void,
   ) {
     const tsBinary = this.typescriptLoader.load();

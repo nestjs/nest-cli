@@ -1,8 +1,11 @@
 import { rm } from 'fs/promises';
-import { isAbsolute, relative, resolve } from 'path';
 import * as ts from 'typescript';
-import { Configuration } from '../../configuration';
-import { getValueOrDefault } from './get-value-or-default';
+import { Configuration } from '../../configuration/index.js';
+import { getValueOrDefault } from './get-value-or-default.js';
+import {
+  areOutsidePathsAllowed,
+  assertPathInsideProject,
+} from './path-confinement.js';
 
 export async function deleteOutDirIfEnabled(
   configuration: Required<Configuration>,
@@ -19,39 +22,21 @@ export async function deleteOutDirIfEnabled(
     return;
   }
 
-  const allowOutsidePaths = getValueOrDefault<boolean>(
-    configuration,
-    'compilerOptions.allowOutsidePaths',
-    appName,
-  );
-  const shouldValidate = allowOutsidePaths === false;
+  const shouldValidate = !areOutsidePathsAllowed(configuration, appName);
+  const tsBuildInfoFile = tsOptions?.tsBuildInfoFile;
 
-  const resolvedOutDir = shouldValidate
-    ? resolvePathInsideProject(dirPath, 'outDir')
+  // Both paths are validated before anything is removed, so that a rejected
+  // "tsBuildInfoFile" cannot leave a half-deleted output directory behind.
+  const outDirToDelete = shouldValidate
+    ? assertPathInsideProject(dirPath, 'outDir')
     : dirPath;
-  const resolvedTsBuildInfoFile =
-    shouldValidate && tsOptions?.tsBuildInfoFile
-      ? resolvePathInsideProject(tsOptions.tsBuildInfoFile, 'tsBuildInfoFile')
-      : tsOptions?.tsBuildInfoFile;
+  const tsBuildInfoFileToDelete =
+    shouldValidate && tsBuildInfoFile
+      ? assertPathInsideProject(tsBuildInfoFile, 'tsBuildInfoFile')
+      : tsBuildInfoFile;
 
-  await rm(resolvedOutDir, { recursive: true, force: true });
-  if (resolvedTsBuildInfoFile) {
-    await rm(resolvedTsBuildInfoFile, { force: true });
+  await rm(outDirToDelete, { recursive: true, force: true });
+  if (tsBuildInfoFileToDelete) {
+    await rm(tsBuildInfoFileToDelete, { force: true });
   }
-}
-
-function resolvePathInsideProject(pathToDelete: string, propertyName: string) {
-  const projectRoot = process.cwd();
-  const resolvedPath = resolve(projectRoot, pathToDelete);
-  const relativePath = relative(projectRoot, resolvedPath);
-  const isProjectRoot = relativePath === '';
-  const isOutsideProject =
-    relativePath.startsWith('..') || isAbsolute(relativePath);
-
-  if (isProjectRoot || isOutsideProject) {
-    throw new Error(
-      `Refusing to delete "${propertyName}" path outside of or equal to the project directory: ${pathToDelete}`,
-    );
-  }
-  return resolvedPath;
 }

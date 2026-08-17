@@ -1,7 +1,7 @@
 import { dirname, join, normalize, relative } from 'path';
-import { Configuration } from '../configuration';
-import { getValueOrDefault } from './helpers/get-value-or-default';
-import { PluginsLoader } from './plugins/plugins-loader';
+import { Configuration } from '../configuration/index.js';
+import { getValueOrDefault } from './helpers/get-value-or-default.js';
+import { PluginsLoader } from './plugins/plugins-loader.js';
 
 export abstract class BaseCompiler<T = Record<string, any>> {
   constructor(private readonly pluginsLoader: PluginsLoader) {}
@@ -12,9 +12,9 @@ export abstract class BaseCompiler<T = Record<string, any>> {
     appName: string | undefined,
     extras?: T,
     onSuccess?: () => void,
-  ): any;
+  ): void | Promise<void>;
 
-  public loadPlugins(
+  protected loadPlugins(
     configuration: Required<Configuration>,
     tsConfigPath: string,
     appName: string | undefined,
@@ -34,7 +34,7 @@ export abstract class BaseCompiler<T = Record<string, any>> {
     return plugins;
   }
 
-  public getPathToSource(
+  protected getPathToSource(
     configuration: Required<Configuration>,
     tsConfigPath: string,
     appName: string | undefined,

@@ -1,6 +1,5 @@
-import { Input } from '../../../commands';
-import { Builder, Configuration } from '../../configuration';
-import { getValueOrDefault } from './get-value-or-default';
+import { Builder, Configuration } from '../../configuration/index.js';
+import { getValueOrDefault } from './get-value-or-default.js';
 
 /**
  * Returns the path to the webpack configuration file to use for the given application.
@@ -11,7 +10,7 @@ import { getValueOrDefault } from './get-value-or-default';
  */
 export function getWebpackConfigPath(
   configuration: Required<Configuration>,
-  cmdOptions: Input[],
+  cmdOptions: Record<string, any>,
   appName: string | undefined,
 ) {
   let webpackPath = getValueOrDefault<string | undefined>(

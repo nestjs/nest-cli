@@ -1,12 +1,16 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { deleteOutDirIfEnabled } from '../../../../lib/compiler/helpers/delete-out-dir';
-import { Configuration } from '../../../../lib/configuration';
+import { resolve } from 'path';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { deleteOutDirIfEnabled } from '../../../../lib/compiler/helpers/delete-out-dir.js';
+import { Configuration } from '../../../../lib/configuration/index.js';
 
-jest.mock('fs/promises');
+vi.mock('fs/promises', () => ({
+  rm: vi.fn(),
+}));
 
-const mockedRm = fs.rm as jest.MockedFunction<typeof fs.rm>;
-const resolveFromCwd = (value: string) => path.resolve(process.cwd(), value);
+const mockedRm = vi.mocked(fs.rm);
+
+const fromProjectRoot = (value: string) => resolve(process.cwd(), value);
 
 function createConfiguration(
   deleteOutDir: boolean,
@@ -22,7 +26,7 @@ function createConfiguration(
     collection: '@nestjs/schematics',
     compilerOptions: {
       deleteOutDir,
-      ...(allowOutsidePaths !== undefined && { allowOutsidePaths }),
+      ...(allowOutsidePaths === undefined ? {} : { allowOutsidePaths }),
     },
     generateOptions: {},
   };
@@ -43,7 +47,7 @@ describe('deleteOutDirIfEnabled', () => {
   it('should delete the output directory when deleteOutDir is enabled', async () => {
     const config = createConfiguration(true);
     await deleteOutDirIfEnabled(config, undefined, 'dist');
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
@@ -56,12 +60,12 @@ describe('deleteOutDirIfEnabled', () => {
     };
     await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
     expect(mockedRm).toHaveBeenCalledTimes(2);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
     expect(mockedRm).toHaveBeenCalledWith(
-      './node_modules/.tmp/tsconfig.tsbuildinfo',
+      fromProjectRoot('./node_modules/.tmp/tsconfig.tsbuildinfo'),
       { force: true },
     );
   });
@@ -70,7 +74,7 @@ describe('deleteOutDirIfEnabled', () => {
     const config = createConfiguration(true);
     await deleteOutDirIfEnabled(config, undefined, 'dist');
     expect(mockedRm).toHaveBeenCalledTimes(1);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
@@ -81,101 +85,48 @@ describe('deleteOutDirIfEnabled', () => {
     const tsOptions = {};
     await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
     expect(mockedRm).toHaveBeenCalledTimes(1);
-    expect(mockedRm).toHaveBeenCalledWith('dist', {
+    expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
     });
   });
 
-  it('should allow outside paths by default (no validation)', async () => {
-    const config = createConfiguration(true);
-    const outsidePath = path.join('..', 'outside-dist');
-    await deleteOutDirIfEnabled(config, undefined, outsidePath);
-    expect(mockedRm).toHaveBeenCalledWith(outsidePath, {
-      recursive: true,
-      force: true,
-    });
-  });
-
-  it('should allow outside paths when allowOutsidePaths is true', async () => {
-    const config = createConfiguration(true, true);
-    const outsidePath = path.join('..', 'outside-dist');
-    await deleteOutDirIfEnabled(config, undefined, outsidePath);
-    expect(mockedRm).toHaveBeenCalledWith(outsidePath, {
-      recursive: true,
-      force: true,
-    });
-  });
-
-  describe('with allowOutsidePaths: false', () => {
-    it('should resolve and delete a valid internal path', async () => {
-      const config = createConfiguration(true, false);
-      await deleteOutDirIfEnabled(config, undefined, 'dist');
-      expect(mockedRm).toHaveBeenCalledWith(resolveFromCwd('dist'), {
-        recursive: true,
-        force: true,
-      });
+  describe('path confinement', () => {
+    it('should refuse to delete an outDir outside the project by default', async () => {
+      const config = createConfiguration(true);
+      await expect(
+        deleteOutDirIfEnabled(config, undefined, '../../etc'),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
+      expect(mockedRm).not.toHaveBeenCalled();
     });
 
-    it('should reject deleting the project root', async () => {
-      const config = createConfiguration(true, false);
+    it('should refuse to delete the project directory itself', async () => {
+      const config = createConfiguration(true);
       await expect(
         deleteOutDirIfEnabled(config, undefined, '.'),
-      ).rejects.toThrow(
-        'Refusing to delete "outDir" path outside of or equal to the project directory: .',
-      );
+      ).rejects.toThrow(/outside of or equal to the project directory/);
       expect(mockedRm).not.toHaveBeenCalled();
     });
 
-    it('should reject deleting a parent directory via relative traversal', async () => {
-      const config = createConfiguration(true, false);
-      const outsidePath = path.join('..', 'outside-dist');
+    it('should refuse to delete a tsBuildInfoFile outside the project', async () => {
+      const config = createConfiguration(true);
       await expect(
-        deleteOutDirIfEnabled(config, undefined, outsidePath),
-      ).rejects.toThrow(
-        `Refusing to delete "outDir" path outside of or equal to the project directory: ${outsidePath}`,
-      );
+        deleteOutDirIfEnabled(config, undefined, 'dist', {
+          tsBuildInfoFile: '../../etc/passwd',
+        }),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
+      // The outDir is validated together with tsBuildInfoFile, so a rejected
+      // build info path cannot leave a half-deleted output directory behind
       expect(mockedRm).not.toHaveBeenCalled();
     });
 
-    it('should reject deleting an absolute path outside the project', async () => {
-      const config = createConfiguration(true, false);
-      const outsidePath = path.resolve(process.cwd(), '..', 'outside-dist');
-      await expect(
-        deleteOutDirIfEnabled(config, undefined, outsidePath),
-      ).rejects.toThrow(
-        `Refusing to delete "outDir" path outside of or equal to the project directory: ${outsidePath}`,
-      );
-      expect(mockedRm).not.toHaveBeenCalled();
-    });
-
-    it('should reject a tsBuildInfoFile outside the project before deleting outDir', async () => {
-      const config = createConfiguration(true, false);
-      const outsidePath = path.join('..', 'tsconfig.tsbuildinfo');
-      const tsOptions = { tsBuildInfoFile: outsidePath };
-      await expect(
-        deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions),
-      ).rejects.toThrow(
-        `Refusing to delete "tsBuildInfoFile" path outside of or equal to the project directory: ${outsidePath}`,
-      );
-      expect(mockedRm).not.toHaveBeenCalled();
-    });
-
-    it('should resolve and delete tsBuildInfoFile when inside the project', async () => {
-      const config = createConfiguration(true, false);
-      const tsOptions = {
-        tsBuildInfoFile: './node_modules/.tmp/tsconfig.tsbuildinfo',
-      };
-      await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
-      expect(mockedRm).toHaveBeenCalledTimes(2);
-      expect(mockedRm).toHaveBeenCalledWith(resolveFromCwd('dist'), {
+    it('should delete outside paths when allowOutsidePaths is enabled', async () => {
+      const config = createConfiguration(true, true);
+      await deleteOutDirIfEnabled(config, undefined, '../outside-dist');
+      expect(mockedRm).toHaveBeenCalledWith('../outside-dist', {
         recursive: true,
         force: true,
       });
-      expect(mockedRm).toHaveBeenCalledWith(
-        resolveFromCwd('./node_modules/.tmp/tsconfig.tsbuildinfo'),
-        { force: true },
-      );
     });
   });
 });
