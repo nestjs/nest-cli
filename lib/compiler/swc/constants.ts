@@ -3,9 +3,6 @@ import { bgCyan, bgGreen, bgRed, cyan, green, red } from 'ansis';
 export const TSC_NO_ERRORS_MESSAGE =
   'Found 0 errors. Watching for file changes.';
 
-export const TSC_COMPILATION_STARTED_MESSAGE =
-  'Starting compilation in watch mode...';
-
 export const SWC_LOG_PREFIX = cyan('> ') + bgCyan.bold(' SWC ');
 
 export const TSC_LOG_PREFIX = cyan('> ') + bgCyan.bold(' TSC ');

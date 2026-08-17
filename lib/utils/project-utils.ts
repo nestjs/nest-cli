@@ -1,9 +1,8 @@
 import { select } from '@inquirer/prompts';
-import { Input } from '../../commands';
-import { getValueOrDefault } from '../compiler/helpers/get-value-or-default';
-import { Configuration, ProjectConfiguration } from '../configuration';
-import { generateSelect } from '../questions/questions';
-import { gracefullyExitOnPromptError } from './gracefully-exit-on-prompt-error';
+import { getValueOrDefault } from '../compiler/helpers/get-value-or-default.js';
+import { Configuration, ProjectConfiguration } from '../configuration/index.js';
+import { generateSelect } from '../questions/questions.js';
+import { gracefullyExitOnPromptError } from './gracefully-exit-on-prompt-error.js';
 
 export function shouldAskForProject(
   schematic: string,
@@ -135,15 +134,4 @@ export function moveDefaultProjectToStart(
   }
   projects.unshift(defaultProjectName);
   return projects;
-}
-
-export function hasValidOptionFlag(
-  queriedOptionName: string,
-  options: Input[],
-  queriedValue: string | number | boolean = true,
-): boolean {
-  return options.some(
-    (option: Input) =>
-      option.name === queriedOptionName && option.value === queriedValue,
-  );
 }

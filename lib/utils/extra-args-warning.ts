@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { ERROR_PREFIX } from '../ui';
+import { ERROR_PREFIX } from '../ui/index.js';
 
 /**
  * Checks if extra positional arguments were passed to a command

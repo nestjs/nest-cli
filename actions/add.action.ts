@@ -1,48 +1,41 @@
 import { red } from 'ansis';
-import { Input } from '../commands';
-import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default';
+import { AddCommandContext } from '../commands/index.js';
+import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import {
   AbstractPackageManager,
   PackageManagerFactory,
-} from '../lib/package-managers';
+} from '../lib/package-managers/index.js';
 import {
   AbstractCollection,
   CollectionFactory,
   SchematicOption,
-} from '../lib/schematics';
-import { MESSAGES } from '../lib/ui';
-import { loadConfiguration } from '../lib/utils/load-configuration';
+} from '../lib/schematics/index.js';
+import { MESSAGES } from '../lib/ui/index.js';
+import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
-  hasValidOptionFlag,
   moveDefaultProjectToStart,
   shouldAskForProject,
-} from '../lib/utils/project-utils';
-import { AbstractAction } from './abstract.action';
+} from '../lib/utils/project-utils.js';
+import { AbstractAction } from './abstract.action.js';
 
 const schematicName = 'nest-add';
 
 export class AddAction extends AbstractAction {
-  public async handle(inputs: Input[], options: Input[], extraFlags: string[]) {
-    const libraryName = this.getLibraryName(inputs);
+  public async handle(context: AddCommandContext) {
+    const libraryName = context.library;
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
-    const skipInstall = hasValidOptionFlag('skip-install', options);
     const packageInstallSuccess =
-      skipInstall || (await this.installPackage(collectionName, tagName));
+      context.skipInstall ||
+      (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
-      const sourceRootOption: Input = await this.getSourceRoot(
-        inputs.concat(options),
-      );
-      options.push(sourceRootOption);
-
-      await this.addLibrary(collectionName, options, extraFlags);
+      const sourceRoot = await this.getSourceRoot(context.project);
+      await this.addLibrary(collectionName, sourceRoot, context.extraFlags);
     } else {
       console.error(
-        red(
-          MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
-        ),
+        red(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName)),
       );
       throw new Error(
         MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName),
@@ -50,21 +43,18 @@ export class AddAction extends AbstractAction {
     }
   }
 
-  private async getSourceRoot(inputs: Input[]): Promise<Input> {
+  private async getSourceRoot(project?: string): Promise<string> {
     const configuration = await loadConfiguration();
     const configurationProjects = configuration.projects;
 
-    const appName = inputs.find((option) => option.name === 'project')!
-      .value as string;
-
-    let sourceRoot = appName
-      ? getValueOrDefault(configuration, 'sourceRoot', appName)
+    let sourceRoot = project
+      ? getValueOrDefault(configuration, 'sourceRoot', project)
       : configuration.sourceRoot;
 
     const shouldAsk = shouldAskForProject(
       schematicName,
       configurationProjects,
-      appName,
+      project ?? '',
     );
     if (shouldAsk) {
       const defaultLabel = ' [ Default ]';
@@ -90,12 +80,12 @@ export class AddAction extends AbstractAction {
         MESSAGES.LIBRARY_PROJECT_SELECTION_QUESTION,
         projects,
       )) as string;
-      const project = selectedProject.replace(defaultLabel, '');
-      if (project !== configuration.sourceRoot) {
-        sourceRoot = configurationProjects[project].sourceRoot;
+      const projectName = selectedProject.replace(defaultLabel, '');
+      if (projectName !== configuration.sourceRoot) {
+        sourceRoot = configurationProjects[projectName].sourceRoot;
       }
     }
-    return { name: 'sourceRoot', value: sourceRoot };
+    return sourceRoot;
   }
 
   private async installPackage(
@@ -108,7 +98,7 @@ export class AddAction extends AbstractAction {
     try {
       installResult = await manager.addProduction([collectionName], tagName);
     } catch (error) {
-      if (error && error.message) {
+      if (error instanceof Error) {
         console.error(red(error.message));
       }
     }
@@ -117,17 +107,12 @@ export class AddAction extends AbstractAction {
 
   private async addLibrary(
     collectionName: string,
-    options: Input[],
+    sourceRoot: string,
     extraFlags: string[],
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
     const schematicOptions: SchematicOption[] = [];
-    schematicOptions.push(
-      new SchematicOption(
-        'sourceRoot',
-        options.find((option) => option.name === 'sourceRoot')!.value as string,
-      ),
-    );
+    schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
 
     try {
@@ -139,22 +124,11 @@ export class AddAction extends AbstractAction {
         extraFlagsString,
       );
     } catch (error) {
-      if (error && error.message) {
+      if (error instanceof Error) {
         console.error(red(error.message));
-        return Promise.reject();
       }
+      throw error;
     }
-  }
-
-  private getLibraryName(inputs: Input[]): string {
-    const libraryInput: Input = inputs.find(
-      (input) => input.name === 'library',
-    ) as Input;
-
-    if (!libraryInput) {
-      throw new Error('No library found in command input');
-    }
-    return libraryInput.value as string;
   }
 
   private getPackageName(library: string): string {
@@ -173,8 +147,13 @@ export class AddAction extends AbstractAction {
   }
 
   private getTagName(packageName: string): string {
-    return packageName.startsWith('@')
+    // For scoped packages like "@scope/pkg@1.0.0", split('@', 3) yields
+    // ["", "scope/pkg", "1.0.0"]. For "@scope/pkg" with no version,
+    // the tag slot is undefined. Fall back to an empty string so the
+    // return type stays string and installPackage can substitute "latest".
+    const tag = packageName.startsWith('@')
       ? packageName.split('@', 3)[2]
       : packageName.split('@', 2)[1];
+    return tag ?? '';
   }
 }

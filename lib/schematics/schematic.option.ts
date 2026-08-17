@@ -1,4 +1,4 @@
-import { normalizeToKebabOrSnakeCase } from '../utils/formatting';
+import { normalizeToKebabOrSnakeCase } from '../utils/formatting.js';
 
 export class SchematicOption {
   constructor(
@@ -21,7 +21,10 @@ export class SchematicOption {
       }
     } else if (typeof this.value === 'boolean') {
       const str = this.normalizedName;
-      return this.value ? `--${str}` : `--no-${str}`;
+      // Must stay `=false` rather than `--no-<flag>`: schematics-cli parses
+      // with parseArgs under `allowNegative`, which turns `--no-x` into `x`
+      // with no value and then coerces it to true — inverting the option.
+      return this.value ? `--${str}` : `--${str}=false`;
     } else {
       return `--${this.normalizedName}=${this.value}`;
     }

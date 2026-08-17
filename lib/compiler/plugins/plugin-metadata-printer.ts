@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
-import { DeepPluginMeta } from '../interfaces/readonly-visitor.interface';
+import { DeepPluginMeta } from '../interfaces/readonly-visitor.interface.js';
 
 const SERIALIZED_METADATA_FILENAME = 'metadata.ts';
 const TYPE_IMPORT_VARIABLE_NAME = 't';

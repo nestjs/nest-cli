@@ -1,7 +1,6 @@
-import { Input } from '../../../commands';
-import { Builder, Configuration } from '../../configuration';
-import { getDefaultTsconfigPath } from '../../utils/get-default-tsconfig-path';
-import { getValueOrDefault } from './get-value-or-default';
+import { Builder, Configuration } from '../../configuration/index.js';
+import { getDefaultTsconfigPath } from '../../utils/get-default-tsconfig-path.js';
+import { getValueOrDefault } from './get-value-or-default.js';
 
 /**
  * Returns the path to the tsc configuration file to use for the given application.
@@ -12,7 +11,7 @@ import { getValueOrDefault } from './get-value-or-default';
  */
 export function getTscConfigPath(
   configuration: Required<Configuration>,
-  cmdOptions: Input[],
+  cmdOptions: Record<string, any>,
   appName: string | undefined,
 ) {
   let tsconfigPath = getValueOrDefault<string | undefined>(

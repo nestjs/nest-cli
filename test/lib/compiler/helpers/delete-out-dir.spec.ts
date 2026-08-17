@@ -1,10 +1,13 @@
 import * as fs from 'fs/promises';
-import { deleteOutDirIfEnabled } from '../../../../lib/compiler/helpers/delete-out-dir';
-import { Configuration } from '../../../../lib/configuration';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { deleteOutDirIfEnabled } from '../../../../lib/compiler/helpers/delete-out-dir.js';
+import { Configuration } from '../../../../lib/configuration/index.js';
 
-jest.mock('fs/promises');
+vi.mock('fs/promises', () => ({
+  rm: vi.fn(),
+}));
 
-const mockedRm = fs.rm as jest.MockedFunction<typeof fs.rm>;
+const mockedRm = vi.mocked(fs.rm);
 
 function createConfiguration(
   deleteOutDir: boolean,
