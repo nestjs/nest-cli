@@ -181,11 +181,26 @@ export function waitFor(
 }
 
 /**
- * Make an HTTP GET request and return the response body.
+ * Connection errors that mean "the server is not accepting connections yet",
+ * as opposed to a genuine failure. Under CI load the socket can still be
+ * unavailable for a short moment after the app logged that it started, and a
+ * watch-mode restart tears the listener down between requests.
  */
-export function httpGet(
+const TRANSIENT_CONNECTION_ERRORS = [
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ECONNABORTED',
+  'EPIPE',
+];
+
+function isTransientConnectionError(error: unknown): boolean {
+  const code = (error as NodeJS.ErrnoException | undefined)?.code;
+  return !!code && TRANSIENT_CONNECTION_ERRORS.includes(code);
+}
+
+function httpGetOnce(
   url: string,
-  timeoutMs = 5000,
+  timeoutMs: number,
 ): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
     const req = http.get(url, { timeout: timeoutMs }, (res) => {
@@ -199,6 +214,30 @@ export function httpGet(
       reject(new Error('HTTP request timed out'));
     });
   });
+}
+
+/**
+ * Make an HTTP GET request and return the response body. Transient connection
+ * errors are retried until `retryForMs` elapses, so callers don't have to race
+ * the server's startup (or a watch-mode restart) themselves.
+ */
+export async function httpGet(
+  url: string,
+  timeoutMs = 5000,
+  retryForMs = 10_000,
+  retryIntervalMs = 250,
+): Promise<{ status: number; body: string }> {
+  const deadline = Date.now() + retryForMs;
+  for (;;) {
+    try {
+      return await httpGetOnce(url, timeoutMs);
+    } catch (error) {
+      if (!isTransientConnectionError(error) || Date.now() >= deadline) {
+        throw error;
+      }
+      await new Promise((r) => setTimeout(r, retryIntervalMs));
+    }
+  }
 }
 
 /**
