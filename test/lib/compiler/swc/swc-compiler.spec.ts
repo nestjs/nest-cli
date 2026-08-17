@@ -520,6 +520,78 @@ describe('SWC Compiler', () => {
     });
   });
 
+  describe('runSwc', () => {
+    let swcCliMock: ReturnType<typeof vi.fn>;
+    let onFileAdded: (file: string) => Promise<unknown>;
+
+    beforeEach(() => {
+      // Restore the real implementation that was mocked in the outer beforeEach
+      compiler['runSwc'] = SwcCompiler.prototype['runSwc'].bind(compiler);
+
+      swcCliMock = vi.fn().mockResolvedValue(undefined);
+      onFileAdded = async () => undefined;
+
+      compiler['loadSwcCliBinary'] = vi.fn(() => ({
+        default: swcCliMock,
+      })) as any;
+      compiler['getSwcRcFileContentIfExists'] = vi.fn().mockReturnValue({});
+      compiler['watchFilesInSrcDir'] = vi.fn(
+        async (_options: any, callback: (file: string) => Promise<unknown>) => {
+          onFileAdded = callback;
+        },
+      ) as any;
+    });
+
+    const runInWatchMode = () =>
+      compiler['runSwc'](
+        {
+          swcOptions: {},
+          cliOptions: {
+            filenames: ['src'],
+            sync: false,
+            watch: false,
+          },
+        } as any,
+        { watch: true } as any,
+      );
+
+    it('should transpile newly added files without inheriting watch mode', async () => {
+      await runInWatchMode();
+
+      // The main invocation keeps watch mode enabled
+      expect(swcCliMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cliOptions: expect.objectContaining({ watch: true }),
+        }),
+      );
+
+      await onFileAdded('src/added.ts');
+
+      // The added-file invocation must be one-shot: inheriting watch would
+      // register a permanent extra watcher (and leak a worker pool) per added file
+      expect(swcCliMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          cliOptions: expect.objectContaining({
+            filenames: ['src/added.ts'],
+            watch: false,
+            sync: true,
+          }),
+        }),
+      );
+    });
+
+    it('should not reject when a newly added file fails to compile', async () => {
+      await runInWatchMode();
+
+      // Outside of watch mode "@swc/cli" rejects on a compilation failure.
+      // The rejection would surface in the chokidar "add" handler and take
+      // the whole watch process down with it.
+      swcCliMock.mockRejectedValueOnce(new Error('Failed to compile:\nfoo.ts'));
+
+      await expect(onFileAdded('src/added.ts')).resolves.toBeUndefined();
+    });
+  });
+
   describe('watchFilesInSrcDir', () => {
     let originalWatchFilesInSrcDir: Function;
 

@@ -231,14 +231,25 @@ export class SwcCompiler extends BaseCompiler {
       // This is required since SWC no longer supports auto-compiling of newly added files in watch mode.
       // We need to watch the source directory and trigger SWC compilation manually.
       await this.watchFilesInSrcDir(options, async (file) => {
-        // Transpile newly added file
-        await swcCli.default({
-          ...swcCliOpts,
-          cliOptions: {
-            ...swcCliOpts.cliOptions,
-            filenames: [file],
-          },
-        });
+        // Transpile newly added file (one-shot: inheriting "watch" here would
+        // register one more permanent @swc/cli watcher per added file, and each
+        // async invocation constructs a Piscina pool that is never destroyed)
+        try {
+          await swcCli.default({
+            ...swcCliOpts,
+            cliOptions: {
+              ...swcCliOpts.cliOptions,
+              filenames: [file],
+              watch: false,
+              sync: true,
+            },
+          });
+        } catch {
+          // Outside of watch mode "@swc/cli" rejects when a file fails to
+          // compile, after having reported the failure itself. Swallow it so
+          // that adding a file that does not compile yet does not tear down
+          // the watch process.
+        }
       });
     }
     await swcCli.default(swcCliOpts);
