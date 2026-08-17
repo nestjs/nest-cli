@@ -1,6 +1,6 @@
-import { AbstractRunner } from '../runners';
-import { Schematic } from './nest.collection';
-import { SchematicOption } from './schematic.option';
+import { AbstractRunner } from '../runners/index.js';
+import { Schematic } from './nest.collection.js';
+import { SchematicOption } from './schematic.option.js';
 
 export abstract class AbstractCollection {
   constructor(

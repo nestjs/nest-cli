@@ -1,32 +1,42 @@
 import { cyan } from 'ansis';
-import { fork } from 'child_process';
+import { fork, spawnSync } from 'child_process';
 import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
+import { minimatch } from 'minimatch';
+import { createRequire } from 'module';
 import * as path from 'path';
-import { isAbsolute, join } from 'path';
-import * as ts from 'typescript';
-import { Configuration } from '../../configuration';
-import { ERROR_PREFIX } from '../../ui';
-import { treeKillSync } from '../../utils/tree-kill';
-import { AssetsManager } from '../assets-manager';
-import { BaseCompiler } from '../base-compiler';
-import { swcDefaultsFactory } from '../defaults/swc-defaults';
-import { getValueOrDefault } from '../helpers/get-value-or-default';
-import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator';
-import { PluginsLoader } from '../plugins/plugins-loader';
+import { dirname, isAbsolute, join, posix, relative } from 'path';
+import { fileURLToPath } from 'url';
+import { Configuration } from '../../configuration/index.js';
+import { ERROR_PREFIX } from '../../ui/index.js';
+import { treeKillSync } from '../../utils/tree-kill.js';
+import { AssetsManager } from '../assets-manager.js';
+import { BaseCompiler } from '../base-compiler.js';
+import { swcDefaultsFactory } from '../defaults/swc-defaults.js';
+import { getValueOrDefault } from '../helpers/get-value-or-default.js';
+import type { TsConfigProviderOutput } from '../helpers/tsconfig-provider.js';
+import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
+import { PluginsLoader } from '../plugins/plugins-loader.js';
 import {
   FOUND_NO_ISSUES_GENERATING_METADATA,
   FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED,
   SWC_LOG_PREFIX,
-} from './constants';
-import { TypeCheckerHost } from './type-checker-host';
+} from './constants.js';
+import { TypeCheckerHost } from './type-checker-host.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 export type SwcCompilerExtras = {
   watch: boolean;
   typeCheck: boolean;
+  emitDeclarations: boolean;
   assetsManager: AssetsManager;
-  tsOptions: ts.CompilerOptions;
+  tsOptions: TsConfigProviderOutput['options'];
+  tsConfigExclude: string[];
+  silent?: boolean;
 };
 
 export class SwcCompiler extends BaseCompiler {
@@ -44,7 +54,11 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     onSuccess?: () => void,
   ) {
-    const swcOptions = swcDefaultsFactory(extras.tsOptions, configuration);
+    const swcOptions = swcDefaultsFactory(
+      extras.tsOptions,
+      configuration,
+      extras.tsConfigExclude,
+    );
     const swcrcFilePath = getValueOrDefault<string | undefined>(
       configuration,
       'compilerOptions.builder.options.swcrcPath',
@@ -56,6 +70,10 @@ export class SwcCompiler extends BaseCompiler {
         this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
       await this.runSwc(swcOptions, extras, swcrcFilePath);
+
+      if (extras.emitDeclarations) {
+        this.emitDeclarations(tsConfigPath);
+      }
 
       if (onSuccess) {
         onSuccess();
@@ -69,11 +87,40 @@ export class SwcCompiler extends BaseCompiler {
         await this.runTypeChecker(configuration, tsConfigPath, appName, extras);
       }
       await this.runSwc(swcOptions, extras, swcrcFilePath);
+
+      if (extras.emitDeclarations) {
+        this.emitDeclarations(tsConfigPath);
+      }
+
       if (onSuccess) {
         onSuccess();
       }
 
       await extras.assetsManager?.closeWatchers();
+    }
+  }
+
+  private emitDeclarations(tsConfigPath: string) {
+    process.nextTick(() =>
+      console.log(SWC_LOG_PREFIX, cyan('Emitting declaration files...')),
+    );
+
+    const tscPath = join(process.cwd(), 'node_modules', '.bin', 'tsc');
+    const result = spawnSync(
+      tscPath,
+      ['--emitDeclarationOnly', '-p', tsConfigPath],
+      {
+        cwd: process.cwd(),
+        stdio: 'inherit',
+        shell: true,
+      },
+    );
+
+    if (result.status !== 0) {
+      console.error(
+        ERROR_PREFIX +
+          ' Failed to emit declaration files. Please ensure "declaration" is enabled in your tsconfig.',
+      );
     }
   }
 
@@ -156,7 +203,9 @@ export class SwcCompiler extends BaseCompiler {
     extras: SwcCompilerExtras,
     swcrcFilePath?: string,
   ) {
-    process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
+    if (this.shouldLogSwcStatus(extras)) {
+      process.nextTick(() => console.log(SWC_LOG_PREFIX, cyan('Running...')));
+    }
 
     const swcCli = this.loadSwcCliBinary();
     const swcRcFile = await this.getSwcRcFileContentIfExists(swcrcFilePath);
@@ -195,10 +244,18 @@ export class SwcCompiler extends BaseCompiler {
     await swcCli.default(swcCliOpts);
   }
 
+  private shouldLogSwcStatus(extras: SwcCompilerExtras): boolean {
+    if (extras.silent) {
+      return false;
+    }
+    const npmLogLevel = process.env.npm_config_loglevel?.toLowerCase();
+    return npmLogLevel !== 'silent';
+  }
+
   private loadSwcCliBinary() {
     try {
       return require('@swc/cli/lib/swc/dir');
-    } catch (err) {
+    } catch {
       console.error(
         ERROR_PREFIX +
           ' Failed to load "@swc/cli" and/or "@swc/core" required packages. Please, make sure to install them as development dependencies.',
@@ -212,7 +269,7 @@ export class SwcCompiler extends BaseCompiler {
       return JSON.parse(
         readFileSync(join(process.cwd(), swcrcFilePath ?? '.swcrc'), 'utf8'),
       );
-    } catch (err) {
+    } catch {
       if (swcrcFilePath !== undefined) {
         console.error(
           ERROR_PREFIX +
@@ -243,7 +300,7 @@ export class SwcCompiler extends BaseCompiler {
 
     const merged = { ...target };
     for (const key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (Object.hasOwn(source, key)) {
         if (key in target) {
           merged[key] = this.deepMerge(target[key], source[key]);
         } else {
@@ -287,7 +344,37 @@ export class SwcCompiler extends BaseCompiler {
         pollInterval: 10,
       },
     });
-    watcher.on('add', async (file) => onFileAdded(file));
+    watcher.on('add', async (file) => {
+      if (this.isIgnoredBySwc(file, options.cliOptions?.ignore)) {
+        return;
+      }
+
+      await onFileAdded(file);
+    });
+  }
+
+  private isIgnoredBySwc(
+    file: string,
+    ignore: string[] = [],
+    cwd = process.cwd(),
+  ): boolean {
+    if (!ignore.length) {
+      return false;
+    }
+
+    const relativeFile = isAbsolute(file) ? relative(cwd, file) : file;
+    const normalizedFile = this.normalizeSwcIgnorePath(relativeFile);
+    return ignore.some((pattern) => {
+      const normalizedPattern = this.normalizeSwcIgnorePath(pattern);
+
+      return [normalizedPattern, posix.join(normalizedPattern, '**')].some(
+        (pattern) => minimatch(normalizedFile, pattern),
+      );
+    });
+  }
+
+  private normalizeSwcIgnorePath(value: string): string {
+    return posix.normalize(value.replace(/\\/g, '/'));
   }
 
   private watchFilesInOutDir(

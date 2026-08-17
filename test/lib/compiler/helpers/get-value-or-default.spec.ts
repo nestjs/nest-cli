@@ -1,5 +1,6 @@
-import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default';
-import { Configuration } from '../../../../lib/configuration';
+import { describe, it, expect } from 'vitest';
+import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
+import { Configuration } from '../../../../lib/configuration/index.js';
 
 describe('getValueOrDefault', () => {
   it('should return assigned configuration value', async () => {
@@ -177,6 +178,110 @@ describe('getValueOrDefault', () => {
       'test-project',
     );
     expect(value).toBeUndefined();
+  });
+
+  it('should return false for typeCheck when explicitly set to false via --no-type-check', async () => {
+    const configuration = {
+      monorepo: false,
+      sourceRoot: '',
+      entryFile: '',
+      exec: '',
+      projects: {},
+      language: '',
+      collection: '',
+      compilerOptions: {
+        typeCheck: true,
+      },
+      generateOptions: {},
+    } as unknown as Required<Configuration>;
+    const options = { typeCheck: false };
+    const value = getValueOrDefault(
+      configuration,
+      'compilerOptions.typeCheck',
+      undefined,
+      'typeCheck',
+      options,
+    );
+    expect(value).toEqual(false);
+  });
+
+  it('should return true for typeCheck when explicitly set to true via --type-check', async () => {
+    const configuration = {
+      monorepo: false,
+      sourceRoot: '',
+      entryFile: '',
+      exec: '',
+      projects: {},
+      language: '',
+      collection: '',
+      compilerOptions: {
+        typeCheck: false,
+      },
+      generateOptions: {},
+    } as unknown as Required<Configuration>;
+    const options = { typeCheck: true };
+    const value = getValueOrDefault(
+      configuration,
+      'compilerOptions.typeCheck',
+      undefined,
+      'typeCheck',
+      options,
+    );
+    expect(value).toEqual(true);
+  });
+
+  it('should fall back to config for typeCheck when no CLI flag is passed', async () => {
+    const configuration = {
+      monorepo: false,
+      sourceRoot: '',
+      entryFile: '',
+      exec: '',
+      projects: {},
+      language: '',
+      collection: '',
+      compilerOptions: {
+        typeCheck: true,
+      },
+      generateOptions: {},
+    } as unknown as Required<Configuration>;
+    const options = { typeCheck: undefined };
+    const value = getValueOrDefault(
+      configuration,
+      'compilerOptions.typeCheck',
+      undefined,
+      'typeCheck',
+      options,
+    );
+    expect(value).toEqual(true);
+  });
+
+  it('should override project-level typeCheck config when --no-type-check is passed', async () => {
+    const configuration = {
+      monorepo: true,
+      sourceRoot: '',
+      entryFile: '',
+      exec: '',
+      projects: {
+        'test-project': {
+          compilerOptions: {
+            typeCheck: true,
+          },
+        },
+      },
+      language: '',
+      collection: '',
+      compilerOptions: {},
+      generateOptions: {},
+    } as unknown as Required<Configuration>;
+    const options = { typeCheck: false };
+    const value = getValueOrDefault(
+      configuration,
+      'compilerOptions.typeCheck',
+      'test-project',
+      'typeCheck',
+      options,
+    );
+    expect(value).toEqual(false);
   });
 
   it('should concatenate property path when app name contains dots', async () => {

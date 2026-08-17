@@ -1,5 +1,5 @@
 import { green } from 'ansis';
-import { EMOJIS } from './emojis';
+import { EMOJIS } from './emojis.js';
 
 export const MESSAGES = {
   PROJECT_NAME_QUESTION: 'What name would you like to use for the new project?',
@@ -37,4 +37,18 @@ export const MESSAGES = {
     `Unable to install library ${name} because package did not install. Please check package name.`,
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
   LIBRARY_INSTALLATION_STARTS: 'Starting library setup...',
+
+  OBSERVABILITY_QUESTION:
+    'Would you like to enable auto-instrumented observability (@nestjs/observe)?',
+
+  MAU_INSTALLATION_QUESTION: (name: string) =>
+    `The ${name} package is required to deploy. Would you like to install it now?`,
+  MAU_INSTALLATION_IN_PROGRESS: (name: string) =>
+    `Installing ${name}... ${EMOJIS.COFFEE}`,
+  MAU_INSTALLATION_DECLINED: (name: string, command: string) =>
+    `Cannot deploy without ${name}. Install it with:\n\n  ${command}\n`,
+  MAU_INSTALLATION_FAILED: (name: string) =>
+    `Failed to install ${name}. Please install it manually and try again.`,
+  MAU_NOT_INSTALLED_NON_INTERACTIVE: (name: string, command: string) =>
+    `The ${name} package is required to deploy, and there is no TTY available to confirm installing it. Install it with:\n\n  ${command}\n`,
 };

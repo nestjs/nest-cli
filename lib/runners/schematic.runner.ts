@@ -1,4 +1,7 @@
-import { AbstractRunner } from './abstract.runner';
+import { createRequire } from 'module';
+import { AbstractRunner } from './abstract.runner.js';
+
+const require = createRequire(import.meta.url);
 
 export class SchematicRunner extends AbstractRunner {
   constructor() {
@@ -6,7 +9,7 @@ export class SchematicRunner extends AbstractRunner {
   }
 
   public static getModulePaths() {
-    return module.paths;
+    return require.resolve.paths('@angular-devkit/schematics-cli') ?? [];
   }
 
   public static findClosestSchematicsBinary(): string {

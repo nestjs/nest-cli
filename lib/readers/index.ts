@@ -1,2 +1,2 @@
-export * from './reader';
-export * from './file-system.reader';
+export * from './reader.js';
+export * from './file-system.reader.js';
