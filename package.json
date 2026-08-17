@@ -61,7 +61,7 @@
     "@commitlint/config-angular": "20.5.3",
     "@rspack/core": "^1.7.7",
     "@swc/cli": "0.8.1",
-    "@swc/core": "1.15.40",
+    "@swc/core": "1.16.0",
     "@types/node": "25.3.5",
     "@types/webpack-node-externals": "3.0.4",
     "delete-empty": "3.0.0",
