@@ -31,7 +31,7 @@ export class NewCommand extends AbstractCommand {
         'Schematics collection to use',
         Collection.NESTJS,
       )
-      .option('--strict', 'Enables strict mode in TypeScript.', false)
+      .option('--strict', 'Enables strict mode in TypeScript.', true)
       .option(
         '-t, --skip-tests',
         'Do not generate testing files for the new project.',
