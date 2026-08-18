@@ -83,7 +83,7 @@
     "**/*.{ts,json}": []
   },
   "peerDependencies": {
-    "@rspack/core": "^1.7.7",
+    "@rspack/core": "^1.7.7 || ^2.1.10",
     "@swc/cli": "^0.8.0",
     "@swc/core": "^1.15.18",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
