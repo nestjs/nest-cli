@@ -1,5 +1,4 @@
 import * as childProcess from 'child_process';
-import * as chokidar from 'chokidar';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { stat } from 'fs/promises';
 import { tmpdir } from 'os';
@@ -9,6 +8,7 @@ import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaul
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
 import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.js';
 import { SwcCompiler } from '../../../../lib/compiler/swc/swc-compiler.js';
+import { watchDirectoryRecursively } from '../../../../lib/compiler/watchers/recursive-directory-watcher.js';
 
 vi.mock('../../../../lib/compiler/defaults/swc-defaults.js', () => ({
   swcDefaultsFactory: vi.fn(),
@@ -18,7 +18,12 @@ vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
   getValueOrDefault: vi.fn(),
 }));
 
-vi.mock('chokidar');
+vi.mock(
+  '../../../../lib/compiler/watchers/recursive-directory-watcher.js',
+  () => ({
+    watchDirectoryRecursively: vi.fn(async () => ({ close: vi.fn() })),
+  }),
+);
 vi.mock('child_process', async () => ({
   ...(await vi.importActual('child_process')),
   spawnSync: vi.fn(),
@@ -446,19 +451,7 @@ describe('SWC Compiler', () => {
         originalWatchFilesInOutDir.bind(compiler);
     });
 
-    it('should only register add/change listeners after the watcher is ready', () => {
-      const listeners: Record<string, Function[]> = {};
-      const mockWatcher = {
-        on: vi.fn((event: string, handler: Function) => {
-          if (!listeners[event]) {
-            listeners[event] = [];
-          }
-          listeners[event].push(handler);
-          return mockWatcher;
-        }),
-      };
-      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
-
+    it('should watch the output directory recursively for emitted files', async () => {
       const onChange = vi.fn();
       const options = {
         cliOptions: {
@@ -466,38 +459,16 @@ describe('SWC Compiler', () => {
         },
       };
 
-      // Call the private method directly
-      compiler['watchFilesInOutDir'](options as any, onChange);
+      await compiler['watchFilesInOutDir'](options as any, onChange);
 
-      // Before 'ready' fires, there should be no 'add' or 'change' listeners
-      expect(listeners['ready']).toBeDefined();
-      expect(listeners['ready']).toHaveLength(1);
-      expect(listeners['add']).toBeUndefined();
-      expect(listeners['change']).toBeUndefined();
-
-      // Simulate the 'ready' event
-      listeners['ready'][0]();
-
-      // After 'ready', add and change listeners should be registered
-      expect(listeners['add']).toBeDefined();
-      expect(listeners['add']).toHaveLength(1);
-      expect(listeners['change']).toBeDefined();
-      expect(listeners['change']).toHaveLength(1);
+      expect(watchDirectoryRecursively).toHaveBeenCalledTimes(1);
+      const [dir, watchOptions] = vi.mocked(watchDirectoryRecursively).mock
+        .calls[0];
+      expect(dir).toBe('/tmp/test-out');
+      expect(watchOptions.extensions).toEqual(['.js', '.mjs']);
     });
 
-    it('should not trigger onChange for file events that occur before watcher is ready', () => {
-      const listeners: Record<string, Function[]> = {};
-      const mockWatcher = {
-        on: vi.fn((event: string, handler: Function) => {
-          if (!listeners[event]) {
-            listeners[event] = [];
-          }
-          listeners[event].push(handler);
-          return mockWatcher;
-        }),
-      };
-      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
-
+    it('should trigger onChange for both added and changed files', async () => {
       const onChange = vi.fn();
       const options = {
         cliOptions: {
@@ -505,18 +476,29 @@ describe('SWC Compiler', () => {
         },
       };
 
-      compiler['watchFilesInOutDir'](options as any, onChange);
+      await compiler['watchFilesInOutDir'](options as any, onChange);
 
-      // Before 'ready', no add/change listeners exist, so no way to trigger onChange
-      // This verifies that even if files are written during initial scan,
-      // onChange won't be called
-      expect(onChange).not.toHaveBeenCalled();
+      const watchOptions = vi.mocked(watchDirectoryRecursively).mock
+        .calls[0][1];
+      watchOptions.onAdd!('/tmp/test-out/main.js');
+      watchOptions.onChange!('/tmp/test-out/main.js');
 
-      // Now emit ready, then simulate a file change
-      listeners['ready'][0]();
-      listeners['add'][0]();
+      expect(onChange).toHaveBeenCalledTimes(2);
+    });
 
-      expect(onChange).toHaveBeenCalledTimes(1);
+    it('should resolve a relative output directory against the current working directory', async () => {
+      const onChange = vi.fn();
+      const options = {
+        cliOptions: {
+          outDir: 'dist',
+        },
+      };
+
+      await compiler['watchFilesInOutDir'](options as any, onChange);
+
+      expect(vi.mocked(watchDirectoryRecursively).mock.calls[0][0]).toBe(
+        join(process.cwd(), 'dist'),
+      );
     });
   });
 
@@ -603,12 +585,7 @@ describe('SWC Compiler', () => {
       vi.mocked(stat).mockResolvedValue({ isDirectory: () => true } as any);
     });
 
-    it('should not ignore .ts files when extensions include ts', async () => {
-      const mockWatcher = {
-        on: vi.fn().mockReturnThis(),
-      };
-      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
-
+    it('should forward the configured extensions to the watcher', async () => {
       const onFileAdded = vi.fn();
       const options = {
         cliOptions: {
@@ -619,28 +596,13 @@ describe('SWC Compiler', () => {
 
       await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
 
-      const watchOptions = vi.mocked(chokidar.watch).mock.calls[0][1] as any;
-      const ignoredFn = watchOptions.ignored;
-
-      const fileStats = { isFile: () => true };
-
-      // .ts files should NOT be ignored
-      expect(ignoredFn('src/app.service.ts', fileStats)).toBe(false);
-      // .js files should NOT be ignored
-      expect(ignoredFn('src/app.service.js', fileStats)).toBe(false);
-      // Non-matching files should be ignored
-      expect(ignoredFn('src/data.json', fileStats)).toBe(true);
-      // Directories should not be ignored
-      const dirStats = { isFile: () => false };
-      expect(ignoredFn('src/subdir', dirStats)).toBe(false);
+      const [dir, watchOptions] = vi.mocked(watchDirectoryRecursively).mock
+        .calls[0];
+      expect(dir).toBe('src');
+      expect(watchOptions.extensions).toEqual(['js', 'ts']);
     });
 
     it('should not call onFileAdded for files matching swc ignore patterns', async () => {
-      const mockWatcher = {
-        on: vi.fn().mockReturnThis(),
-      };
-      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
-
       const onFileAdded = vi.fn();
       const options = {
         cliOptions: {
@@ -652,9 +614,8 @@ describe('SWC Compiler', () => {
 
       await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
 
-      const addHandler = mockWatcher.on.mock.calls.find(
-        ([event]) => event === 'add',
-      )?.[1];
+      const addHandler = vi.mocked(watchDirectoryRecursively).mock.calls[0][1]
+        .onAdd!;
 
       await addHandler('src/generated/foo.ts');
 
@@ -662,11 +623,6 @@ describe('SWC Compiler', () => {
     });
 
     it('should call onFileAdded for non-ignored files', async () => {
-      const mockWatcher = {
-        on: vi.fn().mockReturnThis(),
-      };
-      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any);
-
       const onFileAdded = vi.fn();
       const options = {
         cliOptions: {
@@ -678,9 +634,8 @@ describe('SWC Compiler', () => {
 
       await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
 
-      const addHandler = mockWatcher.on.mock.calls.find(
-        ([event]) => event === 'add',
-      )?.[1];
+      const addHandler = vi.mocked(watchDirectoryRecursively).mock.calls[0][1]
+        .onAdd!;
 
       await addHandler('src/modules/foo.ts');
 
@@ -864,7 +819,7 @@ describe('SWC Compiler', () => {
 
       await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
 
-      expect(chokidar.watch).not.toHaveBeenCalled();
+      expect(watchDirectoryRecursively).not.toHaveBeenCalled();
     });
 
     it('should skip watching if filenames is empty', async () => {
@@ -878,7 +833,7 @@ describe('SWC Compiler', () => {
 
       await compiler['watchFilesInSrcDir'](options as any, onFileAdded);
 
-      expect(chokidar.watch).not.toHaveBeenCalled();
+      expect(watchDirectoryRecursively).not.toHaveBeenCalled();
     });
   });
 
