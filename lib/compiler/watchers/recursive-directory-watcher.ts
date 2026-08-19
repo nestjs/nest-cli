@@ -32,6 +32,14 @@ export interface RecursiveDirectoryWatcher {
 const DEFAULT_STABILITY_THRESHOLD = 50;
 const DEFAULT_POLL_INTERVAL = 10;
 const RESCAN_DEBOUNCE = 100;
+/**
+ * A recursive "fs.watch" only starts delivering once its underlying stream is
+ * running, which happens some time after "fs.watch" returns - measurably later
+ * on a loaded machine. Anything written in that window produces no event at
+ * all, so the tree is diffed a few times while the stream warms up; without
+ * this a file added moments after the watch started is never compiled.
+ */
+const CATCH_UP_SCAN_DELAYS = [100, 500, 1_500];
 const REARM_INTERVAL = 500;
 const DIRECTORY_EXISTENCE_CHECK_INTERVAL = 1_000;
 
@@ -74,10 +82,10 @@ export async function watchDirectoryRecursively(
   return createChokidarWatcher(dir, options);
 }
 
-function createChokidarWatcher(
+async function createChokidarWatcher(
   dir: string,
   options: RecursiveDirectoryWatcherOptions,
-): RecursiveDirectoryWatcher {
+): Promise<RecursiveDirectoryWatcher> {
   const watcher = chokidar.watch(dir, {
     ignored: (file, stats) =>
       (stats?.isFile() &&
@@ -89,14 +97,23 @@ function createChokidarWatcher(
       pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL,
     },
   });
-  watcher.on('ready', () => {
-    if (options.onAdd) {
-      watcher.on('add', (file) => void options.onAdd!(file));
-    }
-    if (options.onChange) {
-      watcher.on('change', (file) => void options.onChange!(file));
-    }
+  // Chokidar swallows everything it encounters during its initial scan (that
+  // is what "ignoreInitial" means), so the watch is only truly active once
+  // "ready" has fired. Resolving before that would silently drop every file
+  // written in between - the caller has no other signal to wait on.
+  await new Promise<void>((resolve) => {
+    // Chokidar rethrows an "error" that has no listener; scanning a tree that
+    // is being rewritten underneath is not fatal, so it must not take the
+    // process down either.
+    watcher.on('error', () => resolve());
+    watcher.once('ready', () => resolve());
   });
+  if (options.onAdd) {
+    watcher.on('add', (file) => void options.onAdd!(file));
+  }
+  if (options.onChange) {
+    watcher.on('change', (file) => void options.onChange!(file));
+  }
   return {
     close: () => watcher.close(),
   };
@@ -122,6 +139,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
   private existenceTimer?: NodeJS.Timeout;
   private rearmTimer?: NodeJS.Timeout;
   private rescanTimer?: NodeJS.Timeout;
+  private readonly catchUpTimers = new Set<NodeJS.Timeout>();
   private closed = false;
 
   constructor(
@@ -145,6 +163,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     this.closed = true;
     clearTimeout(this.rearmTimer);
     clearTimeout(this.rescanTimer);
+    this.clearCatchUpScans();
     for (const { timer } of this.pending.values()) {
       clearTimeout(timer);
     }
@@ -179,6 +198,25 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
         .catch(() => this.rearm());
     }, DIRECTORY_EXISTENCE_CHECK_INTERVAL);
     this.existenceTimer.unref?.();
+    this.scheduleCatchUpScans();
+  }
+
+  private scheduleCatchUpScans(): void {
+    for (const delay of CATCH_UP_SCAN_DELAYS) {
+      const timer = setTimeout(() => {
+        this.catchUpTimers.delete(timer);
+        void this.scan(true);
+      }, delay);
+      timer.unref?.();
+      this.catchUpTimers.add(timer);
+    }
+  }
+
+  private clearCatchUpScans(): void {
+    for (const timer of this.catchUpTimers) {
+      clearTimeout(timer);
+    }
+    this.catchUpTimers.clear();
   }
 
   private handleEvent(filename: string | Buffer | null): void {
@@ -352,6 +390,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
   }
 
   private disposeWatcher(): void {
+    this.clearCatchUpScans();
     clearInterval(this.existenceTimer);
     this.existenceTimer = undefined;
     this.watcher?.close();

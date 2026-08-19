@@ -8,9 +8,15 @@ import {
   type RecursiveDirectoryWatcher,
 } from '../../../../lib/compiler/watchers/recursive-directory-watcher.js';
 
-// Generous, because these run against the real file system alongside the rest
-// of the suite; the assertion has to be able to fail before the test times out.
-const TEST_TIMEOUT = 20_000;
+/**
+ * These tests wait on real filesystem events, which the OS delivers on its own
+ * schedule - and the suite runs 80+ files in parallel, so that schedule can
+ * slip. The timeout is generous, and larger than the "waitFor" budget below so
+ * that a genuine regression fails with a real assertion rather than a bare
+ * timeout; a delivery that never arrives is retried against a fresh watcher
+ * instead of breaking the build.
+ */
+const FS_EVENT_TEST_OPTIONS = { timeout: 20_000, retry: 2 } as const;
 
 const waitFor = async (assertion: () => void, timeout = 10_000) => {
   const deadline = Date.now() + timeout;
@@ -55,6 +61,7 @@ describe('recursive directory watcher', () => {
 
   it(
     'should report files added to a nested directory',
+    FS_EVENT_TEST_OPTIONS,
     async () => {
       const onAdd = vi.fn();
       watcher = await watchDirectoryRecursively(dir, {
@@ -69,11 +76,11 @@ describe('recursive directory watcher', () => {
         expect(onAdd).toHaveBeenCalledWith(join(dir, 'modules/foo.ts')),
       );
     },
-    TEST_TIMEOUT,
   );
 
   it(
     'should not report files that already existed when the watch started',
+    FS_EVENT_TEST_OPTIONS,
     async () => {
       writeFileSync(join(dir, 'existing.ts'), 'export const a = 1;\n');
 
@@ -90,11 +97,11 @@ describe('recursive directory watcher', () => {
       );
       expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'existing.ts'));
     },
-    TEST_TIMEOUT,
   );
 
   it(
     'should report a modification of a known file as a change',
+    FS_EVENT_TEST_OPTIONS,
     async () => {
       const file = join(dir, 'main.js');
       writeFileSync(file, 'console.log(1);\n');
@@ -112,11 +119,11 @@ describe('recursive directory watcher', () => {
       await waitFor(() => expect(onChange).toHaveBeenCalledWith(file));
       expect(onAdd).not.toHaveBeenCalled();
     },
-    TEST_TIMEOUT,
   );
 
   it(
     'should not report files with a non-matching extension',
+    FS_EVENT_TEST_OPTIONS,
     async () => {
       const onAdd = vi.fn();
       watcher = await watchDirectoryRecursively(dir, {
@@ -132,27 +139,78 @@ describe('recursive directory watcher', () => {
       );
       expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'data.json'));
     },
-    TEST_TIMEOUT,
   );
 
-  it(
-    'should stop reporting once closed',
-    async () => {
-      const onAdd = vi.fn();
-      watcher = await watchDirectoryRecursively(dir, {
-        extensions: ['.ts'],
-        onAdd,
-      });
-      await watcher.close();
-      watcher = undefined;
+  it('should stop reporting once closed', FS_EVENT_TEST_OPTIONS, async () => {
+    const onAdd = vi.fn();
+    watcher = await watchDirectoryRecursively(dir, {
+      extensions: ['.ts'],
+      onAdd,
+    });
+    await watcher.close();
+    watcher = undefined;
 
-      writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
-      await new Promise((resolve) => setTimeout(resolve, 250));
+    writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
+    await new Promise((resolve) => setTimeout(resolve, 250));
 
-      expect(onAdd).not.toHaveBeenCalled();
-    },
-    TEST_TIMEOUT,
-  );
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  // The chokidar fallback carries the platforms without a native recursive
+  // watch - Linux and therefore most CI - so it is exercised here whatever the
+  // host platform is.
+  describe('chokidar fallback', () => {
+    const nativePlatform = process.platform;
+
+    beforeEach(() => {
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(process, 'platform', { value: nativePlatform });
+    });
+
+    it(
+      'should report a file written as soon as the watch resolves',
+      FS_EVENT_TEST_OPTIONS,
+      async () => {
+        const onAdd = vi.fn();
+        // Chokidar suppresses whatever appears during its initial scan, so a
+        // watcher that resolves before "ready" drops this file entirely.
+        watcher = await watchDirectoryRecursively(dir, {
+          extensions: ['.ts'],
+          onAdd,
+        });
+
+        writeFileSync(join(dir, 'added.ts'), 'export const a = 1;\n');
+
+        await waitFor(() =>
+          expect(onAdd).toHaveBeenCalledWith(join(dir, 'added.ts')),
+        );
+      },
+    );
+
+    it(
+      'should not report files that already existed',
+      FS_EVENT_TEST_OPTIONS,
+      async () => {
+        writeFileSync(join(dir, 'existing.ts'), 'export const a = 1;\n');
+
+        const onAdd = vi.fn();
+        watcher = await watchDirectoryRecursively(dir, {
+          extensions: ['.ts'],
+          onAdd,
+        });
+
+        writeFileSync(join(dir, 'added.ts'), 'export const b = 1;\n');
+
+        await waitFor(() =>
+          expect(onAdd).toHaveBeenCalledWith(join(dir, 'added.ts')),
+        );
+        expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'existing.ts'));
+      },
+    );
+  });
 
   it.runIf(supportsNativeRecursiveWatch())(
     'should re-arm after the watched directory is removed and recreated',
@@ -172,6 +230,5 @@ describe('recursive directory watcher', () => {
         expect(onAdd).toHaveBeenCalledWith(join(dir, 'main.js')),
       );
     },
-    TEST_TIMEOUT,
   );
 });
