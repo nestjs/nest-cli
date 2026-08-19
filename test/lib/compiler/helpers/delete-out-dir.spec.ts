@@ -50,6 +50,7 @@ describe('deleteOutDirIfEnabled', () => {
     expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
+      maxRetries: 3,
     });
   });
 
@@ -63,10 +64,11 @@ describe('deleteOutDirIfEnabled', () => {
     expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
+      maxRetries: 3,
     });
     expect(mockedRm).toHaveBeenCalledWith(
       fromProjectRoot('./node_modules/.tmp/tsconfig.tsbuildinfo'),
-      { force: true },
+      { force: true, maxRetries: 3 },
     );
   });
 
@@ -77,6 +79,7 @@ describe('deleteOutDirIfEnabled', () => {
     expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
+      maxRetries: 3,
     });
   });
 
@@ -88,6 +91,7 @@ describe('deleteOutDirIfEnabled', () => {
     expect(mockedRm).toHaveBeenCalledWith(fromProjectRoot('dist'), {
       recursive: true,
       force: true,
+      maxRetries: 3,
     });
   });
 
@@ -126,6 +130,7 @@ describe('deleteOutDirIfEnabled', () => {
       expect(mockedRm).toHaveBeenCalledWith('../outside-dist', {
         recursive: true,
         force: true,
+        maxRetries: 3,
       });
     });
   });
