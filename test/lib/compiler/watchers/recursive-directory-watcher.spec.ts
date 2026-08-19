@@ -8,6 +8,10 @@ import {
   type RecursiveDirectoryWatcher,
 } from '../../../../lib/compiler/watchers/recursive-directory-watcher.js';
 
+// Generous, because these run against the real file system alongside the rest
+// of the suite; the assertion has to be able to fail before the test times out.
+const TEST_TIMEOUT = 20_000;
+
 const waitFor = async (assertion: () => void, timeout = 10_000) => {
   const deadline = Date.now() + timeout;
   for (;;) {
@@ -49,86 +53,106 @@ describe('recursive directory watcher', () => {
     });
   });
 
-  it('should report files added to a nested directory', async () => {
-    const onAdd = vi.fn();
-    watcher = await watchDirectoryRecursively(dir, {
-      extensions: ['.ts'],
-      onAdd,
-    });
+  it(
+    'should report files added to a nested directory',
+    async () => {
+      const onAdd = vi.fn();
+      watcher = await watchDirectoryRecursively(dir, {
+        extensions: ['.ts'],
+        onAdd,
+      });
 
-    mkdirSync(join(dir, 'modules'));
-    writeFileSync(join(dir, 'modules/foo.ts'), 'export const foo = 1;\n');
+      mkdirSync(join(dir, 'modules'));
+      writeFileSync(join(dir, 'modules/foo.ts'), 'export const foo = 1;\n');
 
-    await waitFor(() =>
-      expect(onAdd).toHaveBeenCalledWith(join(dir, 'modules/foo.ts')),
-    );
-  });
+      await waitFor(() =>
+        expect(onAdd).toHaveBeenCalledWith(join(dir, 'modules/foo.ts')),
+      );
+    },
+    TEST_TIMEOUT,
+  );
 
-  it('should not report files that already existed when the watch started', async () => {
-    writeFileSync(join(dir, 'existing.ts'), 'export const a = 1;\n');
+  it(
+    'should not report files that already existed when the watch started',
+    async () => {
+      writeFileSync(join(dir, 'existing.ts'), 'export const a = 1;\n');
 
-    const onAdd = vi.fn();
-    watcher = await watchDirectoryRecursively(dir, {
-      extensions: ['.ts'],
-      onAdd,
-    });
+      const onAdd = vi.fn();
+      watcher = await watchDirectoryRecursively(dir, {
+        extensions: ['.ts'],
+        onAdd,
+      });
 
-    writeFileSync(join(dir, 'added.ts'), 'export const b = 1;\n');
+      writeFileSync(join(dir, 'added.ts'), 'export const b = 1;\n');
 
-    await waitFor(() =>
-      expect(onAdd).toHaveBeenCalledWith(join(dir, 'added.ts')),
-    );
-    expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'existing.ts'));
-  });
+      await waitFor(() =>
+        expect(onAdd).toHaveBeenCalledWith(join(dir, 'added.ts')),
+      );
+      expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'existing.ts'));
+    },
+    TEST_TIMEOUT,
+  );
 
-  it('should report a modification of a known file as a change', async () => {
-    const file = join(dir, 'main.js');
-    writeFileSync(file, 'console.log(1);\n');
+  it(
+    'should report a modification of a known file as a change',
+    async () => {
+      const file = join(dir, 'main.js');
+      writeFileSync(file, 'console.log(1);\n');
 
-    const onAdd = vi.fn();
-    const onChange = vi.fn();
-    watcher = await watchDirectoryRecursively(dir, {
-      extensions: ['.js', '.mjs'],
-      onAdd,
-      onChange,
-    });
+      const onAdd = vi.fn();
+      const onChange = vi.fn();
+      watcher = await watchDirectoryRecursively(dir, {
+        extensions: ['.js', '.mjs'],
+        onAdd,
+        onChange,
+      });
 
-    writeFileSync(file, 'console.log(2);\n');
+      writeFileSync(file, 'console.log(2);\n');
 
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith(file));
-    expect(onAdd).not.toHaveBeenCalled();
-  });
+      await waitFor(() => expect(onChange).toHaveBeenCalledWith(file));
+      expect(onAdd).not.toHaveBeenCalled();
+    },
+    TEST_TIMEOUT,
+  );
 
-  it('should not report files with a non-matching extension', async () => {
-    const onAdd = vi.fn();
-    watcher = await watchDirectoryRecursively(dir, {
-      extensions: ['.ts'],
-      onAdd,
-    });
+  it(
+    'should not report files with a non-matching extension',
+    async () => {
+      const onAdd = vi.fn();
+      watcher = await watchDirectoryRecursively(dir, {
+        extensions: ['.ts'],
+        onAdd,
+      });
 
-    writeFileSync(join(dir, 'data.json'), '{}\n');
-    writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
+      writeFileSync(join(dir, 'data.json'), '{}\n');
+      writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
 
-    await waitFor(() =>
-      expect(onAdd).toHaveBeenCalledWith(join(dir, 'app.ts')),
-    );
-    expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'data.json'));
-  });
+      await waitFor(() =>
+        expect(onAdd).toHaveBeenCalledWith(join(dir, 'app.ts')),
+      );
+      expect(onAdd).not.toHaveBeenCalledWith(join(dir, 'data.json'));
+    },
+    TEST_TIMEOUT,
+  );
 
-  it('should stop reporting once closed', async () => {
-    const onAdd = vi.fn();
-    watcher = await watchDirectoryRecursively(dir, {
-      extensions: ['.ts'],
-      onAdd,
-    });
-    await watcher.close();
-    watcher = undefined;
+  it(
+    'should stop reporting once closed',
+    async () => {
+      const onAdd = vi.fn();
+      watcher = await watchDirectoryRecursively(dir, {
+        extensions: ['.ts'],
+        onAdd,
+      });
+      await watcher.close();
+      watcher = undefined;
 
-    writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
-    await new Promise((resolve) => setTimeout(resolve, 250));
+      writeFileSync(join(dir, 'app.ts'), 'export const a = 1;\n');
+      await new Promise((resolve) => setTimeout(resolve, 250));
 
-    expect(onAdd).not.toHaveBeenCalled();
-  });
+      expect(onAdd).not.toHaveBeenCalled();
+    },
+    TEST_TIMEOUT,
+  );
 
   it.runIf(supportsNativeRecursiveWatch())(
     'should re-arm after the watched directory is removed and recreated',
@@ -148,6 +172,6 @@ describe('recursive directory watcher', () => {
         expect(onAdd).toHaveBeenCalledWith(join(dir, 'main.js')),
       );
     },
-    20_000,
+    TEST_TIMEOUT,
   );
 });
