@@ -1,6 +1,5 @@
 import { cyan } from 'ansis';
 import { fork, spawnSync } from 'child_process';
-import * as chokidar from 'chokidar';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
 import { minimatch } from 'minimatch';
@@ -18,6 +17,7 @@ import { getValueOrDefault } from '../helpers/get-value-or-default.js';
 import type { TsConfigProviderOutput } from '../helpers/tsconfig-provider.js';
 import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
 import { PluginsLoader } from '../plugins/plugins-loader.js';
+import { watchDirectoryRecursively } from '../watchers/recursive-directory-watcher.js';
 import {
   FOUND_NO_ISSUES_GENERATING_METADATA,
   FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED,
@@ -80,7 +80,7 @@ export class SwcCompiler extends BaseCompiler {
 
         const debounceTime = 150;
         const callback = this.debounce(onSuccess, debounceTime);
-        this.watchFilesInOutDir(swcOptions, callback);
+        void this.watchFilesInOutDir(swcOptions, callback);
       }
     } else {
       if (extras.typeCheck) {
@@ -345,22 +345,15 @@ export class SwcCompiler extends BaseCompiler {
       return;
     }
     const extensions = options.cliOptions?.extensions ?? ['.ts'];
-    const watcher = chokidar.watch(srcDir, {
-      ignored: (file, stats) =>
-        (stats?.isFile() &&
-          !extensions.some((ext) => file.endsWith(ext))) as boolean,
-      ignoreInitial: true,
-      awaitWriteFinish: {
-        stabilityThreshold: 50,
-        pollInterval: 10,
-      },
-    });
-    watcher.on('add', async (file) => {
-      if (this.isIgnoredBySwc(file, options.cliOptions?.ignore)) {
-        return;
-      }
+    await watchDirectoryRecursively(srcDir, {
+      extensions,
+      onAdd: async (file) => {
+        if (this.isIgnoredBySwc(file, options.cliOptions?.ignore)) {
+          return;
+        }
 
-      await onFileAdded(file);
+        await onFileAdded(file);
+      },
     });
   }
 
@@ -388,27 +381,17 @@ export class SwcCompiler extends BaseCompiler {
     return posix.normalize(value.replace(/\\/g, '/'));
   }
 
-  private watchFilesInOutDir(
+  private async watchFilesInOutDir(
     options: ReturnType<typeof swcDefaultsFactory>,
     onChange: () => void,
   ) {
     const dir = isAbsolute(options.cliOptions.outDir!)
       ? options.cliOptions.outDir!
       : join(process.cwd(), options.cliOptions.outDir!);
-    const watcher = chokidar.watch(dir, {
-      ignored: (file, stats) =>
-        (stats?.isFile() &&
-          !(file.endsWith('.js') || file.endsWith('.mjs'))) as boolean,
-      ignoreInitial: true,
-      awaitWriteFinish: {
-        stabilityThreshold: 50,
-        pollInterval: 10,
-      },
-    });
-    watcher.on('ready', () => {
-      for (const type of ['add', 'change'] as const) {
-        watcher.on(type, async () => onChange());
-      }
+    await watchDirectoryRecursively(dir, {
+      extensions: ['.js', '.mjs'],
+      onAdd: onChange,
+      onChange: onChange,
     });
   }
 }
