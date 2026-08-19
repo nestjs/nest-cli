@@ -103,7 +103,7 @@ describe('NewCommand', () => {
           packageManager: undefined,
           language: 'ts',
           collection: Collection.NESTJS,
-          strict: false,
+          strict: true,
           format: false,
         }),
       );
