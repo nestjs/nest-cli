@@ -15,6 +15,7 @@ vi.mock('../../actions/index.js', () => {
     InfoAction: StubAction,
     NewAction: StubAction,
     StartAction: StubAction,
+    UpgradeAction: StubAction,
   };
 });
 
@@ -125,6 +126,7 @@ describe('CommandLoader', () => {
       ['info', 'i'],
       ['add', undefined],
       ['deploy', undefined],
+      ['upgrade', 'update'],
       ['generate', 'g'],
     ])('registers the "%s" command', (name, alias) => {
       const command = program.commands.find((cmd) => cmd.name() === name);
@@ -145,7 +147,16 @@ describe('CommandLoader', () => {
       const commandNames = program.commands.map((cmd) => cmd.name()).sort();
 
       expect(commandNames).toEqual(
-        ['add', 'build', 'deploy', 'generate', 'info', 'new', 'start'].sort(),
+        [
+          'add',
+          'build',
+          'deploy',
+          'generate',
+          'info',
+          'new',
+          'start',
+          'upgrade',
+        ].sort(),
       );
     });
   });

@@ -6,3 +6,4 @@ export * from './new.action.js';
 export * from './start.action.js';
 export * from './add.action.js';
 export * from './deploy.action.js';
+export * from './upgrade.action.js';

@@ -8,6 +8,7 @@ import {
   InfoAction,
   NewAction,
   StartAction,
+  UpgradeAction,
 } from '../actions/index.js';
 import { ERROR_PREFIX } from '../lib/ui/index.js';
 import { AddCommand } from './add.command.js';
@@ -17,6 +18,7 @@ import { GenerateCommand } from './generate.command.js';
 import { InfoCommand } from './info.command.js';
 import { NewCommand } from './new.command.js';
 import { StartCommand } from './start.command.js';
+import { UpgradeCommand } from './upgrade.command.js';
 
 export class CommandLoader {
   public static async load(program: Command): Promise<void> {
@@ -36,6 +38,7 @@ export class CommandLoader {
     new InfoCommand(new InfoAction()).load(program);
     new AddCommand(new AddAction()).load(program);
     new DeployCommand(new DeployAction()).load(program);
+    new UpgradeCommand(new UpgradeAction()).load(program);
     await new GenerateCommand(new GenerateAction()).load(program);
 
     this.handleInvalidCommand(program);

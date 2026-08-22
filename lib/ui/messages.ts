@@ -38,6 +38,10 @@ export const MESSAGES = {
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
   LIBRARY_INSTALLATION_STARTS: 'Starting library setup...',
 
+  UPGRADE_IN_PROGRESS: `${EMOJIS.ROCKET}  Upgrading your project to NestJS v12...`,
+  UPGRADE_GLOBAL_CLI_HINT:
+    'Only the local @nestjs/cli was updated. To update a globally installed CLI, run: npm i -g @nestjs/cli@latest',
+
   OBSERVABILITY_QUESTION:
     'Would you like to enable auto-instrumented observability (@nestjs/observe)?',
 
