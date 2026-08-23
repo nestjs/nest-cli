@@ -16,13 +16,18 @@ export interface GlobEntry {
 }
 
 /**
- * Characters that make a path segment a pattern rather than a literal.
+ * Characters that make a path segment a pattern rather than a literal, under
+ * minimatch's default options (no extglob).
  *
- * Deliberately over-inclusive: misreading a literal as a pattern only widens
- * the directory we walk (still correct, marginally slower), whereas the
- * reverse would have us stat a path that can never exist.
+ * Matches the literal chars `*`, `?`, `[`, `{` anywhere, plus `!`, `+`, `@`,
+ * `?`, or `*` immediately followed by `(` (an extglob-looking prefix, which
+ * minimatch still treats specially even without extglob enabled). Chars like
+ * `@`, `(`, `)`, `]`, `}` on their own are NOT magic here: treating them as
+ * such previously collapsed the literal base far above the real directory
+ * (e.g. an `@` in a username segment), causing `readdir` to walk huge trees
+ * and silently return no matches on the first unreadable subdirectory.
  */
-const MAGIC_CHARS = /[*?[\]{}()!+@]/;
+const MAGIC_CHARS = /[*?[{]|[!+@?*]\(/;
 
 const toPosix = (value: string): string => value.replace(/\\/g, '/');
 
@@ -50,6 +55,64 @@ function splitPattern(pattern: string): { base: string; rest: string[] } {
  */
 function expandGlobstarSuffix(pattern: string): string[] {
   return pattern.endsWith('/**') ? [pattern, pattern.slice(0, -3)] : [pattern];
+}
+
+interface WalkedEntry {
+  /** Always `/`-separated. */
+  parent: string;
+  entry: Dirent;
+}
+
+/**
+ * Walks the directory tree rooted at `dir`, without using `fs`'s own
+ * `recursive` option so we can:
+ *
+ * - Skip an unreadable directory instead of failing the whole walk (`glob`
+ *   returns whatever it found before the error, not nothing).
+ * - Never follow a symlinked directory into further recursion, matching
+ *   `glob`'s `follow: false` default and avoiding symlink cycles. A
+ *   symlinked directory's immediate children are still listed (so a pattern
+ *   can match one level in), just not walked any deeper.
+ */
+function walk(dir: string, recursive: boolean): WalkedEntry[] {
+  let entries: Dirent[];
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    // Unreadable or missing directory: contribute nothing here, but let
+    // sibling directories elsewhere in the walk still report their matches.
+    return [];
+  }
+
+  const results: WalkedEntry[] = entries.map((entry) => ({ parent: dir, entry }));
+
+  if (!recursive) {
+    return results;
+  }
+
+  for (const entry of entries) {
+    const full = `${dir}/${entry.name}`;
+
+    if (entry.isDirectory()) {
+      results.push(...walk(full, true));
+      continue;
+    }
+
+    if (entry.isSymbolicLink()) {
+      let stats;
+      try {
+        stats = statSync(full);
+      } catch {
+        continue;
+      }
+      if (stats.isDirectory()) {
+        // One level, not recursive: list children but don't descend further.
+        results.push(...walk(full, false));
+      }
+    }
+  }
+
+  return results;
 }
 
 /**
@@ -92,14 +155,10 @@ export function globEntriesSync(
   const recursive =
     rest.length > 1 || rest.some((segment) => segment.includes('**'));
 
-  let entries: Dirent[];
-  try {
-    entries = readdirSync(base, { recursive, withFileTypes: true });
-  } catch {
-    // An asset may be configured for a directory that does not exist; `glob`
-    // reports no matches rather than failing the build, so we do too.
-    return [];
-  }
+  // An asset may be configured for a directory that does not exist, or one
+  // that turns out to be unreadable; `walk` reports no matches for it (and
+  // any nested directories that fail) rather than failing the whole build.
+  const walked = walk(base, recursive);
 
   const matches: GlobEntry[] = [];
 
@@ -108,14 +167,8 @@ export function globEntriesSync(
     matches.push({ path: base, isFile: false, isDirectory: true });
   }
 
-  for (const entry of entries) {
-    // `parentPath` replaced the deprecated `path` in Node 20.12; keep the
-    // fallback while `engines.node` still allows 20.11. The double cast is
-    // required because @types/node@25 has already dropped `Dirent.path`.
-    const parent = toPosix(
-      entry.parentPath ?? (entry as unknown as { path: string }).path,
-    );
-    const full = `${parent}/${entry.name}`;
+  for (const { parent, entry } of walked) {
+    const full = `${toPosix(parent)}/${entry.name}`;
     if (accept(full)) {
       matches.push({
         path: full,

@@ -1,5 +1,12 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'fs';
+import { platform, tmpdir } from 'os';
 import { join } from 'path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -184,6 +191,90 @@ describe('globSync', () => {
       expect(globEntriesSync(`${root}/src/assets`, { dot: true })).toEqual([
         { path: `${root}/src/assets`, isFile: false, isDirectory: true },
       ]);
+    });
+  });
+
+  describe('regression: narrow MAGIC_CHARS', () => {
+    it('finds files under a path segment containing "@"', () => {
+      mkdirSync(join(root, 'users/user@latam.com/src'), { recursive: true });
+      writeFileSync(join(root, 'users/user@latam.com/src/app.hbs'), 'app');
+
+      expect(
+        rel(globSync(`${root}/users/user@latam.com/src/**/*.hbs`)),
+      ).toEqual(['/users/user@latam.com/src/app.hbs']);
+    });
+
+    it('finds files under a path segment containing "(x86)"', () => {
+      mkdirSync(join(root, 'Program Files (x86)/@scope/src'), {
+        recursive: true,
+      });
+      writeFileSync(
+        join(root, 'Program Files (x86)/@scope/src/app.hbs'),
+        'app',
+      );
+
+      expect(
+        rel(globSync(`${root}/Program Files (x86)/@scope/src/**/*.hbs`)),
+      ).toEqual(['/Program Files (x86)/@scope/src/app.hbs']);
+    });
+  });
+
+  describe('regression: symlinked directories are not followed', () => {
+    let symlinkRoot: string;
+
+    beforeAll(() => {
+      symlinkRoot = join(root, 'symtree');
+      mkdirSync(join(symlinkRoot, 'real'), { recursive: true });
+      writeFileSync(join(symlinkRoot, 'real/leaf.hbs'), 'leaf');
+
+      // A symlinked directory that cycles back to its own parent. Following
+      // it would recurse forever; the fix must list it as an entry without
+      // ever descending into `loop/real` or `loop/loop`.
+      try {
+        symlinkSync(symlinkRoot, join(symlinkRoot, 'loop'), 'dir');
+      } catch {
+        // Creating symlinks can require elevated privileges on Windows;
+        // skip silently there rather than failing the whole run.
+      }
+    });
+
+    it('does not follow a symlinked directory (no infinite loop, no double count)', () => {
+      if (platform() === 'win32') {
+        return;
+      }
+
+      const matches = rel(globSync(`${symlinkRoot}/**/*.hbs`));
+
+      // Only the real file is matched; nothing is found through `loop`,
+      // because the walk lists `loop`'s immediate children but never
+      // descends into `loop/real` or `loop/loop`.
+      expect(matches).toEqual(['/symtree/real/leaf.hbs']);
+    });
+  });
+
+  describe('regression: partial results on an unreadable subdirectory', () => {
+    it('still returns matches found outside the unreadable directory', () => {
+      // chmod-based permission denial has no effect when running as root.
+      if (platform() === 'win32' || process.getuid?.() === 0) {
+        return;
+      }
+
+      const unreadableRoot = join(root, 'partial');
+      mkdirSync(join(unreadableRoot, 'ok'), { recursive: true });
+      mkdirSync(join(unreadableRoot, 'blocked'), { recursive: true });
+      writeFileSync(join(unreadableRoot, 'ok/keep.hbs'), 'keep');
+      writeFileSync(join(unreadableRoot, 'blocked/hidden.hbs'), 'hidden');
+
+      chmodSync(join(unreadableRoot, 'blocked'), 0o000);
+
+      try {
+        expect(rel(globSync(`${unreadableRoot}/**/*.hbs`))).toEqual([
+          '/partial/ok/keep.hbs',
+        ]);
+      } finally {
+        // Restore permissions so `afterAll`'s recursive rmSync can clean up.
+        chmodSync(join(unreadableRoot, 'blocked'), 0o755);
+      }
     });
   });
 });
