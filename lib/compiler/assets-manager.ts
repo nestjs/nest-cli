@@ -273,8 +273,7 @@ export class AssetsManager {
       }
 
       const libAssets = libProject.compilerOptions?.assets as
-        | Asset[]
-        | undefined;
+        Asset[] | undefined;
       if (!libAssets || libAssets.length <= 0) {
         continue;
       }
