@@ -7,6 +7,7 @@ import {
   createTempDir,
   fileExists,
   installWebpackDeps,
+  npmInstall,
   removeLocalCli,
   removeTempDir,
   runNest,
@@ -81,12 +82,10 @@ describe('Build Command (e2e)', () => {
   describe('with SWC builder', () => {
     beforeAll(() => {
       // Install SWC dependencies
-      execSync('npm install --save-dev @swc/cli @swc/core', {
-        cwd: appPath,
-        encoding: 'utf-8',
-        timeout: 120_000,
-        stdio: 'pipe',
-      });
+      npmInstall(appPath, '--save-dev @swc/cli @swc/core');
+      // The install restores the published @nestjs/cli into node_modules,
+      // which would shadow the CLI under test — remove it again.
+      removeLocalCli(appPath);
     });
 
     it('should build using --builder swc', () => {

@@ -22,8 +22,17 @@ describe('Add Command (e2e)', () => {
     removeTempDir(tmpDir);
   });
 
-  it('should add @nestjs/config library to the project', () => {
-    runNest('add @nestjs/config', appPath);
+  // Modern @nestjs/* packages (config, swagger, ...) no longer ship a
+  // `nest-add` schematic, so `nest add` installs the package and then exits
+  // with a clear "does not support schematics" error. These tests pin that
+  // contract: the package lands in package.json and the failure is a clean,
+  // informative message rather than a crash.
+
+  it('should install the package and report when it lacks schematics', () => {
+    const { stderr, exitCode } = runNestRaw('add @nestjs/config', appPath);
+
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain('does not support schematics');
 
     const pkg = JSON.parse(readFileContent(path.join(appPath, 'package.json')));
     expect(pkg.dependencies['@nestjs/config']).toBeDefined();
@@ -32,19 +41,22 @@ describe('Add Command (e2e)', () => {
   it('should handle --dry-run flag without crashing', () => {
     // Note: --dry-run in `nest add` applies to schematics only,
     // the package itself may still be installed.
-    const { exitCode } = runNestRaw('add @nestjs/swagger --dry-run', appPath);
+    const { stderr, exitCode } = runNestRaw(
+      'add @nestjs/swagger --dry-run',
+      appPath,
+    );
 
-    expect(exitCode).toBe(0);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain('does not support schematics');
   });
 
   it('should add with --skip-install flag', () => {
-    const { stdout, exitCode } = runNestRaw(
+    const { stderr, exitCode } = runNestRaw(
       'add @nestjs/mapped-types --skip-install',
       appPath,
     );
 
-    // With skip-install, the schematics may still run but no npm install
-    // The exit should not crash
-    expect(exitCode).toBe(0);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain('does not support schematics');
   });
 });

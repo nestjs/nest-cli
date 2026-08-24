@@ -229,20 +229,41 @@ export class InfoAction extends AbstractAction {
     const nestDependencies: NestDependency[] = [];
     Object.keys(dependencies).forEach((key) => {
       if (key.indexOf('@nestjs') > -1) {
-        const depPackagePath = require.resolve(key + '/package.json', {
-          paths: [process.cwd()],
-        });
-        const depPackage = readFileSync(depPackagePath).toString();
-        const value = JSON.parse(depPackage).version;
         nestDependencies.push({
           name: `${key.replace(/@nestjs\//, '').replace(/@.*/, '')} version`,
-          value: value || dependencies[key].version,
+          value: this.readInstalledVersion(key) ?? dependencies[key].version,
           packageName: key,
         });
       }
     });
 
     return nestDependencies;
+  }
+
+  /**
+   * Reads the installed version of a package, or returns undefined when it
+   * cannot be determined (package not installed, or its "exports" map does
+   * not expose "./package.json" — as with @nestjs/* v12+).
+   */
+  private readInstalledVersion(packageName: string): string | undefined {
+    let depPackagePath: string;
+    try {
+      depPackagePath = require.resolve(packageName + '/package.json', {
+        paths: [process.cwd()],
+      });
+    } catch {
+      depPackagePath = join(
+        process.cwd(),
+        'node_modules',
+        packageName,
+        'package.json',
+      );
+    }
+    try {
+      return JSON.parse(readFileSync(depPackagePath).toString()).version;
+    } catch {
+      return undefined;
+    }
   }
 
   private format(dependencies: NestDependency[]): NestDependency[] {

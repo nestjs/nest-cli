@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   createTempDir,
+  removeLocalCli,
   removeTempDir,
   runNest,
   scaffoldApp,
@@ -38,6 +39,8 @@ describe('Info Command (e2e)', () => {
     beforeAll(() => {
       tmpDir = createTempDir('nest-e2e-info-deps-');
       appPath = scaffoldAppWithDeps(tmpDir, 'info-deps-app');
+      // The local @nestjs/cli would shadow the CLI under test.
+      removeLocalCli(appPath);
     });
 
     afterAll(() => {
