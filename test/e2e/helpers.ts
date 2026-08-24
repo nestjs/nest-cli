@@ -265,44 +265,13 @@ export function scaffoldAppWithDeps(
   extraFlags = '',
 ): string {
   const appPath = scaffoldApp(tmpDir, appName, extraFlags);
-  npmInstall(appPath);
+  execSync('npm install', {
+    cwd: appPath,
+    encoding: 'utf-8',
+    timeout: 120_000,
+    stdio: 'pipe',
+  });
   return appPath;
-}
-
-/**
- * Run `npm install` in the given app with an isolated npm cache.
- *
- * Test files run in parallel, and concurrent installs sharing the global
- * `~/.npm` cache can corrupt it, after which every install on the machine
- * fails with npm-internal errors such as "Cannot read properties of null
- * (reading 'children')". A private per-app cache (a sibling of the app, so
- * it is removed together with the temp dir) avoids the contention entirely.
- */
-export function npmInstall(appPath: string, args = ''): void {
-  const cacheDir = `${appPath.replace(/[/\\]+$/, '')}-npm-cache`;
-  const maxAttempts = 3;
-  for (let attempt = 1; ; attempt++) {
-    try {
-      execSync(`npm install ${args}`.trim(), {
-        cwd: appPath,
-        encoding: 'utf-8',
-        timeout: 120_000,
-        stdio: 'pipe',
-        env: { ...process.env, npm_config_cache: cacheDir },
-      });
-      return;
-    } catch (error) {
-      if (attempt >= maxAttempts) {
-        throw error;
-      }
-      // Discard the possibly-corrupted cache and partial install and retry.
-      fs.rmSync(cacheDir, { recursive: true, force: true });
-      fs.rmSync(path.join(appPath, 'node_modules'), {
-        recursive: true,
-        force: true,
-      });
-    }
-  }
 }
 
 /**
@@ -516,9 +485,9 @@ export function convertToCjs(appPath: string): void {
  * not installed automatically.
  */
 export function installWebpackDeps(appPath: string): void {
-  npmInstall(
-    appPath,
-    '--save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
+  execSync(
+    'npm install --save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
+    { cwd: appPath, encoding: 'utf-8', timeout: 120_000, stdio: 'pipe' },
   );
 }
 
@@ -637,9 +606,6 @@ export function createCliSymlink(linkPath: string) {
  * Removes an existing link, if any.
  * @param linkPath the link
  */
-export function removeLink(linkPath: string | undefined) {
-  // May be undefined when beforeAll failed before the link was created.
-  if (linkPath) {
-    fs.rmSync(linkPath, { force: true });
-  }
+export function removeLink(linkPath: string) {
+  fs.rmSync(linkPath, { force: true });
 }
