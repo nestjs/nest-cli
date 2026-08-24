@@ -17,8 +17,25 @@ describe('swcDefaultsFactory', () => {
     expect(result.cliOptions.stripLeadingPaths).toBe(false);
   });
 
-  it('should set stripLeadingPaths to false when rootDir is set to a path', () => {
+  it('should set stripLeadingPaths to true when rootDir is the source root', () => {
+    // tsc flattens the source dir out of the output in this case, so swc
+    // must do the same to produce an identical layout.
     const result = swcDefaultsFactory({ rootDir: './src' }, undefined);
+    expect(result.cliOptions.stripLeadingPaths).toBe(true);
+  });
+
+  it('should set stripLeadingPaths to true when a resolved rootDir ends with the source root', () => {
+    const result = swcDefaultsFactory(
+      { rootDir: '/repo/apps/main-app/src' },
+      { sourceRoot: 'apps/main-app/src' } as any,
+    );
+    expect(result.cliOptions.stripLeadingPaths).toBe(true);
+  });
+
+  it('should set stripLeadingPaths to false when rootDir is above the source root', () => {
+    const result = swcDefaultsFactory({ rootDir: '/repo/apps' }, {
+      sourceRoot: 'apps/main-app/src',
+    } as any);
     expect(result.cliOptions.stripLeadingPaths).toBe(false);
   });
 

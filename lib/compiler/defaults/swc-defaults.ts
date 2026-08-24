@@ -47,11 +47,39 @@ export const swcDefaultsFactory = (
       ignore: tsConfigExclude.length ? tsConfigExclude : undefined,
       quiet: false,
       watch: false,
-      stripLeadingPaths: !tsOptions?.rootDir,
+      stripLeadingPaths: shouldStripLeadingPaths(
+        tsOptions?.rootDir,
+        configuration?.sourceRoot ?? 'src',
+      ),
       ...builderOptions,
     },
   };
 };
+
+/**
+ * Mirrors tsc's output layout: tsc flattens the source directory out of the
+ * output when its (effective) rootDir is the source root, so swc must strip
+ * leading paths in the same cases — no rootDir configured (tsc infers the
+ * common source directory), or a rootDir that points at the source root
+ * (relative or resolved absolute). A rootDir above the source root (e.g. '.')
+ * keeps the source directory in the output, so nothing is stripped.
+ */
+function shouldStripLeadingPaths(
+  rootDir: string | undefined,
+  sourceRoot: string,
+): boolean {
+  if (!rootDir) {
+    return true;
+  }
+  const normalizedRootDir = convertPath(rootDir).replace(/\/+$/, '');
+  const normalizedSourceRoot = convertPath(sourceRoot)
+    .replace(/^\.\//, '')
+    .replace(/\/+$/, '');
+  return (
+    normalizedRootDir === normalizedSourceRoot ||
+    normalizedRootDir.endsWith(`/${normalizedSourceRoot}`)
+  );
+}
 
 /**
  * Converts Windows specific file paths to posix

@@ -38,12 +38,12 @@ describe('Build Command (e2e)', () => {
 
     const distDir = path.join(appPath, 'dist');
     expect(fileExists(distDir)).toBe(true);
-    expect(fileExists(path.join(distDir, 'src', 'main.js'))).toBe(true);
-    expect(fileExists(path.join(distDir, 'src', 'app.module.js'))).toBe(true);
-    expect(fileExists(path.join(distDir, 'src', 'app.controller.js'))).toBe(
+    expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
+    expect(fileExists(path.join(distDir, 'app.module.js'))).toBe(true);
+    expect(fileExists(path.join(distDir, 'app.controller.js'))).toBe(
       true,
     );
-    expect(fileExists(path.join(distDir, 'src', 'app.service.js'))).toBe(true);
+    expect(fileExists(path.join(distDir, 'app.service.js'))).toBe(true);
   });
 
   it('should build with a custom tsconfig path using --path', () => {
@@ -52,7 +52,7 @@ describe('Build Command (e2e)', () => {
     // Use the existing tsconfig.build.json
     runNest('build --path tsconfig.build.json', appPath);
 
-    expect(fileExists(path.join(appPath, 'dist', 'src', 'main.js'))).toBe(true);
+    expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
   });
 
   it('should build in --watch mode and detect initial compilation', async () => {
@@ -70,7 +70,7 @@ describe('Build Command (e2e)', () => {
       );
 
       // dist should be produced
-      expect(fileExists(path.join(appPath, 'dist', 'src', 'main.js'))).toBe(
+      expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(
         true,
       );
     } finally {

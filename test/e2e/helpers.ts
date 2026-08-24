@@ -26,14 +26,21 @@ export function runNest(
   env?: NodeJS.ProcessEnv,
 ): string {
   const command = `node "${CLI_PATH}" ${args}`;
-  return stripAnsi(
-    execSync(command, {
-      cwd: cwd ?? process.cwd(),
-      encoding: 'utf-8',
-      env: { ...process.env, ...env },
-      timeout: 120_000,
-    }),
-  );
+  try {
+    return stripAnsi(
+      execSync(command, {
+        cwd: cwd ?? process.cwd(),
+        encoding: 'utf-8',
+        env: { ...process.env, ...env },
+        timeout: 120_000,
+      }),
+    );
+  } catch (err: any) {
+    // execSync errors only carry the command in their message; surface the
+    // CLI's actual output so failures are diagnosable from CI logs.
+    err.message += `\n--- stdout ---\n${stripAnsi(err.stdout?.toString() ?? '')}\n--- stderr ---\n${stripAnsi(err.stderr?.toString() ?? '')}`;
+    throw err;
+  }
 }
 
 /**
@@ -265,13 +272,62 @@ export function scaffoldAppWithDeps(
   extraFlags = '',
 ): string {
   const appPath = scaffoldApp(tmpDir, appName, extraFlags);
-  execSync('npm install', {
-    cwd: appPath,
-    encoding: 'utf-8',
-    timeout: 120_000,
-    stdio: 'pipe',
-  });
+  npmInstall(appPath);
   return appPath;
+}
+
+/**
+ * Run `npm install` in the given app.
+ *
+ * - Uses a private npm cache (a sibling of the app, removed with the temp
+ *   dir) so parallel test files never contend on the shared `~/.npm`.
+ * - Skips audit/fund, which shrinks the surface for npm-internal crashes.
+ * - Retries once from a clean slate, and attaches the npm debug log to the
+ *   thrown error so CI failures show npm's actual stack trace instead of a
+ *   one-line message.
+ */
+export function npmInstall(appPath: string, args = ''): void {
+  const cacheDir = `${appPath}-npm-cache`;
+  const maxAttempts = 2;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      execSync(`npm install --no-audit --no-fund ${args}`.trimEnd(), {
+        cwd: appPath,
+        encoding: 'utf-8',
+        timeout: 120_000,
+        stdio: 'pipe',
+        env: { ...process.env, npm_config_cache: cacheDir },
+      });
+      return;
+    } catch (error: any) {
+      if (attempt >= maxAttempts) {
+        error.message += `\n--- npm debug log ---\n${readNewestNpmLog(cacheDir)}`;
+        throw error;
+      }
+      // Retry from a clean slate.
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+      fs.rmSync(path.join(appPath, 'node_modules'), {
+        recursive: true,
+        force: true,
+      });
+    }
+  }
+}
+
+/** Read the tail of the most recent npm debug log in the given cache dir. */
+function readNewestNpmLog(cacheDir: string): string {
+  try {
+    const logsDir = path.join(cacheDir, '_logs');
+    const newest = fs
+      .readdirSync(logsDir)
+      .sort()
+      .at(-1);
+    if (!newest) return '(no log files found)';
+    const content = fs.readFileSync(path.join(logsDir, newest), 'utf-8');
+    return content.split('\n').slice(-80).join('\n');
+  } catch (e) {
+    return `(could not read npm log: ${e})`;
+  }
 }
 
 /**
@@ -317,6 +373,8 @@ export function scaffoldMonorepoWithDeps(
         extends: '../../tsconfig.json',
         compilerOptions: {
           declaration: false,
+          // TypeScript 6 (TS5011) requires an explicit rootDir
+          rootDir: 'src',
           outDir: `../../dist/apps/${mainAppName}`,
         },
         include: ['src/**/*'],
@@ -357,6 +415,8 @@ export function scaffoldMonorepoWithDeps(
         extends: '../../tsconfig.json',
         compilerOptions: {
           declaration: false,
+          // TypeScript 6 (TS5011) requires an explicit rootDir
+          rootDir: 'src',
           outDir: `../../dist/apps/${subAppName}`,
         },
         include: ['src/**/*'],
@@ -485,9 +545,9 @@ export function convertToCjs(appPath: string): void {
  * not installed automatically.
  */
 export function installWebpackDeps(appPath: string): void {
-  execSync(
-    'npm install --save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
-    { cwd: appPath, encoding: 'utf-8', timeout: 120_000, stdio: 'pipe' },
+  npmInstall(
+    appPath,
+    '--save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
   );
 }
 
@@ -606,6 +666,9 @@ export function createCliSymlink(linkPath: string) {
  * Removes an existing link, if any.
  * @param linkPath the link
  */
-export function removeLink(linkPath: string) {
-  fs.rmSync(linkPath, { force: true });
+export function removeLink(linkPath: string | undefined) {
+  // May be undefined when beforeAll failed before the link was created.
+  if (linkPath) {
+    fs.rmSync(linkPath, { force: true });
+  }
 }
