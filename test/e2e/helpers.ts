@@ -265,12 +265,28 @@ export function scaffoldAppWithDeps(
   extraFlags = '',
 ): string {
   const appPath = scaffoldApp(tmpDir, appName, extraFlags);
-  execSync('npm install', {
-    cwd: appPath,
-    encoding: 'utf-8',
-    timeout: 120_000,
-    stdio: 'pipe',
-  });
+  // npm occasionally crashes on CI with internal errors (e.g. "Cannot read
+  // properties of null (reading 'children')"), so retry before giving up.
+  const maxAttempts = 3;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      execSync('npm install', {
+        cwd: appPath,
+        encoding: 'utf-8',
+        timeout: 120_000,
+        stdio: 'pipe',
+      });
+      break;
+    } catch (error) {
+      if (attempt >= maxAttempts) {
+        throw error;
+      }
+      fs.rmSync(path.join(appPath, 'node_modules'), {
+        recursive: true,
+        force: true,
+      });
+    }
+  }
   return appPath;
 }
 
@@ -606,6 +622,9 @@ export function createCliSymlink(linkPath: string) {
  * Removes an existing link, if any.
  * @param linkPath the link
  */
-export function removeLink(linkPath: string) {
-  fs.rmSync(linkPath, { force: true });
+export function removeLink(linkPath: string | undefined) {
+  // May be undefined when beforeAll failed before the link was created.
+  if (linkPath) {
+    fs.rmSync(linkPath, { force: true });
+  }
 }
