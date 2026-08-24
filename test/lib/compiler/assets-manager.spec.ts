@@ -1,7 +1,7 @@
 import * as chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { copyFileSync, statSync } from 'fs';
-import { sync as globSync } from 'glob';
+import { globSync } from '../../../lib/compiler/helpers/glob.js';
 import { join, sep } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AssetsManager } from '../../../lib/compiler/assets-manager.js';
@@ -12,8 +12,9 @@ vi.mock('chokidar', () => ({
   watch: vi.fn(),
 }));
 
-vi.mock('glob', () => ({
-  sync: vi.fn(),
+vi.mock('../../../lib/compiler/helpers/glob.js', () => ({
+  globSync: vi.fn(),
+  globEntriesSync: vi.fn(),
 }));
 
 vi.mock('fs', () => ({

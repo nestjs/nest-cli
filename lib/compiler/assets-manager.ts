@@ -1,6 +1,5 @@
 import * as chokidar from 'chokidar';
 import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
-import { sync } from 'glob';
 import { dirname, join, sep } from 'path';
 import {
   ActionOnFile,
@@ -10,6 +9,7 @@ import {
 } from '../configuration/index.js';
 import { ERROR_PREFIX } from '../ui/index.js';
 import { copyPathResolve } from './helpers/copy-path-resolve.js';
+import { globSync } from './helpers/glob.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import {
   areOutsidePathsAllowed,
@@ -162,7 +162,7 @@ export class AssetsManager {
         };
 
         if (isWatchEnabled || item.watchAssets) {
-          const matchedPaths = sync(item.glob, {
+          const matchedPaths = globSync(item.glob, {
             ignore: item.exclude,
             dot: true,
           });
@@ -227,7 +227,7 @@ export class AssetsManager {
           this.watchers.push(watcher);
           this.watcherReadyPromises.push(settled);
         } else {
-          const matchedPaths = sync(item.glob, {
+          const matchedPaths = globSync(item.glob, {
             ignore: item.exclude,
             dot: true,
           });
@@ -235,7 +235,7 @@ export class AssetsManager {
             ? matchedPaths.filter((matched) => statSync(matched).isFile())
             : matchedPaths.flatMap((matched) => {
                 if (statSync(matched).isDirectory()) {
-                  return sync(`${matched}/**/*`, {
+                  return globSync(`${matched}/**/*`, {
                     ignore: item.exclude,
                   }).filter((file) => statSync(file).isFile());
                 }
@@ -273,8 +273,7 @@ export class AssetsManager {
       }
 
       const libAssets = libProject.compilerOptions?.assets as
-        | Asset[]
-        | undefined;
+        Asset[] | undefined;
       if (!libAssets || libAssets.length <= 0) {
         continue;
       }

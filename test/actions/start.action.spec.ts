@@ -13,11 +13,6 @@ vi.mock('fs', () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock('glob', () => ({
-  glob: vi.fn(),
-  globSync: vi.fn(() => []),
-}));
-
 vi.mock('../../lib/compiler/assets-manager.js', () => ({
   AssetsManager: vi.fn(
     class {
