@@ -72,6 +72,34 @@ describe('deleteOutDirIfEnabled', () => {
     );
   });
 
+  it('should delete the default buildinfo file when "incremental" is enabled without an explicit tsBuildInfoFile', async () => {
+    const config = createConfiguration(true);
+    // With "outDir" and "rootDir" both set, TypeScript places the default
+    // buildinfo next to the tsconfig - outside "outDir".
+    const tsOptions = {
+      incremental: true,
+      outDir: fromProjectRoot('dist'),
+      rootDir: fromProjectRoot('src'),
+      configFilePath: fromProjectRoot('tsconfig.build.json'),
+    };
+    await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
+    expect(mockedRm).toHaveBeenCalledTimes(2);
+    expect(mockedRm).toHaveBeenCalledWith(
+      fromProjectRoot('tsconfig.build.tsbuildinfo'),
+      { force: true, maxRetries: 3 },
+    );
+  });
+
+  it('should not delete a buildinfo file when incremental compilation is disabled', async () => {
+    const config = createConfiguration(true);
+    const tsOptions = {
+      outDir: fromProjectRoot('dist'),
+      configFilePath: fromProjectRoot('tsconfig.build.json'),
+    };
+    await deleteOutDirIfEnabled(config, undefined, 'dist', tsOptions);
+    expect(mockedRm).toHaveBeenCalledTimes(1);
+  });
+
   it('should not delete tsBuildInfoFile when tsOptions is undefined', async () => {
     const config = createConfiguration(true);
     await deleteOutDirIfEnabled(config, undefined, 'dist');
@@ -121,6 +149,19 @@ describe('deleteOutDirIfEnabled', () => {
       ).rejects.toThrow(/outside of or equal to the project directory/);
       // The outDir is validated together with tsBuildInfoFile, so a rejected
       // build info path cannot leave a half-deleted output directory behind
+      expect(mockedRm).not.toHaveBeenCalled();
+    });
+
+    it('should refuse to delete a default buildinfo path outside the project', async () => {
+      const config = createConfiguration(true);
+      await expect(
+        deleteOutDirIfEnabled(config, undefined, 'dist', {
+          incremental: true,
+          outDir: fromProjectRoot('dist'),
+          rootDir: fromProjectRoot('src'),
+          configFilePath: resolve(process.cwd(), '..', 'tsconfig.json'),
+        }),
+      ).rejects.toThrow(/outside of or equal to the project directory/);
       expect(mockedRm).not.toHaveBeenCalled();
     });
 

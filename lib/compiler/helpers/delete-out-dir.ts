@@ -37,7 +37,14 @@ export async function deleteOutDirIfEnabled(
   }
 
   const shouldValidate = !areOutsidePathsAllowed(configuration, appName);
-  const tsBuildInfoFile = tsOptions?.tsBuildInfoFile;
+  // With "incremental" enabled but no explicit "tsBuildInfoFile", TypeScript
+  // derives a default location that can fall outside "outDir" (with "outDir"
+  // and "rootDir" both set, "tsconfig.build.tsbuildinfo" lands next to the
+  // tsconfig), so the recursive delete below would leave it behind. Reuse the
+  // compiler's own resolution to remove the buildinfo wherever it actually is.
+  const tsBuildInfoFile =
+    tsOptions &&
+    (tsOptions.tsBuildInfoFile ?? ts.getTsBuildInfoEmitOutputFilePath(tsOptions));
 
   // Both paths are validated before anything is removed, so that a rejected
   // "tsBuildInfoFile" cannot leave a half-deleted output directory behind.
