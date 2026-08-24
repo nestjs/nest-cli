@@ -43,7 +43,7 @@
     "@angular-devkit/core": "22.1.5",
     "@angular-devkit/schematics": "22.1.5",
     "@angular-devkit/schematics-cli": "22.1.5",
-    "@inquirer/prompts": "8.5.2",
+    "@inquirer/prompts": "8.6.0",
     "@nestjs/schematics": "next",
     "ansis": "4.3.1",
     "chokidar": "5.0.0",
