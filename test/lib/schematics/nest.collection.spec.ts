@@ -23,6 +23,7 @@ describe('Nest Collection', () => {
     'service',
     'sub-app',
     'resource',
+    'upgrade',
   ].forEach((schematic) => {
     it(`should call runner with ${schematic} schematic name`, async () => {
       const mock = vi.fn();
@@ -77,6 +78,13 @@ describe('Nest Collection', () => {
       );
     });
   });
+  it('should not list "upgrade" among the generate schematics', () => {
+    const collection = new NestCollection({} as AbstractRunner);
+    const names = collection.getSchematics().map((item) => item.name);
+    expect(names).not.toContain('upgrade');
+    expect(names).toContain('resource');
+  });
+
   it('should throw an error when schematic name is not in nest collection', async () => {
     const mock = vi.fn();
     mock.mockImplementation(() => {

@@ -110,6 +110,12 @@ export class NestCollection extends AbstractCollection {
       alias: 'app',
       description: 'Generate a new application within a monorepo',
     },
+    // Invoked by "nest update", not "nest generate" - see getSchematics().
+    {
+      name: 'upgrade',
+      alias: 'upgrade',
+      description: 'Upgrade the project to the latest NestJS version',
+    },
   ];
 
   constructor(runner: AbstractRunner) {
@@ -122,8 +128,10 @@ export class NestCollection extends AbstractCollection {
   }
 
   public getSchematics(): Schematic[] {
+    // "upgrade" is executed through "nest update"; it is not offered as a
+    // "nest generate" schematic.
     return NestCollection.schematics.filter(
-      (item) => item.name !== 'angular-app',
+      (item) => item.name !== 'angular-app' && item.name !== 'upgrade',
     );
   }
 
