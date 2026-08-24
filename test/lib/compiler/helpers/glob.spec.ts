@@ -302,6 +302,28 @@ describe('globSync', () => {
     });
   });
 
+  describe('regression: directory expansion drops dotfiles (#3522)', () => {
+    // The exact shape `assets-manager` builds when an asset entry is a bare
+    // directory: `<dir>/**/*`. A plain `nest build` must see the same files
+    // `--watchAssets` does, which means this pattern has to honour `dot`.
+    it('includes dotfiles under the directory when dot is true', () => {
+      expect(rel(globSync(`${root}/src/assets/**/*`, { dot: true }))).toEqual([
+        '/src/assets/.dotfile.hbs',
+        '/src/assets/a.hbs',
+        '/src/assets/nested',
+        '/src/assets/nested/b.hbs',
+      ]);
+    });
+
+    it('omits them without dot, which is what caused the bug', () => {
+      expect(rel(globSync(`${root}/src/assets/**/*`))).toEqual([
+        '/src/assets/a.hbs',
+        '/src/assets/nested',
+        '/src/assets/nested/b.hbs',
+      ]);
+    });
+  });
+
   describe('regression: partial results on an unreadable subdirectory', () => {
     it('still returns matches found outside the unreadable directory', () => {
       // chmod-based permission denial has no effect when running as root.
