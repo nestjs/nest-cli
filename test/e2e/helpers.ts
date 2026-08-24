@@ -265,29 +265,44 @@ export function scaffoldAppWithDeps(
   extraFlags = '',
 ): string {
   const appPath = scaffoldApp(tmpDir, appName, extraFlags);
-  // npm occasionally crashes on CI with internal errors (e.g. "Cannot read
-  // properties of null (reading 'children')"), so retry before giving up.
+  npmInstall(appPath);
+  return appPath;
+}
+
+/**
+ * Run `npm install` in the given app with an isolated npm cache.
+ *
+ * Test files run in parallel, and concurrent installs sharing the global
+ * `~/.npm` cache can corrupt it, after which every install on the machine
+ * fails with npm-internal errors such as "Cannot read properties of null
+ * (reading 'children')". A private per-app cache (a sibling of the app, so
+ * it is removed together with the temp dir) avoids the contention entirely.
+ */
+export function npmInstall(appPath: string, args = ''): void {
+  const cacheDir = `${appPath.replace(/[/\\]+$/, '')}-npm-cache`;
   const maxAttempts = 3;
   for (let attempt = 1; ; attempt++) {
     try {
-      execSync('npm install', {
+      execSync(`npm install ${args}`.trim(), {
         cwd: appPath,
         encoding: 'utf-8',
         timeout: 120_000,
         stdio: 'pipe',
+        env: { ...process.env, npm_config_cache: cacheDir },
       });
-      break;
+      return;
     } catch (error) {
       if (attempt >= maxAttempts) {
         throw error;
       }
+      // Discard the possibly-corrupted cache and partial install and retry.
+      fs.rmSync(cacheDir, { recursive: true, force: true });
       fs.rmSync(path.join(appPath, 'node_modules'), {
         recursive: true,
         force: true,
       });
     }
   }
-  return appPath;
 }
 
 /**
@@ -501,9 +516,9 @@ export function convertToCjs(appPath: string): void {
  * not installed automatically.
  */
 export function installWebpackDeps(appPath: string): void {
-  execSync(
-    'npm install --save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
-    { cwd: appPath, encoding: 'utf-8', timeout: 120_000, stdio: 'pipe' },
+  npmInstall(
+    appPath,
+    '--save-dev ts-loader webpack webpack-node-externals tsconfig-paths-webpack-plugin fork-ts-checker-webpack-plugin',
   );
 }
 
