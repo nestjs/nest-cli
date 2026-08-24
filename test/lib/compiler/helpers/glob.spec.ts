@@ -252,6 +252,56 @@ describe('globSync', () => {
     });
   });
 
+  describe('regression: how far a pattern reaches past a symlink', () => {
+    let linkRoot: string;
+    let supported = true;
+
+    beforeAll(() => {
+      linkRoot = join(root, 'linktree');
+      mkdirSync(join(linkRoot, 'real'), { recursive: true });
+      mkdirSync(join(linkRoot, 'assets'), { recursive: true });
+      writeFileSync(join(linkRoot, 'real/x.hbs'), 'x');
+      writeFileSync(join(linkRoot, 'assets/y.hbs'), 'y');
+
+      try {
+        symlinkSync(
+          join(linkRoot, 'real'),
+          join(linkRoot, 'assets/link'),
+          'dir',
+        );
+      } catch {
+        supported = false;
+      }
+    });
+
+    // A globstar stops AT a symlinked directory, but the explicit segments
+    // after it keep matching normally — so `assets/**` must not reach through
+    // `link`, while `assets/**/*` reaches exactly one level in.
+    it('a trailing globstar stops at the symlink itself', () => {
+      if (platform() === 'win32' || !supported) {
+        return;
+      }
+
+      expect(rel(globSync(`${linkRoot}/assets/**`, { dot: true }))).toEqual([
+        '/linktree/assets',
+        '/linktree/assets/link',
+        '/linktree/assets/y.hbs',
+      ]);
+    });
+
+    it('an explicit segment after the globstar reaches one level in', () => {
+      if (platform() === 'win32' || !supported) {
+        return;
+      }
+
+      expect(rel(globSync(`${linkRoot}/assets/**/*`, { dot: true }))).toEqual([
+        '/linktree/assets/link',
+        '/linktree/assets/link/x.hbs',
+        '/linktree/assets/y.hbs',
+      ]);
+    });
+  });
+
   describe('regression: partial results on an unreadable subdirectory', () => {
     it('still returns matches found outside the unreadable directory', () => {
       // chmod-based permission denial has no effect when running as root.

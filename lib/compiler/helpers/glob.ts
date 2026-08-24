@@ -1,3 +1,15 @@
+/**
+ * A minimal synchronous glob over `fs` + `minimatch`, covering just the
+ * surface `assets-manager` needs: one pattern, one optional `ignore`
+ * pattern, and `dot`.
+ *
+ * This replaced the `glob` package (see nestjs/nest-cli#3520), and asset
+ * copying is expected to behave exactly as it did before that swap. Several
+ * rules below therefore look arbitrary in isolation — zero-segment trailing
+ * globstars, the symlink depth budget — but each one preserves a documented
+ * behavior that build configurations already depend on. The tests in
+ * `test/lib/compiler/helpers/glob.spec.ts` pin them.
+ */
 import { Dirent, readdirSync, statSync } from 'fs';
 import { minimatch } from 'minimatch';
 
@@ -48,10 +60,10 @@ function splitPattern(pattern: string): { base: string; rest: string[] } {
 }
 
 /**
- * `minimatch` does not match `a/**` against `a`, but `glob` does — a trailing
- * globstar matches zero segments. Expanding the suffix restores that for the
- * include pattern, and for `ignore` it reproduces glob's behavior of pruning
- * the ignored directory itself rather than only its contents.
+ * A trailing globstar matches zero segments, so `a/**` must match `a`
+ * itself; `minimatch` alone does not. Expanding the suffix restores that for
+ * the include pattern, and for `ignore` it prunes the ignored directory
+ * itself rather than only its contents.
  */
 function expandGlobstarSuffix(pattern: string): string[] {
   return pattern.endsWith('/**') ? [pattern, pattern.slice(0, -3)] : [pattern];
@@ -64,17 +76,46 @@ interface WalkedEntry {
 }
 
 /**
+ * How far below a symlinked directory a pattern can still reach.
+ *
+ * A globstar never recurses *through* a symlinked directory, but the
+ * explicit segments that follow the last one keep matching normally once
+ * there. So a pattern ending in a bare globstar stops at the symlink itself
+ * and gets a budget of 0; adding one more segment after it reaches a single
+ * level inside (budget 1), and two segments reach two levels (budget 2). A
+ * pattern with no globstar at all does no recursion of this kind, so its own
+ * depth is the only bound.
+ *
+ * Returning a finite number also bounds the walk: symlink cycles terminate
+ * because each crossing costs depth we can never regain.
+ */
+function symlinkDepthBudget(rest: string[]): number {
+  for (let index = rest.length - 1; index >= 0; index--) {
+    if (rest[index].includes('**')) {
+      return rest.length - index - 1;
+    }
+  }
+  return rest.length;
+}
+
+/**
  * Walks the directory tree rooted at `dir`, without using `fs`'s own
  * `recursive` option so we can:
  *
- * - Skip an unreadable directory instead of failing the whole walk (`glob`
- *   returns whatever it found before the error, not nothing).
- * - Never follow a symlinked directory into further recursion, matching
- *   `glob`'s `follow: false` default and avoiding symlink cycles. A
- *   symlinked directory's immediate children are still listed (so a pattern
- *   can match one level in), just not walked any deeper.
+ * - Skip an unreadable directory instead of failing the whole walk: one
+ *   `EACCES` deep in an asset tree must not silently empty the result.
+ * - Stop descending once we are `budget` levels past a symlinked directory
+ *   (see `symlinkDepthBudget`), which also makes symlink cycles terminate.
+ *
+ * `depth` is how many levels below the nearest symlinked ancestor an entry
+ * sits; 0 means it was reached without crossing one.
  */
-function walk(dir: string, recursive: boolean): WalkedEntry[] {
+function walk(
+  dir: string,
+  recursive: boolean,
+  budget: number,
+  depth = 0,
+): WalkedEntry[] {
   let entries: Dirent[];
   try {
     entries = readdirSync(dir, { withFileTypes: true });
@@ -84,7 +125,10 @@ function walk(dir: string, recursive: boolean): WalkedEntry[] {
     return [];
   }
 
-  const results: WalkedEntry[] = entries.map((entry) => ({ parent: dir, entry }));
+  const results: WalkedEntry[] = entries.map((entry) => ({
+    parent: dir,
+    entry,
+  }));
 
   if (!recursive) {
     return results;
@@ -93,12 +137,19 @@ function walk(dir: string, recursive: boolean): WalkedEntry[] {
   for (const entry of entries) {
     const full = `${dir}/${entry.name}`;
 
+    // Below a symlink every further level costs budget; above one, plain
+    // directory recursion is unbounded.
     if (entry.isDirectory()) {
-      results.push(...walk(full, true));
+      const childDepth = depth === 0 ? 0 : depth + 1;
+      if (childDepth <= budget) {
+        results.push(...walk(full, true, budget, childDepth));
+      }
       continue;
     }
 
-    if (entry.isSymbolicLink()) {
+    // `Dirent.isDirectory()` is false for a symlink (it reports on the link
+    // itself), so a symlinked directory only ever reaches this branch.
+    if (entry.isSymbolicLink() && depth + 1 <= budget) {
       let stats;
       try {
         stats = statSync(full);
@@ -106,8 +157,7 @@ function walk(dir: string, recursive: boolean): WalkedEntry[] {
         continue;
       }
       if (stats.isDirectory()) {
-        // One level, not recursive: list children but don't descend further.
-        results.push(...walk(full, false));
+        results.push(...walk(full, true, budget, depth + 1));
       }
     }
   }
@@ -116,9 +166,8 @@ function walk(dir: string, recursive: boolean): WalkedEntry[] {
 }
 
 /**
- * Minimal synchronous glob over `fs` + `minimatch`, replacing the `glob`
- * package. Supports only the surface `assets-manager` needs: one pattern, one
- * optional `ignore` pattern, and `dot`.
+ * Expands `pattern` to every matching path, with the type of each entry.
+ * See the file header for the compatibility rules this preserves.
  */
 export function globEntriesSync(
   pattern: string,
@@ -158,7 +207,7 @@ export function globEntriesSync(
   // An asset may be configured for a directory that does not exist, or one
   // that turns out to be unreadable; `walk` reports no matches for it (and
   // any nested directories that fail) rather than failing the whole build.
-  const walked = walk(base, recursive);
+  const walked = walk(base, recursive, symlinkDepthBudget(rest));
 
   const matches: GlobEntry[] = [];
 
@@ -181,7 +230,7 @@ export function globEntriesSync(
   return matches;
 }
 
-/** Drop-in replacement for `glob`'s `sync` export. */
+/** Expands `pattern` to every matching path. */
 export function globSync(
   pattern: string,
   options: GlobSyncOptions = {},
