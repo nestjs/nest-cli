@@ -282,6 +282,12 @@ export function scaffoldAppWithDeps(
  * - Uses a private npm cache (a sibling of the app, removed with the temp
  *   dir) so parallel test files never contend on the shared `~/.npm`.
  * - Skips audit/fund, which shrinks the surface for npm-internal crashes.
+ * - Uses --legacy-peer-deps: the v12 alpha packages on the `next` dist-tag
+ *   still declare `^11.0.0` peer ranges (e.g. @nestjs/core@12.0.0-alpha.6 →
+ *   @nestjs/common@^11.0.0), and that unsatisfiable conflict crashes npm's
+ *   resolver outright ("Cannot read properties of null (reading 'children')"
+ *   in Arborist's PlaceDep, npm 11.17). Remove the flag once the alphas ship
+ *   correct peer ranges.
  * - Retries once from a clean slate, and attaches the npm debug log to the
  *   thrown error so CI failures show npm's actual stack trace instead of a
  *   one-line message.
@@ -291,13 +297,16 @@ export function npmInstall(appPath: string, args = ''): void {
   const maxAttempts = 2;
   for (let attempt = 1; ; attempt++) {
     try {
-      execSync(`npm install --no-audit --no-fund ${args}`.trimEnd(), {
-        cwd: appPath,
-        encoding: 'utf-8',
-        timeout: 120_000,
-        stdio: 'pipe',
-        env: { ...process.env, npm_config_cache: cacheDir },
-      });
+      execSync(
+        `npm install --no-audit --no-fund --legacy-peer-deps ${args}`.trimEnd(),
+        {
+          cwd: appPath,
+          encoding: 'utf-8',
+          timeout: 120_000,
+          stdio: 'pipe',
+          env: { ...process.env, npm_config_cache: cacheDir },
+        },
+      );
       return;
     } catch (error: any) {
       if (attempt >= maxAttempts) {
