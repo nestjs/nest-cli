@@ -727,6 +727,91 @@ describe('AssetsManager', () => {
     });
   });
 
+  describe('outDir collapse guard', () => {
+    it('throws instead of overwriting outDir when stripping consumes the whole path', () => {
+      // "../package.json" resolves outside "sourceRoot" (src/); stripping
+      // sourceRoot's segment count from it consumes the filename too, so
+      // copyPathResolve would otherwise return "dist" itself.
+      vi.mocked(globSync).mockReturnValue(['/cwd/package.json']);
+      vi.mocked(copyPathResolve).mockReturnValue('dist');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '../package.json' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).toThrow(/would overwrite the "outDir" directory itself/);
+
+      expect(copyFileSync).not.toHaveBeenCalled();
+
+      vi.mocked(copyPathResolve).mockReturnValue(
+        `${process.cwd()}/dist/file.txt`,
+      );
+    });
+
+    it('does not throw when flat is set, even for a path outside sourceRoot', () => {
+      vi.mocked(globSync).mockReturnValue(['/cwd/package.json']);
+      vi.mocked(copyPathResolve).mockReturnValue('dist');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '../package.json', flat: true }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).not.toThrow();
+
+      expect(copyFileSync).toHaveBeenCalled();
+
+      vi.mocked(copyPathResolve).mockReturnValue(
+        `${process.cwd()}/dist/file.txt`,
+      );
+    });
+  });
+
+  describe('flat option', () => {
+    it('copies to outDir by basename, bypassing sourceRoot-relative stripping', () => {
+      vi.mocked(globSync).mockReturnValue(['/cwd/package.json']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '../package.json', flat: true }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      // copyPathResolve's sourceRoot-relative stripping is skipped entirely.
+      expect(copyPathResolve).not.toHaveBeenCalled();
+      expect(copyFileSync).toHaveBeenCalledWith(
+        '/cwd/package.json',
+        join(process.cwd(), 'dist', 'package.json'),
+      );
+    });
+
+    it('still confines a flat destination to the project directory', () => {
+      vi.mocked(globSync).mockReturnValue(['/cwd/package.json']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([
+          { include: '../package.json', outDir: '../../etc', flat: true },
+        ]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).toThrow(/outside of or equal to the project directory/);
+      expect(copyFileSync).not.toHaveBeenCalled();
+    });
+  });
+
   describe('path confinement', () => {
     it('should reject an asset outDir outside the project before watching', () => {
       const mockWatcher = new EventEmitter() as any;
