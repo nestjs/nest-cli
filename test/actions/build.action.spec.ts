@@ -84,7 +84,7 @@ describe('BuildAction - Rspack', () => {
   });
 
   describe('getRspackConfigFactoryByPath', () => {
-    it('should return identity function when config file is not available and path is default', () => {
+    it('should return identity function when config file is not available and path is default', async () => {
       // Access private method via prototype
       const proto = Object.getPrototypeOf(buildAction);
       const method =
@@ -93,7 +93,7 @@ describe('BuildAction - Rspack', () => {
 
       // If method exists on prototype, call it bound
       if (method) {
-        const result = method.call(
+        const result = await method.call(
           buildAction,
           'rspack.config.js',
           'rspack.config.js',
@@ -104,6 +104,32 @@ describe('BuildAction - Rspack', () => {
         // Method might be compiled differently; test via runBuild integration instead
         expect(true).toBe(true);
       }
+    });
+
+    it('should load an ESM config', async () => {
+      const method = Object.getPrototypeOf(buildAction)
+        .getRspackConfigFactoryByPath as Function;
+
+      const config = await method.call(
+        buildAction,
+        'test/fixtures/rspack.config.mjs',
+        'rspack.config.js',
+      );
+
+      expect(config({}, {})).toEqual({ name: 'esm-rspack-config' });
+    });
+
+    it('should load a CommonJS config', async () => {
+      const method = Object.getPrototypeOf(buildAction)
+        .getRspackConfigFactoryByPath as Function;
+
+      const config = await method.call(
+        buildAction,
+        'test/fixtures/rspack.config.cjs',
+        'rspack.config.js',
+      );
+
+      expect(config({}, {})).toEqual({ name: 'commonjs-rspack-config' });
     });
   });
 
