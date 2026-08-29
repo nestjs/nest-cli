@@ -45,6 +45,7 @@
     "@angular-devkit/schematics-cli": "22.1.5",
     "@inquirer/prompts": "8.7.0",
     "@nestjs/schematics": "^12.0.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "ansis": "4.3.1",
     "chokidar": "5.0.0",
     "cli-table3": "0.6.5",
@@ -53,7 +54,7 @@
     "node-emoji": "2.2.0",
     "ora": "9.4.1",
     "tsconfig-paths": "4.2.0",
-    "typescript": "~6.0.2"
+    "typescript": "npm:@typescript/typescript6@~6.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.2",

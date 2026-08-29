@@ -17,7 +17,10 @@ describe('package.json', () => {
     it('should use a tilde range to allow patch-level deduplication', () => {
       const tsVersion = packageJson.dependencies.typescript;
       expect(tsVersion).toBeDefined();
-      expect(tsVersion.startsWith('~')).toBe(true);
+      expect(
+        tsVersion.startsWith('~') ||
+          /^npm:@typescript\/typescript6@~\d\.\d+\.\d+$/.test(tsVersion),
+      ).toBe(true);
     });
 
     it('should not pin typescript to an exact version', () => {
