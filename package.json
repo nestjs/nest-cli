@@ -69,7 +69,7 @@
     "gulp-clean": "0.4.0",
     "husky": "9.1.7",
     "lint-staged": "17.4.1",
-    "oxlint": "1.80.0",
+    "oxlint": "1.81.0",
     "prettier": "3.9.6",
     "release-it": "21.0.2",
     "ts-loader": "9.6.2",
