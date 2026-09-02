@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { createRequire } from 'module';
-import { join } from 'path';
+import { resolve } from 'path';
 import type * as ts from 'typescript';
 import { Configuration } from '../configuration/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
@@ -44,7 +44,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     onSuccess?: () => void,
   ) {
     const cwd = process.cwd();
-    const configPath = join(cwd, tsConfigPath!);
+    const configPath = resolve(cwd, tsConfigPath!);
     if (!existsSync(configPath)) {
       throw new Error(
         `Could not find TypeScript configuration file "${tsConfigPath!}".`,
@@ -72,7 +72,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       entryFileRoot,
       entryFile,
       extras.debug ?? false,
-      tsConfigPath,
+      configPath,
       plugins,
       isEsmProject(),
       extras.tsOptions,
