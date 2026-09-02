@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as ts from 'typescript';
+import { requiresExplicitImportExtensions } from '../../../../lib/compiler/helpers/requires-explicit-import-extensions.js';
 import {
   appendJsExtensionIfMissing,
-  requiresExplicitImportExtensions,
   rewriteAsyncImportString,
   rewriteCollectedMetadataForNodeNext,
   rewriteImportExpressionForNodeNext,
