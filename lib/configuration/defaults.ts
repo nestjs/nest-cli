@@ -33,6 +33,9 @@ export const defaultGitIgnore = `# compiled output
 /node_modules
 /build
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # Logs
 logs
 *.log
