@@ -237,6 +237,7 @@ export class AssetsManager {
                 if (statSync(matched).isDirectory()) {
                   return globSync(`${matched}/**/*`, {
                     ignore: item.exclude,
+                    dot: true,
                   }).filter((file) => statSync(file).isFile());
                 }
                 return matched;

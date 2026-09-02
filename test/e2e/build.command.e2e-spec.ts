@@ -41,9 +41,7 @@ describe('Build Command (e2e)', () => {
     expect(fileExists(distDir)).toBe(true);
     expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
     expect(fileExists(path.join(distDir, 'app.module.js'))).toBe(true);
-    expect(fileExists(path.join(distDir, 'app.controller.js'))).toBe(
-      true,
-    );
+    expect(fileExists(path.join(distDir, 'app.controller.js'))).toBe(true);
     expect(fileExists(path.join(distDir, 'app.service.js'))).toBe(true);
   });
 
@@ -71,9 +69,7 @@ describe('Build Command (e2e)', () => {
       );
 
       // dist should be produced
-      expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(
-        true,
-      );
+      expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
     } finally {
       proc.kill();
     }
@@ -183,6 +179,81 @@ describe('Build Command (e2e)', () => {
       expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
       // Without the flag, declaration files should NOT be present
       expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(false);
+    });
+  });
+
+  describe('dotfiles in a directory asset (#3522)', () => {
+    // A bare directory entry ("assets": ["config"]) is expanded by a second
+    // glob call inside the assets manager. That call used to drop dot-prefixed
+    // entries, so `nest build` copied strictly fewer files than the same
+    // config under `--watchAssets`, which uses chokidar and has no dot filter.
+    const nestCliPath = () => path.join(appPath, 'nest-cli.json');
+    const envsDir = () => path.join(appPath, 'src', 'config', 'envs');
+    let originalNestCli: string;
+
+    beforeAll(() => {
+      // The scaffolded app ships its own @nestjs/cli in node_modules, and the
+      // CLI hands off to that local copy when present — which would test the
+      // published build instead of this working tree.
+      removeLocalCli(appPath);
+
+      originalNestCli = fs.readFileSync(nestCliPath(), 'utf-8');
+      fs.mkdirSync(envsDir(), { recursive: true });
+      fs.writeFileSync(path.join(envsDir(), '.development'), 'SECRET=1');
+      fs.writeFileSync(path.join(envsDir(), 'prod.env'), 'X=1');
+    });
+
+    afterAll(() => {
+      fs.writeFileSync(nestCliPath(), originalNestCli);
+      fs.rmSync(path.join(appPath, 'src', 'config'), {
+        recursive: true,
+        force: true,
+      });
+    });
+
+    function setAssets(assets: string[]) {
+      const config = JSON.parse(fs.readFileSync(nestCliPath(), 'utf-8'));
+      config.compilerOptions = { ...config.compilerOptions, assets };
+      fs.writeFileSync(nestCliPath(), JSON.stringify(config, null, 2));
+    }
+
+    /**
+     * Where the copied `envs` directory ends up depends on the effective
+     * rootDir (see #3387), so locate it rather than hard-coding a layout: the
+     * claim under test is that both files land in the *same* place.
+     */
+    function findCopiedEnvsDir(): string | undefined {
+      const distDir = path.join(appPath, 'dist');
+      const entries = fs.readdirSync(distDir, {
+        recursive: true,
+        encoding: 'utf-8',
+      });
+      const match = entries.find(
+        (entry) => path.basename(entry) === 'prod.env',
+      );
+      return match ? path.dirname(path.join(distDir, match)) : undefined;
+    }
+
+    it('should copy a dotfile nested under a bare directory asset', () => {
+      cleanDist();
+      setAssets(['config']);
+
+      runNest('build', appPath);
+
+      const copiedEnvs = findCopiedEnvsDir();
+      expect(copiedEnvs).toBeDefined();
+      expect(fileExists(path.join(copiedEnvs!, '.development'))).toBe(true);
+    });
+
+    it('should keep copying dotfiles for the wildcard asset form', () => {
+      cleanDist();
+      setAssets(['config/envs/*']);
+
+      runNest('build', appPath);
+
+      const copiedEnvs = findCopiedEnvsDir();
+      expect(copiedEnvs).toBeDefined();
+      expect(fileExists(path.join(copiedEnvs!, '.development'))).toBe(true);
     });
   });
 });
