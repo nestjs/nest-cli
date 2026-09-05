@@ -171,8 +171,18 @@ describe('NativeWatchCompiler (tsc builder on TypeScript 7.1+, watch mode)', () 
     watcherHandlers.onChange!(join(outDir, 'main.js'));
     watcherHandlers.onChange!(join(cwd, 'node_modules', 'x', 'index.d.ts'));
     await flushTimers();
-
     expect(api.createProgram).toHaveBeenCalledTimes(1);
+
+    // The same handler still drives rebuilds for source files.
+    watcherHandlers.onChange!(join(srcDir, 'main.ts'));
+    await flushTimers();
+    expect(api.createProgram).toHaveBeenCalledTimes(2);
+    expect(api.createProgram).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.anything(),
+      programs[0],
+      { changed: [join(srcDir, 'main.ts')] },
+    );
   });
 
   it('keeps the pending changes when a rebuild fails so the next one still sees them', async () => {
