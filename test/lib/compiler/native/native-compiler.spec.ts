@@ -110,7 +110,7 @@ describe('NativeCompiler (tsc builder on TypeScript 7.1+)', () => {
     expect(typescriptLoader.closeNativeApi).toHaveBeenCalledTimes(1);
   });
 
-  it('hands config parsing diagnostics to createProgram so the native program reports them', () => {
+  it('hands config parsing diagnostics to createProgram', () => {
     const configError = {
       code: 5025,
       text: "Unknown compiler option 'targt'.",
@@ -186,13 +186,15 @@ describe('NativeCompiler (tsc builder on TypeScript 7.1+)', () => {
     expect(program.getDeclarationDiagnostics).toHaveBeenCalledTimes(1);
 
     const withoutDeclarations = buildCompiler({}, {});
+    const plainProgram = program;
     withoutDeclarations.run(
       configuration,
       'tsconfig.json',
       undefined,
       undefined,
     );
-    expect(program.getDeclarationDiagnostics).not.toHaveBeenCalled();
+    expect(plainProgram.getSemanticDiagnostics).toHaveBeenCalledTimes(1);
+    expect(plainProgram.getDeclarationDiagnostics).not.toHaveBeenCalled();
   });
 
   it('rejects compiler plugins with an actionable error before compiling', () => {
