@@ -60,7 +60,7 @@
     "@commitlint/config-angular": "21.2.2",
     "@rspack/core": "^2.0.0",
     "@swc/cli": "0.8.1",
-    "@swc/core": "1.16.1",
+    "@swc/core": "1.16.2",
     "@types/node": "25.9.5",
     "@types/webpack-node-externals": "3.0.4",
     "delete-empty": "3.0.0",
