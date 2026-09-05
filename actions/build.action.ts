@@ -34,6 +34,11 @@ import type webpack from 'webpack';
 
 const require = createRequire(import.meta.url);
 
+type RspackConfigFactory = Record<string, any> | ((
+  config: Record<string, any>,
+  rspackRef: any,
+) => Record<string, any>);
+
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
   protected readonly tsLoader = new TypeScriptBinaryLoader();
@@ -407,7 +412,7 @@ export class BuildAction extends AbstractAction {
       getRspackConfigPath(configuration, options, appName) ??
       defaultRspackConfigFilename;
 
-    const rspackConfigFactoryOrConfig = this.getRspackConfigFactoryByPath(
+    const rspackConfigFactoryOrConfig = await this.getRspackConfigFactoryByPath(
       rspackPath,
       defaultRspackConfigFilename,
     );
@@ -428,16 +433,23 @@ export class BuildAction extends AbstractAction {
     );
   }
 
-  private getRspackConfigFactoryByPath(
+  private async getRspackConfigFactoryByPath(
     rspackPath: string,
     defaultPath: string,
-  ): (config: Record<string, any>, rspackRef: any) => Record<string, any> {
+  ): Promise<RspackConfigFactory> {
     const pathToRspackFile = join(process.cwd(), rspackPath);
     const isRspackFileAvailable = isModuleAvailable(pathToRspackFile);
     if (!isRspackFileAvailable && rspackPath === defaultPath) {
       return (_config: Record<string, any>) => ({});
     }
-    return require(pathToRspackFile);
+    if (rspackPath.endsWith('.cjs')) {
+      return require(pathToRspackFile);
+    }
+
+    // Native dynamic import supports ESM configs, including `.mts` files.
+    // CommonJS configs loaded through import are exposed via `default`.
+    const loadedConfig = await import(pathToRspackFile);
+    return loadedConfig.default ?? loadedConfig;
   }
 
   private warnOnIgnoredLibraryAssets(
