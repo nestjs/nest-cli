@@ -280,4 +280,51 @@ describe('tsconfig paths hooks', () => {
       }
     });
   }, 15000);
+
+  describe('esm output', () => {
+    const esmOptions: ts.CompilerOptions = {
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    };
+
+    it('should point a directory alias at its index file', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { ...esmOptions, paths: { '~lib': ['./src/lib'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('from "./lib/index.js"');
+    });
+
+    it('should resolve an alias written with the emitted extension', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { ...esmOptions, paths: { '~lib/*': ['./src/lib/*'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('from "./lib/service.js"');
+    });
+
+    it('should give an .mts source the extension it is emitted with', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/uses-mts.mts'],
+        { ...esmOptions, paths: { '~mod': ['./src/mod.mts'] } },
+      );
+
+      expect(output.get('dist/uses-mts.mjs')).toContain('from "./mod.mjs"');
+    });
+
+    it('should leave commonjs output untouched', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { paths: { '~lib': ['./src/lib'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('require("./lib")');
+    });
+  });
 });
