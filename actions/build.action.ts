@@ -1,6 +1,6 @@
-import { createRequire } from 'module';
 import { red } from 'ansis';
 import { join } from 'path';
+import { pathToFileURL } from 'url';
 import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
@@ -31,8 +31,6 @@ import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
 import { isModuleAvailable } from '../lib/utils/is-module-available.js';
 import { AbstractAction } from './abstract.action.js';
 import type webpack from 'webpack';
-
-const require = createRequire(import.meta.url);
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -308,10 +306,11 @@ export class BuildAction extends AbstractAction {
       getWebpackConfigPath(configuration, options, appName) ??
       defaultWebpackConfigFilename;
 
-    const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
-      webpackPath,
-      defaultWebpackConfigFilename,
-    );
+    const webpackConfigFactoryOrConfig =
+      await this.getWebpackConfigFactoryByPath(
+        webpackPath,
+        defaultWebpackConfigFilename,
+      );
 
     return webpackCompiler.run(
       configuration,
@@ -373,19 +372,22 @@ export class BuildAction extends AbstractAction {
     }
   }
 
-  private getWebpackConfigFactoryByPath(
+  private async getWebpackConfigFactoryByPath(
     webpackPath: string,
     defaultPath: string,
-  ): (
-    config: webpack.Configuration,
-    webpackRef: typeof webpack,
-  ) => webpack.Configuration {
+  ): Promise<
+    (
+      config: webpack.Configuration,
+      webpackRef: typeof webpack,
+    ) => webpack.Configuration
+  > {
     const pathToWebpackFile = join(process.cwd(), webpackPath);
     const isWebpackFileAvailable = isModuleAvailable(pathToWebpackFile);
     if (!isWebpackFileAvailable && webpackPath === defaultPath) {
       return (_config: webpack.Configuration) => ({});
     }
-    return require(pathToWebpackFile);
+    const imported = await import(pathToFileURL(pathToWebpackFile).href);
+    return imported.default ?? imported;
   }
 
   private async runRspack(
@@ -407,7 +409,7 @@ export class BuildAction extends AbstractAction {
       getRspackConfigPath(configuration, options, appName) ??
       defaultRspackConfigFilename;
 
-    const rspackConfigFactoryOrConfig = this.getRspackConfigFactoryByPath(
+    const rspackConfigFactoryOrConfig = await this.getRspackConfigFactoryByPath(
       rspackPath,
       defaultRspackConfigFilename,
     );
@@ -428,16 +430,19 @@ export class BuildAction extends AbstractAction {
     );
   }
 
-  private getRspackConfigFactoryByPath(
+  private async getRspackConfigFactoryByPath(
     rspackPath: string,
     defaultPath: string,
-  ): (config: Record<string, any>, rspackRef: any) => Record<string, any> {
+  ): Promise<
+    (config: Record<string, any>, rspackRef: any) => Record<string, any>
+  > {
     const pathToRspackFile = join(process.cwd(), rspackPath);
     const isRspackFileAvailable = isModuleAvailable(pathToRspackFile);
     if (!isRspackFileAvailable && rspackPath === defaultPath) {
       return (_config: Record<string, any>) => ({});
     }
-    return require(pathToRspackFile);
+    const imported = await import(pathToFileURL(pathToRspackFile).href);
+    return imported.default ?? imported;
   }
 
   private warnOnIgnoredLibraryAssets(
