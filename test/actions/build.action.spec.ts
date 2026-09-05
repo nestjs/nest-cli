@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BuildAction } from '../../actions/build.action.js';
 import { Configuration } from '../../lib/configuration/index.js';
@@ -84,7 +85,61 @@ describe('BuildAction - Rspack', () => {
   });
 
   describe('getRspackConfigFactoryByPath', () => {
-    it('should return identity function when config file is not available and path is default', () => {
+    it('should load and unwrap export default from ESM config file', async () => {
+      const proto = Object.getPrototypeOf(buildAction);
+      const method =
+        proto.getRspackConfigFactoryByPath ||
+        (buildAction as any)['getRspackConfigFactoryByPath'];
+
+      if (method) {
+        const fixturePath = 'test/fixtures/rspack.esm.config.js';
+        fs.mkdirSync('test/fixtures', { recursive: true });
+        fs.writeFileSync(
+          fixturePath,
+          'export default function (options) { return { ...options, loadedFromEsm: true }; }',
+        );
+
+        const result = await method.call(
+          buildAction,
+          fixturePath,
+          'rspack.config.js',
+        );
+
+        fs.unlinkSync(fixturePath);
+
+        expect(typeof result).toBe('function');
+        expect(result({})).toEqual({ loadedFromEsm: true });
+      }
+    });
+
+    it('should load and unwrap module.exports from CommonJS config file', async () => {
+      const proto = Object.getPrototypeOf(buildAction);
+      const method =
+        proto.getRspackConfigFactoryByPath ||
+        (buildAction as any)['getRspackConfigFactoryByPath'];
+
+      if (method) {
+        const fixturePath = 'test/fixtures/rspack.cjs.config.cjs';
+        fs.mkdirSync('test/fixtures', { recursive: true });
+        fs.writeFileSync(
+          fixturePath,
+          'module.exports = function (options) { return { ...options, loadedFromCjs: true }; }',
+        );
+
+        const result = await method.call(
+          buildAction,
+          fixturePath,
+          'rspack.config.js',
+        );
+
+        fs.unlinkSync(fixturePath);
+
+        expect(typeof result).toBe('function');
+        expect(result({})).toEqual({ loadedFromCjs: true });
+      }
+    });
+
+    it('should return identity function when config file is not available and path is default', async () => {
       // Access private method via prototype
       const proto = Object.getPrototypeOf(buildAction);
       const method =
@@ -93,7 +148,7 @@ describe('BuildAction - Rspack', () => {
 
       // If method exists on prototype, call it bound
       if (method) {
-        const result = method.call(
+        const result = await method.call(
           buildAction,
           'rspack.config.js',
           'rspack.config.js',
