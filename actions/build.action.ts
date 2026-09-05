@@ -337,6 +337,17 @@ export class BuildAction extends AbstractAction {
     onSuccess: (() => void) | undefined,
     assetsManager: AssetsManager,
   ) {
+    if (this.tsLoader.isNativeApiRequired()) {
+      return this.runNativeTsc(
+        watchMode,
+        options,
+        configuration,
+        pathToTsconfig,
+        appName,
+        onSuccess,
+        assetsManager,
+      );
+    }
     if (watchMode) {
       const { WatchCompiler } =
         await import('../lib/compiler/watch-compiler.js');
@@ -369,6 +380,57 @@ export class BuildAction extends AbstractAction {
         undefined,
         onSuccess,
       );
+      await assetsManager.closeWatchers();
+    }
+  }
+
+  /**
+   * `tsc` builder on the native TypeScript compiler (TypeScript 7.1+), which
+   * ships no classic compiler API but exposes `typescript/unstable/sync`.
+   */
+  private async runNativeTsc(
+    watchMode: boolean,
+    options: Record<string, any>,
+    configuration: Required<Configuration>,
+    pathToTsconfig: string,
+    appName: string | undefined,
+    onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
+  ) {
+    if (watchMode) {
+      const { NativeWatchCompiler } =
+        await import('../lib/compiler/native/native-watch-compiler.js');
+      const watchCompiler = new NativeWatchCompiler(
+        this.pluginsLoader,
+        this.tsConfigProvider,
+        this.tsLoader,
+      );
+      await watchCompiler.run(
+        configuration,
+        pathToTsconfig,
+        appName,
+        { preserveWatchOutput: !!options.preserveWatchOutput },
+        onSuccess,
+      );
+    } else {
+      const { NativeCompiler } =
+        await import('../lib/compiler/native/native-compiler.js');
+      const compiler = new NativeCompiler(
+        this.pluginsLoader,
+        this.tsConfigProvider,
+        this.tsLoader,
+      );
+      try {
+        compiler.run(
+          configuration,
+          pathToTsconfig,
+          appName,
+          undefined,
+          onSuccess,
+        );
+      } finally {
+        this.tsLoader.closeNativeApi();
+      }
       await assetsManager.closeWatchers();
     }
   }

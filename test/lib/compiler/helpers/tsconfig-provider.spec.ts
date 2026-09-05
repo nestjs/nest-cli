@@ -25,6 +25,7 @@ describe('TsConfigProvider', () => {
 
     typescriptLoader = {
       load: vi.fn().mockReturnValue(mockTsBinary),
+      isNativeApiRequired: vi.fn().mockReturnValue(false),
     } as unknown as TypeScriptBinaryLoader;
 
     provider = new TsConfigProvider(typescriptLoader);
@@ -203,6 +204,7 @@ describe('TsConfigProvider', () => {
         getParsedCommandLineOfConfigFile: ts.getParsedCommandLineOfConfigFile,
         sys: parseConfigHost,
       }),
+      isNativeApiRequired: vi.fn().mockReturnValue(false),
     } as unknown as TypeScriptBinaryLoader;
     provider = new TsConfigProvider(realTypescriptLoader);
 
@@ -251,11 +253,50 @@ describe('TsConfigProvider', () => {
         getParsedCommandLineOfConfigFile: ts.getParsedCommandLineOfConfigFile,
         sys: parseConfigHost,
       }),
+      isNativeApiRequired: vi.fn().mockReturnValue(false),
     } as unknown as TypeScriptBinaryLoader;
     provider = new TsConfigProvider(realTypescriptLoader);
 
     const result = provider.getByConfigFilename(configFilename);
 
     expect(result.exclude).toEqual(['generated/**']);
+  });
+
+  describe('native TypeScript API (TypeScript 7.1+)', () => {
+    it('parses the config through the native API when the classic one is missing', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      const parseConfigFile = vi.fn().mockReturnValue({
+        options: { outDir: '/project/dist', rootDir: '/project/src' },
+        fileNames: ['/project/src/main.ts'],
+        projectReferences: undefined,
+        errors: [{ code: 5025, text: 'Unknown compiler option' }],
+        raw: { exclude: ['test/**'] },
+      });
+      const nativeLoader = {
+        load: vi.fn(() => {
+          throw new Error('classic API must not be used');
+        }),
+        isNativeApiRequired: vi.fn().mockReturnValue(true),
+        loadNativeApi: vi.fn().mockReturnValue({ parseConfigFile }),
+      } as unknown as TypeScriptBinaryLoader;
+
+      const result = new TsConfigProvider(nativeLoader).getByConfigFilename(
+        'tsconfig.build.json',
+      );
+
+      expect(parseConfigFile).toHaveBeenCalledWith(
+        join(process.cwd(), 'tsconfig.build.json'),
+      );
+      expect(nativeLoader.load).not.toHaveBeenCalled();
+      expect(result.options).toEqual({
+        outDir: '/project/dist',
+        rootDir: '/project/src',
+      });
+      expect(result.fileNames).toEqual(['/project/src/main.ts']);
+      expect(result.exclude).toEqual(['test/**']);
+      expect(result.configFileParsingDiagnostics).toEqual([
+        { code: 5025, text: 'Unknown compiler option' },
+      ]);
+    });
   });
 });

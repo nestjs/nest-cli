@@ -18,6 +18,10 @@ export interface RecursiveDirectoryWatcherOptions {
    */
   onChange?: (file: string) => unknown;
   /**
+   * Called with the path of a file that was removed after the initial scan.
+   */
+  onUnlink?: (file: string) => unknown;
+  /**
    * Equivalent of chokidar's "awaitWriteFinish": an event is only reported
    * once the file size stopped changing for that many milliseconds.
    */
@@ -113,6 +117,9 @@ async function createChokidarWatcher(
   }
   if (options.onChange) {
     watcher.on('change', (file) => void options.onChange!(file));
+  }
+  if (options.onUnlink) {
+    watcher.on('unlink', (file) => void options.onUnlink!(file));
   }
   return {
     close: () => watcher.close(),
@@ -296,6 +303,9 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     for (const file of this.known.keys()) {
       if (!seen.has(file)) {
         this.known.delete(file);
+        if (emit) {
+          void this.options.onUnlink?.(file);
+        }
       }
     }
   }
@@ -330,7 +340,9 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     if (!stats) {
       // Removed (or renamed away) before it settled.
       this.pending.delete(file);
-      this.known.delete(file);
+      if (this.known.delete(file)) {
+        void this.options.onUnlink?.(file);
+      }
       return;
     }
     const now = Date.now();
