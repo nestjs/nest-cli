@@ -131,7 +131,9 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
     rmSync(projectDir, { recursive: true, force: true });
   });
 
-  it('treats TypeScript 7.0 (executable only) as unsupported and does not require the native API', () => {
+  it('treats TypeScript 7.0 (config parsing only, no program API) as unsupported', () => {
+    // TypeScript 7.0.2 already exports "unstable/sync", but its API has
+    // parseConfigFile only: no createProgram, no diagnostics formatter.
     installFakeTypeScript({
       'package.json': JSON.stringify({
         name: 'typescript',
@@ -139,10 +141,14 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
         exports: {
           '.': './lib/version.cjs',
           './package.json': './package.json',
+          './unstable/sync': './dist/api/sync/api.js',
         },
       }),
       'lib/version.cjs':
         'module.exports = { version: "7.0.2", versionMajorMinor: "7.0" };',
+      'dist/api/sync/api.js':
+        'class API { parseConfigFile() {} close() {} }\n' +
+        'module.exports = { API, DiagnosticCategory: { Warning: 0, Error: 1 } };',
     });
     const loader = new TypeScriptBinaryLoader();
 
@@ -171,8 +177,8 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
       'lib/version.cjs':
         'module.exports = { version: "7.1.0-dev.1", versionMajorMinor: "7.1" };',
       'dist/api/sync/api.js':
-        'class API { constructor(o) { this.options = o; } close() {} }\n' +
-        'module.exports = { API, formatDiagnosticsWithColorAndContext: () => "" };',
+        'class API { constructor(o) { this.options = o; } parseConfigFile() {} createProgram() {} close() {} }\n' +
+        'module.exports = { API, DiagnosticCategory: { Warning: 0, Error: 1 }, formatDiagnosticsWithColorAndContext: () => "" };',
     });
     const loader = new TypeScriptBinaryLoader();
 
@@ -205,6 +211,67 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
 
     expect(loader.hasNativeApi()).toBe(false);
     expect(loader.isNativeApiRequired()).toBe(false);
+  });
+
+  it('throws when the native entry point exists but fails to load', () => {
+    installFakeTypeScript({
+      'package.json': JSON.stringify({
+        name: 'typescript',
+        version: '7.1.0-dev.1',
+        exports: {
+          '.': './lib/version.cjs',
+          './unstable/sync': './dist/api/sync/api.js',
+        },
+      }),
+      'lib/version.cjs': 'module.exports = { version: "7.1.0-dev.1" };',
+      'dist/api/sync/api.js': 'throw new Error("native binary missing");',
+    });
+    const loader = new TypeScriptBinaryLoader();
+
+    expect(() => loader.hasNativeApi()).toThrow('native binary missing');
+  });
+
+  it('uses the classic API in the documented TypeScript 6 + 7 side-by-side layout', () => {
+    // "typescript": "npm:@typescript/typescript6@^6" plus
+    // "@typescript/native": "npm:typescript@^7" (see nestjs/nest-cli#3479):
+    // `typescript` resolves to the classic compiler and must win.
+    installFakeTypeScript({
+      'package.json': JSON.stringify({
+        name: '@typescript/typescript6',
+        version: '6.0.3',
+        main: './lib/typescript.js',
+      }),
+      'lib/typescript.js':
+        'module.exports = { version: "6.0.3", getParsedCommandLineOfConfigFile() {}, sys: {} };',
+    });
+    const nativeDir = join(projectDir, 'node_modules', '@typescript', 'native');
+    mkdirSync(join(nativeDir, 'dist', 'api', 'sync'), { recursive: true });
+    mkdirSync(join(nativeDir, 'lib'), { recursive: true });
+    writeFileSync(
+      join(nativeDir, 'package.json'),
+      JSON.stringify({
+        name: 'typescript',
+        version: '7.1.0-dev.1',
+        exports: {
+          '.': './lib/version.cjs',
+          './unstable/sync': './dist/api/sync/api.js',
+        },
+      }),
+    );
+    writeFileSync(
+      join(nativeDir, 'lib', 'version.cjs'),
+      'module.exports = { version: "7.1.0-dev.1" };',
+    );
+    writeFileSync(
+      join(nativeDir, 'dist', 'api', 'sync', 'api.js'),
+      'class API { parseConfigFile() {} createProgram() {} close() {} }\n' +
+        'module.exports = { API, DiagnosticCategory: { Warning: 0, Error: 1 }, formatDiagnosticsWithColorAndContext: () => "" };',
+    );
+    const loader = new TypeScriptBinaryLoader();
+
+    expect(loader.hasProgrammaticApi()).toBe(true);
+    expect(loader.isNativeApiRequired()).toBe(false);
+    expect(loader.load().version).toBe('6.0.3');
   });
 
   it('prefers the classic API when TypeScript 6 is installed', () => {

@@ -8,7 +8,11 @@
  * here. Everything is resolved at runtime from the project's own `typescript`
  * installation; nothing in this file is imported from the package.
  */
-export type NativeDiagnostic = unknown;
+export interface NativeDiagnostic {
+  code?: number;
+  /** `DiagnosticCategory`: 0 = Warning, 1 = Error, 2 = Suggestion, 3 = Message. */
+  category?: number;
+}
 
 export interface NativeFormatDiagnosticsHost {
   getCurrentDirectory(): string;
@@ -22,9 +26,6 @@ export interface NativeCompilerOptions {
   paths?: Record<string, string[]>;
   declaration?: boolean;
   composite?: boolean;
-  preserveWatchOutput?: boolean;
-  allowJs?: boolean;
-  resolveJsonModule?: boolean;
   configFilePath?: string;
   [option: string]: unknown;
 }
@@ -49,13 +50,6 @@ export interface NativeCreateProgramOptions {
   configFileParsingDiagnostics?: readonly NativeDiagnostic[];
 }
 
-export interface NativeFileChanges {
-  invalidateAll?: boolean;
-  changed?: string[];
-  created?: string[];
-  deleted?: string[];
-}
-
 export interface NativeEmitResult {
   emitSkipped: boolean;
   diagnostics: readonly NativeDiagnostic[];
@@ -65,8 +59,7 @@ export interface NativeEmitResult {
 export interface NativeProgram extends NativeFormatDiagnosticsHost {
   getCompilerOptions(): NativeCompilerOptions;
   getSourceFileNames(): readonly string[];
-  getConfigFileParsingDiagnostics(): readonly NativeDiagnostic[];
-  getProgramDiagnostics(): readonly NativeDiagnostic[];
+  /** Union of the config file parsing and program (options) diagnostics. */
   getGlobalDiagnostics(): readonly NativeDiagnostic[];
   getSyntacticDiagnostics(): readonly NativeDiagnostic[];
   getBindDiagnostics(): readonly NativeDiagnostic[];
@@ -81,8 +74,6 @@ export interface NativeApi extends NativeFormatDiagnosticsHost {
   createProgram(
     rootFiles: readonly string[],
     options: NativeCreateProgramOptions,
-    oldProgram?: NativeProgram,
-    fileChanges?: NativeFileChanges,
   ): NativeProgram;
   close(): void;
 }
@@ -93,6 +84,7 @@ export interface NativeApiOptions {
 
 export interface NativeTypeScriptModule {
   API: new (options?: NativeApiOptions) => NativeApi;
+  DiagnosticCategory: { Warning: number; Error: number };
   formatDiagnostics(
     diagnostics: readonly NativeDiagnostic[],
     host: NativeFormatDiagnosticsHost,

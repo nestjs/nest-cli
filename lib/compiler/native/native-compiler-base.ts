@@ -1,6 +1,5 @@
-import { yellow } from 'ansis';
 import { Configuration } from '../../configuration/index.js';
-import { CLI_ERRORS, INFO_PREFIX } from '../../ui/index.js';
+import { CLI_ERRORS } from '../../ui/index.js';
 import { BaseCompiler } from '../base-compiler.js';
 import { getValueOrDefault } from '../helpers/get-value-or-default.js';
 import { TsConfigProvider } from '../helpers/tsconfig-provider.js';
@@ -8,7 +7,6 @@ import {
   NativeCompilerOptions,
   NativeDiagnostic,
   NativeProgram,
-  NativeTypeScriptModule,
 } from '../interfaces/native-typescript.interface.js';
 import { PluginsLoader } from '../plugins/plugins-loader.js';
 import { TypeScriptBinaryLoader } from '../typescript-loader.js';
@@ -20,9 +18,8 @@ import { TypeScriptBinaryLoader } from '../typescript-loader.js';
  * The native API emits straight from Go and does not accept custom
  * transformers, so neither Nest compiler plugins (`@nestjs/swagger`,
  * `@nestjs/graphql`, ...) nor the built-in `paths` rewriting hook can run
- * here. Plugins are rejected up front with an actionable error; `paths` only
- * produce a warning since the emitted code still works when the runtime
- * resolves the aliases (e.g. through `tsconfig-paths` or a bundler).
+ * here. Both are rejected up front with an actionable error rather than
+ * producing output that fails at runtime.
  */
 export abstract class NativeCompilerBase<
   T = Record<string, any>,
@@ -33,14 +30,6 @@ export abstract class NativeCompilerBase<
     protected readonly typescriptLoader: TypeScriptBinaryLoader,
   ) {
     super(pluginsLoader);
-  }
-
-  protected loadNativeTypeScript(): NativeTypeScriptModule {
-    const nativeModule = this.typescriptLoader.loadNativeModule();
-    if (!nativeModule) {
-      throw new Error(CLI_ERRORS.UNSUPPORTED_TYPESCRIPT_VERSION('unknown'));
-    }
-    return nativeModule;
   }
 
   protected assertNoPluginsConfigured(
@@ -61,60 +50,47 @@ export abstract class NativeCompilerBase<
     throw new Error(CLI_ERRORS.PLUGINS_UNSUPPORTED_ON_NATIVE_TYPESCRIPT(names));
   }
 
-  protected warnIfPathsConfigured(options: NativeCompilerOptions) {
-    const paths = options.paths;
-    if (!paths || Object.keys(paths).length === 0) {
+  protected assertNoPathsConfigured(options: NativeCompilerOptions) {
+    const aliases = Object.keys(options.paths ?? {});
+    if (aliases.length === 0) {
       return;
     }
-    console.warn(
-      INFO_PREFIX +
-        yellow(
-          ` "compilerOptions.paths" aliases are not rewritten in the emitted output when compiling with the native TypeScript compiler (TypeScript 7). Make sure the aliases are resolved at runtime, or install TypeScript 6 to keep the previous behavior.`,
-        ),
-    );
+    throw new Error(CLI_ERRORS.PATHS_UNSUPPORTED_ON_NATIVE_TYPESCRIPT(aliases));
   }
 
   /**
-   * Mirrors `ts.getPreEmitDiagnostics` (config, options, syntactic, global,
-   * semantic, declaration) on top of the native program.
+   * Emits the program, then reports every diagnostic the classic
+   * `getPreEmitDiagnostics` would (global covers config parsing and options;
+   * declaration only when declarations are emitted) plus the emit ones.
+   * Returns the number of errors; warnings are printed but do not count.
    */
-  protected collectDiagnostics(
+  protected emitAndReport(
     program: NativeProgram,
     options: NativeCompilerOptions,
-  ): NativeDiagnostic[] {
+  ): number {
+    const nativeTs = this.typescriptLoader.getNativeModule();
+    const emitResult = program.emit();
     const diagnostics: NativeDiagnostic[] = [
-      ...program.getConfigFileParsingDiagnostics(),
-      ...program.getProgramDiagnostics(),
+      ...program.getGlobalDiagnostics(),
       ...program.getSyntacticDiagnostics(),
       ...program.getBindDiagnostics(),
-      ...program.getGlobalDiagnostics(),
       ...program.getSemanticDiagnostics(),
+      ...(options.declaration || options.composite
+        ? program.getDeclarationDiagnostics()
+        : []),
+      ...emitResult.diagnostics,
     ];
-    if (options.declaration || options.composite) {
-      diagnostics.push(...program.getDeclarationDiagnostics());
+    if (diagnostics.length > 0) {
+      console.error(
+        nativeTs.formatDiagnosticsWithColorAndContext(diagnostics, program),
+      );
     }
-    return this.dedupeDiagnostics(diagnostics);
-  }
-
-  private dedupeDiagnostics(diagnostics: NativeDiagnostic[]) {
-    const seen = new Set<string>();
-    return diagnostics.filter((diagnostic) => {
-      // Native diagnostics carry `fileName`/`pos`/`text`; the classic shape
-      // (`file`/`start`/`messageText`) is tolerated so the helper stays
-      // correct should the API converge on it.
-      const { fileName, file, pos, start, code, text, messageText } =
-        (diagnostic ?? {}) as Record<string, unknown>;
-      const key = JSON.stringify([
-        fileName ?? file,
-        pos ?? start,
-        code,
-        text ?? messageText,
-      ]);
-      if (seen.has(key)) {
-        return false;
-      }
-      seen.add(key);
-      return true;
-    });
+    const errorsCount = diagnostics.filter(
+      (diagnostic) => diagnostic.category === nativeTs.DiagnosticCategory.Error,
+    ).length;
+    if (errorsCount > 0) {
+      console.info(`Found ${errorsCount} error(s).` + program.getNewLine());
+    }
+    return errorsCount;
   }
 }
