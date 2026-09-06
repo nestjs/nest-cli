@@ -19,7 +19,6 @@ export class NativeCompiler extends NativeCompilerBase {
     // by `TsConfigProvider` before this method runs, so it is closed on every
     // path, including the ones that throw before a program exists.
     try {
-      const nativeTs = this.loadNativeTypeScript();
       this.assertNoPluginsConfigured(configuration, appName);
 
       const {
@@ -29,7 +28,7 @@ export class NativeCompiler extends NativeCompilerBase {
         configFileParsingDiagnostics,
       } = this.tsConfigProvider.getByConfigFilename(tsConfigPath);
       const compilerOptions = options as unknown as NativeCompilerOptions;
-      this.warnIfPathsConfigured(compilerOptions);
+      this.assertNoPathsConfigured(compilerOptions);
 
       const api = this.typescriptLoader.loadNativeApi();
       const program = api.createProgram(fileNames, {
@@ -38,20 +37,7 @@ export class NativeCompiler extends NativeCompilerBase {
         configFileParsingDiagnostics,
       });
       try {
-        const emitResult = program.emit();
-        const diagnostics = [
-          ...this.collectDiagnostics(program, compilerOptions),
-          ...emitResult.diagnostics,
-        ];
-        if (diagnostics.length > 0) {
-          console.error(
-            nativeTs.formatDiagnosticsWithColorAndContext(diagnostics, program),
-          );
-          console.info(
-            `Found ${diagnostics.length} error(s).` + api.getNewLine(),
-          );
-        }
-        errorsCount = diagnostics.length;
+        errorsCount = this.emitAndReport(program, compilerOptions);
       } finally {
         program.dispose();
       }

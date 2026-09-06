@@ -2,6 +2,7 @@ import { existsSync } from 'fs';
 import { dirname, isAbsolute, join, relative } from 'path';
 import * as ts from 'typescript';
 import { CLI_ERRORS } from '../../ui/index.js';
+import { NativeDiagnostic } from '../interfaces/native-typescript.interface.js';
 import { TypeScriptBinaryLoader } from '../typescript-loader.js';
 
 export type TsConfigProviderOutput = Pick<
@@ -15,7 +16,7 @@ export type TsConfigProviderOutput = Pick<
    * the native compiler (TypeScript 7.1+) only does so when they are handed
    * to `createProgram`, which is what the native compilers use this for.
    */
-  configFileParsingDiagnostics: readonly unknown[];
+  configFileParsingDiagnostics: readonly NativeDiagnostic[];
 };
 
 export class TsConfigProvider {
@@ -70,7 +71,7 @@ export class TsConfigProvider {
   ): Pick<
     ts.ParsedCommandLine,
     'options' | 'fileNames' | 'projectReferences' | 'raw'
-  > & { errors: readonly unknown[] } {
+  > & { errors: readonly NativeDiagnostic[] } {
     const api = this.typescriptLoader.loadNativeApi();
     const parsed = api.parseConfigFile(configPath);
     return {

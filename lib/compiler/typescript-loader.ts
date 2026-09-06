@@ -9,13 +9,15 @@ import {
 const require = createRequire(import.meta.url);
 
 /**
- * Entry point of the programmatic API shipped by TypeScript 7.1+.
- * TypeScript 7.0 exposes the `tsc` executable only.
+ * Entry point of the programmatic API shipped by the native (Go) compiler.
+ * TypeScript 7.0 already exports it but only with config parsing; program
+ * creation and emit arrived in 7.1, so the surface is probed, not the version.
  */
 const NATIVE_API_ENTRY_POINT = 'typescript/unstable/sync';
 
 export class TypeScriptBinaryLoader {
   private tsBinary?: typeof ts;
+  private installedTypeScript?: typeof ts;
   private nativeModule?: NativeTypeScriptModule | null;
   private nativeApi?: NativeApi;
 
@@ -36,17 +38,15 @@ export class TypeScriptBinaryLoader {
    */
   public hasProgrammaticApi(): boolean {
     try {
-      const tsBinary = this.loadInstalledTypeScript();
-      return typeof tsBinary.getParsedCommandLineOfConfigFile === 'function';
+      return hasClassicApi(this.loadInstalledTypeScript());
     } catch {
       return false;
     }
   }
 
   /**
-   * Whether the installed TypeScript is the native (Go) compiler and ships the
-   * `typescript/unstable/sync` API (TypeScript 7.1+). Detection is a feature
-   * probe on purpose, so that `npm:` aliases and prereleases keep working.
+   * Whether the installed TypeScript ships a native API complete enough for
+   * the CLI (TypeScript 7.1+).
    */
   public hasNativeApi(): boolean {
     return this.loadNativeModule() !== null;
@@ -62,26 +62,42 @@ export class TypeScriptBinaryLoader {
 
   /**
    * Returns the `typescript/unstable/sync` module of the installed
-   * TypeScript, throwing an actionable error when it is not available.
+   * TypeScript, or `null` when it is absent or incomplete. Detection is a
+   * feature probe on purpose, so that `npm:` aliases and prereleases keep
+   * working. The result is memoized; a module that exists but fails to load
+   * is a broken installation and is reported as such.
    */
   public loadNativeModule(): NativeTypeScriptModule | null {
     if (this.nativeModule !== undefined) {
       return this.nativeModule;
     }
+    let entryPath: string;
     try {
-      const entryPath = require.resolve(NATIVE_API_ENTRY_POINT, {
+      entryPath = require.resolve(NATIVE_API_ENTRY_POINT, {
         paths: [process.cwd(), ...this.getModulePaths()],
       });
-      const candidate = require(entryPath) as Partial<NativeTypeScriptModule>;
-      this.nativeModule =
-        typeof candidate.API === 'function' &&
-        typeof candidate.formatDiagnosticsWithColorAndContext === 'function'
-          ? (candidate as NativeTypeScriptModule)
-          : null;
     } catch {
+      // Not exported by the installed package: TypeScript 6 or older.
       this.nativeModule = null;
+      return this.nativeModule;
     }
+    const candidate = require(entryPath) as Partial<NativeTypeScriptModule>;
+    this.nativeModule = isCompleteNativeModule(candidate) ? candidate : null;
     return this.nativeModule;
+  }
+
+  /**
+   * Returns the native module, throwing an actionable error when the
+   * installed TypeScript does not provide one.
+   */
+  public getNativeModule(): NativeTypeScriptModule {
+    const nativeModule = this.loadNativeModule();
+    if (!nativeModule) {
+      throw new Error(
+        CLI_ERRORS.UNSUPPORTED_TYPESCRIPT_VERSION(this.getInstalledVersion()),
+      );
+    }
+    return nativeModule;
   }
 
   /**
@@ -92,12 +108,7 @@ export class TypeScriptBinaryLoader {
     if (this.nativeApi) {
       return this.nativeApi;
     }
-    const nativeModule = this.loadNativeModule();
-    if (!nativeModule) {
-      const version = this.tryGetInstalledVersion();
-      throw new Error(CLI_ERRORS.UNSUPPORTED_TYPESCRIPT_VERSION(version));
-    }
-    this.nativeApi = new nativeModule.API({ cwd: process.cwd() });
+    this.nativeApi = new (this.getNativeModule().API)({ cwd: process.cwd() });
     return this.nativeApi;
   }
 
@@ -113,11 +124,15 @@ export class TypeScriptBinaryLoader {
   }
 
   private loadInstalledTypeScript(): typeof ts {
+    if (this.installedTypeScript) {
+      return this.installedTypeScript;
+    }
     try {
       const tsBinaryPath = require.resolve('typescript', {
         paths: [process.cwd(), ...this.getModulePaths()],
       });
-      return require(tsBinaryPath);
+      this.installedTypeScript = require(tsBinaryPath);
+      return this.installedTypeScript!;
     } catch {
       throw new Error(
         'TypeScript could not be found! Please, install "typescript" package.',
@@ -125,7 +140,7 @@ export class TypeScriptBinaryLoader {
     }
   }
 
-  private tryGetInstalledVersion(): string {
+  private getInstalledVersion(): string {
     try {
       return this.loadInstalledTypeScript().version ?? 'unknown';
     } catch {
@@ -134,7 +149,7 @@ export class TypeScriptBinaryLoader {
   }
 
   private assertProgrammaticApiIsSupported(tsBinary: typeof ts): void {
-    if (typeof tsBinary.getParsedCommandLineOfConfigFile === 'function') {
+    if (hasClassicApi(tsBinary)) {
       return;
     }
     // A caller reaching for the classic API while the native one is present
@@ -155,4 +170,23 @@ export class TypeScriptBinaryLoader {
       ...modulePaths.slice(3, modulePaths.length).reverse(),
     ];
   }
+}
+
+function hasClassicApi(tsBinary: typeof ts): boolean {
+  return typeof tsBinary.getParsedCommandLineOfConfigFile === 'function';
+}
+
+/**
+ * TypeScript 7.0's `unstable/sync` has `API.parseConfigFile` but neither
+ * `createProgram` nor the diagnostics formatter; 7.1 adds both.
+ */
+function isCompleteNativeModule(
+  candidate: Partial<NativeTypeScriptModule>,
+): candidate is NativeTypeScriptModule {
+  return (
+    typeof candidate.API === 'function' &&
+    'createProgram' in candidate.API.prototype &&
+    'parseConfigFile' in candidate.API.prototype &&
+    typeof candidate.formatDiagnosticsWithColorAndContext === 'function'
+  );
 }
