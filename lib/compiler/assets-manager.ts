@@ -1,6 +1,6 @@
 import * as chokidar from 'chokidar';
 import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
-import { dirname, join, sep } from 'path';
+import { basename, dirname, join, resolve, sep } from 'path';
 import {
   ActionOnFile,
   Asset,
@@ -343,11 +343,29 @@ export class AssetsManager {
     // Set path value to true for watching the first time
     this.watchAssetsKeyValue[assetCheckKey] = true;
 
-    let dest = copyPathResolve(
-      path,
-      item.outDir!,
-      sourceRoot.split(sep).length,
-    );
+    // "flat" bypasses the sourceRoot-relative stripping entirely and copies
+    // the file to "outDir" by its basename. This is the only way to target an
+    // "include" path that lives outside "sourceRoot" (e.g. the project's own
+    // package.json, needed one directory up for Node's subpath imports to
+    // resolve against the compiled output) without hitting the stripping
+    // logic below, which assumes the file is somewhere under "sourceRoot".
+    let dest = item.flat
+      ? join(item.outDir!, basename(path))
+      : copyPathResolve(path, item.outDir!, sourceRoot.split(sep).length);
+
+    // When "include" resolves outside "sourceRoot" (and "flat" isn't set),
+    // stripping sourceRoot's segment count from the file's path can consume
+    // the filename itself, collapsing the destination to "outDir" — silently
+    // overwriting the output directory with the asset's contents before the
+    // compiler even runs. Fail loudly instead.
+    if (!item.flat && resolve(dest) === resolve(item.outDir!)) {
+      throw new Error(
+        `Refusing to copy "${path}" to "${item.outDir}": the "include" path is not deep enough under ` +
+          `"sourceRoot" for any path segment to survive stripping, so the file would overwrite the ` +
+          `"outDir" directory itself. Move the file inside "sourceRoot", or set "flat": true on this ` +
+          `"assets" entry to copy it into "${item.outDir}" by its basename instead.`,
+      );
+    }
 
     // The destination is re-checked per file: the configured "outDir" is
     // validated up front, but a symlinked directory *inside* it would still
