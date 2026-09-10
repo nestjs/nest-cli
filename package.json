@@ -74,7 +74,7 @@
     "release-it": "21.0.2",
     "ts-loader": "9.6.2",
     "tsconfig-paths-webpack-plugin": "4.2.0",
-    "vitest": "4.1.11",
+    "vitest": "5.0.0",
     "webpack": "5.110.3",
     "webpack-node-externals": "3.0.0"
   },
