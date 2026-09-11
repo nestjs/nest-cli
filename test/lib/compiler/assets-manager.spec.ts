@@ -802,4 +802,69 @@ describe('AssetsManager', () => {
       );
     });
   });
+  describe('directory asset without a wildcard (#3522)', () => {
+    // A bare directory entry (e.g. "assets": ["config"]) takes the
+    // expansion branch: the outer glob resolves the directory itself, then a
+    // second glob walks it. Both must honour `dot`, otherwise a plain
+    // `nest build` silently drops dotfiles that `--watchAssets` copies.
+    const sourceRoot = join(process.cwd(), 'src').replace(/\\/g, '/');
+    const configDir = `${sourceRoot}/config`;
+    const dotfile = `${configDir}/envs/.development`;
+    const plainFile = `${configDir}/envs/prod.env`;
+
+    const arrangeDirectoryAsset = (exclude?: string) => {
+      vi.mocked(statSync).mockImplementation(
+        ((path: string) =>
+          ({
+            isFile: () => path !== configDir,
+            isDirectory: () => path === configDir,
+          }) as any) as any,
+      );
+
+      vi.mocked(globSync)
+        .mockReturnValueOnce([configDir]) // the asset entry resolves to a directory
+        .mockReturnValueOnce([dotfile, plainFile]); // its expansion
+
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([
+          exclude ? { include: 'config', exclude } : 'config',
+        ] as any) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+    };
+
+    it('should expand the directory with dot enabled', () => {
+      arrangeDirectoryAsset();
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      expect(globSync).toHaveBeenNthCalledWith(2, `${configDir}/**/*`, {
+        ignore: undefined,
+        dot: true,
+      });
+    });
+
+    it('should copy a dotfile nested in the directory, like watch mode does', () => {
+      arrangeDirectoryAsset();
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      expect(copyFileSync).toHaveBeenCalledWith(dotfile, expect.any(String));
+      expect(copyFileSync).toHaveBeenCalledWith(plainFile, expect.any(String));
+    });
+
+    it('should still forward the exclude pattern when expanding', () => {
+      const exclude = 'config/**/*.env';
+      arrangeDirectoryAsset(exclude);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      expect(globSync).toHaveBeenNthCalledWith(2, `${configDir}/**/*`, {
+        ignore: `${sourceRoot}/config/**/*.env`,
+        dot: true,
+      });
+    });
+  });
 });
