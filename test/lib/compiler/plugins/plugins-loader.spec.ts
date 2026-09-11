@@ -95,6 +95,18 @@ vi.mock('module', async (importOriginal) => {
         if (id.includes('invalid-plugin')) {
           return {};
         }
+        // Simulates a plugin whose entry point resolves fine but blows up
+        // while being evaluated (e.g. a TypeScript version mismatch in the
+        // plugin's own imports). The bare package still loads, but exposes
+        // no compiler hooks.
+        if (id.includes('broken-plugin/plugin')) {
+          throw new SyntaxError(
+            "The requested module 'typescript' does not provide an export named 'ObjectFlags'",
+          );
+        }
+        if (id.includes('broken-plugin')) {
+          return {};
+        }
         return realReq(id);
       };
       mockedReq.resolve = (id: string, opts?: any) => {
@@ -103,7 +115,8 @@ vi.mock('module', async (importOriginal) => {
           id.includes('declarations-plugin') ||
           id.includes('readonly-plugin') ||
           id.includes('options-tracker') ||
-          id.includes('invalid-plugin')
+          id.includes('invalid-plugin') ||
+          id.includes('broken-plugin')
         ) {
           return id;
         }
@@ -147,6 +160,15 @@ describe('PluginsLoader', () => {
   it('should throw for a plugin that exports no hooks', () => {
     const loader = new PluginsLoader();
     expect(() => loader.load(['invalid-plugin'])).toThrow(/plugin/i);
+  });
+
+  it('should surface the original error when the plugin entry point resolves but fails to load', () => {
+    const loader = new PluginsLoader();
+    // Must not be reported as "not compatible" — the entry point exists, it
+    // just crashed while loading. The real cause has to reach the user.
+    expect(() => loader.load(['broken-plugin'])).toThrow(
+      /does not provide an export named 'ObjectFlags'/,
+    );
   });
 
   it('should throw for a plugin that is not installed', () => {
