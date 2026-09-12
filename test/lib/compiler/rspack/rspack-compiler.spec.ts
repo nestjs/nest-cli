@@ -11,6 +11,7 @@ import { PluginsLoader } from '../../../../lib/compiler/plugins/plugins-loader.j
 import { RspackCompiler } from '../../../../lib/compiler/rspack-compiler.js';
 
 import { existsSync } from 'fs';
+import { resolve } from 'path';
 import { rspackDefaultsFactory } from '../../../../lib/compiler/defaults/rspack-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
 import * as esmProjectUtil from '../../../../lib/utils/is-esm-project.js';
@@ -71,6 +72,7 @@ vi.mock('../../../../lib/compiler/helpers/get-value-or-default.js', () => ({
 vi.mock('../../../../lib/utils/is-esm-project.js');
 
 describe('Rspack Compiler', () => {
+  const absoluteTsconfigPath = resolve(process.cwd(), 'tsconfig.json');
   let compiler: RspackCompiler;
 
   // Access mock functions from the hoisted rspack mock
@@ -154,7 +156,7 @@ describe('Rspack Compiler', () => {
       ).toThrow('Could not find TypeScript configuration file');
     });
 
-    it('should call rspackDefaultsFactory with correct arguments', () => {
+    it('should pass an absolute tsconfig path to Rspack', () => {
       vi.mocked(existsSync).mockReturnValue(true);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce('main') // entryFile
@@ -175,7 +177,7 @@ describe('Rspack Compiler', () => {
         '',
         'main',
         false,
-        'tsconfig.json',
+        absoluteTsconfigPath,
         expect.objectContaining({
           beforeHooks: [],
           afterHooks: [],
@@ -205,7 +207,7 @@ describe('Rspack Compiler', () => {
         '',
         'main',
         false,
-        'tsconfig.json',
+        absoluteTsconfigPath,
         expect.anything(),
         true,
         undefined,
@@ -230,7 +232,7 @@ describe('Rspack Compiler', () => {
         '',
         'main',
         true,
-        'tsconfig.json',
+        absoluteTsconfigPath,
         expect.anything(),
         false,
         undefined,
@@ -257,7 +259,7 @@ describe('Rspack Compiler', () => {
         '',
         'main',
         false,
-        'tsconfig.json',
+        absoluteTsconfigPath,
         expect.anything(),
         false,
         tsOptions,
