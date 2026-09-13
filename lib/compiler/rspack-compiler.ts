@@ -13,19 +13,19 @@ import { PluginsLoader } from './plugins/plugins-loader.js';
 
 const require = createRequire(import.meta.url);
 
-type RspackConfigFactory = (
+export type RspackConfigFactory = (
   config: Record<string, any>,
   rspackRef: any,
 ) => Record<string, any>;
 
-type RspackConfigFactoryOrConfig = RspackConfigFactory | Record<string, any>;
+export type RspackConfigFactoryOrConfig =
+  RspackConfigFactory | Record<string, any>;
 
-type RspackCompilerExtras = {
+export type RspackCompilerExtras = {
   options: Record<string, any>;
   assetsManager: AssetsManager;
   rspackConfigFactoryOrConfig:
-    | RspackConfigFactoryOrConfig
-    | RspackConfigFactoryOrConfig[];
+    RspackConfigFactoryOrConfig | RspackConfigFactoryOrConfig[];
   debug?: boolean;
   watchMode?: boolean;
   tsOptions?: ts.CompilerOptions;
@@ -57,7 +57,6 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       tsConfigPath,
       appName,
     );
-
     const entryFile = getValueOrDefault<string>(
       configuration,
       'entryFile',

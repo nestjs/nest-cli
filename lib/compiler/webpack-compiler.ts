@@ -29,21 +29,19 @@ function loadWebpack(): typeof webpack {
   }
 }
 
-type WebpackConfigFactory = (
+export type WebpackConfigFactory = (
   config: webpack.Configuration,
   webpackRef: typeof webpack,
 ) => webpack.Configuration;
 
-type WebpackConfigFactoryOrConfig =
-  | WebpackConfigFactory
-  | webpack.Configuration;
+export type WebpackConfigFactoryOrConfig =
+  WebpackConfigFactory | webpack.Configuration;
 
-type WebpackCompilerExtras = {
+export type WebpackCompilerExtras = {
   options: Record<string, any>;
   assetsManager: AssetsManager;
   webpackConfigFactoryOrConfig:
-    | WebpackConfigFactoryOrConfig
-    | WebpackConfigFactoryOrConfig[];
+    WebpackConfigFactoryOrConfig | WebpackConfigFactoryOrConfig[];
   debug?: boolean;
   watchMode?: boolean;
 };
@@ -108,8 +106,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
 
     let compiler: webpack.Compiler | webpack.MultiCompiler;
     let watchOptions:
-      | Parameters<typeof webpack.MultiCompiler.prototype.watch>[0]
-      | undefined;
+      Parameters<typeof webpack.MultiCompiler.prototype.watch>[0] | undefined;
     let watch: boolean | undefined;
 
     if (Array.isArray(extras.webpackConfigFactoryOrConfig)) {

@@ -1,6 +1,4 @@
 import { red } from 'ansis';
-import { join } from 'path';
-import { pathToFileURL } from 'url';
 import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
@@ -28,9 +26,10 @@ import {
 } from '../lib/configuration/defaults.js';
 import { FileSystemReader } from '../lib/readers/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
-import { isModuleAvailable } from '../lib/utils/is-module-available.js';
+import { loadBuilderConfig } from '../lib/utils/load-builder-config.js';
+import type { RspackCompilerExtras } from '../lib/compiler/rspack-compiler.js';
+import type { WebpackCompilerExtras } from '../lib/compiler/webpack-compiler.js';
 import { AbstractAction } from './abstract.action.js';
-import type webpack from 'webpack';
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -375,19 +374,8 @@ export class BuildAction extends AbstractAction {
   private async getWebpackConfigFactoryByPath(
     webpackPath: string,
     defaultPath: string,
-  ): Promise<
-    (
-      config: webpack.Configuration,
-      webpackRef: typeof webpack,
-    ) => webpack.Configuration
-  > {
-    const pathToWebpackFile = join(process.cwd(), webpackPath);
-    const isWebpackFileAvailable = isModuleAvailable(pathToWebpackFile);
-    if (!isWebpackFileAvailable && webpackPath === defaultPath) {
-      return (_config: webpack.Configuration) => ({});
-    }
-    const imported = await import(pathToFileURL(pathToWebpackFile).href);
-    return imported.default ?? imported;
+  ): Promise<WebpackCompilerExtras['webpackConfigFactoryOrConfig']> {
+    return loadBuilderConfig(webpackPath, defaultPath);
   }
 
   private async runRspack(
@@ -433,16 +421,8 @@ export class BuildAction extends AbstractAction {
   private async getRspackConfigFactoryByPath(
     rspackPath: string,
     defaultPath: string,
-  ): Promise<
-    (config: Record<string, any>, rspackRef: any) => Record<string, any>
-  > {
-    const pathToRspackFile = join(process.cwd(), rspackPath);
-    const isRspackFileAvailable = isModuleAvailable(pathToRspackFile);
-    if (!isRspackFileAvailable && rspackPath === defaultPath) {
-      return (_config: Record<string, any>) => ({});
-    }
-    const imported = await import(pathToFileURL(pathToRspackFile).href);
-    return imported.default ?? imported;
+  ): Promise<RspackCompilerExtras['rspackConfigFactoryOrConfig']> {
+    return loadBuilderConfig(rspackPath, defaultPath);
   }
 
   private warnOnIgnoredLibraryAssets(
