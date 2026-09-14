@@ -27,7 +27,7 @@ import {
   defaultWebpackConfigFilename,
 } from '../lib/configuration/defaults.js';
 import { FileSystemReader } from '../lib/readers/index.js';
-import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
+import { CLI_ERRORS, ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
 import { isModuleAvailable } from '../lib/utils/is-module-available.js';
 import { AbstractAction } from './abstract.action.js';
 import type webpack from 'webpack';
@@ -230,23 +230,32 @@ export class BuildAction extends AbstractAction {
     };
 
     const parallel = options.parallel;
-    if (parallel && appBuildContexts.length > 1) {
-      // Coerce to a positive integer; fall back to unlimited for any
-      // non-positive or non-finite value to guard against an infinite loop
-      // when `i += concurrency` would never advance.
-      const requested =
-        typeof parallel === 'number' ? parallel : appBuildContexts.length;
-      const concurrency =
-        Number.isFinite(requested) && requested >= 1
-          ? Math.floor(requested)
-          : appBuildContexts.length;
-      for (let i = 0; i < appBuildContexts.length; i += concurrency) {
-        const chunk = appBuildContexts.slice(i, i + concurrency);
-        await Promise.all(chunk.map((context) => buildApp(context)));
+    try {
+      if (parallel && appBuildContexts.length > 1) {
+        // Coerce to a positive integer; fall back to unlimited for any
+        // non-positive or non-finite value to guard against an infinite loop
+        // when `i += concurrency` would never advance.
+        const requested =
+          typeof parallel === 'number' ? parallel : appBuildContexts.length;
+        const concurrency =
+          Number.isFinite(requested) && requested >= 1
+            ? Math.floor(requested)
+            : appBuildContexts.length;
+        for (let i = 0; i < appBuildContexts.length; i += concurrency) {
+          const chunk = appBuildContexts.slice(i, i + concurrency);
+          await Promise.all(chunk.map((context) => buildApp(context)));
+        }
+      } else {
+        for (const context of appBuildContexts) {
+          await buildApp(context);
+        }
       }
-    } else {
-      for (const context of appBuildContexts) {
-        await buildApp(context);
+    } finally {
+      // `TsConfigProvider` opens the native API session to read the tsconfig;
+      // builders other than `tsc` never use it afterwards, and `tsc` closes
+      // it itself. Watch mode keeps the process alive, nothing to release.
+      if (!watchMode) {
+        this.tsLoader.closeNativeApi();
       }
     }
   }
@@ -337,6 +346,16 @@ export class BuildAction extends AbstractAction {
     onSuccess: (() => void) | undefined,
     assetsManager: AssetsManager,
   ) {
+    if (this.tsLoader.isNativeApiRequired()) {
+      return this.runNativeTsc(
+        watchMode,
+        configuration,
+        pathToTsconfig,
+        appName,
+        onSuccess,
+        assetsManager,
+      );
+    }
     if (watchMode) {
       const { WatchCompiler } =
         await import('../lib/compiler/watch-compiler.js');
@@ -371,6 +390,32 @@ export class BuildAction extends AbstractAction {
       );
       await assetsManager.closeWatchers();
     }
+  }
+
+  /**
+   * `tsc` builder on the native TypeScript compiler (TypeScript 7.1+), which
+   * ships no classic compiler API but exposes `typescript/unstable/sync`.
+   */
+  private async runNativeTsc(
+    watchMode: boolean,
+    configuration: Required<Configuration>,
+    pathToTsconfig: string,
+    appName: string | undefined,
+    onSuccess: (() => void) | undefined,
+    assetsManager: AssetsManager,
+  ) {
+    if (watchMode) {
+      throw new Error(CLI_ERRORS.WATCH_UNSUPPORTED_ON_NATIVE_TYPESCRIPT());
+    }
+    const { NativeCompiler } =
+      await import('../lib/compiler/native/native-compiler.js');
+    const compiler = new NativeCompiler(
+      this.pluginsLoader,
+      this.tsConfigProvider,
+      this.tsLoader,
+    );
+    compiler.run(configuration, pathToTsconfig, appName, undefined, onSuccess);
+    await assetsManager.closeWatchers();
   }
 
   private getWebpackConfigFactoryByPath(
