@@ -16,8 +16,8 @@ vi.mock('../../lib/compiler/helpers/get-rspack-config-path.js', () => ({
   getRspackConfigPath: vi.fn(),
 }));
 
-vi.mock('../../lib/utils/is-module-available.js', () => ({
-  isModuleAvailable: vi.fn().mockReturnValue(false),
+vi.mock('../../lib/utils/resolve-module-path.js', () => ({
+  resolveModulePath: vi.fn().mockReturnValue(undefined),
 }));
 
 vi.mock('../../lib/compiler/webpack-compiler.js', () => ({
@@ -84,26 +84,20 @@ describe('BuildAction - Rspack', () => {
   });
 
   describe('getRspackConfigFactoryByPath', () => {
-    it('should return identity function when config file is not available and path is default', () => {
+    it('should return identity function when config file is not available and path is default', async () => {
       // Access private method via prototype
       const proto = Object.getPrototypeOf(buildAction);
       const method =
         proto.getRspackConfigFactoryByPath ||
         (buildAction as any)['getRspackConfigFactoryByPath'];
 
-      // If method exists on prototype, call it bound
-      if (method) {
-        const result = method.call(
-          buildAction,
-          'rspack.config.js',
-          'rspack.config.js',
-        );
-        expect(typeof result).toBe('function');
-        expect(result({})).toEqual({});
-      } else {
-        // Method might be compiled differently; test via runBuild integration instead
-        expect(true).toBe(true);
-      }
+      const result = await method.call(
+        buildAction,
+        'rspack.config.js',
+        'rspack.config.js',
+      );
+      expect(typeof result).toBe('function');
+      expect(result({})).toEqual({});
     });
   });
 
@@ -121,7 +115,7 @@ describe('BuildAction - Rspack', () => {
 
     it('should forward rspackPath option to getRspackConfigPath helper', async () => {
       // Return undefined so runRspack falls back to the default config filename
-      // and the (mocked) is-module-available short-circuits the require call.
+      // and the (mocked) resolve-module-path short-circuits the require call.
       vi.mocked(getRspackConfigPath).mockReturnValue(undefined);
 
       await buildAction.runBuild(

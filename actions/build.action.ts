@@ -1,6 +1,4 @@
-import { createRequire } from 'module';
 import { red } from 'ansis';
-import { join } from 'path';
 import { BuildCommandContext } from '../commands/index.js';
 import { AssetsManager } from '../lib/compiler/assets-manager.js';
 import { deleteOutDirIfEnabled } from '../lib/compiler/helpers/delete-out-dir.js';
@@ -28,11 +26,10 @@ import {
 } from '../lib/configuration/defaults.js';
 import { FileSystemReader } from '../lib/readers/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
-import { isModuleAvailable } from '../lib/utils/is-module-available.js';
+import { loadBuilderConfig } from '../lib/utils/load-builder-config.js';
+import type { RspackCompilerExtras } from '../lib/compiler/rspack-compiler.js';
+import type { WebpackCompilerExtras } from '../lib/compiler/webpack-compiler.js';
 import { AbstractAction } from './abstract.action.js';
-import type webpack from 'webpack';
-
-const require = createRequire(import.meta.url);
 
 export class BuildAction extends AbstractAction {
   protected readonly pluginsLoader = new PluginsLoader();
@@ -308,10 +305,11 @@ export class BuildAction extends AbstractAction {
       getWebpackConfigPath(configuration, options, appName) ??
       defaultWebpackConfigFilename;
 
-    const webpackConfigFactoryOrConfig = this.getWebpackConfigFactoryByPath(
-      webpackPath,
-      defaultWebpackConfigFilename,
-    );
+    const webpackConfigFactoryOrConfig =
+      await this.getWebpackConfigFactoryByPath(
+        webpackPath,
+        defaultWebpackConfigFilename,
+      );
 
     return webpackCompiler.run(
       configuration,
@@ -373,19 +371,11 @@ export class BuildAction extends AbstractAction {
     }
   }
 
-  private getWebpackConfigFactoryByPath(
+  private async getWebpackConfigFactoryByPath(
     webpackPath: string,
     defaultPath: string,
-  ): (
-    config: webpack.Configuration,
-    webpackRef: typeof webpack,
-  ) => webpack.Configuration {
-    const pathToWebpackFile = join(process.cwd(), webpackPath);
-    const isWebpackFileAvailable = isModuleAvailable(pathToWebpackFile);
-    if (!isWebpackFileAvailable && webpackPath === defaultPath) {
-      return (_config: webpack.Configuration) => ({});
-    }
-    return require(pathToWebpackFile);
+  ): Promise<WebpackCompilerExtras['webpackConfigFactoryOrConfig']> {
+    return loadBuilderConfig(webpackPath, defaultPath);
   }
 
   private async runRspack(
@@ -407,7 +397,7 @@ export class BuildAction extends AbstractAction {
       getRspackConfigPath(configuration, options, appName) ??
       defaultRspackConfigFilename;
 
-    const rspackConfigFactoryOrConfig = this.getRspackConfigFactoryByPath(
+    const rspackConfigFactoryOrConfig = await this.getRspackConfigFactoryByPath(
       rspackPath,
       defaultRspackConfigFilename,
     );
@@ -428,16 +418,11 @@ export class BuildAction extends AbstractAction {
     );
   }
 
-  private getRspackConfigFactoryByPath(
+  private async getRspackConfigFactoryByPath(
     rspackPath: string,
     defaultPath: string,
-  ): (config: Record<string, any>, rspackRef: any) => Record<string, any> {
-    const pathToRspackFile = join(process.cwd(), rspackPath);
-    const isRspackFileAvailable = isModuleAvailable(pathToRspackFile);
-    if (!isRspackFileAvailable && rspackPath === defaultPath) {
-      return (_config: Record<string, any>) => ({});
-    }
-    return require(pathToRspackFile);
+  ): Promise<RspackCompilerExtras['rspackConfigFactoryOrConfig']> {
+    return loadBuilderConfig(rspackPath, defaultPath);
   }
 
   private warnOnIgnoredLibraryAssets(
