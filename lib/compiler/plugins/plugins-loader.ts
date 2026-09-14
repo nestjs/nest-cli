@@ -99,24 +99,35 @@ export class PluginsLoader {
     ];
 
     return pluginNames.map((item) => {
+      const binaryPath = this.resolvePluginPath(item, nodeModulePaths);
       try {
-        try {
-          const binaryPath = require.resolve(
-            `${item}/${PLUGIN_ENTRY_FILENAME}`,
-            {
-              paths: nodeModulePaths,
-            },
-          );
-          return require(binaryPath);
-        } catch {
-          // entry-point resolution failed, try bare module resolve
-        }
-
-        const binaryPath = require.resolve(item, { paths: nodeModulePaths });
         return require(binaryPath);
       } catch (e) {
-        throw new Error(`"${item}" plugin is not installed.`, { cause: e });
+        // Resolution succeeded, so the plugin IS installed — it crashed while
+        // being evaluated (e.g. its own imports are incompatible with the
+        // TypeScript version it ended up resolving). Surface the real reason
+        // instead of falling through to a misleading "not compatible" error.
+        throw new Error(
+          `"${item}" plugin failed to load: ${(e as Error)?.message ?? e}`,
+          { cause: e },
+        );
       }
     });
+  }
+
+  private resolvePluginPath(item: string, nodeModulePaths: string[]): string {
+    try {
+      return require.resolve(`${item}/${PLUGIN_ENTRY_FILENAME}`, {
+        paths: nodeModulePaths,
+      });
+    } catch {
+      // entry-point resolution failed, try bare module resolve
+    }
+
+    try {
+      return require.resolve(item, { paths: nodeModulePaths });
+    } catch (e) {
+      throw new Error(`"${item}" plugin is not installed.`, { cause: e });
+    }
   }
 }
