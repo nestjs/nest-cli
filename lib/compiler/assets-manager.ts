@@ -1,6 +1,6 @@
 import * as chokidar from 'chokidar';
 import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
-import { dirname, join, sep } from 'path';
+import { dirname, join, resolve as resolvePath, sep } from 'path';
 import {
   ActionOnFile,
   Asset,
@@ -348,6 +348,20 @@ export class AssetsManager {
       item.outDir!,
       sourceRoot.split(sep).length,
     );
+
+    // When an "include" path resolves outside the strip root, stripping that
+    // root's segment count from the file's path can consume the filename
+    // itself, collapsing the destination to "outDir" — silently overwriting
+    // the output directory with the asset's contents before the compiler even
+    // runs. Fail loudly instead.
+    if (resolvePath(dest) === resolvePath(item.outDir!)) {
+      throw new Error(
+        `Refusing to copy "${path}" to "${item.outDir}": the "include" path resolves outside ` +
+          `"${sourceRoot}", so no path segment survives stripping and the file would overwrite ` +
+          `the "${item.outDir}" directory itself. Move the file inside "${sourceRoot}", or set ` +
+          `"rootDir" in your tsconfig to a directory that contains both it and your sources.`,
+      );
+    }
 
     // The destination is re-checked per file: the configured "outDir" is
     // validated up front, but a symlinked directory *inside* it would still

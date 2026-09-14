@@ -40,6 +40,11 @@ describe('AssetsManager', () => {
   beforeEach(() => {
     assetsManager = new AssetsManager();
     vi.clearAllMocks();
+    // clearAllMocks() wipes call history but not implementations, so restore
+    // the default destination for tests that override it.
+    vi.mocked(copyPathResolve).mockReturnValue(
+      `${process.cwd()}/dist/file.txt`,
+    );
   });
 
   describe('closeWatchers', () => {
@@ -724,6 +729,53 @@ describe('AssetsManager', () => {
         'dist',
         expectedLibSourceRoot.split(sep).length,
       );
+    });
+  });
+
+  describe('outDir collapse guard', () => {
+    it('throws instead of overwriting outDir when stripping consumes the whole path', async () => {
+      // Exercise the real path arithmetic rather than a fabricated collapse:
+      // "../package.json" sits one level above "sourceRoot", so stripping
+      // sourceRoot's segment count consumes the filename too and
+      // copyPathResolve resolves to "dist" itself.
+      const { copyPathResolve: actualCopyPathResolve } = await vi.importActual<
+        typeof import('../../../lib/compiler/helpers/copy-path-resolve.js')
+      >('../../../lib/compiler/helpers/copy-path-resolve.js');
+      vi.mocked(copyPathResolve).mockImplementation(actualCopyPathResolve);
+
+      vi.mocked(globSync).mockReturnValue([
+        join(process.cwd(), 'package.json'),
+      ]);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '../package.json' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).toThrow(/would overwrite the "dist" directory itself/);
+
+      expect(copyFileSync).not.toHaveBeenCalled();
+    });
+
+    it('still copies assets that survive stripping', () => {
+      vi.mocked(globSync).mockReturnValue([
+        join(process.cwd(), 'src', 'file.txt'),
+      ]);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([{ include: '*.txt' }]) // assets
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src') // sourceRoot
+        .mockReturnValueOnce(false) // compilerOptions.watchAssets
+        .mockReturnValueOnce(undefined); // compilerOptions.allowOutsidePaths
+
+      expect(() =>
+        assetsManager.copyAssets({} as any, undefined, 'dist', false),
+      ).not.toThrow();
+
+      expect(copyFileSync).toHaveBeenCalled();
     });
   });
 
