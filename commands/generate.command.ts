@@ -1,5 +1,5 @@
 import { bold, cyan, green } from 'ansis';
-import Table from 'cli-table3';
+import Table, { TableConstructorOptions } from 'cli-table3';
 import { Command } from 'commander';
 import {
   AbstractCollection,
@@ -102,8 +102,23 @@ export class GenerateCommand extends AbstractCommand {
 
   private buildSchematicsListAsTable(schematics: Schematic[]): string {
     const leftMargin = '    ';
-    const tableConfig = {
+
+    if ((process.stdout.columns ?? 80) < 80) {
+      return schematics
+        .map((schematic) => {
+          const header = `${leftMargin}${green(schematic.name)} ${cyan(
+            schematic.alias,
+          )}`;
+          return schematic.description
+            ? `${header}\n${leftMargin}  ${schematic.description}`
+            : header;
+        })
+        .join('\n');
+    }
+
+    const tableConfig: TableConstructorOptions = {
       head: ['name', 'alias', 'description'],
+      wordWrap: true,
       chars: {
         'left': leftMargin.concat('│'),
         'top-left': leftMargin.concat('┌'),
