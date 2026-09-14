@@ -11,7 +11,7 @@ export interface BuildCommandContext {
   typeCheck?: boolean;
   emitDeclarations?: boolean;
   silent?: boolean;
-  preserveWatchOutput: boolean;
+  preserveWatchOutput?: boolean;
   all: boolean;
   parallel?: number | boolean;
 }

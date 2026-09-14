@@ -11,7 +11,7 @@ export interface StartCommandContext {
   typeCheck?: boolean;
   emitDeclarations?: boolean;
   silent?: boolean;
-  preserveWatchOutput: boolean;
+  preserveWatchOutput?: boolean;
   debug?: boolean | string;
   exec?: string;
   sourceRoot?: string;
