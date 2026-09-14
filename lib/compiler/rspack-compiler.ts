@@ -57,6 +57,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       tsConfigPath,
       appName,
     );
+
     const entryFile = getValueOrDefault<string>(
       configuration,
       'entryFile',
