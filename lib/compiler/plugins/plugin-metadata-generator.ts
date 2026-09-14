@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import { requiresExplicitImportExtensions } from '../helpers/requires-explicit-import-extensions.js';
 import {
   DeepPluginMeta,
   ReadonlyVisitor,
@@ -7,25 +8,6 @@ import { FOUND_NO_ISSUES_GENERATING_METADATA } from '../swc/constants.js';
 import { TypeCheckerHost } from '../swc/type-checker-host.js';
 import { TypeScriptBinaryLoader } from '../typescript-loader.js';
 import { PluginMetadataPrinter } from './plugin-metadata-printer.js';
-
-/**
- * Returns `true` when the consuming project uses an ESM-style module
- * resolution strategy (`node16` / `nodenext`). Under those resolution
- * modes, dynamic `import()` specifiers MUST include the file extension
- * (typically `.js`) for the runtime resolver to find the module. Without
- * the extension, executing the generated metadata file fails with
- * `ERR_MODULE_NOT_FOUND`, and TypeScript reports a diagnostic.
- */
-export function requiresExplicitImportExtensions(
-  options: ts.CompilerOptions,
-  tsBinary: typeof ts,
-): boolean {
-  const moduleResolution = options.moduleResolution;
-  return (
-    moduleResolution === tsBinary.ModuleResolutionKind.Node16 ||
-    moduleResolution === tsBinary.ModuleResolutionKind.NodeNext
-  );
-}
 
 const RELATIVE_PATH_RE = /^\.\.?\//;
 // Any common JS/TS-style extension that the user could have authored or

@@ -280,4 +280,123 @@ describe('tsconfig paths hooks', () => {
       }
     });
   }, 15000);
+
+  describe('ESM output (module: NodeNext)', () => {
+    const esmOptions: ts.CompilerOptions = {
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    };
+
+    it('should point a directory alias at its index file', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { ...esmOptions, paths: { '~lib': ['./src/lib'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('from "./lib/index.js"');
+    });
+
+    it('should resolve an alias written with the emitted extension', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { ...esmOptions, paths: { '~lib/*': ['./src/lib/*'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('from "./lib/service.js"');
+    });
+
+    it('should give an .mts source the extension it is emitted with', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/uses-mts.mts'],
+        { ...esmOptions, paths: { '~mod': ['./src/mod.mts'] } },
+      );
+
+      expect(output.get('dist/uses-mts.mjs')).toContain('from "./mod.mjs"');
+    });
+
+    it('should keep the extension on a dotted file name', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/dotted.ts'],
+        { ...esmOptions, paths: { '~lib/*': ['./src/lib/*'] } },
+      );
+
+      expect(output.get('dist/dotted.js')).toContain(
+        'from "./lib/users.service.js"',
+      );
+    });
+
+    it('should resolve an .mjs alias through a wildcard path', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/deep-mts.mts'],
+        { ...esmOptions, paths: { '~lib/*': ['./src/lib/*'] } },
+      );
+
+      expect(output.get('dist/deep-mts.mjs')).toContain('from "./lib/mod.mjs"');
+    });
+
+    it('should follow the jsx setting for a .tsx source', () => {
+      const preserved = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/uses-tsx.ts'],
+        {
+          ...esmOptions,
+          jsx: JsxEmit.Preserve,
+          paths: { '~lib/*': ['./src/lib/*'] },
+        },
+      );
+
+      expect(preserved.get('dist/uses-tsx.js')).toContain(
+        'from "./lib/cmp.jsx"',
+      );
+
+      const compiled = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/uses-tsx.ts'],
+        {
+          ...esmOptions,
+          jsx: JsxEmit.ReactJSX,
+          paths: { '~lib/*': ['./src/lib/*'] },
+        },
+      );
+
+      expect(compiled.get('dist/uses-tsx.js')).toContain('from "./lib/cmp.js"');
+    });
+
+    it('should map .cts and .js sources to their emitted extensions', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/uses-others.ts'],
+        { ...esmOptions, allowJs: true, paths: { '~lib/*': ['./src/lib/*'] } },
+      );
+
+      const emitted = output.get('dist/uses-others.js');
+      expect(emitted).toContain('from "./lib/legacy.cjs"');
+      expect(emitted).toContain('from "./lib/plain.js"');
+    });
+
+    it('should leave commonjs output untouched', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { paths: { '~lib': ['./src/lib'] } },
+      );
+
+      expect(output.get('dist/main.js')).toContain('require("./lib")');
+    });
+
+    it('should strip the alias from declaration output too', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        { ...esmOptions, paths: { '~lib': ['./src/lib'] } },
+      );
+
+      expect(output.get('dist/main.d.ts')).not.toMatch(/from\s+['"]~lib/);
+    });
+  }, 15000);
 });
