@@ -345,13 +345,13 @@ export class BuildAction extends AbstractAction {
         this.tsConfigProvider,
         this.tsLoader,
       );
-      const isPreserveWatchOutputEnabled = !!options.preserveWatchOutput;
-
       watchCompiler.run(
         configuration,
         pathToTsconfig,
         appName,
-        { preserveWatchOutput: isPreserveWatchOutputEnabled },
+        // Left undefined when the flag is absent so `WatchCompiler` can
+        // fall through to the tsconfig 'preserveWatchOutput' option.
+        { preserveWatchOutput: options.preserveWatchOutput },
         onSuccess,
       );
     } else {

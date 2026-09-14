@@ -92,10 +92,12 @@ export class BuildCommand extends AbstractCommand {
           // still fall through to `compilerOptions.emitDeclarations`.
           emitDeclarations: options.emitDeclarations,
           silent: !!options.silent,
+          // Left undefined when the flag is absent so `WatchCompiler` can
+          // fall through to the tsconfig 'preserveWatchOutput' option.
           preserveWatchOutput:
-            !!options.preserveWatchOutput &&
-            !!options.watch &&
-            !isWebpackEnabled,
+            !!options.watch && !isWebpackEnabled
+              ? options.preserveWatchOutput
+              : false,
           all: !!options.all,
           parallel,
         };

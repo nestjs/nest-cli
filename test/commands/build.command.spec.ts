@@ -150,4 +150,49 @@ describe('BuildCommand', () => {
       );
     });
   });
+
+  describe('--preserveWatchOutput', () => {
+    it('stays undefined in tsc watch mode when the flag is absent, so the tsconfig value can apply', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'build', '--watch', '--tsc']);
+
+      expect(action.handle.mock.calls[0][0].preserveWatchOutput).toBe(
+        undefined,
+      );
+    });
+
+    it('forwards true when the flag is passed in tsc watch mode', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'build',
+        '--watch',
+        '--tsc',
+        '--preserveWatchOutput',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ preserveWatchOutput: true }),
+      );
+    });
+
+    it('forwards false outside of tsc watch mode', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'build',
+        '--tsc',
+        '--preserveWatchOutput',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ preserveWatchOutput: false }),
+      );
+    });
+  });
 });
