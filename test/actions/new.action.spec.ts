@@ -235,6 +235,28 @@ describe('NewAction', () => {
       expect(observeOption()?.toCommandString()).toBe('--observe');
     });
 
+    it('points at the signup flow after wiring the SDK up', async () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      await action.handle(baseContext({ observe: true }));
+
+      const printed = info.mock.calls.flat().join('\n');
+      expect(printed).toContain('observe.nestjs.com');
+      expect(printed).toContain('ObserveModule.forRoot()');
+      info.mockRestore();
+    });
+
+    it('stays quiet about the signup flow when observe is disabled', async () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      await action.handle(baseContext({ observe: false }));
+
+      expect(info.mock.calls.flat().join('\n')).not.toContain(
+        'ObserveModule.forRoot()',
+      );
+      info.mockRestore();
+    });
+
     it('respects a declined prompt', async () => {
       vi.mocked(isInteractive).mockReturnValue(true);
       vi.mocked(confirm).mockResolvedValue(false as never);

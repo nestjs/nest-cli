@@ -40,6 +40,9 @@ export class NewAction extends AbstractAction {
         await createGitIgnoreFile(projectDirectory);
       }
 
+      if (context.observe) {
+        printObservabilityNextSteps();
+      }
       printCollective();
     }
     process.exit(0);
@@ -190,6 +193,15 @@ const createGitIgnoreFile = (dir: string, content?: string) => {
     return;
   }
   return fs.promises.writeFile(filePath, fileContent);
+};
+
+const printObservabilityNextSteps = () => {
+  console.info();
+  console.info(MESSAGES.OBSERVABILITY_NEXT_STEPS);
+  console.info();
+  console.info(ansis.underline(MESSAGES.OBSERVABILITY_SIGN_UP_URL));
+  console.info(ansis.gray(MESSAGES.OBSERVABILITY_KEYS_HINT));
+  console.info();
 };
 
 const printCollective = () => {

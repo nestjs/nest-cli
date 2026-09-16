@@ -43,7 +43,12 @@ export const MESSAGES = {
     'Only the local @nestjs/cli was updated. To update a globally installed CLI, run: npm i -g @nestjs/cli@latest',
 
   OBSERVABILITY_QUESTION:
-    'Would you like to enable auto-instrumented observability (@nestjs/observe)?',
+    'Would you like to set up @nestjs/observe (distributed tracing, auto-correlated logs, metrics and alarms - free for 300k events/month, https://observe.nestjs.com)?',
+
+  OBSERVABILITY_NEXT_STEPS: `${EMOJIS.SPARKLES}  @nestjs/observe is wired up. Create a free account to get your credentials:`,
+  OBSERVABILITY_SIGN_UP_URL: 'https://observe.nestjs.com',
+  OBSERVABILITY_KEYS_HINT:
+    'Then paste the app key and secret into ObserveModule.forRoot() in your AppModule.',
 
   MAU_INSTALLATION_QUESTION: (name: string) =>
     `The ${name} package is required to deploy. Would you like to install it now?`,
