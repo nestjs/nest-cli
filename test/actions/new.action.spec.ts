@@ -257,6 +257,26 @@ describe('NewAction', () => {
       info.mockRestore();
     });
 
+    it('offers observability as the default answer', async () => {
+      vi.mocked(isInteractive).mockReturnValue(true);
+      vi.mocked(confirm).mockResolvedValue(true as never);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ default: true }),
+      );
+    });
+
+    it('stays off without a TTY, where nobody can decline', async () => {
+      vi.mocked(isInteractive).mockReturnValue(false);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(observeOption()).toBeUndefined();
+    });
+
     it('respects a declined prompt', async () => {
       vi.mocked(isInteractive).mockReturnValue(true);
       vi.mocked(confirm).mockResolvedValue(false as never);

@@ -143,15 +143,16 @@ const installPackages = async (
 };
 
 const askForObservability = async (): Promise<boolean> => {
-  // Without a TTY (CI, piped input, `execSync`) there is nobody to answer, so
-  // fall back to the opt-out default instead of blocking the scaffold.
+  // The prompt below defaults to yes, but that only holds where someone is
+  // there to say no. Without a TTY (CI, piped input, `execSync`) nobody
+  // consented to the extra dependency, so stay off rather than block or assume.
   if (!isInteractive()) {
     return false;
   }
 
   return (await confirm({
     message: MESSAGES.OBSERVABILITY_QUESTION,
-    default: false,
+    default: true,
   }).catch(gracefullyExitOnPromptError)) as boolean;
 };
 
