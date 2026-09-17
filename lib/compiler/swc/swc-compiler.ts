@@ -2,6 +2,11 @@ import { cyan } from 'ansis';
 import { fork, spawnSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
+import {
+  parse as parseJsonc,
+  printParseErrorCode,
+  type ParseError,
+} from 'jsonc-parser';
 import { minimatch } from 'minimatch';
 import { createRequire } from 'module';
 import * as path from 'path';
@@ -276,20 +281,44 @@ export class SwcCompiler extends BaseCompiler {
   }
 
   private getSwcRcFileContentIfExists(swcrcFilePath?: string) {
+    const isCustomPath = swcrcFilePath !== undefined;
+    const resolvedPath = join(process.cwd(), swcrcFilePath ?? '.swcrc');
+
+    let content: string;
     try {
-      return JSON.parse(
-        readFileSync(join(process.cwd(), swcrcFilePath ?? '.swcrc'), 'utf8'),
-      );
+      content = readFileSync(resolvedPath, 'utf8');
     } catch {
-      if (swcrcFilePath !== undefined) {
+      // File missing. When the user explicitly configured `swcrcPath`, we treat
+      // this as a fatal misconfiguration; when we're just looking for the
+      // default `.swcrc`, its absence is fine (no user overrides to merge).
+      if (isCustomPath) {
         console.error(
           ERROR_PREFIX +
-            ` Failed to load "${swcrcFilePath}". Please, check if the file exists and is valid JSON.`,
+            ` Failed to load "${swcrcFilePath}". Please, check if the file exists.`,
         );
         process.exit(1);
       }
       return {};
     }
+
+    // .swcrc is JSON-with-comments in SWC itself, which uses jsonc_parser
+    // with `allow_comments` + `allow_trailing_commas` enabled (see swc's
+    // `parse_swcrc` in crates/swc/src/lib.rs). Match that here so we don't
+    // silently reject a valid `.swcrc` that carries `//` / `/* */` comments
+    // or a trailing comma.
+    const errors: ParseError[] = [];
+    const parsed = parseJsonc(content, errors, { allowTrailingComma: true });
+    if (errors.length > 0) {
+      const first = errors[0];
+      console.error(
+        ERROR_PREFIX +
+          ` Failed to parse "${swcrcFilePath ?? '.swcrc'}": ` +
+          `${printParseErrorCode(first.error)} at offset ${first.offset}. ` +
+          `The file must be valid JSON with comments (JSONC).`,
+      );
+      process.exit(1);
+    }
+    return parsed ?? {};
   }
 
   private deepMerge<T>(target: T, source: T): T {
