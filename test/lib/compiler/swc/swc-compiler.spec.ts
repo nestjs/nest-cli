@@ -869,4 +869,114 @@ describe('SWC Compiler', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('getSwcRcFileContentIfExists', () => {
+    let tmpDir: string;
+    let exitSpy: ReturnType<typeof vi.spyOn>;
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      tmpDir = mkdtempSync(join(tmpdir(), 'nest-swcrc-'));
+      vi.spyOn(process, 'cwd').mockReturnValue(tmpDir);
+      exitSpy = vi.spyOn(process, 'exit').mockImplementation(((
+        code?: number,
+      ) => {
+        throw new Error(`process.exit(${code})`);
+      }) as never);
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      rmSync(tmpDir, { recursive: true, force: true });
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
+    });
+
+    it('should return {} when the default .swcrc does not exist', () => {
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({});
+      expect(exitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should parse a valid .swcrc', () => {
+      writeFileSync(
+        join(tmpDir, '.swcrc'),
+        '{ "module": { "type": "commonjs" } }',
+      );
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'commonjs' } });
+    });
+
+    it('should parse a .swcrc with `//` line comments (matches SWC)', () => {
+      writeFileSync(
+        join(tmpDir, '.swcrc'),
+        '// Keep in sync with tsconfig\n{ "module": { "type": "es6" } }',
+      );
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'es6' } });
+    });
+
+    it('should parse a .swcrc with `/* */` block comments (matches SWC)', () => {
+      writeFileSync(
+        join(tmpDir, '.swcrc'),
+        '{ /* block */ "module": { "type": "nodenext" } }',
+      );
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'nodenext' } });
+    });
+
+    it('should parse a .swcrc with a trailing comma (matches SWC)', () => {
+      writeFileSync(
+        join(tmpDir, '.swcrc'),
+        '{ "module": { "type": "es6", }, }',
+      );
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'es6' } });
+    });
+
+    it('should parse a .swcrc that starts with a UTF-8 BOM (matches SWC)', () => {
+      writeFileSync(join(tmpDir, '.swcrc'), '﻿{ "module": { "type": "es6" } }');
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'es6' } });
+    });
+
+    it('should exit loudly when the default .swcrc exists but is invalid', () => {
+      writeFileSync(join(tmpDir, '.swcrc'), '{ not valid json');
+      expect(() => compiler['getSwcRcFileContentIfExists']()).toThrow(
+        /process\.exit/,
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to parse ".swcrc"'),
+      );
+    });
+
+    it('should exit loudly when the default .swcrc path is a directory', () => {
+      mkdirSync(join(tmpDir, '.swcrc'));
+      expect(() => compiler['getSwcRcFileContentIfExists']()).toThrow(
+        /process\.exit/,
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load ".swcrc"'),
+      );
+    });
+
+    it('should exit loudly when a user-specified swcrcPath is missing', () => {
+      expect(() =>
+        compiler['getSwcRcFileContentIfExists']('missing.swcrc'),
+      ).toThrow(/process\.exit/);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load "missing.swcrc"'),
+      );
+    });
+
+    it('should exit loudly when a user-specified swcrcPath is invalid', () => {
+      writeFileSync(join(tmpDir, 'custom.swcrc'), '{ broken');
+      expect(() =>
+        compiler['getSwcRcFileContentIfExists']('custom.swcrc'),
+      ).toThrow(/process\.exit/);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to parse "custom.swcrc"'),
+      );
+    });
+  });
 });

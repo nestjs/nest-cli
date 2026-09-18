@@ -2,6 +2,11 @@ import { cyan } from 'ansis';
 import { fork, spawnSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
+import {
+  parse as parseJsonc,
+  printParseErrorCode,
+  type ParseError,
+} from 'jsonc-parser';
 import { minimatch } from 'minimatch';
 import { createRequire } from 'module';
 import * as path from 'path';
@@ -276,20 +281,52 @@ export class SwcCompiler extends BaseCompiler {
   }
 
   private getSwcRcFileContentIfExists(swcrcFilePath?: string) {
+    const isCustomPath = swcrcFilePath !== undefined;
+    const resolvedPath = join(process.cwd(), swcrcFilePath ?? '.swcrc');
+
+    let content: string;
     try {
-      return JSON.parse(
-        readFileSync(join(process.cwd(), swcrcFilePath ?? '.swcrc'), 'utf8'),
-      );
-    } catch {
-      if (swcrcFilePath !== undefined) {
+      content = readFileSync(resolvedPath, 'utf8');
+    } catch (err) {
+      // Only treat ENOENT on the default `.swcrc` as "no user overrides to
+      // merge". Any other read error (EACCES, EISDIR, …) or a missing
+      // user-specified `swcrcPath` is a fatal misconfiguration.
+      const isMissing = (err as NodeJS.ErrnoException)?.code === 'ENOENT';
+      if (isCustomPath || !isMissing) {
         console.error(
           ERROR_PREFIX +
-            ` Failed to load "${swcrcFilePath}". Please, check if the file exists and is valid JSON.`,
+            ` Failed to load "${swcrcFilePath ?? '.swcrc'}". Please, check if the file exists and is readable.`,
         );
         process.exit(1);
       }
       return {};
     }
+
+    // SWC strips a leading UTF-8 BOM before parsing
+    // (`s.trim_start_matches('\u{feff}')`), so match that here — otherwise
+    // `jsonc-parser` fails with `InvalidSymbol` on files SWC accepts.
+    const stripped = content.replace(/^﻿/, '');
+
+    // .swcrc is JSON-with-comments in SWC itself, which uses jsonc_parser
+    // with `allow_comments` + `allow_trailing_commas` enabled (see swc's
+    // `parse_swcrc` in crates/swc/src/lib.rs). Match that here so we don't
+    // silently reject a valid `.swcrc` that carries `//` / `/* */` comments
+    // or a trailing comma.
+    const errors: ParseError[] = [];
+    const parsed = parseJsonc(stripped, errors, { allowTrailingComma: true });
+    if (errors.length > 0) {
+      const first = errors[0];
+      const before = stripped.slice(0, first.offset).split('\n');
+      const position = `${before.length}:${before[before.length - 1].length + 1}`;
+      console.error(
+        ERROR_PREFIX +
+          ` Failed to parse "${swcrcFilePath ?? '.swcrc'}": ` +
+          `${printParseErrorCode(first.error)} at ${position}. ` +
+          `The file must be valid JSON with comments (JSONC).`,
+      );
+      process.exit(1);
+    }
+    return parsed ?? {};
   }
 
   private deepMerge<T>(target: T, source: T): T {
