@@ -872,24 +872,21 @@ describe('SWC Compiler', () => {
 
   describe('getSwcRcFileContentIfExists', () => {
     let tmpDir: string;
-    let originalCwd: string;
     let exitSpy: ReturnType<typeof vi.spyOn>;
     let errorSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
       tmpDir = mkdtempSync(join(tmpdir(), 'nest-swcrc-'));
-      originalCwd = process.cwd();
-      process.chdir(tmpDir);
-      exitSpy = vi
-        .spyOn(process, 'exit')
-        .mockImplementation(((code?: number) => {
-          throw new Error(`process.exit(${code})`);
-        }) as never);
+      vi.spyOn(process, 'cwd').mockReturnValue(tmpDir);
+      exitSpy = vi.spyOn(process, 'exit').mockImplementation(((
+        code?: number,
+      ) => {
+        throw new Error(`process.exit(${code})`);
+      }) as never);
       errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      process.chdir(originalCwd);
       rmSync(tmpDir, { recursive: true, force: true });
       exitSpy.mockRestore();
       errorSpy.mockRestore();
@@ -937,6 +934,12 @@ describe('SWC Compiler', () => {
       expect(result).toEqual({ module: { type: 'es6' } });
     });
 
+    it('should parse a .swcrc that starts with a UTF-8 BOM (matches SWC)', () => {
+      writeFileSync(join(tmpDir, '.swcrc'), '﻿{ "module": { "type": "es6" } }');
+      const result = compiler['getSwcRcFileContentIfExists']();
+      expect(result).toEqual({ module: { type: 'es6' } });
+    });
+
     it('should exit loudly when the default .swcrc exists but is invalid', () => {
       writeFileSync(join(tmpDir, '.swcrc'), '{ not valid json');
       expect(() => compiler['getSwcRcFileContentIfExists']()).toThrow(
@@ -944,6 +947,16 @@ describe('SWC Compiler', () => {
       );
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining('Failed to parse ".swcrc"'),
+      );
+    });
+
+    it('should exit loudly when the default .swcrc path is a directory', () => {
+      mkdirSync(join(tmpDir, '.swcrc'));
+      expect(() => compiler['getSwcRcFileContentIfExists']()).toThrow(
+        /process\.exit/,
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load ".swcrc"'),
       );
     });
 
