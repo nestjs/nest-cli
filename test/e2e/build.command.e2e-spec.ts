@@ -103,6 +103,45 @@ describe('Build Command (e2e)', () => {
       expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
     });
 
+    it('should emit loadable ES modules for a "type": "module" project', () => {
+      cleanDist();
+
+      runNest('build --builder swc', appPath);
+
+      const distDir = path.join(appPath, 'dist');
+      const mainJs = fs.readFileSync(path.join(distDir, 'main.js'), 'utf-8');
+      expect(mainJs).not.toMatch(/\bexports\b|\brequire\(/);
+      expect(mainJs).toMatch(/^import .* from ['"]\.\/app\.module\.js['"];$/m);
+
+      // Load the module graph without bootstrapping the HTTP server.
+      const output = execSync(
+        `node --input-type=module -e "const { AppModule } = await import('./dist/app.module.js'); console.log(typeof AppModule);"`,
+        { cwd: appPath, encoding: 'utf-8' },
+      );
+      expect(output.trim()).toBe('function');
+    });
+
+    it('should let .swcrc override the default module type', () => {
+      cleanDist();
+
+      const swcrcPath = path.join(appPath, '.swcrc');
+      fs.writeFileSync(
+        swcrcPath,
+        JSON.stringify({ module: { type: 'commonjs' } }),
+      );
+      try {
+        runNest('build --builder swc', appPath);
+
+        const mainJs = fs.readFileSync(
+          path.join(appPath, 'dist', 'main.js'),
+          'utf-8',
+        );
+        expect(mainJs).toContain('require("./app.module.js")');
+      } finally {
+        fs.rmSync(swcrcPath, { force: true });
+      }
+    });
+
     it('should emit .d.ts declaration files with --emit-declarations', () => {
       cleanDist();
 
@@ -179,6 +218,47 @@ describe('Build Command (e2e)', () => {
       expect(fileExists(path.join(distDir, 'main.js'))).toBe(true);
       // Without the flag, declaration files should NOT be present
       expect(fileExists(path.join(distDir, 'app.module.d.ts'))).toBe(false);
+    });
+
+    it('should resolve tsconfig "paths" without "baseUrl"', () => {
+      cleanDist();
+      removeLocalCli(appPath);
+
+      // TypeScript 6 deprecates "baseUrl", and tsc then resolves "paths"
+      // relative to the tsconfig directory. swc used to panic here because
+      // it was handed "paths" without a "jsc.baseUrl".
+      const tsconfigJsonPath = path.join(appPath, 'tsconfig.json');
+      const originalTsconfigJson = fs.readFileSync(tsconfigJsonPath, 'utf-8');
+      const tsconfigJson = JSON.parse(originalTsconfigJson);
+      delete tsconfigJson.compilerOptions.baseUrl;
+      tsconfigJson.compilerOptions.paths = { '@shared/*': ['./src/shared/*'] };
+      fs.writeFileSync(tsconfigJsonPath, JSON.stringify(tsconfigJson, null, 2));
+
+      const sharedDir = path.join(appPath, 'src', 'shared');
+      const consumerPath = path.join(appPath, 'src', 'alias-consumer.ts');
+      fs.mkdirSync(sharedDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(sharedDir, 'index.ts'),
+        'export const shared = 42;\n',
+      );
+      fs.writeFileSync(
+        consumerPath,
+        "import { shared } from '@shared/index.js';\nexport const value = shared;\n",
+      );
+
+      try {
+        runNest('build --builder swc', appPath);
+
+        const consumerJs = path.join(appPath, 'dist', 'alias-consumer.js');
+        expect(fileExists(consumerJs)).toBe(true);
+        expect(fs.readFileSync(consumerJs, 'utf-8')).toContain(
+          './shared/index.js',
+        );
+      } finally {
+        fs.writeFileSync(tsconfigJsonPath, originalTsconfigJson);
+        fs.rmSync(sharedDir, { recursive: true, force: true });
+        fs.rmSync(consumerPath, { force: true });
+      }
     });
   });
 

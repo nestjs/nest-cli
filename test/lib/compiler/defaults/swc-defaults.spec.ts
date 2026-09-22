@@ -1,7 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { swcDefaultsFactory } from '../../../../lib/compiler/defaults/swc-defaults.js';
+import * as ts from 'typescript';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  resolveSwcModuleType,
+  swcDefaultsFactory,
+} from '../../../../lib/compiler/defaults/swc-defaults.js';
+import * as esmProjectUtil from '../../../../lib/utils/is-esm-project.js';
+
+vi.mock('../../../../lib/utils/is-esm-project.js');
 
 describe('swcDefaultsFactory', () => {
+  beforeEach(() => {
+    vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(false);
+  });
+
   it('should set stripLeadingPaths to true when rootDir is not set', () => {
     const result = swcDefaultsFactory({}, undefined);
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
@@ -25,10 +36,9 @@ describe('swcDefaultsFactory', () => {
   });
 
   it('should set stripLeadingPaths to true when a resolved rootDir ends with the source root', () => {
-    const result = swcDefaultsFactory(
-      { rootDir: '/repo/apps/main-app/src' },
-      { sourceRoot: 'apps/main-app/src' } as any,
-    );
+    const result = swcDefaultsFactory({ rootDir: '/repo/apps/main-app/src' }, {
+      sourceRoot: 'apps/main-app/src',
+    } as any);
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
   });
 
@@ -52,6 +62,41 @@ describe('swcDefaultsFactory', () => {
     };
     const result = swcDefaultsFactory({ rootDir: '.' }, configuration as any);
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
+  });
+
+  describe('jsc.baseUrl', () => {
+    const paths = { '@shared/*': ['./src/shared/*'] };
+
+    it('should pass baseUrl through when it is set', () => {
+      const result = swcDefaultsFactory(
+        { baseUrl: '/repo', paths, pathsBasePath: '/repo/config' },
+        undefined,
+      );
+      expect(result.swcOptions.jsc.baseUrl).toBe('/repo');
+      expect(result.swcOptions.jsc.paths).toBe(paths);
+    });
+
+    it('should fall back to the tsconfig directory when paths is set without baseUrl', () => {
+      // TypeScript 6 deprecates "baseUrl"; tsc then resolves "paths"
+      // relative to the tsconfig directory ("pathsBasePath"), and swc
+      // panics unless it gets an absolute jsc.baseUrl.
+      const result = swcDefaultsFactory(
+        { paths, pathsBasePath: '/repo' },
+        undefined,
+      );
+      expect(result.swcOptions.jsc.baseUrl).toBe('/repo');
+      expect(result.swcOptions.jsc.paths).toBe(paths);
+    });
+
+    it('should leave baseUrl undefined when neither baseUrl nor paths is set', () => {
+      const result = swcDefaultsFactory({ pathsBasePath: '/repo' }, undefined);
+      expect(result.swcOptions.jsc.baseUrl).toBeUndefined();
+    });
+
+    it('should leave baseUrl undefined when tsOptions is undefined', () => {
+      const result = swcDefaultsFactory(undefined, undefined);
+      expect(result.swcOptions.jsc.baseUrl).toBeUndefined();
+    });
   });
 
   it('should use outDir from tsOptions when provided', () => {
@@ -116,6 +161,31 @@ describe('swcDefaultsFactory', () => {
       quiet: false,
       watch: false,
       stripLeadingPaths: true,
+    });
+  });
+
+  describe('module format', () => {
+    it('should emit CommonJS when the package is not "type": "module"', () => {
+      const result = swcDefaultsFactory({
+        module: ts.ModuleKind.NodeNext,
+      });
+      expect(result.swcOptions.module).toEqual({ type: 'commonjs' });
+      expect(result.swcOptions.jsc).not.toHaveProperty('experimental');
+    });
+
+    it('should emit ES modules with full specifiers when the package is "type": "module"', () => {
+      vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(true);
+
+      const result = swcDefaultsFactory({
+        module: ts.ModuleKind.NodeNext,
+      });
+      expect(result.swcOptions.module).toEqual({
+        type: 'es6',
+        resolveFully: true,
+      });
+      expect(result.swcOptions.jsc.experimental).toEqual({
+        keepImportAttributes: true,
+      });
     });
   });
 
@@ -219,5 +289,49 @@ describe('swcDefaultsFactory', () => {
       expect(result.cliOptions.sync).toBe(false);
       expect(result.cliOptions.copyFiles).toBe(false);
     });
+  });
+});
+
+describe('resolveSwcModuleType', () => {
+  it('should return commonjs for packages that are not "type": "module"', () => {
+    expect(resolveSwcModuleType(undefined, false)).toBe('commonjs');
+    expect(
+      resolveSwcModuleType({ module: ts.ModuleKind.CommonJS }, false),
+    ).toBe('commonjs');
+    expect(
+      resolveSwcModuleType({ module: ts.ModuleKind.NodeNext }, false),
+    ).toBe('commonjs');
+    expect(resolveSwcModuleType({ module: ts.ModuleKind.ESNext }, false)).toBe(
+      'commonjs',
+    );
+  });
+
+  it.each([
+    ['unset', undefined],
+    ['ES2015', ts.ModuleKind.ES2015],
+    ['ES2022', ts.ModuleKind.ES2022],
+    ['ESNext', ts.ModuleKind.ESNext],
+    ['Node16', ts.ModuleKind.Node16],
+    ['NodeNext', ts.ModuleKind.NodeNext],
+    ['Preserve', ts.ModuleKind.Preserve],
+  ])(
+    'should return es6 for "type": "module" packages when module is %s',
+    (_, module) => {
+      expect(resolveSwcModuleType({ module }, true)).toBe('es6');
+    },
+  );
+
+  it('should return commonjs for "type": "module" packages that pin "module": "commonjs"', () => {
+    expect(resolveSwcModuleType({ module: ts.ModuleKind.CommonJS }, true)).toBe(
+      'commonjs',
+    );
+  });
+
+  it('should detect the package type of the current project by default', () => {
+    vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(true);
+    expect(resolveSwcModuleType({})).toBe('es6');
+
+    vi.mocked(esmProjectUtil.isEsmProject).mockReturnValue(false);
+    expect(resolveSwcModuleType({})).toBe('commonjs');
   });
 });
