@@ -103,6 +103,45 @@ describe('Build Command (e2e)', () => {
       expect(fileExists(path.join(appPath, 'dist', 'main.js'))).toBe(true);
     });
 
+    it('should emit loadable ES modules for a "type": "module" project', () => {
+      cleanDist();
+
+      runNest('build --builder swc', appPath);
+
+      const distDir = path.join(appPath, 'dist');
+      const mainJs = fs.readFileSync(path.join(distDir, 'main.js'), 'utf-8');
+      expect(mainJs).not.toMatch(/\bexports\b|\brequire\(/);
+      expect(mainJs).toMatch(/^import .* from ['"]\.\/app\.module\.js['"];$/m);
+
+      // Load the module graph without bootstrapping the HTTP server.
+      const output = execSync(
+        `node --input-type=module -e "const { AppModule } = await import('./dist/app.module.js'); console.log(typeof AppModule);"`,
+        { cwd: appPath, encoding: 'utf-8' },
+      );
+      expect(output.trim()).toBe('function');
+    });
+
+    it('should let .swcrc override the default module type', () => {
+      cleanDist();
+
+      const swcrcPath = path.join(appPath, '.swcrc');
+      fs.writeFileSync(
+        swcrcPath,
+        JSON.stringify({ module: { type: 'commonjs' } }),
+      );
+      try {
+        runNest('build --builder swc', appPath);
+
+        const mainJs = fs.readFileSync(
+          path.join(appPath, 'dist', 'main.js'),
+          'utf-8',
+        );
+        expect(mainJs).toContain('require("./app.module.js")');
+      } finally {
+        fs.rmSync(swcrcPath, { force: true });
+      }
+    });
+
     it('should emit .d.ts declaration files with --emit-declarations', () => {
       cleanDist();
 
