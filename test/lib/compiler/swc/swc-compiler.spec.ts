@@ -572,6 +572,36 @@ describe('SWC Compiler', () => {
 
       await expect(onFileAdded('src/added.ts')).resolves.toBeUndefined();
     });
+
+    it('should let a .swcrc jsc.baseUrl override the tsconfig directory fallback', async () => {
+      compiler['getSwcRcFileContentIfExists'] = vi
+        .fn()
+        .mockReturnValue({ jsc: { baseUrl: '/custom' } });
+
+      await compiler['runSwc'](
+        {
+          swcOptions: {
+            jsc: {
+              baseUrl: '/repo',
+              paths: { '@shared/*': ['./src/shared/*'] },
+            },
+          },
+          cliOptions: { filenames: ['src'], sync: false, watch: false },
+        } as any,
+        { watch: false } as any,
+      );
+
+      expect(swcCliMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          swcOptions: expect.objectContaining({
+            jsc: {
+              baseUrl: '/custom',
+              paths: { '@shared/*': ['./src/shared/*'] },
+            },
+          }),
+        }),
+      );
+    });
   });
 
   describe('watchFilesInSrcDir', () => {

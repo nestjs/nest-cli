@@ -64,6 +64,41 @@ describe('swcDefaultsFactory', () => {
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
   });
 
+  describe('jsc.baseUrl', () => {
+    const paths = { '@shared/*': ['./src/shared/*'] };
+
+    it('should pass baseUrl through when it is set', () => {
+      const result = swcDefaultsFactory(
+        { baseUrl: '/repo', paths, pathsBasePath: '/repo/config' },
+        undefined,
+      );
+      expect(result.swcOptions.jsc.baseUrl).toBe('/repo');
+      expect(result.swcOptions.jsc.paths).toBe(paths);
+    });
+
+    it('should fall back to the tsconfig directory when paths is set without baseUrl', () => {
+      // TypeScript 6 deprecates "baseUrl"; tsc then resolves "paths"
+      // relative to the tsconfig directory ("pathsBasePath"), and swc
+      // panics unless it gets an absolute jsc.baseUrl.
+      const result = swcDefaultsFactory(
+        { paths, pathsBasePath: '/repo' },
+        undefined,
+      );
+      expect(result.swcOptions.jsc.baseUrl).toBe('/repo');
+      expect(result.swcOptions.jsc.paths).toBe(paths);
+    });
+
+    it('should leave baseUrl undefined when neither baseUrl nor paths is set', () => {
+      const result = swcDefaultsFactory({ pathsBasePath: '/repo' }, undefined);
+      expect(result.swcOptions.jsc.baseUrl).toBeUndefined();
+    });
+
+    it('should leave baseUrl undefined when tsOptions is undefined', () => {
+      const result = swcDefaultsFactory(undefined, undefined);
+      expect(result.swcOptions.jsc.baseUrl).toBeUndefined();
+    });
+  });
+
   it('should use outDir from tsOptions when provided', () => {
     const result = swcDefaultsFactory({ outDir: 'build' }, undefined);
     expect(result.cliOptions.outDir).toBe('build');

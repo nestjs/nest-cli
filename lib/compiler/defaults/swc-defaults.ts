@@ -41,7 +41,7 @@ export const swcDefaultsFactory = (
           useDefineForClassFields: false,
         },
         keepClassNames: true,
-        baseUrl: tsOptions?.baseUrl,
+        baseUrl: resolveBaseUrl(tsOptions),
         paths: tsOptions?.paths,
         // swc drops import attributes by default, but Node needs
         // `with { type: 'json' }` to import JSON from ES modules.
@@ -87,6 +87,20 @@ export function resolveSwcModuleType(
     return 'commonjs';
   }
   return 'es6';
+}
+
+/**
+ * Without "baseUrl" (deprecated as of TypeScript 6), tsc resolves "paths"
+ * relative to the directory of the tsconfig that declares them, which the
+ * TypeScript parser exposes as "pathsBasePath". swc has no such fallback and
+ * panics when "paths" is set without "jsc.baseUrl", so pass that directory.
+ */
+function resolveBaseUrl(tsOptions?: ts.CompilerOptions): string | undefined {
+  if (tsOptions?.baseUrl || !tsOptions?.paths) {
+    return tsOptions?.baseUrl;
+  }
+  const pathsBasePath = tsOptions.pathsBasePath;
+  return typeof pathsBasePath === 'string' ? pathsBasePath : undefined;
 }
 
 /**
