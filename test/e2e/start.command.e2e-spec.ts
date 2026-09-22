@@ -432,13 +432,39 @@ describe('Start Command - ESM project (e2e)', () => {
         timeout: 120_000,
         stdio: 'pipe',
       });
+      // The install restores the published @nestjs/cli into node_modules,
+      // which would shadow the CLI under test — remove it again.
+      removeLocalCli(appPath);
     });
 
-    it.skip('should start an ESM project with --builder swc', async () => {
+    it('should start an ESM project with --builder swc', async () => {
       const port = 4013;
       const proc = spawnNest('start --builder swc', appPath, {
         PORT: String(port),
       });
+
+      try {
+        await waitFor(
+          () => proc.output().includes('Nest application successfully started'),
+          60_000,
+        );
+
+        const response = await httpGet(`http://127.0.0.1:${port}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toContain('Hello');
+      } finally {
+        proc.kill();
+      }
+    });
+
+    it('should start an ESM project with --builder swc --watch --type-check', async () => {
+      const port = 4014;
+      freePort(port);
+      const proc = spawnNest(
+        'start --builder swc --watch --type-check',
+        appPath,
+        { PORT: String(port) },
+      );
 
       try {
         await waitFor(
