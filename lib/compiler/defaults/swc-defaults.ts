@@ -1,17 +1,31 @@
 import * as ts from 'typescript';
 import { Configuration } from '../../configuration/index.js';
 import { isEsmProject } from '../../utils/is-esm-project.js';
+import { getValueOrDefault } from '../helpers/get-value-or-default.js';
 
 export const swcDefaultsFactory = (
   tsOptions?: ts.CompilerOptions,
   configuration?: Configuration,
   tsConfigExclude: string[] = [],
+  appName?: string,
 ) => {
   const builderOptions =
     typeof configuration?.compilerOptions?.builder !== 'string'
       ? configuration?.compilerOptions?.builder?.options
       : {};
   const esm = resolveSwcModuleType(tsOptions) === 'es6';
+  // In a monorepo the root "sourceRoot" is the default project's, so reading
+  // it directly makes every other project compile the default project's
+  // sources into its own outDir. Resolve it per application, the way the rest
+  // of the compiler does.
+  const sourceRoot = configuration
+    ? (getValueOrDefault<string | undefined>(
+        configuration as Required<Configuration>,
+        'sourceRoot',
+        appName,
+        'sourceRoot',
+      ) ?? 'src')
+    : 'src';
 
   return {
     swcOptions: {
@@ -52,7 +66,7 @@ export const swcDefaultsFactory = (
     },
     cliOptions: {
       outDir: tsOptions?.outDir ? convertPath(tsOptions.outDir) : 'dist',
-      filenames: [configuration?.sourceRoot ?? 'src'],
+      filenames: [sourceRoot],
       sync: false,
       extensions: ['.js', '.ts'],
       copyFiles: false,
@@ -62,7 +76,7 @@ export const swcDefaultsFactory = (
       watch: false,
       stripLeadingPaths: shouldStripLeadingPaths(
         tsOptions?.rootDir,
-        configuration?.sourceRoot ?? 'src',
+        sourceRoot,
       ),
       ...builderOptions,
     },

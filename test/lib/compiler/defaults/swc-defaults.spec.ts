@@ -117,6 +117,59 @@ describe('swcDefaultsFactory', () => {
     expect(result.cliOptions.filenames).toEqual(['lib']);
   });
 
+  it('should use the built application sourceRoot for filenames in a monorepo', () => {
+    // The root "sourceRoot" belongs to the default project, so building
+    // another one must not compile the default project's sources.
+    const configuration = {
+      sourceRoot: 'apps/main-app/src',
+      monorepo: true,
+      projects: {
+        'main-app': { sourceRoot: 'apps/main-app/src' },
+        api: { sourceRoot: 'apps/api/src' },
+      },
+    };
+    const result = swcDefaultsFactory(
+      { outDir: 'dist/apps/api' },
+      configuration as any,
+      [],
+      'api',
+    );
+    expect(result.cliOptions.filenames).toEqual(['apps/api/src']);
+  });
+
+  it('should derive stripLeadingPaths from the built application sourceRoot', () => {
+    const configuration = {
+      sourceRoot: 'apps/main-app/src',
+      projects: {
+        'main-app': { sourceRoot: 'apps/main-app/src' },
+        api: { sourceRoot: 'apps/api/src' },
+      },
+    };
+    const result = swcDefaultsFactory(
+      { rootDir: '/repo/apps/api/src' },
+      configuration as any,
+      [],
+      'api',
+    );
+    expect(result.cliOptions.stripLeadingPaths).toBe(true);
+  });
+
+  it('should fall back to the root sourceRoot when the project does not declare one', () => {
+    const configuration = {
+      sourceRoot: 'apps/main-app/src',
+      projects: {
+        api: { root: 'apps/api' },
+      },
+    };
+    const result = swcDefaultsFactory(
+      undefined,
+      configuration as any,
+      [],
+      'api',
+    );
+    expect(result.cliOptions.filenames).toEqual(['apps/main-app/src']);
+  });
+
   it('should default filenames to src when sourceRoot is not set', () => {
     const result = swcDefaultsFactory({}, undefined);
     expect(result.cliOptions.filenames).toEqual(['src']);
