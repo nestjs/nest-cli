@@ -189,6 +189,31 @@ describe('tsconfig paths hooks', () => {
       expect(mainJs).toContain('require("./qux")');
       expect(mainJs).not.toContain('~/');
     });
+
+    it('should replace aliased imports when paths is set without baseUrl', () => {
+      // TypeScript 6 deprecates "baseUrl"; tsc then resolves "paths" relative
+      // to the directory of the tsconfig that declared them, which the parser
+      // reports as "pathsBasePath". That directory is not the process working
+      // directory the test runner starts in.
+      const projectRoot = path.join(__dirname, './fixtures/aliased-imports');
+      const output = createSpec(
+        projectRoot,
+        ['src/main.ts', 'src/foo.ts', 'src/bar.ts'],
+        {
+          baseUrl: undefined,
+          pathsBasePath: projectRoot,
+          paths: { '~/*': ['./src/*'] },
+          jsx: JsxEmit.Preserve,
+          allowJs: true,
+        },
+      );
+      const mainJs = output.get('dist/main.js')!;
+      expect(mainJs).toContain('require("./foo")');
+      expect(mainJs).toContain('require("./bar")');
+      expect(mainJs).toContain('require("./baz")');
+      expect(mainJs).toContain('require("./qux")');
+      expect(mainJs).not.toContain('~/');
+    });
   }, 15000);
 
   describe('ESM output (module: ESNext)', () => {
