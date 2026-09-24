@@ -124,18 +124,26 @@ function resolveBaseUrl(tsOptions?: ts.CompilerOptions): string | undefined {
  * common source directory), or a rootDir that points at the source root
  * (relative or resolved absolute). A rootDir above the source root (e.g. '.')
  * keeps the source directory in the output, so nothing is stripped.
+ *
+ * "@swc/cli" strips only the first path segment, so a nested source root
+ * (e.g. "apps/api/src" in a monorepo) cannot be flattened: it would come out
+ * as "api/src/main.js". Keep the full source root instead, which is the
+ * "<outDir>/<sourceRoot>/<entryFile>" layout "nest start" looks for first.
  */
 function shouldStripLeadingPaths(
   rootDir: string | undefined,
   sourceRoot: string,
 ): boolean {
+  const normalizedSourceRoot = convertPath(sourceRoot)
+    .replace(/^\.\//, '')
+    .replace(/\/+$/, '');
+  if (normalizedSourceRoot.includes('/')) {
+    return false;
+  }
   if (!rootDir) {
     return true;
   }
   const normalizedRootDir = convertPath(rootDir).replace(/\/+$/, '');
-  const normalizedSourceRoot = convertPath(sourceRoot)
-    .replace(/^\.\//, '')
-    .replace(/\/+$/, '');
   return (
     normalizedRootDir === normalizedSourceRoot ||
     normalizedRootDir.endsWith(`/${normalizedSourceRoot}`)

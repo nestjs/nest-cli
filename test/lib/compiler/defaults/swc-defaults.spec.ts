@@ -36,8 +36,8 @@ describe('swcDefaultsFactory', () => {
   });
 
   it('should set stripLeadingPaths to true when a resolved rootDir ends with the source root', () => {
-    const result = swcDefaultsFactory({ rootDir: '/repo/apps/main-app/src' }, {
-      sourceRoot: 'apps/main-app/src',
+    const result = swcDefaultsFactory({ rootDir: '/repo/src' }, {
+      sourceRoot: 'src',
     } as any);
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
   });
@@ -142,16 +142,42 @@ describe('swcDefaultsFactory', () => {
       sourceRoot: 'apps/main-app/src',
       projects: {
         'main-app': { sourceRoot: 'apps/main-app/src' },
-        api: { sourceRoot: 'apps/api/src' },
+        api: { sourceRoot: 'lib' },
       },
     };
     const result = swcDefaultsFactory(
-      { rootDir: '/repo/apps/api/src' },
+      { rootDir: '/repo/lib' },
       configuration as any,
       [],
       'api',
     );
     expect(result.cliOptions.stripLeadingPaths).toBe(true);
+  });
+
+  it('should not strip leading paths when the sourceRoot is nested', () => {
+    // "@swc/cli" strips a single path segment, so "apps/api/src/main.ts"
+    // would be emitted as "api/src/main.js", which "nest start" cannot find.
+    const configuration = {
+      sourceRoot: 'apps/main-app/src',
+      projects: {
+        api: { sourceRoot: 'apps/api/src' },
+      },
+    };
+    const withRootDir = swcDefaultsFactory(
+      { rootDir: '/repo/apps/api/src' },
+      configuration as any,
+      [],
+      'api',
+    );
+    expect(withRootDir.cliOptions.stripLeadingPaths).toBe(false);
+
+    const withoutRootDir = swcDefaultsFactory(
+      {},
+      configuration as any,
+      [],
+      'api',
+    );
+    expect(withoutRootDir.cliOptions.stripLeadingPaths).toBe(false);
   });
 
   it('should fall back to the root sourceRoot when the project does not declare one', () => {

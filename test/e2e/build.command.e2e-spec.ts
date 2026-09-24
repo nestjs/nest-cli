@@ -440,5 +440,21 @@ describe('Build Command - Monorepo with SWC (e2e)', () => {
     // The default app's spec files are outside this app's tsconfig
     // "exclude", so they would be emitted too.
     expect(emitted).not.toContain('app.controller.spec.js');
+
+    // "nest start" resolves "<outDir>/<sourceRoot>/<entryFile>" first.
+    expect(
+      fileExists(path.join(outDir, 'apps', 'secondary', 'src', 'main.js')),
+    ).toBe(true);
+  });
+
+  it('should emit the default app where "nest start" looks for it', () => {
+    const outDir = path.join(monoPath, 'dist', 'apps', 'main-app');
+    fs.rmSync(path.join(monoPath, 'dist'), { recursive: true, force: true });
+
+    runNest('build --builder swc', monoPath);
+
+    expect(
+      fileExists(path.join(outDir, 'apps', 'main-app', 'src', 'main.js')),
+    ).toBe(true);
   });
 });
