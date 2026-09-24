@@ -262,6 +262,69 @@ describe('Build Command (e2e)', () => {
     });
   });
 
+  describe('with a tsconfig outside the working directory', () => {
+    // TypeScript 6 deprecates "baseUrl", and tsc then resolves "paths"
+    // relative to the directory of the tsconfig that declares them. The tsc
+    // hook used to resolve them against the process working directory, so the
+    // alias matched nothing and was emitted verbatim.
+    const configDir = () => path.join(appPath, 'config');
+    const sharedDir = () => path.join(appPath, 'src', 'shared');
+    const consumerPath = () => path.join(appPath, 'src', 'alias-consumer.ts');
+
+    beforeAll(() => {
+      // The scaffolded app ships its own @nestjs/cli in node_modules, and the
+      // CLI hands off to that local copy when present — which would test the
+      // published build instead of this working tree.
+      removeLocalCli(appPath);
+    });
+
+    afterAll(() => {
+      fs.rmSync(configDir(), { recursive: true, force: true });
+      fs.rmSync(sharedDir(), { recursive: true, force: true });
+      fs.rmSync(consumerPath(), { force: true });
+    });
+
+    it('should resolve tsconfig "paths" declared without "baseUrl"', () => {
+      cleanDist();
+
+      fs.mkdirSync(configDir(), { recursive: true });
+      fs.writeFileSync(
+        path.join(configDir(), 'tsconfig.build.json'),
+        JSON.stringify(
+          {
+            extends: '../tsconfig.json',
+            compilerOptions: {
+              rootDir: '../src',
+              outDir: '../dist',
+              paths: { '@shared/*': ['../src/shared/*'] },
+            },
+            include: ['../src'],
+          },
+          null,
+          2,
+        ),
+      );
+
+      fs.mkdirSync(sharedDir(), { recursive: true });
+      fs.writeFileSync(
+        path.join(sharedDir(), 'index.ts'),
+        'export const shared = 42;\n',
+      );
+      fs.writeFileSync(
+        consumerPath(),
+        "import { shared } from '@shared/index.js';\nexport const value = shared;\n",
+      );
+
+      runNest('build --path config/tsconfig.build.json', appPath);
+
+      const consumerJs = path.join(appPath, 'dist', 'alias-consumer.js');
+      expect(fileExists(consumerJs)).toBe(true);
+      const emitted = fs.readFileSync(consumerJs, 'utf-8');
+      expect(emitted).toContain('./shared/index.js');
+      expect(emitted).not.toContain('@shared/');
+    });
+  });
+
   describe('dotfiles in a directory asset (#3522)', () => {
     // A bare directory entry ("assets": ["config"]) is expanded by a second
     // glob call inside the assets manager. That call used to drop dot-prefixed

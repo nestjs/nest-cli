@@ -12,8 +12,12 @@ export function tsconfigPathsBeforeHookFactory(
   compilerOptions: ts.CompilerOptions,
 ) {
   const tsBinary = new TypeScriptBinaryLoader().load();
-  const { paths = {}, baseUrl = './' } = compilerOptions;
-  const matcher = tsPaths.createMatchPath(baseUrl!, paths, ['main']);
+  const { paths = {} } = compilerOptions;
+  const matcher = tsPaths.createMatchPath(
+    resolveBaseUrl(compilerOptions),
+    paths,
+    ['main'],
+  );
   const esm = requiresExplicitImportExtensions(compilerOptions, tsBinary);
   const extensions = sourceToOutputExtension(compilerOptions, tsBinary);
   // Resolution is immutable within a build, and the hook runs per import.
@@ -80,6 +84,24 @@ export function tsconfigPathsBeforeHookFactory(
       return tsBinary.visitNode(sf, visitNode);
     };
   };
+}
+
+/**
+ * TypeScript resolves "paths" against `baseUrl ?? pathsBasePath ?? cwd`
+ * (`getPathsBasePath`), where "pathsBasePath" is the directory of the tsconfig
+ * that declared them — the shape every project takes now that TypeScript 6
+ * deprecates "baseUrl". The historical "./" fallback points at the process
+ * working directory instead, so an alias declared in a tsconfig outside it
+ * matches nothing and the import is emitted verbatim. The parser records
+ * "pathsBasePath" only for a config that sets "paths", so a project without
+ * aliases keeps the old fallback.
+ */
+function resolveBaseUrl(compilerOptions: ts.CompilerOptions): string {
+  if (compilerOptions.baseUrl) {
+    return compilerOptions.baseUrl;
+  }
+  const pathsBasePath = compilerOptions.pathsBasePath;
+  return typeof pathsBasePath === 'string' ? pathsBasePath : './';
 }
 
 function getModuleSpecifierText(
