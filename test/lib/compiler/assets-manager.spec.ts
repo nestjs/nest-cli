@@ -385,6 +385,73 @@ describe('AssetsManager', () => {
       expect(() => mockWatcher.emit('change', '/src/file.hbs')).not.toThrow();
     });
 
+    it('should copy but not call onSuccess when restartOnChange is false', async () => {
+      vi.useFakeTimers();
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(globSync).mockReturnValue(['/src/file.md']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([
+          { include: '**/*.md', watchAssets: true, restartOnChange: false },
+        ])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
+
+      mockWatcher.emit('ready');
+      mockWatcher.emit('change', '/src/file.md');
+      mockWatcher.emit('add', '/src/new.md');
+      mockWatcher.emit('unlink', '/src/file.md');
+      await vi.runAllTimersAsync();
+
+      expect(copyFileSync).toHaveBeenCalled();
+      expect(onSuccess).not.toHaveBeenCalled();
+      vi.useRealTimers();
+    });
+
+    it('should apply restartOnChange per asset entry', async () => {
+      vi.useFakeTimers();
+      const protoWatcher = new EventEmitter() as any;
+      protoWatcher.close = vi.fn();
+      const docsWatcher = new EventEmitter() as any;
+      docsWatcher.close = vi.fn();
+      const onSuccess = vi.fn();
+
+      vi.mocked(chokidar.watch)
+        .mockReturnValueOnce(protoWatcher)
+        .mockReturnValueOnce(docsWatcher);
+      vi.mocked(globSync)
+        .mockReturnValueOnce(['/src/app.proto'])
+        .mockReturnValueOnce(['/src/readme.md']);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([
+          { include: '**/*.proto', watchAssets: true },
+          { include: '**/*.md', watchAssets: true, restartOnChange: false },
+        ])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false, onSuccess);
+
+      protoWatcher.emit('ready');
+      docsWatcher.emit('ready');
+
+      docsWatcher.emit('change', '/src/readme.md');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).not.toHaveBeenCalled();
+
+      protoWatcher.emit('change', '/src/app.proto');
+      await vi.runAllTimersAsync();
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
+    });
+
     it('should not stall when asset glob matches no files', async () => {
       // Chokidar does not emit 'ready' when given an empty array,
       // which caused closeWatchers() to hang forever.

@@ -99,6 +99,8 @@ export class AssetsManager {
           exclude: excludePath,
           flat: typeof item !== 'string' ? item.flat : undefined, // deprecated field
           watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
+          restartOnChange:
+            typeof item !== 'string' ? item.restartOnChange : undefined,
         };
       });
 
@@ -180,25 +182,27 @@ export class AssetsManager {
           }
 
           let ready = false;
+          const restartApp =
+            item.restartOnChange === false ? undefined : debouncedOnSuccess;
           // prettier-ignore
           const watcher = chokidar
             .watch(matchedPaths)
             .on('add', (path: string) => {
               this.safeActionOnFile({ ...option, path, action: 'change' });
-              if (ready && debouncedOnSuccess) {
-                debouncedOnSuccess();
+              if (ready && restartApp) {
+                restartApp();
               }
             })
             .on('change', (path: string) => {
               this.safeActionOnFile({ ...option, path, action: 'change' });
-              if (ready && debouncedOnSuccess) {
-                debouncedOnSuccess();
+              if (ready && restartApp) {
+                restartApp();
               }
             })
             .on('unlink', (path: string) => {
               this.safeActionOnFile({ ...option, path, action: 'unlink' });
-              if (ready && debouncedOnSuccess) {
-                debouncedOnSuccess();
+              if (ready && restartApp) {
+                restartApp();
               }
             });
 
@@ -300,6 +304,8 @@ export class AssetsManager {
           exclude: excludePath,
           flat: typeof item !== 'string' ? item.flat : undefined,
           watchAssets: typeof item !== 'string' ? item.watchAssets : undefined,
+          restartOnChange:
+            typeof item !== 'string' ? item.restartOnChange : undefined,
           _sourceRoot: libSourceRoot,
         };
 

@@ -6,6 +6,8 @@ export interface AssetEntry {
   exclude?: string;
   outDir?: string;
   watchAssets?: boolean;
+  // Defaults to true: a change restarts the app in watch mode.
+  restartOnChange?: boolean;
 }
 
 export interface ActionOnFile {
