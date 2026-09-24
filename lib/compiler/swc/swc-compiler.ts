@@ -149,7 +149,16 @@ export class SwcCompiler extends BaseCompiler {
           appName,
           'sourceRoot',
         ) ?? 'src',
-        JSON.stringify(configuration.compilerOptions.plugins ?? []),
+        // Same for the plugins: a monorepo application can declare its own
+        // "compilerOptions.plugins", and the non-watch path loads them per
+        // application through loadPlugins().
+        JSON.stringify(
+          getValueOrDefault(
+            configuration,
+            'compilerOptions.plugins',
+            appName,
+          ) ?? [],
+        ),
       ];
 
       const childProcessRef = fork(

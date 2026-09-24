@@ -366,7 +366,7 @@ describe('SWC Compiler', () => {
       const { getValueOrDefault: resolve } = await vi.importActual<
         typeof import('../../../../lib/compiler/helpers/get-value-or-default.js')
       >('../../../../lib/compiler/helpers/get-value-or-default.js');
-      vi.mocked(getValueOrDefault).mockImplementationOnce(resolve);
+      vi.mocked(getValueOrDefault).mockImplementation(resolve);
 
       // `compiler` has runTypeChecker stubbed out for the `run` tests.
       const uncheckedCompiler = new SwcCompiler({
@@ -380,11 +380,15 @@ describe('SWC Compiler', () => {
 
       uncheckedCompiler['runTypeChecker'](
         {
-          // The root "sourceRoot" belongs to the default application.
+          // The root "sourceRoot" and "plugins" belong to the default
+          // application.
           sourceRoot: 'apps/main-app/src',
           compilerOptions: { plugins: [] },
           projects: {
-            api: { sourceRoot: 'apps/api/src' },
+            api: {
+              sourceRoot: 'apps/api/src',
+              compilerOptions: { plugins: ['@nestjs/swagger'] },
+            },
           },
         } as any,
         'apps/api/tsconfig.app.json',
@@ -394,7 +398,12 @@ describe('SWC Compiler', () => {
 
       expect(vi.mocked(childProcess.fork)).toHaveBeenCalledWith(
         expect.stringContaining('forked-type-checker.js'),
-        ['apps/api/tsconfig.app.json', 'api', 'apps/api/src', '[]'],
+        [
+          'apps/api/tsconfig.app.json',
+          'api',
+          'apps/api/src',
+          JSON.stringify(['@nestjs/swagger']),
+        ],
         { cwd: process.cwd() },
       );
     });
