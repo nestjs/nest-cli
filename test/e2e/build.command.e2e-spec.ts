@@ -463,3 +463,61 @@ describe('Build Command - Monorepo with webpack (e2e)', () => {
     }
   });
 });
+
+describe('Build Command - Monorepo with SWC (e2e)', () => {
+  let tmpDir: string;
+  let monoPath: string;
+
+  beforeAll(() => {
+    tmpDir = createTempDir('nest-e2e-build-mono-swc-');
+    monoPath = scaffoldMonorepoWithDeps(tmpDir, 'main-app', 'secondary');
+
+    // The shared monorepo fixture turns webpack on, which takes precedence
+    // over "--builder swc".
+    const cliJsonPath = path.join(monoPath, 'nest-cli.json');
+    const cliJson = JSON.parse(fs.readFileSync(cliJsonPath, 'utf-8'));
+    delete cliJson.compilerOptions.webpack;
+    fs.writeFileSync(cliJsonPath, JSON.stringify(cliJson, null, 2));
+
+    npmInstall(monoPath, '--save-dev @swc/cli @swc/core');
+    removeLocalCli(monoPath);
+  });
+
+  afterAll(() => {
+    removeTempDir(tmpDir);
+  });
+
+  it('should compile the named app, not the default one', () => {
+    const outDir = path.join(monoPath, 'dist', 'apps', 'secondary');
+    fs.rmSync(path.join(monoPath, 'dist'), { recursive: true, force: true });
+
+    runNest('build secondary --builder swc', monoPath);
+
+    const emitted = fs
+      .readdirSync(outDir, { recursive: true })
+      .filter((f): f is string => typeof f === 'string' && f.endsWith('.js'))
+      .map((f) => path.basename(f));
+
+    expect(emitted).toContain('secondary.module.js');
+    expect(emitted).not.toContain('app.module.js');
+    // The default app's spec files are outside this app's tsconfig
+    // "exclude", so they would be emitted too.
+    expect(emitted).not.toContain('app.controller.spec.js');
+
+    // "nest start" resolves "<outDir>/<sourceRoot>/<entryFile>" first.
+    expect(
+      fileExists(path.join(outDir, 'apps', 'secondary', 'src', 'main.js')),
+    ).toBe(true);
+  });
+
+  it('should emit the default app where "nest start" looks for it', () => {
+    const outDir = path.join(monoPath, 'dist', 'apps', 'main-app');
+    fs.rmSync(path.join(monoPath, 'dist'), { recursive: true, force: true });
+
+    runNest('build --builder swc', monoPath);
+
+    expect(
+      fileExists(path.join(outDir, 'apps', 'main-app', 'src', 'main.js')),
+    ).toBe(true);
+  });
+});

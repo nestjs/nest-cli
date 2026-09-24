@@ -27,6 +27,7 @@ vi.mock(
 vi.mock('child_process', async () => ({
   ...(await vi.importActual('child_process')),
   spawnSync: vi.fn(),
+  fork: vi.fn(),
 }));
 vi.mock('fs/promises', () => ({
   stat: vi.fn(),
@@ -93,6 +94,32 @@ describe('SWC Compiler', () => {
         fixture.extras.tsOptions,
         fixture.configuration,
         undefined,
+        '',
+      );
+    });
+
+    it('should pass the application name to swcDefaultsFactory', async () => {
+      // In a monorepo the factory needs the application name to resolve that
+      // application's own "sourceRoot".
+      const fixture = {
+        extras: {
+          tsOptions: {
+            _tsOptionsTest: {},
+          },
+        },
+        configuration: {
+          _configurationTest: {},
+        },
+        appName: 'appNameTest',
+      };
+
+      await callRunCompiler(fixture);
+
+      expect(vi.mocked(swcDefaultsFactory)).toHaveBeenCalledWith(
+        fixture.extras.tsOptions,
+        fixture.configuration,
+        undefined,
+        fixture.appName,
       );
     });
 
@@ -329,6 +356,47 @@ describe('SWC Compiler', () => {
       });
 
       expect(closeWatchersMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('runTypeChecker', () => {
+    it('should fork the type checker with the built application source root', async () => {
+      // Resolve for real, so the assertion covers the lookup and not only that
+      // something was passed through.
+      const { getValueOrDefault: resolve } = await vi.importActual<
+        typeof import('../../../../lib/compiler/helpers/get-value-or-default.js')
+      >('../../../../lib/compiler/helpers/get-value-or-default.js');
+      vi.mocked(getValueOrDefault).mockImplementationOnce(resolve);
+
+      // `compiler` has runTypeChecker stubbed out for the `run` tests.
+      const uncheckedCompiler = new SwcCompiler({
+        load: () => vi.fn(),
+        resolvePluginReferences: () => vi.fn(),
+      } as unknown as PluginsLoader);
+
+      vi.mocked(childProcess.fork).mockReturnValue({
+        pid: 1234,
+      } as unknown as childProcess.ChildProcess);
+
+      uncheckedCompiler['runTypeChecker'](
+        {
+          // The root "sourceRoot" belongs to the default application.
+          sourceRoot: 'apps/main-app/src',
+          compilerOptions: { plugins: [] },
+          projects: {
+            api: { sourceRoot: 'apps/api/src' },
+          },
+        } as any,
+        'apps/api/tsconfig.app.json',
+        'api',
+        { watch: true } as any,
+      );
+
+      expect(vi.mocked(childProcess.fork)).toHaveBeenCalledWith(
+        expect.stringContaining('forked-type-checker.js'),
+        ['apps/api/tsconfig.app.json', 'api', 'apps/api/src', '[]'],
+        { cwd: process.cwd() },
+      );
     });
   });
 

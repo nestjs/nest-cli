@@ -63,6 +63,7 @@ export class SwcCompiler extends BaseCompiler {
       extras.tsOptions,
       configuration,
       extras.tsConfigExclude,
+      appName,
     );
     const swcrcFilePath = getValueOrDefault<string | undefined>(
       configuration,
@@ -139,7 +140,15 @@ export class SwcCompiler extends BaseCompiler {
       const args = [
         tsConfigPath,
         appName ?? 'undefined',
-        configuration.sourceRoot ?? 'src',
+        // The forked checker resolves its plugin metadata output directory
+        // from this value, so it has to be the built application's source
+        // root, not the monorepo's default project one.
+        getValueOrDefault<string | undefined>(
+          configuration,
+          'sourceRoot',
+          appName,
+          'sourceRoot',
+        ) ?? 'src',
         JSON.stringify(configuration.compilerOptions.plugins ?? []),
       ];
 
