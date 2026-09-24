@@ -71,7 +71,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.5.1",
     "oxlint": "1.85.0",
-    "prettier": "3.9.8",
+    "prettier": "3.9.9",
     "release-it": "21.1.0",
     "ts-loader": "9.6.2",
     "tsconfig-paths-webpack-plugin": "4.2.0",
