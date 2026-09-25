@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { createRequire } from 'module';
-import { join } from 'path';
+import { resolve } from 'path';
 import { Configuration } from '../configuration/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
@@ -59,7 +59,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
     onSuccess?: () => void,
   ) {
     const cwd = process.cwd();
-    const configPath = join(cwd, tsConfigPath!);
+    const configPath = resolve(cwd, tsConfigPath!);
     if (!existsSync(configPath)) {
       throw new Error(
         `Could not find TypeScript configuration file "${tsConfigPath!}".`,
@@ -98,7 +98,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       entryFileRoot,
       entryFile,
       extras.debug ?? false,
-      tsConfigPath,
+      configPath,
       plugins,
     );
 

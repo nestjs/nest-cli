@@ -14,6 +14,7 @@ import { existsSync } from 'fs';
 import { webpackDefaultsFactory } from '../../../../lib/compiler/defaults/webpack-defaults.js';
 import { getValueOrDefault } from '../../../../lib/compiler/helpers/get-value-or-default.js';
 import * as esmProjectUtil from '../../../../lib/utils/is-esm-project.js';
+import { resolve } from 'path';
 
 // Hoist webpack mock
 const { mockWebpackModule, mockCompiler } = vi.hoisted(() => {
@@ -230,12 +231,38 @@ describe('Webpack Compiler', () => {
         '',
         'main',
         false,
-        'tsconfig.json',
+        resolve(process.cwd(), 'tsconfig.json'),
         expect.objectContaining({
           beforeHooks: [],
           afterHooks: [],
           afterDeclarationsHooks: [],
         }),
+      );
+    });
+
+    it('should pass an absolute tsconfig path through unchanged', () => {
+      // `join` would turn "/abs/tsconfig.json" into "<cwd>/abs/tsconfig.json";
+      // the rspack compiler already resolves it, webpack must match.
+      const absoluteTsconfigPath = resolve('/abs', 'tsconfig.build.json');
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      compiler.run(
+        makeConfiguration(),
+        absoluteTsconfigPath,
+        undefined,
+        makeExtras(),
+      );
+
+      expect(vi.mocked(existsSync)).toHaveBeenCalledWith(absoluteTsconfigPath);
+      expect(vi.mocked(webpackDefaultsFactory)).toHaveBeenCalledWith(
+        'src',
+        '',
+        'main',
+        false,
+        absoluteTsconfigPath,
+        expect.anything(),
       );
     });
 
