@@ -76,7 +76,7 @@
     "ts-loader": "9.6.2",
     "tsconfig-paths-webpack-plugin": "4.2.0",
     "vite": "8.3.1",
-    "vitest": "5.0.1",
+    "vitest": "5.0.2",
     "webpack": "5.111.1",
     "webpack-node-externals": "3.0.0"
   },
