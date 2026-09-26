@@ -1,15 +1,9 @@
 import { createRequire } from 'node:module';
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { rspack } from '@rspack/core';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { rspackDefaultsFactory } from '../../../../lib/compiler/defaults/rspack-defaults.js';
 import { MultiNestCompilerPlugins } from '../../../../lib/compiler/plugins/plugins-loader.js';
 
@@ -66,15 +60,16 @@ async function buildCjsEntry(source: string): Promise<string> {
   return join(dir, 'dist', 'apps', 'admin', 'src', 'main.js');
 }
 
-it('preserves a named export in a CommonJS entry', async () => {
-  const output = await buildCjsEntry('export const handler = () => "ready";');
-  expect(require(output).handler()).toBe('ready');
-});
+describe('rspackDefaultsFactory (CJS entry exports)', () => {
+  it('preserves a named export in a CommonJS entry', async () => {
+    const output = await buildCjsEntry('export const handler = () => "ready";');
+    expect(require(output).handler()).toBe('ready');
+  });
 
-it('keeps an entry with no exports loadable', async () => {
-  const output = await buildCjsEntry(
-    'globalThis.nestRspackCjsEntryLoaded = true;',
-  );
-  expect(readFileSync(output, 'utf8')).toContain('nestRspackCjsEntryLoaded');
-  expect(() => require(output)).not.toThrow();
+  it('keeps an entry with no exports loadable', async () => {
+    const output = await buildCjsEntry(
+      'const bootstrap = () => undefined; bootstrap();',
+    );
+    expect(require(output)).toEqual({});
+  });
 });
