@@ -127,6 +127,19 @@ describe('webpackDefaultsFactory', () => {
       expect((config.output as any).filename).toContain('/');
     });
 
+    it('should emit the entry as a CommonJS library to preserve its exports', () => {
+      const config = webpackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.build.json',
+        emptyPlugins,
+      );
+
+      expect((config.output as any).library).toEqual({ type: 'commonjs2' });
+    });
+
     it('should register ForkTsCheckerWebpackPlugin when no compiler plugins are provided', () => {
       const config = webpackDefaultsFactory(
         '/abs/src',
