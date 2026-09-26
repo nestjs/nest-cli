@@ -3,6 +3,7 @@ import { dirname } from 'path';
 import * as ts from 'typescript';
 import { JsxEmit } from 'typescript';
 import { fileURLToPath } from 'url';
+import { runInNewContext } from 'vm';
 import { describe, expect, it } from 'vitest';
 import { tsconfigPathsBeforeHookFactory } from '../../../../lib/compiler/hooks/tsconfig-paths.hook.js';
 
@@ -145,6 +146,38 @@ describe('tsconfig paths hooks', () => {
   });
 
   describe('CJS output (module: CommonJS)', () => {
+    it('should emit aliased re-exports beside a self-referencing decorated class', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/decorated-re-export'),
+        ['src/main.ts', 'src/value.ts'],
+        {
+          target: ts.ScriptTarget.ES2023,
+          experimentalDecorators: true,
+          emitDecoratorMetadata: true,
+          paths: { '~/*': ['./src/*'] },
+          types: [],
+        },
+      );
+      const valueExports = {};
+      runInNewContext(output.get(path.join('dist', 'value.js'))!, {
+        exports: valueExports,
+      });
+      const mainExports = {} as {
+        value: number;
+        Client: new () => { name: string };
+      };
+      runInNewContext(output.get(path.join('dist', 'main.js'))!, {
+        exports: mainExports,
+        require: (specifier: string) => {
+          expect(specifier).toBe('./value');
+          return valueExports;
+        },
+      });
+
+      expect(mainExports.value).toBe(42);
+      expect(new mainExports.Client().name).toBe('Client');
+    });
+
     it('should remove type imports', () => {
       const output = createSpec(
         path.join(__dirname, './fixtures/type-imports'),
