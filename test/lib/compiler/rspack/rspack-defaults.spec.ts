@@ -487,7 +487,7 @@ describe('rspackDefaultsFactory', () => {
       );
 
       expect(config.output.module).toBeUndefined();
-      expect(config.output.library).toBeUndefined();
+      expect(config.output.library).toEqual({ type: 'commonjs2' });
       expect(config.output.chunkFormat).toBeUndefined();
       expect(config.output.chunkLoading).toBeUndefined();
       expect(config.experiments).toBeUndefined();
