@@ -85,6 +85,7 @@ export const webpackDefaultsFactory = (
         /\\/g,
         '/',
       ),
+      library: { type: 'commonjs2' },
     },
     ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
     externals: [externals() as any],

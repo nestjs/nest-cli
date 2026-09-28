@@ -77,6 +77,7 @@ export const rspackDefaultsFactory = (
         chunkFormat: 'module',
         chunkLoading: 'import',
       }),
+      ...(!isEsm && { library: { type: 'commonjs2' } }),
     },
     ...(isEsm && {
       experiments: { outputModule: true, topLevelAwait: true },
