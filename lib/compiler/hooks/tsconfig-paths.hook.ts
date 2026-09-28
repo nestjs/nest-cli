@@ -72,6 +72,8 @@ export function tsconfigPathsBeforeHookFactory(
                 moduleSpecifier,
                 node.assertClause,
               );
+              // Decorator emit resolves generated export names through their source file.
+              (updatedNode as any).parent = node.parent;
               (updatedNode as any).flags = node.flags;
               return updatedNode;
             }
