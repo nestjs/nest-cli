@@ -51,15 +51,67 @@ describe('treeKillSync', () => {
       treeKillSync(1234);
 
       expect(execSyncMock).toHaveBeenCalledTimes(1);
-      expect(execSyncMock).toHaveBeenCalledWith('taskkill /pid 1234 /T /F');
+      expect(execSyncMock).toHaveBeenCalledWith('taskkill /pid 1234 /T /F', {
+        stdio: 'pipe',
+      });
       expect(spawnSyncMock).not.toHaveBeenCalled();
       expect(processKillSpy).not.toHaveBeenCalled();
+    });
+
+    it('should swallow a taskkill error when the process is not found (status 128)', () => {
+      execSyncMock.mockImplementation(() => {
+        throw Object.assign(new Error('Command failed: taskkill'), {
+          status: 128,
+        });
+      });
+
+      expect(() => treeKillSync(1234)).not.toThrow();
+      expect(execSyncMock).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([1, 5])(
+      'should rethrow a taskkill error with status %i',
+      (status) => {
+        execSyncMock.mockImplementation(() => {
+          throw Object.assign(new Error('taskkill failed'), { status });
+        });
+
+        expect(() => treeKillSync(1234)).toThrow('taskkill failed');
+      },
+    );
+
+    it.each([null, 'taskkill failed'])(
+      'should rethrow the original value when %o is thrown',
+      (value) => {
+        execSyncMock.mockImplementation(() => {
+          throw value;
+        });
+
+        let thrown: unknown = undefined;
+        try {
+          treeKillSync(1234);
+        } catch (err) {
+          thrown = err;
+        }
+
+        expect(thrown).toBe(value);
+      },
+    );
+
+    it('should rethrow a taskkill error without a status', () => {
+      execSyncMock.mockImplementation(() => {
+        throw new Error('spawn failed');
+      });
+
+      expect(() => treeKillSync(1234)).toThrow('spawn failed');
     });
 
     it('should ignore the signal argument on win32', () => {
       treeKillSync(42, 'SIGTERM');
 
-      expect(execSyncMock).toHaveBeenCalledWith('taskkill /pid 42 /T /F');
+      expect(execSyncMock).toHaveBeenCalledWith('taskkill /pid 42 /T /F', {
+        stdio: 'pipe',
+      });
       expect(processKillSpy).not.toHaveBeenCalled();
     });
   });
