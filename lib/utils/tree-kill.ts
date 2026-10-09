@@ -92,17 +92,10 @@ function taskkill(pid: number) {
   try {
     execSync('taskkill /pid ' + pid + ' /T /F', { stdio: 'pipe' });
   } catch (err) {
-    if (!isProcessNotFound(err)) {
+    if (
+      (err as { status?: number } | null)?.status !== TASKKILL_PROCESS_NOT_FOUND
+    ) {
       throw err;
     }
   }
-}
-
-function isProcessNotFound(err: unknown): boolean {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'status' in err &&
-    err.status === TASKKILL_PROCESS_NOT_FOUND
-  );
 }

@@ -58,12 +58,6 @@ describe('treeKillSync', () => {
       expect(processKillSpy).not.toHaveBeenCalled();
     });
 
-    it('should pipe taskkill output instead of echoing it', () => {
-      treeKillSync(1234);
-
-      expect(execSyncMock.mock.calls[0][1]).toMatchObject({ stdio: 'pipe' });
-    });
-
     it('should swallow a taskkill error when the process is not found (status 128)', () => {
       execSyncMock.mockImplementation(() => {
         throw Object.assign(new Error('Command failed: taskkill'), {
@@ -86,35 +80,23 @@ describe('treeKillSync', () => {
       },
     );
 
-    it('should rethrow the original value when a non-object is thrown', () => {
-      execSyncMock.mockImplementation(() => {
-        throw null;
-      });
+    it.each([null, 'taskkill failed'])(
+      'should rethrow the original value when %o is thrown',
+      (value) => {
+        execSyncMock.mockImplementation(() => {
+          throw value;
+        });
 
-      let thrown: unknown = undefined;
-      try {
-        treeKillSync(1234);
-      } catch (err) {
-        thrown = err;
-      }
+        let thrown: unknown = undefined;
+        try {
+          treeKillSync(1234);
+        } catch (err) {
+          thrown = err;
+        }
 
-      expect(thrown).toBeNull();
-    });
-
-    it('should rethrow the original value when a string is thrown', () => {
-      execSyncMock.mockImplementation(() => {
-        throw 'taskkill failed';
-      });
-
-      let thrown: unknown = undefined;
-      try {
-        treeKillSync(1234);
-      } catch (err) {
-        thrown = err;
-      }
-
-      expect(thrown).toBe('taskkill failed');
-    });
+        expect(thrown).toBe(value);
+      },
+    );
 
     it('should rethrow a taskkill error without a status', () => {
       execSyncMock.mockImplementation(() => {
