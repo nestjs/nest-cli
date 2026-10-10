@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { dirname, isAbsolute, join, relative } from 'path';
+import { dirname, isAbsolute, join, relative, resolve } from 'path';
 import * as ts from 'typescript';
 import { CLI_ERRORS } from '../../ui/index.js';
 import { TypeScriptBinaryLoader } from '../typescript-loader.js';
@@ -15,7 +15,7 @@ export class TsConfigProvider {
   constructor(private readonly typescriptLoader: TypeScriptBinaryLoader) {}
 
   public getByConfigFilename(configFilename: string): TsConfigProviderOutput {
-    const configPath = join(process.cwd(), configFilename);
+    const configPath = resolve(process.cwd(), configFilename);
     if (!existsSync(configPath)) {
       throw new Error(CLI_ERRORS.MISSING_TYPESCRIPT(configFilename));
     }

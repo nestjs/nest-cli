@@ -38,6 +38,24 @@ describe('TsConfigProvider', () => {
     );
   });
 
+  it('should accept an absolute config path', () => {
+    const configPath = join(process.cwd(), 'config', 'tsconfig.build.json');
+    vi.mocked(existsSync).mockImplementation((path) => path === configPath);
+    mockTsBinary.getParsedCommandLineOfConfigFile.mockReturnValue({
+      options: {},
+      fileNames: [],
+      raw: {},
+    });
+
+    provider.getByConfigFilename(configPath);
+
+    expect(mockTsBinary.getParsedCommandLineOfConfigFile).toHaveBeenCalledWith(
+      configPath,
+      undefined,
+      mockTsBinary.sys,
+    );
+  });
+
   it('should return parsed options, fileNames, and projectReferences', () => {
     vi.mocked(existsSync).mockReturnValue(true);
 
