@@ -182,7 +182,7 @@ export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
   ) {
     return function (this: any, diagnostic: ts.Diagnostic, ...args: any[]) {
       const messageText = diagnostic && diagnostic.messageText;
-      const noErrorsMessage = '0 errors';
+      const noErrorsMessage = 'Found 0 errors';
       if (
         messageText &&
         (messageText as string).includes &&
