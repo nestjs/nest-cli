@@ -334,6 +334,165 @@ describe('StartAction', () => {
     });
   });
 
+  describe('createOnSuccessHook - app exit report in watch mode', () => {
+    let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    const waitingMessage = 'Waiting for file changes before restarting...';
+
+    const createHook = (watch: boolean) =>
+      (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false, watch },
+      );
+
+    const reported = () =>
+      [...consoleLogSpy.mock.calls, ...consoleErrorSpy.mock.calls]
+        .map((args) => String(args[0]))
+        .filter((line) => line.includes(waitingMessage));
+
+    beforeEach(() => {
+      consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(process, 'exit').mockImplementation((() => undefined) as any);
+    });
+
+    afterEach(() => {
+      process.exitCode = undefined;
+    });
+
+    it('should report a crash with its exit code and keep waiting', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      mockChild.emit('exit', 1, null);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `The application exited with code 1. ${waitingMessage}`,
+        ),
+      );
+      expect(process.exit).not.toHaveBeenCalled();
+    });
+
+    it('should report the signal when the app is killed by one', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      mockChild.emit('exit', null, 'SIGKILL');
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `The application was terminated by SIGKILL. ${waitingMessage}`,
+        ),
+      );
+    });
+
+    it('should report a clean exit as information rather than an error', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      mockChild.emit('exit', 0, null);
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `The application exited with code 0. ${waitingMessage}`,
+        ),
+      );
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should report an exit of an app the watcher has restarted', () => {
+      const firstChild = createMockChild();
+      const secondChild = createMockChild();
+      vi.mocked(spawn)
+        .mockReturnValueOnce(firstChild)
+        .mockReturnValueOnce(secondChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      onSuccess();
+      firstChild.emit('exit', null, 'SIGTERM');
+
+      // The watcher killed the first app to restart it: nothing to report.
+      expect(reported()).toHaveLength(0);
+
+      secondChild.emit('exit', 1, null);
+
+      expect(reported()).toEqual([
+        expect.stringContaining('The application exited with code 1.'),
+      ]);
+    });
+
+    it('should not report when the app exits because of Ctrl+C', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+      mockChild.emit('exit', 0, null);
+
+      expect(reported()).toHaveLength(0);
+      expect(process.exit).toHaveBeenCalledWith(0);
+    });
+
+    it('should not report when a restarted app exits because of Ctrl+C', () => {
+      const firstChild = createMockChild();
+      const secondChild = createMockChild();
+      vi.mocked(spawn)
+        .mockReturnValueOnce(firstChild)
+        .mockReturnValueOnce(secondChild);
+
+      const onSuccess = createHook(true);
+      onSuccess();
+      onSuccess();
+      firstChild.emit('exit', null, 'SIGTERM');
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+      secondChild.emit('exit', 0, null);
+
+      expect(reported()).toHaveLength(0);
+      expect(process.exit).toHaveBeenCalledWith(0);
+    });
+
+    it('should take watch mode from the start command context', async () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+      vi.spyOn(startAction, 'runBuild').mockImplementation(
+        async (...args: any[]) => args[5](),
+      );
+
+      await startAction.handle({ watch: true } as any);
+      mockChild.emit('exit', 1, null);
+
+      expect(reported()).toHaveLength(1);
+    });
+
+    it('should not report outside watch mode, where the CLI exits too', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = createHook(false);
+      onSuccess();
+      mockChild.emit('exit', 1, null);
+
+      expect(reported()).toHaveLength(0);
+    });
+  });
+
   describe('handle - build failure exit code', () => {
     it('should exit with code 1 when the build fails', async () => {
       // The SWC type checker rejects rather than exiting the process itself,

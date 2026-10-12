@@ -9,7 +9,7 @@ import {
   defaultConfiguration,
   defaultOutDir,
 } from '../lib/configuration/defaults.js';
-import { ERROR_PREFIX } from '../lib/ui/index.js';
+import { ERROR_PREFIX, INFO_PREFIX } from '../lib/ui/index.js';
 import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill.js';
 import { assertNonArray } from '../lib/utils/type-assertions.js';
 import { BuildAction } from './build.action.js';
@@ -69,6 +69,7 @@ export class StartAction extends BuildAction {
         {
           shell: useShell,
           envFile,
+          watch: isWatchEnabled,
         },
       );
 
@@ -101,6 +102,7 @@ export class StartAction extends BuildAction {
     options: {
       shell: boolean;
       envFile?: string[];
+      watch?: boolean;
     },
   ) {
     let childProcessRef: ChildProcess | undefined;
@@ -140,13 +142,15 @@ export class StartAction extends BuildAction {
               envFile: options.envFile,
             },
           );
-          childProcessRef.on('exit', (code: number) => {
+          childProcessRef.on('exit', (code, signal) => {
             childProcessRef = undefined;
             // Exit explicitly when shutting down; in watch/cluster mode the
             // file watcher keeps the event loop alive and would otherwise
             // require a second Ctrl+C to exit.
             if (shuttingDown) {
               process.exit(code ?? 0);
+            } else if (options.watch) {
+              this.reportAppExit(code, signal);
             }
           });
         });
@@ -165,7 +169,7 @@ export class StartAction extends BuildAction {
             envFile: options.envFile,
           },
         );
-        childProcessRef.on('exit', (code: number) => {
+        childProcessRef.on('exit', (code, signal) => {
           process.exitCode = code;
           childProcessRef = undefined;
           // Exit explicitly when shutting down; in watch/cluster mode the
@@ -173,10 +177,29 @@ export class StartAction extends BuildAction {
           // require a second Ctrl+C to exit.
           if (shuttingDown) {
             process.exit(code ?? 0);
+          } else if (options.watch) {
+            this.reportAppExit(code, signal);
           }
         });
       }
     };
+  }
+
+  /**
+   * In watch mode the file watcher keeps the CLI running after the application
+   * exits on its own, so without this line an app that exited before printing
+   * anything looks exactly like one that is still starting.
+   */
+  private reportAppExit(code: number | null, signal: NodeJS.Signals | null) {
+    const reason = signal
+      ? `was terminated by ${signal}`
+      : `exited with code ${code}`;
+    const message = `The application ${reason}. Waiting for file changes before restarting...`;
+    if (code === 0) {
+      console.log(`\n${INFO_PREFIX} ${message}\n`);
+    } else {
+      console.error(`\n${ERROR_PREFIX} ${message}\n`);
+    }
   }
 
   private spawnChildProcess(
