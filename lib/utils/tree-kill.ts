@@ -2,7 +2,7 @@ import { execSync, spawnSync } from 'child_process';
 
 export function treeKillSync(pid: number, signal?: string | number): void {
   if (process.platform === 'win32') {
-    execSync('taskkill /pid ' + pid + ' /T /F');
+    taskkill(pid);
     return;
   }
 
@@ -79,6 +79,22 @@ function killPid(pid: number, signal?: string | number) {
     process.kill(pid, signal);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ESRCH') {
+      throw err;
+    }
+  }
+}
+
+// taskkill exits with 128 when the process is gone already, for example
+// when Ctrl+C reached every process attached to the console.
+const TASKKILL_PROCESS_NOT_FOUND = 128;
+
+function taskkill(pid: number) {
+  try {
+    execSync('taskkill /pid ' + pid + ' /T /F', { stdio: 'pipe' });
+  } catch (err) {
+    if (
+      (err as { status?: number } | null)?.status !== TASKKILL_PROCESS_NOT_FOUND
+    ) {
       throw err;
     }
   }
