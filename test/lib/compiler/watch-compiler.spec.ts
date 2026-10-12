@@ -172,6 +172,28 @@ describe('WatchCompiler', () => {
       expect(onSuccess).not.toHaveBeenCalled();
     });
 
+    it.each([10, 20, 100])(
+      'does not invoke onSuccess when %i errors are reported',
+      (errorsCount) => {
+        const onSuccess = vi.fn();
+        compiler.run(
+          configuration,
+          'tsconfig.json',
+          undefined,
+          { preserveWatchOutput: undefined },
+          onSuccess,
+        );
+        const onWatchStatusChanged =
+          tsBin.createWatchCompilerHost.mock.calls[0][5];
+
+        onWatchStatusChanged({
+          messageText: `Found ${errorsCount} errors. Watching for file changes.`,
+        });
+
+        expect(onSuccess).not.toHaveBeenCalled();
+      },
+    );
+
     it('tolerates a non-string diagnostic message', () => {
       expect(() =>
         statusReporterFor()({ messageText: { messageText: 'chained' } }),
