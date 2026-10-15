@@ -127,6 +127,25 @@ describe('AddAction flow', () => {
       ).toContain('--source-root="src"');
     });
 
+    it('runs the schematic with --dry-run when dryRun is set', async () => {
+      // `-d` is consumed by commander, so it never reaches `extraFlags`.
+      await action.handle(context({ dryRun: true }));
+
+      const [, options] = execute.mock.calls[0];
+      expect(
+        (options as SchematicOption[]).map((opt) => opt.toCommandString()),
+      ).toContain('--dry-run');
+    });
+
+    it('does not pass --dry-run when dryRun is not set', async () => {
+      await action.handle(context());
+
+      const [, options] = execute.mock.calls[0];
+      expect(
+        (options as SchematicOption[]).map((opt) => opt.toCommandString()),
+      ).not.toContain('--dry-run');
+    });
+
     it('forwards library-specific extra flags as a single string', async () => {
       await action.handle(
         context({ extraFlags: ['--custom-flag', '--other=1'] }),

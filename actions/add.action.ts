@@ -32,7 +32,12 @@ export class AddAction extends AbstractAction {
       (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
       const sourceRoot = await this.getSourceRoot(context.project);
-      await this.addLibrary(collectionName, sourceRoot, context.extraFlags);
+      await this.addLibrary(
+        collectionName,
+        sourceRoot,
+        context.extraFlags,
+        context.dryRun,
+      );
     } else {
       console.error(
         red(MESSAGES.LIBRARY_INSTALLATION_FAILED_BAD_PACKAGE(libraryName)),
@@ -109,10 +114,12 @@ export class AddAction extends AbstractAction {
     collectionName: string,
     sourceRoot: string,
     extraFlags: string[],
+    dryRun = false,
   ) {
     console.info(MESSAGES.LIBRARY_INSTALLATION_STARTS);
     const schematicOptions: SchematicOption[] = [];
     schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
+    if (dryRun) schematicOptions.push(new SchematicOption('dry-run', true));
     const extraFlagsString = extraFlags ? extraFlags.join(' ') : undefined;
 
     try {
