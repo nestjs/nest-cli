@@ -37,6 +37,10 @@ export const MESSAGES = {
     `Unable to install library ${name} because package did not install. Please check package name.`,
   LIBRARY_INSTALLATION_FAILED_NO_LIBRARY: 'No library found.',
   LIBRARY_INSTALLATION_STARTS: 'Starting library setup...',
+  LIBRARY_INSTALLATION_DRY_RUN: (name: string) =>
+    `Dry run: skipping installation of ${name}.`,
+  LIBRARY_NOT_INSTALLED_DRY_RUN: (name: string) =>
+    `${name} is not installed, so its setup cannot be previewed. Run the command without --dry-run to install and set it up.`,
 
   UPGRADE_IN_PROGRESS: `${EMOJIS.ROCKET}  Upgrading your project to NestJS v12...`,
   UPGRADE_GLOBAL_CLI_HINT:

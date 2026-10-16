@@ -1,4 +1,4 @@
-import { red } from 'ansis';
+import { red, yellow } from 'ansis';
 import { AddCommandContext } from '../commands/index.js';
 import { getValueOrDefault } from '../lib/compiler/helpers/get-value-or-default.js';
 import {
@@ -11,6 +11,7 @@ import {
   SchematicOption,
 } from '../lib/schematics/index.js';
 import { MESSAGES } from '../lib/ui/index.js';
+import { isCollectionInstalled } from '../lib/utils/is-collection-installed.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
@@ -27,8 +28,26 @@ export class AddAction extends AbstractAction {
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
+    if (context.dryRun) {
+      if (!context.skipInstall) {
+        console.info(
+          MESSAGES.LIBRARY_INSTALLATION_DRY_RUN(
+            `${collectionName}@${tagName || 'latest'}`,
+          ),
+        );
+      }
+      // The nest-add schematic ships with the library, so it can only be
+      // previewed when the library is already installed.
+      if (!isCollectionInstalled(collectionName)) {
+        console.info(
+          yellow(MESSAGES.LIBRARY_NOT_INSTALLED_DRY_RUN(collectionName)),
+        );
+        return;
+      }
+    }
     const packageInstallSuccess =
       context.skipInstall ||
+      context.dryRun ||
       (await this.installPackage(collectionName, tagName));
     if (packageInstallSuccess) {
       const sourceRoot = await this.getSourceRoot(context.project);
