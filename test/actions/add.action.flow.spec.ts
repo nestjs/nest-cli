@@ -24,6 +24,10 @@ vi.mock('../../lib/utils/load-configuration.js', () => ({
   }),
 }));
 
+vi.mock('../../lib/utils/is-collection-installed.js', () => ({
+  isCollectionInstalled: vi.fn(() => true),
+}));
+
 vi.mock('../../lib/utils/project-utils.js', () => ({
   shouldAskForProject: vi.fn(() => false),
   askForProjectName: vi.fn(),
@@ -37,6 +41,7 @@ import {
   SchematicOption,
 } from '../../lib/schematics/index.js';
 import { PackageManagerFactory } from '../../lib/package-managers/index.js';
+import { isCollectionInstalled } from '../../lib/utils/is-collection-installed.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
 import {
   askForProjectName,
@@ -62,6 +67,7 @@ describe('AddAction flow', () => {
     addProduction.mockResolvedValue(true);
     execute.mockResolvedValue(undefined);
     vi.mocked(shouldAskForProject).mockReturnValue(false);
+    vi.mocked(isCollectionInstalled).mockReturnValue(true);
     vi.mocked(loadConfiguration).mockResolvedValue({
       sourceRoot: 'src',
       projects: {},
@@ -91,6 +97,48 @@ describe('AddAction flow', () => {
 
       expect(addProduction).not.toHaveBeenCalled();
       expect(execute).toHaveBeenCalled();
+    });
+
+    it('skips installation but previews the schematic on a dry run', async () => {
+      await action.handle(context({ dryRun: true }));
+
+      expect(addProduction).not.toHaveBeenCalled();
+      expect(isCollectionInstalled).toHaveBeenCalledWith('@nestjs/config');
+      expect(execute).toHaveBeenCalled();
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'skipping installation of @nestjs/config@latest',
+        ),
+      );
+    });
+
+    it('skips the schematic on a dry run when the library is not installed', async () => {
+      vi.mocked(isCollectionInstalled).mockReturnValue(false);
+
+      await expect(
+        action.handle(context({ dryRun: true })),
+      ).resolves.toBeUndefined();
+      expect(addProduction).not.toHaveBeenCalled();
+      expect(execute).not.toHaveBeenCalled();
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining('cannot be previewed'),
+      );
+    });
+
+    it('does not report a skipped installation with --dry-run --skip-install', async () => {
+      await action.handle(context({ dryRun: true, skipInstall: true }));
+
+      expect(addProduction).not.toHaveBeenCalled();
+      expect(execute).toHaveBeenCalled();
+      expect(console.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('skipping installation'),
+      );
+    });
+
+    it('does not check for an installed library outside a dry run', async () => {
+      await action.handle(context());
+
+      expect(isCollectionInstalled).not.toHaveBeenCalled();
     });
 
     it('throws a bad-package error and skips the schematic when install fails', async () => {
