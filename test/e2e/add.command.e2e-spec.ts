@@ -38,28 +38,37 @@ describe('Add Command (e2e)', () => {
     expect(pkg.dependencies['@nestjs/config']).toBeDefined();
   });
 
-  it('should handle --dry-run flag without crashing', () => {
-    // Note: --dry-run in `nest add` applies to schematics only,
-    // the package itself may still be installed.
-    const { stderr, exitCode } = runNestRaw(
+  it('should not install the library on a dry run', () => {
+    const pkgPath = path.join(appPath, 'package.json');
+    const pkgBefore = readFileContent(pkgPath);
+
+    const { stdout, exitCode } = runNestRaw(
       'add @nestjs/swagger --dry-run',
       appPath,
     );
 
-    // The command must not crash (exit 0 is unexpected for a missing schematic).
-    // In slow CI environments the npm install may exceed the timeout, so we
-    // only check the exit code here — the specific error message is covered by
-    // the first test in this suite.
-    expect(exitCode).not.toBe(0);
+    // The nest-add schematic ships with the library, so a dry run of a library
+    // that is not installed yet cannot be previewed; it must exit cleanly
+    // without touching package.json.
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain('Dry run: skipping installation');
+    expect(stdout).toContain('is not installed');
+    expect(readFileContent(pkgPath)).toBe(pkgBefore);
   });
 
   it('should add with --skip-install flag', () => {
+    const pkgPath = path.join(appPath, 'package.json');
+    const pkgBefore = readFileContent(pkgPath);
+
+    // @nestjs/common is already installed by the scaffold, so the schematic
+    // lookup runs against it without depending on earlier tests.
     const { stderr, exitCode } = runNestRaw(
-      'add @nestjs/mapped-types --skip-install',
+      'add @nestjs/common --skip-install',
       appPath,
     );
 
     expect(exitCode).not.toBe(0);
     expect(stderr).toContain('does not support schematics');
+    expect(readFileContent(pkgPath)).toBe(pkgBefore);
   });
 });
