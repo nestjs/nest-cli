@@ -14,6 +14,28 @@ import { treeKillSync as killProcessSync } from '../lib/utils/tree-kill.js';
 import { assertNonArray } from '../lib/utils/type-assertions.js';
 import { BuildAction } from './build.action.js';
 
+/** Env files already reported missing, so watch-mode restarts say it once. */
+const reportedMissingEnvFiles = new Set<string>();
+
+/**
+ * Whether an `--env-file` can be handed to Node. Node exits on a missing one,
+ * and `.env` is git-ignored: a project whose start script loads it would not
+ * start at all on a fresh clone or in CI, where the variables come from the
+ * environment instead. So a missing file is skipped, with a notice.
+ */
+const envFileExists = (envFilePath: string): boolean => {
+  if (fs.existsSync(envFilePath)) {
+    return true;
+  }
+  if (!reportedMissingEnvFiles.has(envFilePath)) {
+    reportedMissingEnvFiles.add(envFilePath);
+    console.info(
+      `${INFO_PREFIX} ${envFilePath} not found - starting without it.`,
+    );
+  }
+  return false;
+};
+
 export class StartAction extends BuildAction {
   public async handle(context: StartCommandContext) {
     try {
@@ -241,9 +263,9 @@ export class StartAction extends BuildAction {
     }
 
     if (options.envFile && options.envFile.length > 0) {
-      const envFileNodeArgs = options.envFile.map(
-        (envFilePath) => `--env-file=${envFilePath}`,
-      );
+      const envFileNodeArgs = options.envFile
+        .filter(envFileExists)
+        .map((envFilePath) => `--env-file=${envFilePath}`);
       processArgs.unshift(...envFileNodeArgs);
     }
 
