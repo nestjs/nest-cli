@@ -215,12 +215,11 @@ const offerObserveLink = async (dir: string): Promise<boolean> => {
   }
   const cwd = join(process.cwd(), dir);
   const bin = join(
-    cwd,
     'node_modules',
     '.bin',
     process.platform === 'win32' ? 'observe.cmd' : 'observe',
   );
-  if (!fileExists(bin)) {
+  if (!fileExists(join(cwd, bin))) {
     return false;
   }
 
@@ -233,6 +232,9 @@ const offerObserveLink = async (dir: string): Promise<boolean> => {
     return false;
   }
 
+  // Run by its path inside the project rather than an absolute one: Windows
+  // needs a shell for a `.cmd`, and a shell splits an unquoted path at its
+  // first space - `C:\Users\Jane Doe\...`.
   return new Promise<boolean>((resolve) => {
     const child = spawn(bin, ['link'], {
       cwd,

@@ -304,7 +304,6 @@ describe('NewAction', () => {
 
   describe('linking to NestJS Observe after install', () => {
     const observeBin = join(
-      'test-project',
       'node_modules',
       '.bin',
       process.platform === 'win32' ? 'observe.cmd' : 'observe',
@@ -330,7 +329,7 @@ describe('NewAction', () => {
       // Only the installed SDK's bin exists; everything else (.gitignore,
       // the project files) is treated as new.
       vi.mocked(existsSync).mockImplementation((path) =>
-        String(path).endsWith(observeBin),
+        String(path).endsWith(join('test-project', observeBin)),
       );
     });
 
@@ -345,8 +344,10 @@ describe('NewAction', () => {
 
       await action.handle(baseContext({ observe: true, skipInstall: false }));
 
+      // Relative to the project: no part of the command has a space in it,
+      // which a Windows shell would split the path at.
       expect(spawn).toHaveBeenCalledWith(
-        expect.stringContaining(observeBin),
+        observeBin,
         ['link'],
         expect.objectContaining({
           cwd: expect.stringContaining('test-project'),
