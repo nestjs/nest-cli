@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('child_process', () => ({
   execSync: vi.fn(() => '80'),
+  spawn: vi.fn(),
 }));
 
 vi.mock('fs', async () => {
@@ -61,7 +62,10 @@ vi.mock('../../lib/runners/git.runner.js', () => {
 import { NewAction, retrieveCols } from '../../actions/new.action.js';
 import { NewCommandContext } from '../../commands/context/new.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
+import { EventEmitter } from 'events';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { confirm } from '@inquirer/prompts';
 import { isInteractive } from '../../lib/utils/is-interactive.js';
 
@@ -295,6 +299,102 @@ describe('NewAction', () => {
 
       expect(confirm).not.toHaveBeenCalled();
       expect(observeOption()).toBeUndefined();
+    });
+  });
+
+  describe('linking to NestJS Observe after install', () => {
+    const observeBin = join(
+      'test-project',
+      'node_modules',
+      '.bin',
+      process.platform === 'win32' ? 'observe.cmd' : 'observe',
+    );
+
+    /** A child process that exits with `code` once it has been spawned. */
+    const exitsWith = (code: number) => {
+      const child = new EventEmitter();
+      setTimeout(() => child.emit('exit', code), 0);
+      return child as never;
+    };
+
+    const printedLines = () =>
+      vi
+        .mocked(console.info)
+        .mock.calls.flat()
+        .map((line) => String(line))
+        .join('\n');
+
+    beforeEach(() => {
+      vi.spyOn(console, 'info').mockImplementation(() => {});
+      vi.mocked(isInteractive).mockReturnValue(true);
+      // Only the installed SDK's bin exists; everything else (.gitignore,
+      // the project files) is treated as new.
+      vi.mocked(existsSync).mockImplementation((path) =>
+        String(path).endsWith(observeBin),
+      );
+    });
+
+    afterEach(() => {
+      vi.mocked(console.info).mockRestore();
+      vi.mocked(existsSync).mockImplementation(() => false);
+    });
+
+    it('runs observe link in the new project when the offer is taken', async () => {
+      vi.mocked(confirm).mockResolvedValue(true as never);
+      vi.mocked(spawn).mockReturnValue(exitsWith(0));
+
+      await action.handle(baseContext({ observe: true, skipInstall: false }));
+
+      expect(spawn).toHaveBeenCalledWith(
+        expect.stringContaining(observeBin),
+        ['link'],
+        expect.objectContaining({
+          cwd: expect.stringContaining('test-project'),
+          stdio: 'inherit',
+        }),
+      );
+      // Linked: the paste-the-keys instructions would only confuse.
+      expect(printedLines()).not.toContain('ObserveModule.forRoot()');
+    });
+
+    it('prints the next steps when the offer is declined', async () => {
+      vi.mocked(confirm).mockResolvedValue(false as never);
+
+      await action.handle(baseContext({ observe: true, skipInstall: false }));
+
+      expect(spawn).not.toHaveBeenCalled();
+      expect(printedLines()).toContain('npx @nestjs/observe link');
+    });
+
+    it('prints the next steps when linking does not finish', async () => {
+      vi.mocked(confirm).mockResolvedValue(true as never);
+      vi.mocked(spawn).mockReturnValue(exitsWith(1));
+
+      await action.handle(baseContext({ observe: true, skipInstall: false }));
+
+      expect(printedLines()).toContain('npx @nestjs/observe link');
+    });
+
+    it('does not offer it when the installed SDK has no link command', async () => {
+      // An SDK older than the command: offering would run nothing.
+      vi.mocked(existsSync).mockImplementation(() => false);
+
+      await action.handle(baseContext({ observe: true, skipInstall: false }));
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
+      expect(printedLines()).toContain('npx @nestjs/observe link');
+    });
+
+    it('does not offer it without a TTY, or before anything is installed', async () => {
+      vi.mocked(isInteractive).mockReturnValue(false);
+      await action.handle(baseContext({ observe: true, skipInstall: false }));
+
+      vi.mocked(isInteractive).mockReturnValue(true);
+      await action.handle(baseContext({ observe: true, skipInstall: true }));
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
     });
   });
 });
