@@ -145,6 +145,42 @@ describe('StartAction', () => {
       );
     });
 
+    it('should skip an env file that does not exist, and say so once', async () => {
+      const { existsSync } = await import('fs');
+      vi.mocked(existsSync).mockImplementation(
+        (path) => path !== '.env' && path !== '.env.missing',
+      );
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false, envFile: ['.env.missing', '.env.local'] },
+      );
+
+      // A fresh clone has no .env: start anyway rather than let Node exit.
+      onSuccess();
+      onSuccess();
+
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
+      expect(processArgs).toContain('--env-file=.env.local');
+      expect(processArgs).not.toContain('--env-file=.env.missing');
+      // Watch mode restarts on every change; the notice is not repeated.
+      expect(
+        info.mock.calls.filter(([line]) =>
+          String(line).includes('.env.missing not found'),
+        ),
+      ).toHaveLength(1);
+
+      vi.mocked(existsSync).mockImplementation(() => true);
+      info.mockRestore();
+    });
+
     it('should not include --env-file flags when envFile is empty', () => {
       const mockChild = createMockChild();
       vi.mocked(spawn).mockReturnValue(mockChild);
