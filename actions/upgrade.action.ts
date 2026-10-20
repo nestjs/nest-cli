@@ -9,6 +9,11 @@ import {
 import { INFO_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { isInteractive } from '../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
+import {
+  hasObserveDependency,
+  offerObserveLink,
+  printObservabilityNextSteps,
+} from '../lib/utils/observe-link.js';
 import { AbstractAction } from './abstract.action.js';
 
 const schematicName = 'upgrade';
@@ -19,6 +24,7 @@ export class UpgradeAction extends AbstractAction {
     const collectionName =
       context.collection || configuration.collection || Collection.NESTJS;
     const schematicOptions = this.mapSchematicOptions(context);
+    const hadObserve = hasObserveDependency();
 
     console.info(MESSAGES.UPGRADE_IN_PROGRESS);
     try {
@@ -40,6 +46,16 @@ export class UpgradeAction extends AbstractAction {
     }
     // The schematic only bumps the project's local @nestjs/cli.
     console.info(`\n${INFO_PREFIX} ${MESSAGES.UPGRADE_GLOBAL_CLI_HINT}\n`);
+
+    // The schematic wired @nestjs/observe in if asked to, reading the key pair
+    // from the environment. Offer to fetch that pair now, the same way
+    // `nest new` does, instead of leaving a wired agent with no key.
+    if (!hadObserve && hasObserveDependency()) {
+      const linked = !context.skipInstall && (await offerObserveLink('.'));
+      if (!linked) {
+        printObservabilityNextSteps(MESSAGES.OBSERVABILITY_UPGRADE_KEYS_HINT);
+      }
+    }
   }
 
   private mapSchematicOptions(

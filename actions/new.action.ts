@@ -1,6 +1,6 @@
 import { confirm, input, select } from '@inquirer/prompts';
 import ansis, { type AnsiColors, type AnsiStyles } from 'ansis';
-import { execSync, spawn } from 'child_process';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import { join } from 'path';
 import { NewCommandContext } from '../commands/index.js';
@@ -22,6 +22,10 @@ import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting.js';
 import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error.js';
 import { isInteractive } from '../lib/utils/is-interactive.js';
+import {
+  offerObserveLink,
+  printObservabilityNextSteps,
+} from '../lib/utils/observe-link.js';
 import { AbstractAction } from './abstract.action.js';
 
 export class NewAction extends AbstractAction {
@@ -198,61 +202,6 @@ const createGitIgnoreFile = (dir: string, content?: string) => {
     return;
   }
   return fs.promises.writeFile(filePath, fileContent);
-};
-
-/**
- * Offers to link the new project to NestJS Observe right away, by running the
- * SDK's own `observe link` - which prints a code to approve in the dashboard
- * and writes the key pair into `.env`. Resolves whether it linked.
- *
- * Only where someone is there to approve it, and only when the installed SDK
- * ships the command: an older one, or `--skip-install`, falls back to the
- * printed next steps.
- */
-const offerObserveLink = async (dir: string): Promise<boolean> => {
-  if (!isInteractive()) {
-    return false;
-  }
-  const cwd = join(process.cwd(), dir);
-  const bin = join(
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'observe.cmd' : 'observe',
-  );
-  if (!fileExists(join(cwd, bin))) {
-    return false;
-  }
-
-  console.info();
-  const wantsLink = (await confirm({
-    message: MESSAGES.OBSERVABILITY_LINK_QUESTION,
-    default: true,
-  }).catch(gracefullyExitOnPromptError)) as boolean;
-  if (!wantsLink) {
-    return false;
-  }
-
-  // Run by its path inside the project rather than an absolute one: Windows
-  // needs a shell for a `.cmd`, and a shell splits an unquoted path at its
-  // first space - `C:\Users\Jane Doe\...`.
-  return new Promise<boolean>((resolve) => {
-    const child = spawn(bin, ['link'], {
-      cwd,
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-    });
-    child.on('error', () => resolve(false));
-    child.on('exit', (code) => resolve(code === 0));
-  });
-};
-
-const printObservabilityNextSteps = () => {
-  console.info();
-  console.info(MESSAGES.OBSERVABILITY_NEXT_STEPS);
-  console.info();
-  console.info(ansis.bold(MESSAGES.OBSERVABILITY_LINK_COMMAND));
-  console.info(ansis.gray(MESSAGES.OBSERVABILITY_KEYS_HINT));
-  console.info();
 };
 
 const printCollective = () => {
