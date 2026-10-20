@@ -55,6 +55,8 @@ export const MESSAGES = {
   OBSERVABILITY_LINK_COMMAND: 'npx @nestjs/observe link',
   OBSERVABILITY_KEYS_HINT:
     'Or create a free account at https://observe.nestjs.com and paste the app key and secret into ObserveModule.forRoot() in your AppModule.',
+  OBSERVABILITY_UPGRADE_KEYS_HINT:
+    'Or create a free account at https://observe.nestjs.com, issue an API key, and set OBSERVE_APP_KEY and OBSERVE_APP_SECRET in the environment.',
 
   MAU_INSTALLATION_QUESTION: (name: string) =>
     `The ${name} package is required to deploy. Would you like to install it now?`,

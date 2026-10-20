@@ -18,6 +18,12 @@ vi.mock('../../lib/utils/is-interactive.js', () => ({
   isInteractive: vi.fn(() => true),
 }));
 
+vi.mock('../../lib/utils/observe-link.js', () => ({
+  hasObserveDependency: vi.fn(() => false),
+  offerObserveLink: vi.fn().mockResolvedValue(true),
+  printObservabilityNextSteps: vi.fn(),
+}));
+
 import { UpgradeAction } from '../../actions/upgrade.action.js';
 import { UpgradeCommandContext } from '../../commands/index.js';
 import {
@@ -27,6 +33,11 @@ import {
 import { MESSAGES } from '../../lib/ui/index.js';
 import { isInteractive } from '../../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
+import {
+  hasObserveDependency,
+  offerObserveLink,
+  printObservabilityNextSteps,
+} from '../../lib/utils/observe-link.js';
 
 describe('UpgradeAction', () => {
   let action: UpgradeAction;
@@ -204,6 +215,72 @@ describe('UpgradeAction', () => {
 
       await expect(action.handle(context())).rejects.toBeUndefined();
       expect(console.error).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('linking @nestjs/observe after the upgrade', () => {
+    // Before the schematic runs, then after it.
+    const observeDependency = (before: boolean, after: boolean) =>
+      vi
+        .mocked(hasObserveDependency)
+        .mockReturnValueOnce(before)
+        .mockReturnValueOnce(after);
+
+    beforeEach(() => {
+      vi.mocked(hasObserveDependency).mockReset().mockReturnValue(false);
+      vi.mocked(offerObserveLink).mockReset().mockResolvedValue(true);
+    });
+
+    it('offers the link when the upgrade added @nestjs/observe', async () => {
+      observeDependency(false, true);
+
+      await action.handle(context());
+
+      expect(offerObserveLink).toHaveBeenCalledWith('.');
+      expect(printObservabilityNextSteps).not.toHaveBeenCalled();
+    });
+
+    it('prints how to connect it later when the link did not happen', async () => {
+      observeDependency(false, true);
+      vi.mocked(offerObserveLink).mockResolvedValue(false);
+
+      await action.handle(context());
+
+      expect(printObservabilityNextSteps).toHaveBeenCalledWith(
+        MESSAGES.OBSERVABILITY_UPGRADE_KEYS_HINT,
+      );
+    });
+
+    it('only prints the next steps with --skip-install, since the SDK is not installed yet', async () => {
+      observeDependency(false, true);
+
+      await action.handle(context({ skipInstall: true }));
+
+      expect(offerObserveLink).not.toHaveBeenCalled();
+      expect(printObservabilityNextSteps).toHaveBeenCalledWith(
+        MESSAGES.OBSERVABILITY_UPGRADE_KEYS_HINT,
+      );
+    });
+
+    it.each([
+      ['the project already used it', true, true],
+      ['observe was declined', false, false],
+    ])('stays quiet when %s', async (_, before, after) => {
+      observeDependency(before, after);
+
+      await action.handle(context());
+
+      expect(offerObserveLink).not.toHaveBeenCalled();
+      expect(printObservabilityNextSteps).not.toHaveBeenCalled();
+    });
+
+    it('stays quiet on a dry run', async () => {
+      observeDependency(false, true);
+
+      await action.handle(context({ dryRun: true }));
+
+      expect(offerObserveLink).not.toHaveBeenCalled();
+      expect(printObservabilityNextSteps).not.toHaveBeenCalled();
     });
   });
 });
