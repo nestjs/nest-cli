@@ -46,7 +46,7 @@
     "@inquirer/prompts": "8.7.3",
     "@nestjs/schematics": "^12.0.0",
     "ansis": "4.4.0",
-    "chokidar": "5.0.0",
+    "chokidar": "6.0.0",
     "cli-table3": "0.6.5",
     "commander": "15.0.0",
     "jsonc-parser": "3.3.1",
