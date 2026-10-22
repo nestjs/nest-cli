@@ -13,7 +13,7 @@ import { TypeScriptBinaryLoader } from '../typescript-loader.js';
 
 /**
  * Shared pieces of the `tsc` builder when it runs on the native TypeScript
- * compiler (TypeScript 7.1+, `typescript/unstable/sync`).
+ * compiler (TypeScript 7.1+, `typescript/sync`).
  *
  * The native API emits straight from Go and does not accept custom
  * transformers, so neither Nest compiler plugins (`@nestjs/swagger`,

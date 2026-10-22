@@ -17,9 +17,9 @@ import {
 
 /**
  * Runs the `tsc` builder against the native TypeScript compiler
- * (`typescript@next`, 7.1+). The nightly moves daily, so this suite skips
- * itself when the prerelease cannot be installed or no longer exposes the
- * program API, rather than failing the whole e2e job on upstream churn.
+ * (`typescript@beta`, 7.1+). The suite skips itself when the prerelease
+ * cannot be installed (offline CI) or no longer exposes the program API,
+ * rather than failing the whole e2e job on upstream churn.
  */
 describe('Build Command with TypeScript 7 (e2e)', () => {
   let tmpDir: string;
@@ -30,8 +30,11 @@ describe('Build Command with TypeScript 7 (e2e)', () => {
     tmpDir = createTempDir('nest-e2e-ts7-');
     appPath = scaffoldAppWithDeps(tmpDir, 'ts7-app');
     try {
-      npmInstall(appPath, '--save-dev typescript@next');
-    } catch {
+      npmInstall(appPath, '--save-dev typescript@beta');
+    } catch (error) {
+      console.warn(
+        `TypeScript 7 e2e skipped: typescript@beta install failed: ${error}`,
+      );
       return;
     }
     // The scaffolded app ships the published CLI; the one under test must
@@ -44,10 +47,19 @@ describe('Build Command with TypeScript 7 (e2e)', () => {
     delete tsconfig.compilerOptions.baseUrl;
     writeFileContent(tsconfigPath, JSON.stringify(tsconfig, null, 2));
 
-    supported = execSync(
-      `node -e "const m = require('typescript/unstable/sync'); process.stdout.write(String('createProgram' in m.API.prototype))"`,
-      { cwd: appPath, encoding: 'utf-8' },
-    ).includes('true');
+    // A missing entry point throws (ERR_PACKAGE_PATH_NOT_EXPORTED) instead
+    // of printing "false", so the probe itself is guarded too.
+    try {
+      supported = execSync(
+        `node -e "const m = require('typescript/sync'); process.stdout.write(String('createProgram' in m.API.prototype))"`,
+        { cwd: appPath, encoding: 'utf-8', stdio: 'pipe' },
+      ).includes('true');
+    } catch (error) {
+      console.warn(
+        `TypeScript 7 e2e skipped: typescript/sync probe failed: ${error}`,
+      );
+      supported = false;
+    }
   });
 
   afterAll(() => {

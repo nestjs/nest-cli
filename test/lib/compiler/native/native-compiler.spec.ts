@@ -100,11 +100,11 @@ describe('NativeCompiler (tsc builder on TypeScript 7.1+)', () => {
     expect(tsConfigProvider.getByConfigFilename).toHaveBeenCalledWith(
       'tsconfig.build.json',
     );
-    expect(api.createProgram).toHaveBeenCalledWith(['/project/src/main.ts'], {
-      compilerOptions: { outDir: 'dist' },
-      projectReferences: undefined,
-      configFileParsingDiagnostics: [],
-    });
+    expect(api.createProgram).toHaveBeenCalledWith(
+      ['/project/src/main.ts'],
+      { outDir: 'dist' },
+      { projectReferences: undefined, configFileParsingDiagnostics: [] },
+    );
     expect(program.emit).toHaveBeenCalledTimes(1);
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(exitSpy).not.toHaveBeenCalled();
@@ -119,6 +119,7 @@ describe('NativeCompiler (tsc builder on TypeScript 7.1+)', () => {
     run(buildCompiler({ config: [configError] }));
 
     expect(api.createProgram).toHaveBeenCalledWith(
+      expect.anything(),
       expect.anything(),
       expect.objectContaining({ configFileParsingDiagnostics: [configError] }),
     );

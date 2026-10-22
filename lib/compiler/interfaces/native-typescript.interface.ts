@@ -1,6 +1,6 @@
 /**
  * Minimal view of the programmatic API that TypeScript 7.1+ exposes through
- * the `typescript/unstable/sync` entry point (the Go-native compiler,
+ * the `typescript/sync` entry point (the Go-native compiler,
  * see https://github.com/microsoft/typescript-go).
  *
  * The CLI itself is compiled against TypeScript 6, whose package does not ship
@@ -45,7 +45,6 @@ export interface NativeParsedCommandLine {
 }
 
 export interface NativeCreateProgramOptions {
-  compilerOptions: NativeCompilerOptions;
   projectReferences?: NativeProjectReference[];
   configFileParsingDiagnostics?: readonly NativeDiagnostic[];
 }
@@ -73,7 +72,8 @@ export interface NativeApi extends NativeFormatDiagnosticsHost {
   parseConfigFile(file: string): NativeParsedCommandLine;
   createProgram(
     rootFiles: readonly string[],
-    options: NativeCreateProgramOptions,
+    compilerOptions: NativeCompilerOptions,
+    options?: NativeCreateProgramOptions,
   ): NativeProgram;
   close(): void;
 }

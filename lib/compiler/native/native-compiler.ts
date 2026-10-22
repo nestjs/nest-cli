@@ -31,8 +31,7 @@ export class NativeCompiler extends NativeCompilerBase {
       this.assertNoPathsConfigured(compilerOptions);
 
       const api = this.typescriptLoader.loadNativeApi();
-      const program = api.createProgram(fileNames, {
-        compilerOptions,
+      const program = api.createProgram(fileNames, compilerOptions, {
         projectReferences: projectReferences as any,
         configFileParsingDiagnostics,
       });

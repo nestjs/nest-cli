@@ -132,8 +132,8 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
   });
 
   it('treats TypeScript 7.0 (config parsing only, no program API) as unsupported', () => {
-    // TypeScript 7.0.2 already exports "unstable/sync", but its API has
-    // parseConfigFile only: no createProgram, no diagnostics formatter.
+    // TypeScript 7.0.2 exports "unstable/sync" only (parseConfigFile, no
+    // createProgram, no diagnostics formatter); 7.1 renamed it to "sync".
     installFakeTypeScript({
       'package.json': JSON.stringify({
         name: 'typescript',
@@ -163,7 +163,7 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
     );
   });
 
-  it('detects the native API of TypeScript 7.1+ through "typescript/unstable/sync"', () => {
+  it('detects the native API of TypeScript 7.1+ through "typescript/sync"', () => {
     installFakeTypeScript({
       'package.json': JSON.stringify({
         name: 'typescript',
@@ -171,7 +171,7 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
         exports: {
           '.': './lib/version.cjs',
           './package.json': './package.json',
-          './unstable/sync': './dist/api/sync/api.js',
+          './sync': './dist/api/sync/api.js',
         },
       }),
       'lib/version.cjs':
@@ -194,14 +194,14 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
     loader.closeNativeApi();
   });
 
-  it('ignores an "unstable/sync" entry that does not look like the native API', () => {
+  it('ignores a "sync" entry that does not look like the native API', () => {
     installFakeTypeScript({
       'package.json': JSON.stringify({
         name: 'typescript',
         version: '7.1.0-dev.1',
         exports: {
           '.': './lib/version.cjs',
-          './unstable/sync': './dist/api/sync/api.js',
+          './sync': './dist/api/sync/api.js',
         },
       }),
       'lib/version.cjs': 'module.exports = { version: "7.1.0-dev.1" };',
@@ -220,7 +220,7 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
         version: '7.1.0-dev.1',
         exports: {
           '.': './lib/version.cjs',
-          './unstable/sync': './dist/api/sync/api.js',
+          './sync': './dist/api/sync/api.js',
         },
       }),
       'lib/version.cjs': 'module.exports = { version: "7.1.0-dev.1" };',
@@ -254,7 +254,7 @@ describe('TypeScriptBinaryLoader (installed TypeScript detection)', () => {
         version: '7.1.0-dev.1',
         exports: {
           '.': './lib/version.cjs',
-          './unstable/sync': './dist/api/sync/api.js',
+          './sync': './dist/api/sync/api.js',
         },
       }),
     );

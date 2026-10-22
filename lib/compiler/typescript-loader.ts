@@ -9,11 +9,14 @@ import {
 const require = createRequire(import.meta.url);
 
 /**
- * Entry point of the programmatic API shipped by the native (Go) compiler.
- * TypeScript 7.0 already exports it but only with config parsing; program
- * creation and emit arrived in 7.1, so the surface is probed, not the version.
+ * Entry point of the programmatic API shipped by the native (Go) compiler,
+ * `typescript/sync` since TypeScript 7.1 beta. TypeScript 7.0 and the early
+ * 7.1 nightlies exported a `typescript/unstable/sync` with a different
+ * `createProgram` signature; that entry point is not probed on purpose, so
+ * those releases fall through to the "install 7.1" message. The surface is
+ * still probed, not the version, so `npm:` aliases keep working.
  */
-const NATIVE_API_ENTRY_POINT = 'typescript/unstable/sync';
+const NATIVE_API_ENTRY_POINT = 'typescript/sync';
 
 export class TypeScriptBinaryLoader {
   private tsBinary?: typeof ts;
@@ -61,7 +64,7 @@ export class TypeScriptBinaryLoader {
   }
 
   /**
-   * Returns the `typescript/unstable/sync` module of the installed
+   * Returns the `typescript/sync` module of the installed
    * TypeScript, or `null` when it is absent or incomplete. Detection is a
    * feature probe on purpose, so that `npm:` aliases and prereleases keep
    * working. The result is memoized; a module that exists but fails to load
@@ -177,8 +180,8 @@ function hasClassicApi(tsBinary: typeof ts): boolean {
 }
 
 /**
- * TypeScript 7.0's `unstable/sync` has `API.parseConfigFile` but neither
- * `createProgram` nor the diagnostics formatter; 7.1 adds both.
+ * Guards against shape drift: the CLI needs `API.parseConfigFile`,
+ * `API.createProgram` and the diagnostics formatter.
  */
 function isCompleteNativeModule(
   candidate: Partial<NativeTypeScriptModule>,

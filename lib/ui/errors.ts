@@ -4,7 +4,7 @@ export const CLI_ERRORS = {
   WRONG_PLUGIN: (name: string) =>
     `The "${name}" plugin is not compatible with Nest CLI. Neither "after()" nor "before()" nor "afterDeclarations()" function have been provided.`,
   UNSUPPORTED_TYPESCRIPT_VERSION: (version: string) =>
-    `The installed TypeScript version (${version}) does not expose a programmatic compiler API that the Nest CLI can use. TypeScript 7.0 ships the "tsc" executable only; TypeScript 7.1+ exposes the native API ("typescript/unstable/sync") that the "tsc" builder supports. Please install TypeScript 7.1 or newer, or TypeScript 6 (e.g. "npm i -D typescript@^6").`,
+    `The installed TypeScript version (${version}) does not expose a programmatic compiler API that the Nest CLI can use. TypeScript 7.0 ships the "tsc" executable only; TypeScript 7.1+ exposes the native API ("typescript/sync") that the "tsc" builder supports. Please install TypeScript 7.1 or newer, or TypeScript 6 (e.g. "npm i -D typescript@^6").`,
   CLASSIC_API_REQUIRED_ON_NATIVE_TYPESCRIPT: (version: string) =>
     `The installed TypeScript version (${version}) only exposes the native compiler API. The "tsc" builder supports it, but compiler plugins, "compilerOptions.paths", watch mode, the "swc" builder with "typeCheck", and the "webpack"/"rspack" builders still require the classic compiler API. Please use the "tsc" builder without those features, or install TypeScript 6 (e.g. "npm i -D typescript@^6").`,
   PLUGINS_UNSUPPORTED_ON_NATIVE_TYPESCRIPT: (plugins: string[]) =>

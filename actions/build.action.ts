@@ -392,7 +392,7 @@ export class BuildAction extends AbstractAction {
 
   /**
    * `tsc` builder on the native TypeScript compiler (TypeScript 7.1+), which
-   * ships no classic compiler API but exposes `typescript/unstable/sync`.
+   * ships no classic compiler API but exposes `typescript/sync`.
    */
   private async runNativeTsc(
     watchMode: boolean,
