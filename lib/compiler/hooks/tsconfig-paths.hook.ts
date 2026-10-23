@@ -81,6 +81,32 @@ export function tsconfigPathsBeforeHookFactory(
             return node;
           }
         }
+        if (
+          tsBinary.isCallExpression(node) &&
+          node.expression.kind === tsBinary.SyntaxKind.ImportKeyword &&
+          node.arguments.length > 0 &&
+          tsBinary.isStringLiteralLike(node.arguments[0])
+        ) {
+          const result = getNotAliasedPath(
+            sf,
+            matcher,
+            node.arguments[0].text,
+            esm,
+            extensions,
+            emittedPaths,
+          );
+          if (result) {
+            return tsBinary.factory.updateCallExpression(
+              node,
+              node.expression,
+              node.typeArguments,
+              [
+                tsBinary.factory.createStringLiteral(result),
+                ...node.arguments.slice(1),
+              ],
+            );
+          }
+        }
         return tsBinary.visitEachChild(node, visitNode, ctx);
       };
       return tsBinary.visitNode(sf, visitNode);
