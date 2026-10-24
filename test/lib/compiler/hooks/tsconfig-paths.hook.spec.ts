@@ -223,6 +223,17 @@ describe('tsconfig paths hooks', () => {
       expect(mainJs).not.toContain('~/');
     });
 
+    it('should replace aliased dynamic imports with relative paths', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/aliased-imports'),
+        ['src/lazy.ts', 'src/foo.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
+      const lazyJs = output.get('dist/lazy.js')!;
+      expect(lazyJs).toContain('require("./foo")');
+      expect(lazyJs).not.toContain('~/');
+    });
+
     it('should replace aliased imports when paths is set without baseUrl', () => {
       // TypeScript 6 deprecates "baseUrl"; tsc then resolves "paths" relative
       // to the directory of the tsconfig that declared them, which the parser
@@ -363,6 +374,22 @@ describe('tsconfig paths hooks', () => {
       );
 
       expect(output.get('dist/main.js')).toContain('from "./lib/service.js"');
+    });
+
+    it('should replace aliased dynamic imports with loadable paths', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/lazy.ts'],
+        {
+          ...esmOptions,
+          paths: { '~lib': ['./src/lib'], '~lib/*': ['./src/lib/*'] },
+        },
+      );
+      const lazyJs = output.get('dist/lazy.js')!;
+
+      expect(lazyJs).toContain('import("./lib/index.js")');
+      expect(lazyJs).toContain('import("./lib/service.js")');
+      expect(lazyJs).not.toContain('~lib');
     });
 
     it('should give an .mts source the extension it is emitted with', () => {
