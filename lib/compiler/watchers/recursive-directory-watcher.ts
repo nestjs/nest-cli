@@ -129,9 +129,14 @@ interface PendingFile {
   timer: NodeJS.Timeout;
 }
 
+interface FileSnapshot {
+  mtimeMs: number;
+  size: number;
+}
+
 class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
-  /** Known files mapped to the modification time we last reported. */
-  private readonly known = new Map<string, number>();
+  /** Known files mapped to the state we last reported. */
+  private readonly known = new Map<string, FileSnapshot>();
   private readonly pending = new Map<string, PendingFile>();
   private readonly stabilityThreshold: number;
   private readonly pollInterval: number;
@@ -278,17 +283,17 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
       }
       seen.add(file);
 
-      const mtimeMs = await stat(file)
-        .then((stats) => stats.mtimeMs)
+      const snapshot = await stat(file)
+        .then(({ mtimeMs, size }) => ({ mtimeMs, size }))
         .catch(() => undefined);
-      if (mtimeMs === undefined) {
+      if (snapshot === undefined) {
         continue;
       }
       if (!emit) {
-        this.known.set(file, mtimeMs);
+        this.known.set(file, snapshot);
         continue;
       }
-      if (this.known.get(file) !== mtimeMs) {
+      if (this.hasChanged(file, snapshot)) {
         this.settle(file);
       }
     }
@@ -333,6 +338,12 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
       this.known.delete(file);
       return;
     }
+    // fs.watch also reports metadata changes (e.g. chmod) and duplicate events.
+    // Neither should restart the application when the file state is unchanged.
+    if (!this.hasChanged(file, stats)) {
+      this.pending.delete(file);
+      return;
+    }
     const now = Date.now();
     if (stats.size !== state.size) {
       state.size = stats.size;
@@ -340,15 +351,24 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     }
     if (now - state.stableSince >= this.stabilityThreshold) {
       this.pending.delete(file);
-      this.emit(file, stats.mtimeMs);
+      this.emit(file, { mtimeMs: stats.mtimeMs, size: stats.size });
       return;
     }
     state.timer = setTimeout(() => void this.poll(file), this.pollInterval);
   }
 
-  private emit(file: string, mtimeMs: number): void {
+  private hasChanged(file: string, snapshot: FileSnapshot): boolean {
+    const previous = this.known.get(file);
+    return (
+      previous === undefined ||
+      previous.mtimeMs !== snapshot.mtimeMs ||
+      previous.size !== snapshot.size
+    );
+  }
+
+  private emit(file: string, snapshot: FileSnapshot): void {
     const isKnown = this.known.has(file);
-    this.known.set(file, mtimeMs);
+    this.known.set(file, snapshot);
     if (isKnown) {
       void this.options.onChange?.(file);
     } else {
