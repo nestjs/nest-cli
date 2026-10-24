@@ -107,6 +107,35 @@ export function tsconfigPathsBeforeHookFactory(
             );
           }
         }
+        // Declaration emit writes inferred types as `import("alias")`.
+        if (
+          tsBinary.isImportTypeNode(node) &&
+          tsBinary.isLiteralTypeNode(node.argument) &&
+          tsBinary.isStringLiteral(node.argument.literal)
+        ) {
+          const result = getNotAliasedPath(
+            sf,
+            matcher,
+            node.argument.literal.text,
+            esm,
+            extensions,
+            emittedPaths,
+          );
+          if (result) {
+            const updatedNode = tsBinary.factory.updateImportTypeNode(
+              node,
+              tsBinary.factory.updateLiteralTypeNode(
+                node.argument,
+                tsBinary.factory.createStringLiteral(result),
+              ),
+              node.attributes,
+              node.qualifier,
+              node.typeArguments,
+              node.isTypeOf,
+            );
+            return tsBinary.visitEachChild(updatedNode, visitNode, ctx);
+          }
+        }
         return tsBinary.visitEachChild(node, visitNode, ctx);
       };
       return tsBinary.visitNode(sf, visitNode);
