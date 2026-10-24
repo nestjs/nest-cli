@@ -348,6 +348,19 @@ describe('tsconfig paths hooks', () => {
         expect(content).not.toMatch(/from\s+['"]~\//);
       }
     });
+
+    it('should replace path aliases in import types in .d.ts files', () => {
+      const output = createSpecWithDeclarations(
+        path.join(__dirname, './fixtures/aliased-dts-imports'),
+        ['src/lazy.ts', 'src/foo.ts', 'src/bar.ts'],
+        { paths: { '~/*': ['./src/*'] } },
+      );
+
+      const lazyDts = output.get('dist/lazy.d.ts')!;
+      expect(lazyDts).toContain('typeof import("./foo")');
+      expect(lazyDts).toContain('import("./bar").Bar');
+      expect(lazyDts).not.toContain('~/');
+    });
   }, 15000);
 
   describe('ESM output (module: NodeNext)', () => {
