@@ -42,6 +42,13 @@ const RESCAN_DEBOUNCE = 100;
 const CATCH_UP_SCAN_DELAYS = [100, 500, 1_500];
 const REARM_INTERVAL = 500;
 const DIRECTORY_EXISTENCE_CHECK_INTERVAL = 1_000;
+/**
+ * Some filesystems store coarse modification times (HFS+ 1s, FAT 2s), so a
+ * same-size edit within one tick leaves both mtime and size unchanged. An
+ * unchanged snapshot is therefore only trusted once its mtime is older than
+ * this; a notification for a more recently modified file is still reported.
+ */
+const COARSE_MTIME_WINDOW = 2_500;
 
 /**
  * Platforms on which libuv implements `fs.watch(dir, { recursive: true })`
@@ -127,6 +134,8 @@ interface PendingFile {
   size: number;
   stableSince: number;
   timer: NodeJS.Timeout;
+  /** Whether "fs.watch" reported this file, as opposed to a tree scan. */
+  notified: boolean;
 }
 
 interface FileSnapshot {
@@ -238,7 +247,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     if (!matchesExtension(file, this.options.extensions)) {
       return;
     }
-    this.settle(file);
+    this.settle(file, true);
   }
 
   private scheduleRescan(): void {
@@ -309,7 +318,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
    * Delays reporting until the file stopped growing, so that a half-written
    * file is never handed over to the compiler.
    */
-  private settle(file: string): void {
+  private settle(file: string, notified = false): void {
     const pending = this.pending.get(file);
     if (pending) {
       clearTimeout(pending.timer);
@@ -318,6 +327,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
       size: -1,
       stableSince: Date.now(),
       timer: undefined as unknown as NodeJS.Timeout,
+      notified: notified || pending?.notified === true,
     };
     state.timer = setTimeout(() => void this.poll(file), this.pollInterval);
     this.pending.set(file, state);
@@ -340,7 +350,7 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     }
     // fs.watch also reports metadata changes (e.g. chmod) and duplicate events.
     // Neither should restart the application when the file state is unchanged.
-    if (!this.hasChanged(file, stats)) {
+    if (!this.hasChanged(file, stats, state.notified)) {
       this.pending.delete(file);
       return;
     }
@@ -357,12 +367,23 @@ class NativeRecursiveDirectoryWatcher implements RecursiveDirectoryWatcher {
     state.timer = setTimeout(() => void this.poll(file), this.pollInterval);
   }
 
-  private hasChanged(file: string, snapshot: FileSnapshot): boolean {
+  /**
+   * `notified` marks a file that "fs.watch" reported. Only then is a recently
+   * modified file with an unchanged snapshot reported (see
+   * `COARSE_MTIME_WINDOW`); tree scans would otherwise re-report every file
+   * written shortly before the watch started.
+   */
+  private hasChanged(
+    file: string,
+    snapshot: FileSnapshot,
+    notified = false,
+  ): boolean {
     const previous = this.known.get(file);
     return (
       previous === undefined ||
       previous.mtimeMs !== snapshot.mtimeMs ||
-      previous.size !== snapshot.size
+      previous.size !== snapshot.size ||
+      (notified && Date.now() - snapshot.mtimeMs < COARSE_MTIME_WINDOW)
     );
   }
 

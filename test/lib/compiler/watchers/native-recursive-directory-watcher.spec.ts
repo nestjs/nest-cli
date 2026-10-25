@@ -149,4 +149,43 @@ describe('native recursive directory watcher events', () => {
     expect(onAdd).toHaveBeenCalledExactlyOnceWith(file);
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  describe('with coarse modification times', () => {
+    const now = 10_000;
+
+    beforeEach(() => {
+      vi.setSystemTime(now);
+      // Written just before the watch started, e.g. by the initial build.
+      files.set(file, { mtimeMs: now, size: 16 });
+    });
+
+    it('should report a recently modified file even if its snapshot is unchanged', async () => {
+      await start();
+
+      // A same-size edit within one mtime tick leaves the snapshot unchanged.
+      notify('change', 'main.js');
+      await vi.advanceTimersByTimeAsync(100);
+
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(file);
+    });
+
+    it('should not report recently modified files on catch-up scans', async () => {
+      await start();
+
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onAdd).not.toHaveBeenCalled();
+    });
+
+    it('should ignore an unchanged snapshot once its modification time is old enough', async () => {
+      await start();
+      await vi.advanceTimersByTimeAsync(3_000);
+
+      notify('change', 'main.js');
+      await vi.advanceTimersByTimeAsync(100);
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
 });
