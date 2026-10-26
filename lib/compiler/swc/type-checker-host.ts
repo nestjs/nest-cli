@@ -32,9 +32,11 @@ export class TypeCheckerHost {
     }
     const tsBinary = this.typescriptLoader.load();
 
+    // Discarding stdin puts the terminal in raw mode, where Ctrl+C sends no
+    // SIGINT; the spinner only wraps synchronous work, so it discards nothing.
     const spinner = ora({
       text: INITIALIZING_TYPE_CHECKER,
-      discardStdin: !options.watch,
+      discardStdin: false,
     });
 
     if (options.watch) {

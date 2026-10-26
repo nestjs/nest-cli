@@ -111,6 +111,16 @@ describe('TypeCheckerHost', () => {
       expect(onTypeCheck).not.toHaveBeenCalled();
     });
 
+    it('should leave stdin out of raw mode', () => {
+      setupMocks([]);
+
+      typeCheckerHost.run('tsconfig.json', { watch: false });
+
+      expect(ora).toHaveBeenCalledWith(
+        expect.objectContaining({ discardStdin: false }),
+      );
+    });
+
     it('should call onTypeCheck when there are no type errors', () => {
       const { mockProgram } = setupMocks([]);
 
