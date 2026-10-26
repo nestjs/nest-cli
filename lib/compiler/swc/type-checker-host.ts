@@ -34,6 +34,7 @@ export class TypeCheckerHost {
 
     const spinner = ora({
       text: INITIALIZING_TYPE_CHECKER,
+      discardStdin: !options.watch,
     });
 
     if (options.watch) {

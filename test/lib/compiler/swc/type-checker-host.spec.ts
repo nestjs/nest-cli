@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import ora from 'ora';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TSC_NO_ERRORS_MESSAGE } from '../../../../lib/compiler/swc/constants.js';
 import { TypeCheckerHost } from '../../../../lib/compiler/swc/type-checker-host.js';
@@ -300,6 +301,16 @@ describe('TypeCheckerHost', () => {
         getReportWatchStatusCallback: () => capturedReportWatchStatusCallback!,
       };
     }
+
+    it('should leave stdin out of raw mode while watching', () => {
+      setupWatchMocks();
+
+      typeCheckerHost.run('tsconfig.json', { watch: true });
+
+      expect(ora).toHaveBeenCalledWith(
+        expect.objectContaining({ discardStdin: false }),
+      );
+    });
 
     it('should override compiler options with noEmit and preserveWatchOutput', () => {
       const { createWatchCompilerHostMock } = setupWatchMocks();
