@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockExecute = vi.fn().mockResolvedValue(undefined);
@@ -13,23 +14,37 @@ vi.mock('../../lib/schematics/index.js', async () => {
   };
 });
 
+const defaultConfig = () => ({
+  language: 'ts',
+  sourceRoot: 'src',
+  collection: '@nestjs/schematics',
+  entryFile: 'main',
+  exec: 'node',
+  projects: {},
+  monorepo: false,
+  compilerOptions: {},
+  generateOptions: {},
+});
+
 vi.mock('../../lib/utils/load-configuration.js', () => ({
-  loadConfiguration: vi.fn().mockResolvedValue({
-    language: 'ts',
-    sourceRoot: 'src',
-    collection: '@nestjs/schematics',
-    entryFile: 'main',
-    exec: 'node',
-    projects: {},
-    monorepo: false,
-    compilerOptions: {},
-    generateOptions: {},
-  }),
+  loadConfiguration: vi.fn(),
 }));
+
+vi.mock('../../lib/utils/project-utils.js', async () => {
+  const original = await vi.importActual<
+    typeof import('../../lib/utils/project-utils.js')
+  >('../../lib/utils/project-utils.js');
+  return {
+    ...original,
+    askForProjectName: vi.fn(),
+  };
+});
 
 import { GenerateAction } from '../../actions/generate.action.js';
 import { GenerateCommandContext } from '../../commands/context/generate.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
+import { loadConfiguration } from '../../lib/utils/load-configuration.js';
+import { askForProjectName } from '../../lib/utils/project-utils.js';
 
 describe('GenerateAction', () => {
   let action: GenerateAction;
@@ -63,6 +78,8 @@ describe('GenerateAction', () => {
 
   beforeEach(() => {
     mockExecute.mockClear();
+    vi.mocked(loadConfiguration).mockResolvedValue(defaultConfig() as any);
+    vi.mocked(askForProjectName).mockReset();
     action = new GenerateAction();
   });
 
@@ -130,5 +147,95 @@ describe('GenerateAction', () => {
     expect(findOption(schematicOptions, 'crud')!.toCommandString()).toBe(
       '--crud',
     );
+  });
+
+  describe('per-project generateOptions resolution', () => {
+    it('should apply the default project generateOptions when selected interactively', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue({
+        ...defaultConfig(),
+        monorepo: true,
+        sourceRoot: 'apps/api/src',
+        projects: {
+          api: {
+            type: 'application',
+            root: 'apps/api',
+            sourceRoot: 'apps/api/src',
+            generateOptions: {
+              spec: false,
+              flat: true,
+              specFileSuffix: 'e2e-spec',
+              baseDir: 'modules',
+            },
+          },
+          worker: {
+            type: 'application',
+            root: 'apps/worker',
+            sourceRoot: 'apps/worker/src',
+          },
+        },
+      } as any);
+      vi.mocked(askForProjectName).mockResolvedValue('api [ Default ]' as any);
+
+      await action.handle(baseContext({ schematic: 'service', name: 'users' }));
+
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      expect(
+        findOption(schematicOptions, 'source-root')!.toCommandString(),
+      ).toBe(`--source-root="${path.join('apps/api/src', 'modules')}"`);
+      expect(findOption(schematicOptions, 'spec')!.toCommandString()).toBe(
+        '--spec=false',
+      );
+      expect(findOption(schematicOptions, 'flat')!.toCommandString()).toBe(
+        '--flat',
+      );
+      expect(
+        findOption(schematicOptions, 'spec-file-suffix')!.toCommandString(),
+      ).toBe('--spec-file-suffix="e2e-spec"');
+    });
+
+    it('should resolve generateOptions.baseDir per project and fall back to root baseDir', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue({
+        ...defaultConfig(),
+        monorepo: true,
+        sourceRoot: 'apps/api/src',
+        generateOptions: {
+          baseDir: 'shared-modules',
+        },
+        projects: {
+          api: {
+            type: 'application',
+            root: 'apps/api',
+            sourceRoot: 'apps/api/src',
+            generateOptions: {
+              baseDir: 'api-modules',
+            },
+          },
+          worker: {
+            type: 'application',
+            root: 'apps/worker',
+            sourceRoot: 'apps/worker/src',
+          },
+        },
+      } as any);
+
+      await action.handle(
+        baseContext({ schematic: 'service', name: 'users', project: 'api' }),
+      );
+      let [, schematicOptions] = mockExecute.mock.calls[0];
+      expect(
+        findOption(schematicOptions, 'source-root')!.toCommandString(),
+      ).toBe(`--source-root="${path.join('apps/api/src', 'api-modules')}"`);
+
+      mockExecute.mockClear();
+      await action.handle(
+        baseContext({ schematic: 'service', name: 'users', project: 'worker' }),
+      );
+      [, schematicOptions] = mockExecute.mock.calls[0];
+      expect(
+        findOption(schematicOptions, 'source-root')!.toCommandString(),
+      ).toBe(
+        `--source-root="${path.join('apps/worker/src', 'shared-modules')}"`,
+      );
+    });
   });
 });
