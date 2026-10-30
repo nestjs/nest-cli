@@ -92,9 +92,16 @@ describe('AddCommand', () => {
     // `allowUnknownOption` + `allowExcessArguments` let library-specific
     // flags through so they can be forwarded to the library's own schematic
     // rather than being rejected by commander as excess arguments.
-    const context = await run('add', '@nestjs/swagger', '--custom-lib-flag');
+    const context = await run(
+      'add',
+      '@nestjs/swagger',
+      '--skip-install',
+      '-p',
+      'api',
+      '--custom-lib-flag',
+    );
 
-    expect(context.extraFlags).toContain('--custom-lib-flag');
+    expect(context.extraFlags).toEqual(['--custom-lib-flag']);
   });
 
   it('exits with code 1 when the action rejects', async () => {

@@ -126,4 +126,30 @@ describe('getRemainingFlags', () => {
 
     expect(result).toEqual([]);
   });
+
+  it('should filter out options and values registered on subcommands', () => {
+    const program = new Command();
+    program
+      .command('add <library>')
+      .allowUnknownOption()
+      .allowExcessArguments()
+      .option('-d, --dry-run')
+      .option('-s, --skip-install')
+      .option('-p, --project [project]')
+      .action(() => {});
+
+    program.parse([
+      'node',
+      'nest',
+      'add',
+      '@nestjs/swagger',
+      '--skip-install',
+      '-p',
+      'api',
+      '--custom-flag',
+      'custom-val',
+    ]);
+
+    expect(getRemainingFlags(program)).toEqual(['--custom-flag', 'custom-val']);
+  });
 });

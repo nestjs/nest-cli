@@ -147,6 +147,25 @@ describe('StartCommand', () => {
         expect.arrayContaining(['--custom-flag', '--another']),
       );
     });
+
+    it('excludes start command options and their values from extraFlags', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--watch',
+        '--builder',
+        'swc',
+        '--env-file',
+        '.env',
+        '--custom-flag',
+      ]);
+
+      const context = action.handle.mock.calls[0][0];
+      expect(context.extraFlags).toEqual(['--custom-flag']);
+    });
   });
 
   describe('remaining options', () => {

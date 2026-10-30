@@ -1,7 +1,11 @@
 import { Command } from 'commander';
 
 export function getRemainingFlags(cli: Command) {
-  const rawArgs = [...(cli as any).rawArgs];
+  const rawArgs = [
+    ...((cli as any).rawArgs?.length
+      ? (cli as any).rawArgs
+      : ((cli.parent as any)?.rawArgs ?? [])),
+  ];
 
   const spliceIndex = rawArgs.findIndex((item: string) =>
     item.startsWith('--'),
@@ -10,11 +14,30 @@ export function getRemainingFlags(cli: Command) {
     return [];
   }
 
+  const commands: Command[] = [
+    cli,
+    ...(((cli as any).commands as Command[]) ?? []),
+    ...(cli.parent ? [cli.parent] : []),
+  ];
+
+  const findOption = (flag: string) => {
+    const flagName = flag.split('=', 1)[0];
+    for (const cmd of commands) {
+      const match = cmd.options?.find(
+        (o: any) => o.short === flagName || o.long === flagName,
+      );
+      if (match) {
+        return match;
+      }
+    }
+    return undefined;
+  };
+
   return rawArgs
     .splice(spliceIndex)
     .filter((item: string, index: number, array: string[]) => {
       // If the option is consumed by commander.js, then we skip it
-      if (cli.options.find((o: any) => o.short === item || o.long === item)) {
+      if (findOption(item)) {
         return false;
       }
 
@@ -22,10 +45,18 @@ export function getRemainingFlags(cli: Command) {
       // skip it too
       const prevKeyRaw = array[index - 1];
       if (prevKeyRaw?.startsWith('-')) {
+        const matchedOption = findOption(prevKeyRaw);
+        const keySource = matchedOption?.long ?? prevKeyRaw;
         const previousKey = camelCase(
-          prevKeyRaw.replace(/--/g, '').replace('no', ''),
+          keySource.replace(/--/g, '').replace('no', ''),
         );
-        if (cli.getOptionValue(previousKey) === item) {
+        const isConsumedValue = commands.some((cmd) => {
+          const optionValue = cmd.getOptionValue?.(previousKey);
+          return Array.isArray(optionValue)
+            ? optionValue.includes(item)
+            : optionValue === item;
+        });
+        if (isConsumedValue) {
           return false;
         }
       }
