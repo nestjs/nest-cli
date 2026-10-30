@@ -28,11 +28,12 @@ export class AddAction extends AbstractAction {
     const packageName = this.getPackageName(libraryName);
     const collectionName = this.getCollectionName(libraryName, packageName);
     const tagName = this.getTagName(packageName);
+    const installPackageName = this.stripTagName(packageName);
     if (context.dryRun) {
       if (!context.skipInstall) {
         console.info(
           MESSAGES.LIBRARY_INSTALLATION_DRY_RUN(
-            `${collectionName}@${tagName || 'latest'}`,
+            `${installPackageName}@${tagName || 'latest'}`,
           ),
         );
       }
@@ -48,7 +49,7 @@ export class AddAction extends AbstractAction {
     const packageInstallSuccess =
       context.skipInstall ||
       context.dryRun ||
-      (await this.installPackage(collectionName, tagName));
+      (await this.installPackage(installPackageName, tagName));
     if (packageInstallSuccess) {
       const sourceRoot = await this.getSourceRoot(context.project);
       await this.addLibrary(
@@ -164,12 +165,13 @@ export class AddAction extends AbstractAction {
   }
 
   private getCollectionName(library: string, packageName: string): string {
-    return (
-      (packageName.startsWith('@')
-        ? packageName.split('@', 2).join('@')
-        : packageName.split('@', 1).join('@')) +
-      library.slice(packageName.length)
-    );
+    return this.stripTagName(packageName) + library.slice(packageName.length);
+  }
+
+  private stripTagName(packageName: string): string {
+    return packageName.startsWith('@')
+      ? packageName.split('@', 2).join('@')
+      : packageName.split('@', 1).join('@');
   }
 
   private getTagName(packageName: string): string {

@@ -82,5 +82,14 @@ describe('AddAction helpers', () => {
         '@scope/pkg',
       );
     });
+
+    it('should preserve the collection subpath while stripping the version', () => {
+      expect(
+        action.getCollectionName(
+          '@scope/pkg@1.0.0/schematics',
+          '@scope/pkg@1.0.0',
+        ),
+      ).toBe('@scope/pkg/schematics');
+    });
   });
 });
