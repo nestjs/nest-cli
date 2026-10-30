@@ -76,55 +76,57 @@ export class StartCommand extends AbstractCommand {
         [],
       )
       .description('Run Nest application.')
-      .action(async (app: string, options: Record<string, any>) => {
-        const isWebpackEnabled = options.tsc ? false : options.webpack;
+      .action(
+        async (app: string, options: Record<string, any>, command: Command) => {
+          const isWebpackEnabled = options.tsc ? false : options.webpack;
 
-        const availableBuilders = ['tsc', 'webpack', 'swc', 'rspack'];
-        if (options.builder && !availableBuilders.includes(options.builder)) {
-          console.error(
-            ERROR_PREFIX +
-              ` Invalid builder option: ${
-                options.builder
-              }. Available builders: ${availableBuilders.join(', ')}`,
-          );
-          process.exit(1);
-        }
+          const availableBuilders = ['tsc', 'webpack', 'swc', 'rspack'];
+          if (options.builder && !availableBuilders.includes(options.builder)) {
+            console.error(
+              ERROR_PREFIX +
+                ` Invalid builder option: ${
+                  options.builder
+                }. Available builders: ${availableBuilders.join(', ')}`,
+            );
+            process.exit(1);
+          }
 
-        const context: StartCommandContext = {
-          app,
-          config: options.config,
-          webpack: isWebpackEnabled,
-          watch: !!options.watch,
-          watchAssets: !!options.watchAssets,
-          path: options.path,
-          webpackPath: options.webpackPath,
-          rspackPath: options.rspackPath,
-          builder: options.builder,
-          typeCheck: options.typeCheck,
-          // Left undefined when the flag is absent so `getValueOrDefault` can
-          // still fall through to `compilerOptions.emitDeclarations`.
-          emitDeclarations: options.emitDeclarations,
-          silent: !!options.silent,
-          // Left undefined when the flag is absent so `WatchCompiler` can
-          // fall through to the tsconfig 'preserveWatchOutput' option.
-          preserveWatchOutput:
-            !!options.watch && !isWebpackEnabled
-              ? options.preserveWatchOutput
-              : false,
-          debug: options.debug,
-          exec: options.exec,
-          sourceRoot: options.sourceRoot,
-          entryFile: options.entryFile,
-          shell: !!options.shell,
-          envFile: options.envFile ?? [],
-          extraFlags: getRemainingFlags(program),
-        };
+          const context: StartCommandContext = {
+            app,
+            config: options.config,
+            webpack: isWebpackEnabled,
+            watch: !!options.watch,
+            watchAssets: !!options.watchAssets,
+            path: options.path,
+            webpackPath: options.webpackPath,
+            rspackPath: options.rspackPath,
+            builder: options.builder,
+            typeCheck: options.typeCheck,
+            // Left undefined when the flag is absent so `getValueOrDefault` can
+            // still fall through to `compilerOptions.emitDeclarations`.
+            emitDeclarations: options.emitDeclarations,
+            silent: !!options.silent,
+            // Left undefined when the flag is absent so `WatchCompiler` can
+            // fall through to the tsconfig 'preserveWatchOutput' option.
+            preserveWatchOutput:
+              !!options.watch && !isWebpackEnabled
+                ? options.preserveWatchOutput
+                : false,
+            debug: options.debug,
+            exec: options.exec,
+            sourceRoot: options.sourceRoot,
+            entryFile: options.entryFile,
+            shell: !!options.shell,
+            envFile: options.envFile ?? [],
+            extraFlags: getRemainingFlags(command),
+          };
 
-        try {
-          await this.action.handle(context);
-        } catch {
-          process.exit(1);
-        }
-      });
+          try {
+            await this.action.handle(context);
+          } catch {
+            process.exit(1);
+          }
+        },
+      );
   }
 }
