@@ -92,6 +92,15 @@ describe('AddAction flow', () => {
       expect(addProduction).toHaveBeenCalledWith(['@nestjs/config'], '3.0.0');
     });
 
+    it('installs the bare package name while executing the subpath collection when a subpath is given', async () => {
+      await action.handle(context({ library: '@scope/pkg@1.2.3/schematics' }));
+
+      expect(addProduction).toHaveBeenCalledWith(['@scope/pkg'], '1.2.3');
+      expect(CollectionFactory.create).toHaveBeenCalledWith(
+        '@scope/pkg/schematics',
+      );
+    });
+
     it('skips installation but still runs the schematic with --skip-install', async () => {
       await action.handle(context({ skipInstall: true }));
 

@@ -105,6 +105,7 @@ export interface ProjectConfiguration {
   exec?: string;
   sourceRoot?: string;
   compilerOptions?: CompilerOptions;
+  generateOptions?: GenerateOptions;
 }
 
 export interface Configuration {
