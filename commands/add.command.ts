@@ -20,20 +20,26 @@ export class AddCommand extends AbstractCommand {
       .option('-s, --skip-install', 'Skip package installation.', false)
       .option('-p, --project [project]', 'Project in which to generate files.')
       .usage('<library> [options] [library-specific-options]')
-      .action(async (library: string, options: Record<string, any>) => {
-        const context: AddCommandContext = {
-          library,
-          dryRun: !!options.dryRun,
-          skipInstall: options.skipInstall,
-          project: options.project,
-          extraFlags: getRemainingFlags(program),
-        };
+      .action(
+        async (
+          library: string,
+          options: Record<string, any>,
+          command: Command,
+        ) => {
+          const context: AddCommandContext = {
+            library,
+            dryRun: !!options.dryRun,
+            skipInstall: options.skipInstall,
+            project: options.project,
+            extraFlags: getRemainingFlags(command),
+          };
 
-        try {
-          await this.action.handle(context);
-        } catch {
-          process.exit(1);
-        }
-      });
+          try {
+            await this.action.handle(context);
+          } catch {
+            process.exit(1);
+          }
+        },
+      );
   }
 }

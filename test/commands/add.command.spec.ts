@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { AddCommand } from '../../commands/add.command.js';
+import { NewCommand } from '../../commands/new.command.js';
 import { AddCommandContext } from '../../commands/context/index.js';
 
 class FakeAction extends AbstractAction {
@@ -102,6 +103,30 @@ describe('AddCommand', () => {
     );
 
     expect(context.extraFlags).toEqual(['--custom-lib-flag']);
+  });
+
+  it('matches short flags against add options when other commands are loaded', async () => {
+    // `new` is loaded first by `CommandLoader` and reuses `-p` for
+    // `--package-manager`.
+    const program = new Command();
+    program.exitOverride();
+    new NewCommand(new FakeAction()).load(program);
+    new AddCommand(action).load(program);
+
+    await program.parseAsync([
+      'node',
+      'nest',
+      'add',
+      '@nestjs/swagger',
+      '--skip-install',
+      '-p',
+      'api',
+      '--strict',
+    ]);
+
+    const context = action.handle.mock.calls[0][0];
+    expect(context.project).toBe('api');
+    expect(context.extraFlags).toEqual(['--strict']);
   });
 
   it('exits with code 1 when the action rejects', async () => {

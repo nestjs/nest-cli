@@ -127,29 +127,98 @@ describe('getRemainingFlags', () => {
     expect(result).toEqual([]);
   });
 
-  it('should filter out options and values registered on subcommands', () => {
-    const program = new Command();
-    program
-      .command('add <library>')
-      .allowUnknownOption()
-      .allowExcessArguments()
-      .option('-d, --dry-run')
-      .option('-s, --skip-install')
-      .option('-p, --project [project]')
-      .action(() => {});
+  describe('with a subcommand', () => {
+    const parse = (argv: string[]) => {
+      let remaining: string[] = [];
+      const program = new Command();
+      // Registered first, like in `CommandLoader`, so that its short flags
+      // would win if options of other subcommands were consulted.
+      program
+        .command('new [name]')
+        .option('-d, --dry-run')
+        .option('-p, --package-manager [packageManager]')
+        .option('-c, --collection [collectionName]')
+        .option('--strict')
+        .action(() => {});
+      program
+        .command('add <library>')
+        .allowUnknownOption()
+        .allowExcessArguments()
+        .option('-d, --dry-run')
+        .option('-s, --skip-install')
+        .option('-p, --project [project]')
+        .action((_library, _options, command: Command) => {
+          remaining = getRemainingFlags(command);
+        });
+      program
+        .command('start [app]')
+        .allowUnknownOption()
+        .allowExcessArguments()
+        .option('-c, --config [path]')
+        .option('-p, --path [path]')
+        .option('-d, --debug [hostport]')
+        .option(
+          '--env-file [path]',
+          '',
+          (v, prev: string[]) => [...prev, v],
+          [],
+        )
+        .action((_app, _options, command: Command) => {
+          remaining = getRemainingFlags(command);
+        });
 
-    program.parse([
-      'node',
-      'nest',
-      'add',
-      '@nestjs/swagger',
-      '--skip-install',
-      '-p',
-      'api',
-      '--custom-flag',
-      'custom-val',
-    ]);
+      program.parse(['node', 'nest', ...argv]);
+      return remaining;
+    };
 
-    expect(getRemainingFlags(program)).toEqual(['--custom-flag', 'custom-val']);
+    it('should filter out options and values registered on the subcommand', () => {
+      expect(
+        parse([
+          'add',
+          '@nestjs/swagger',
+          '--skip-install',
+          '-p',
+          'api',
+          '--custom-flag',
+          'custom-val',
+        ]),
+      ).toEqual(['--custom-flag', 'custom-val']);
+    });
+
+    it('should resolve short flags against the running subcommand only', () => {
+      expect(
+        parse([
+          'start',
+          '--custom-flag',
+          '-p',
+          'tsconfig.build.json',
+          '-c',
+          'nest-cli.json',
+          '-d',
+          '0.0.0.0:9229',
+        ]),
+      ).toEqual(['--custom-flag']);
+    });
+
+    it('should keep flags that only other subcommands define', () => {
+      expect(parse(['start', '--strict', '--dry-run'])).toEqual([
+        '--strict',
+        '--dry-run',
+      ]);
+    });
+
+    it('should filter out inline and repeated option values', () => {
+      expect(
+        parse([
+          'start',
+          '--config=nest-cli.json',
+          '--env-file',
+          '.env.a',
+          '--env-file',
+          '.env.b',
+          '--custom-flag',
+        ]),
+      ).toEqual(['--custom-flag']);
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
+import { NewCommand } from '../../commands/new.command.js';
 import { StartCommand } from '../../commands/start.command.js';
 
 class FakeAction extends AbstractAction {
@@ -165,6 +166,33 @@ describe('StartCommand', () => {
 
       const context = action.handle.mock.calls[0][0];
       expect(context.extraFlags).toEqual(['--custom-flag']);
+    });
+
+    it('matches short flags against start options when other commands are loaded', async () => {
+      // `new` is loaded first by `CommandLoader` and reuses `-p`, `-c` and
+      // `-d` for other options, and defines `--strict`.
+      const program = new Command();
+      program.exitOverride();
+      new NewCommand(new FakeAction()).load(program);
+      new StartCommand(action).load(program);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--watch',
+        '-p',
+        'tsconfig.build.json',
+        '-c',
+        'nest-cli.json',
+        '-d',
+        '0.0.0.0:9229',
+        '--strict',
+      ]);
+
+      const context = action.handle.mock.calls[0][0];
+      expect(context.path).toBe('tsconfig.build.json');
+      expect(context.extraFlags).toEqual(['--strict']);
     });
   });
 

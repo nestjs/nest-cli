@@ -1,11 +1,20 @@
 import { Command } from 'commander';
 
+/**
+ * Returns the flags (and their values) that commander.js did not consume.
+ *
+ * @param cli The command being run (the subcommand passed to `.action()`).
+ * Only its own options and those of its ancestors count as consumed: other
+ * subcommands reuse the same short flags (`-p`, `-c`, `-d`) for different
+ * options.
+ */
 export function getRemainingFlags(cli: Command) {
-  const rawArgs = [
-    ...((cli as any).rawArgs?.length
-      ? (cli as any).rawArgs
-      : ((cli.parent as any)?.rawArgs ?? [])),
-  ];
+  // Commander records `rawArgs` on the root command only.
+  const commands: Command[] = [];
+  for (let cmd: Command | null = cli; cmd; cmd = cmd.parent) {
+    commands.push(cmd);
+  }
+  const rawArgs = [...((commands.at(-1) as any).rawArgs ?? [])];
 
   const spliceIndex = rawArgs.findIndex((item: string) =>
     item.startsWith('--'),
@@ -13,12 +22,6 @@ export function getRemainingFlags(cli: Command) {
   if (spliceIndex === -1) {
     return [];
   }
-
-  const commands: Command[] = [
-    cli,
-    ...(((cli as any).commands as Command[]) ?? []),
-    ...(cli.parent ? [cli.parent] : []),
-  ];
 
   const findOption = (flag: string) => {
     const flagName = flag.split('=', 1)[0];
