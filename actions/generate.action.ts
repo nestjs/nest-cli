@@ -30,7 +30,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
   const configuration = await loadConfiguration();
   const collectionOption = context.collection;
   const schematic = context.schematic;
-  const appName = context.project ?? '';
+  let appName = context.project ?? '';
   const specFileSuffix = context.specFileSuffix;
 
   const collection: AbstractCollection = CollectionFactory.create(
@@ -99,30 +99,29 @@ const generateFiles = async (context: GenerateCommandContext) => {
       sourceRoot = configurationProjects[project].sourceRoot;
     }
 
-    if (selectedProjectName !== defaultProjectName) {
-      // Only overwrite if the appName is not the default- as it has already been loaded above
-      generateSpec = shouldGenerateSpec(
-        configuration,
-        schematic,
-        selectedProjectName,
-        specValue,
-        specPassedAsInput,
-      );
-      generateFlat = shouldGenerateFlat(
-        configuration,
-        selectedProjectName,
-        flatValue,
-      );
-      generateSpecFileSuffix = getSpecFileSuffix(
-        configuration,
-        selectedProjectName,
-        specFileSuffixValue,
-      );
-    }
+    appName = project;
+    generateSpec = shouldGenerateSpec(
+      configuration,
+      schematic,
+      project,
+      specValue,
+      specPassedAsInput,
+    );
+    generateFlat = shouldGenerateFlat(configuration, project, flatValue);
+    generateSpecFileSuffix = getSpecFileSuffix(
+      configuration,
+      project,
+      specFileSuffixValue,
+    );
   }
 
-  if (configuration.generateOptions?.baseDir) {
-    sourceRoot = path.join(sourceRoot, configuration.generateOptions.baseDir);
+  const baseDir = getValueOrDefault<string>(
+    configuration,
+    'generateOptions.baseDir',
+    appName,
+  );
+  if (baseDir) {
+    sourceRoot = path.join(sourceRoot, baseDir);
   }
 
   schematicOptions.push(new SchematicOption('sourceRoot', sourceRoot));
