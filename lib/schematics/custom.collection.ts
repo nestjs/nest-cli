@@ -10,7 +10,11 @@ export interface CollectionSchematic {
 
 export class CustomCollection extends AbstractCollection {
   public getSchematics(): Schematic[] {
-    const workflow = new NodeWorkflow(process.cwd(), {});
+    // Without `resolvePaths`, the workflow resolves collections relative to the
+    // CLI's own install rather than the project.
+    const workflow = new NodeWorkflow(process.cwd(), {
+      resolvePaths: [process.cwd()],
+    });
     const collection = workflow.engine.createCollection(this.collection);
     const collectionDescriptions = [
       collection.description,
