@@ -41,6 +41,7 @@ vi.mock('@angular-devkit/schematics/tools/index.js', async () => {
   };
 });
 
+import { NodeWorkflow } from '@angular-devkit/schematics/tools/index.js';
 import { CustomCollection } from '../../../lib/schematics/custom.collection.js';
 
 describe('Custom Collection', () => {
@@ -120,5 +121,8 @@ describe('Custom Collection', () => {
     expect(schematics).toEqual([
       { name: 'package1', alias: 'pkg1', description: 'Package schematic 1' },
     ]);
+    expect(NodeWorkflow).toHaveBeenCalledWith(process.cwd(), {
+      resolvePaths: [process.cwd()],
+    });
   });
 });
