@@ -1,7 +1,6 @@
 import { builtinModules, createRequire } from 'module';
 import { join } from 'path';
 import type * as ts from 'typescript';
-import type { TsconfigPathsPlugin as TsconfigPathsPluginType } from 'tsconfig-paths-webpack-plugin';
 import type nodeExternals from 'webpack-node-externals';
 import { defaultTsconfigFilename } from '../../configuration/defaults.js';
 import { appendTsExtension } from '../helpers/append-extension.js';
@@ -13,11 +12,8 @@ function loadRspackDeps() {
   try {
     const rspack = require('@rspack/core');
     const externals = require('webpack-node-externals') as typeof nodeExternals;
-    const { TsconfigPathsPlugin } =
-      require('tsconfig-paths-webpack-plugin') as {
-        TsconfigPathsPlugin: typeof TsconfigPathsPluginType;
-      };
-    return { nodeExternals: externals, TsconfigPathsPlugin, rspack };
+
+    return { nodeExternals: externals, rspack };
   } catch (e: any) {
     if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ERR_MODULE_NOT_FOUND') {
       // Only the "package missing" branch is wrapped with install advice.
@@ -34,7 +30,7 @@ function loadRspackDeps() {
       'webpack-node-externals';
     throw new Error(
       `The "${pkg}" package is required when using the rspack compiler but could not be found. ` +
-        `Please install it:\n\n  npm install --save-dev @rspack/core webpack-node-externals tsconfig-paths-webpack-plugin\n`,
+        `Please install it:\n\n  npm install --save-dev @rspack/core webpack-node-externals\n`,
       { cause: e },
     );
   }
@@ -50,7 +46,7 @@ export const rspackDefaultsFactory = (
   isEsm = false,
   tsOptions?: ts.CompilerOptions,
 ): Record<string, any> => {
-  const { nodeExternals: externals, TsconfigPathsPlugin } = loadRspackDeps();
+  const { nodeExternals: externals } = loadRspackDeps();
 
   const isPluginRegistered = isAnyPluginRegistered(plugins);
   const sourceMaps =
@@ -138,11 +134,6 @@ export const rspackDefaultsFactory = (
         },
       }),
       tsConfig: tsConfigFile,
-      plugins: [
-        new TsconfigPathsPlugin({
-          configFile: tsConfigFile,
-        }),
-      ],
     },
     mode: 'none',
     optimization: {

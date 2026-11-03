@@ -84,7 +84,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     } catch {
       throw new Error(
         '@rspack/core is not installed. To use the rspack compiler, install the required packages:\n\n' +
-          '  npm install --save-dev @rspack/core webpack-node-externals tsconfig-paths-webpack-plugin\n',
+          '  npm install --save-dev @rspack/core webpack-node-externals\n',
       );
     }
 
