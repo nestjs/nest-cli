@@ -5,7 +5,6 @@ const { requireFns } = vi.hoisted(() => {
     requireFns: {
       '@rspack/core': vi.fn(),
       'webpack-node-externals': vi.fn(),
-      'tsconfig-paths-webpack-plugin': vi.fn(),
       'fork-ts-checker-webpack-plugin': vi.fn(),
     } as Record<string, ReturnType<typeof vi.fn>>,
   };
@@ -40,17 +39,13 @@ const emptyPlugins: MultiNestCompilerPlugins = {
 };
 
 // vi.fn() can be used with `new`; arrow functions cannot. The factory
-// invokes `new IgnorePlugin(...)` and `new TsconfigPathsPlugin(...)`,
-// so the mocks must be plain `vi.fn()` (which acts as a constructor).
+// invokes `new IgnorePlugin(...)`, so the mock must be a plain `vi.fn()`
+// (which acts as a constructor).
 const makeMockRspack = () => ({
   IgnorePlugin: vi.fn(),
 });
 
 const makeMockExternals = () => vi.fn(() => () => undefined);
-
-const makeMockTsconfigPathsPlugin = () => ({
-  TsconfigPathsPlugin: vi.fn(),
-});
 
 const moduleNotFoundError = (pkg: string, message?: string) => {
   const err = new Error(message ?? `Cannot find module '${pkg}'`) as Error & {
@@ -64,14 +59,10 @@ describe('rspackDefaultsFactory', () => {
   beforeEach(() => {
     requireFns['@rspack/core'].mockReset();
     requireFns['webpack-node-externals'].mockReset();
-    requireFns['tsconfig-paths-webpack-plugin'].mockReset();
     requireFns['fork-ts-checker-webpack-plugin'].mockReset();
 
     requireFns['@rspack/core'].mockReturnValue(makeMockRspack());
     requireFns['webpack-node-externals'].mockReturnValue(makeMockExternals());
-    requireFns['tsconfig-paths-webpack-plugin'].mockReturnValue(
-      makeMockTsconfigPathsPlugin(),
-    );
     requireFns['fork-ts-checker-webpack-plugin'].mockReturnValue(vi.fn());
   });
 
@@ -172,6 +163,20 @@ describe('rspackDefaultsFactory', () => {
 
       expect(config.devtool).toBe('inline-source-map');
       expect(config.module.rules[0].use[0].options.sourceMaps).toBe('inline');
+    });
+
+    it('should use Rspack native tsConfig option for path resolution', () => {
+      const config = rspackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.build.json',
+        emptyPlugins,
+      );
+
+      expect(config.resolve.tsConfig).toBe('tsconfig.build.json');
+      expect(config.resolve.plugins).toBeUndefined();
     });
   });
 

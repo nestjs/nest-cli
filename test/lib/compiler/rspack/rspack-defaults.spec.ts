@@ -4,28 +4,17 @@ import { rspackDefaultsFactory } from '../../../../lib/compiler/defaults/rspack-
 import { MultiNestCompilerPlugins } from '../../../../lib/compiler/plugins/plugins-loader.js';
 
 // Hoist mocks so they can be referenced in vi.mock factories
-const {
-  mockIgnorePlugin,
-  mockForkTsChecker,
-  mockNodeExternals,
-  mockTsconfigPathsPlugin,
-} = vi.hoisted(() => ({
-  mockIgnorePlugin: vi.fn().mockImplementation(function (opts: any) {
-    return { __type: 'IgnorePlugin', ...opts };
+const { mockIgnorePlugin, mockForkTsChecker, mockNodeExternals } = vi.hoisted(
+  () => ({
+    mockIgnorePlugin: vi.fn().mockImplementation(function (opts: any) {
+      return { __type: 'IgnorePlugin', ...opts };
+    }),
+    mockForkTsChecker: vi.fn().mockImplementation(function (opts: any) {
+      return { __type: 'ForkTsCheckerWebpackPlugin', ...opts };
+    }),
+    mockNodeExternals: vi.fn().mockReturnValue('mocked-externals'),
   }),
-  mockForkTsChecker: vi.fn().mockImplementation(function (opts: any) {
-    return { __type: 'ForkTsCheckerWebpackPlugin', ...opts };
-  }),
-  mockNodeExternals: vi.fn().mockReturnValue('mocked-externals'),
-  mockTsconfigPathsPlugin: vi.fn().mockImplementation(function (opts: any) {
-    return { __type: 'TsconfigPathsPlugin', ...opts };
-  }),
-}));
-
-// Mock ESM type-only imports (no-op, types are stripped at runtime)
-vi.mock('tsconfig-paths-webpack-plugin', () => ({
-  TsconfigPathsPlugin: mockTsconfigPathsPlugin,
-}));
+);
 
 vi.mock('webpack-node-externals', () => ({
   default: mockNodeExternals,
@@ -42,8 +31,6 @@ vi.mock('module', async (importOriginal) => {
         if (id === '@rspack/core') return { IgnorePlugin: mockIgnorePlugin };
         if (id === 'fork-ts-checker-webpack-plugin') return mockForkTsChecker;
         if (id === 'webpack-node-externals') return mockNodeExternals;
-        if (id === 'tsconfig-paths-webpack-plugin')
-          return { TsconfigPathsPlugin: mockTsconfigPathsPlugin };
         return realReq(id);
       };
       mockedReq.resolve = realReq.resolve.bind(realReq);
@@ -208,7 +195,7 @@ describe('rspackDefaultsFactory', () => {
     expect(config.externalsPresets).toEqual({ node: true });
   });
 
-  it('should set tsConfig in resolve when tsconfig file is provided', () => {
+  it('should use Rspack native tsConfig option for path resolution', () => {
     const config = rspackDefaultsFactory(
       'src',
       '',
@@ -219,23 +206,7 @@ describe('rspackDefaultsFactory', () => {
     );
 
     expect(config.resolve.tsConfig).toBe('custom-tsconfig.json');
-  });
-
-  it('should include TsconfigPathsPlugin', () => {
-    const config = rspackDefaultsFactory(
-      'src',
-      '',
-      'main',
-      false,
-      'tsconfig.json',
-      emptyPlugins,
-    );
-
-    expect(config.resolve.plugins).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ __type: 'TsconfigPathsPlugin' }),
-      ]),
-    );
+    expect(config.resolve.plugins).toBeUndefined();
   });
 
   it('should include IgnorePlugin from @rspack/core', () => {
