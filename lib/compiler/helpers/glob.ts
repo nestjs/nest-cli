@@ -47,7 +47,10 @@ const toPosix = (value: string): string => value.replace(/\\/g, '/');
  * Splits a pattern into the literal prefix we can hand to `readdir` and the
  * trailing segments that still need matching: `/src/a/*.hbs` -> `/src/a`.
  */
-function splitPattern(pattern: string): { base: string; rest: string[] } {
+export function splitPattern(pattern: string): {
+  base: string;
+  rest: string[];
+} {
   const segments = pattern.split('/');
   const magicIndex = segments.findIndex((segment) => MAGIC_CHARS.test(segment));
   if (magicIndex === -1) {
