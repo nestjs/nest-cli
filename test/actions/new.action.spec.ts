@@ -66,7 +66,7 @@ import { execSync, spawn } from 'child_process';
 import { EventEmitter } from 'events';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { confirm } from '@inquirer/prompts';
+import { confirm, input, select } from '@inquirer/prompts';
 import { isInteractive } from '../../lib/utils/is-interactive.js';
 
 describe('NewAction', () => {
@@ -299,6 +299,91 @@ describe('NewAction', () => {
 
       expect(confirm).not.toHaveBeenCalled();
       expect(observeOption()).toBeUndefined();
+    });
+  });
+
+  describe('without a TTY', () => {
+    const schematicOption = (name: string) => {
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      return (schematicOptions as SchematicOption[])
+        .find((opt) => opt.toCommandString().startsWith(`--${name}=`))
+        ?.toCommandString();
+    };
+
+    beforeEach(() => {
+      vi.mocked(isInteractive).mockReturnValue(false);
+      vi.spyOn(console, 'info').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      vi.mocked(console.info).mockRestore();
+      vi.unstubAllEnvs();
+    });
+
+    it('uses the package manager that started the CLI instead of prompting', async () => {
+      vi.stubEnv('npm_config_user_agent', 'pnpm/10.4.0 npm/? node/v24.20.0');
+
+      await action.handle(
+        baseContext({ packageManager: undefined, observe: false }),
+      );
+
+      expect(select).not.toHaveBeenCalled();
+      expect(schematicOption('package-manager')).toContain('pnpm');
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining('--package-manager'),
+      );
+    });
+
+    it('uses npm when no package manager started the CLI', async () => {
+      vi.stubEnv('npm_config_user_agent', undefined);
+
+      await action.handle(
+        baseContext({ packageManager: undefined, observe: false }),
+      );
+
+      expect(select).not.toHaveBeenCalled();
+      expect(schematicOption('package-manager')).toContain('npm');
+    });
+
+    it('uses the default project name instead of prompting', async () => {
+      await action.handle(baseContext({ name: undefined, observe: false }));
+
+      expect(input).not.toHaveBeenCalled();
+      expect(schematicOption('name')).toContain('nest-app');
+    });
+
+    it('keeps what the flags already answered, and says nothing about it', async () => {
+      await action.handle(baseContext({ observe: false }));
+
+      expect(schematicOption('name')).toContain('test-project');
+      expect(schematicOption('package-manager')).toContain('npm');
+      expect(console.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('No terminal'),
+      );
+    });
+  });
+
+  describe('with a TTY', () => {
+    beforeEach(() => {
+      vi.mocked(isInteractive).mockReturnValue(true);
+    });
+
+    it('asks for the project name', async () => {
+      vi.mocked(input).mockResolvedValue('from-prompt' as never);
+
+      await action.handle(baseContext({ name: undefined, observe: false }));
+
+      expect(input).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks for the package manager', async () => {
+      vi.mocked(select).mockResolvedValue('yarn' as never);
+
+      await action.handle(
+        baseContext({ packageManager: undefined, observe: false }),
+      );
+
+      expect(select).toHaveBeenCalledTimes(1);
     });
   });
 

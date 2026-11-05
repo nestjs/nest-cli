@@ -19,6 +19,7 @@ import {
   SchematicOption,
 } from '../lib/schematics/index.js';
 import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
+import { detectPackageManager } from '../lib/utils/detect-package-manager.js';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting.js';
 import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error.js';
 import { isInteractive } from '../lib/utils/is-interactive.js';
@@ -27,6 +28,8 @@ import {
   printObservabilityNextSteps,
 } from '../lib/utils/observe-link.js';
 import { AbstractAction } from './abstract.action.js';
+
+const DEFAULT_PROJECT_NAME = 'nest-app';
 
 export class NewAction extends AbstractAction {
   public async handle(context: NewCommandContext) {
@@ -68,11 +71,7 @@ const askForMissingInformation = async (context: NewCommandContext) => {
   console.info();
 
   if (!context.name) {
-    const message = MESSAGES.PROJECT_NAME_QUESTION;
-    const question = generateInput('name', message)('nest-app');
-    context.name = (await input(question).catch(
-      gracefullyExitOnPromptError,
-    )) as string | undefined;
+    context.name = await askForProjectName();
   }
 
   if (!context.packageManager) {
@@ -164,7 +163,29 @@ const askForObservability = async (): Promise<boolean> => {
   }).catch(gracefullyExitOnPromptError)) as boolean;
 };
 
+const askForProjectName = async () => {
+  // Without a TTY (CI, piped input, a coding agent's shell) a prompt can only
+  // fail, so take the answer that pressing enter would give.
+  if (!isInteractive()) {
+    console.info(MESSAGES.PROJECT_NAME_DEFAULTED(DEFAULT_PROJECT_NAME));
+    return DEFAULT_PROJECT_NAME;
+  }
+
+  const question = generateInput(
+    'name',
+    MESSAGES.PROJECT_NAME_QUESTION,
+  )(DEFAULT_PROJECT_NAME);
+  return (await input(question).catch(gracefullyExitOnPromptError)) as
+    string | undefined;
+};
+
 const askForPackageManager = async () => {
+  if (!isInteractive()) {
+    const packageManager = detectPackageManager();
+    console.info(MESSAGES.PACKAGE_MANAGER_DEFAULTED(packageManager));
+    return packageManager;
+  }
+
   const question = generateSelect('packageManager')(
     MESSAGES.PACKAGE_MANAGER_QUESTION,
   )([
