@@ -42,13 +42,13 @@ export const rspackDefaultsFactory = (
   entryFilename: string,
   isDebugEnabled = false,
   tsConfigFile = defaultTsconfigFilename,
-  plugins: MultiNestCompilerPlugins,
+  // builtin:swc-loader cannot run the TypeScript transformers of CLI plugins
+  _plugins: MultiNestCompilerPlugins,
   isEsm = false,
   tsOptions?: ts.CompilerOptions,
 ): Record<string, any> => {
   const { nodeExternals: externals } = loadRspackDeps();
 
-  const isPluginRegistered = isAnyPluginRegistered(plugins);
   const sourceMaps =
     tsOptions?.sourceMap || (tsOptions?.inlineSourceMap && 'inline');
   const devtool =
@@ -178,29 +178,20 @@ export const rspackDefaultsFactory = (
     // @rspack/core not available, skip IgnorePlugin
   }
 
-  if (!isPluginRegistered) {
-    try {
-      const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-      rspackConfiguration.plugins!.push(
-        new ForkTsCheckerWebpackPlugin({
-          typescript: {
-            configFile: tsConfigFile,
-          },
-        }),
-      );
-    } catch {
-      // fork-ts-checker-webpack-plugin not available, skip
-    }
+  // builtin:swc-loader only strips types, so the checker runs even when CLI
+  // plugins are registered (unlike webpack, where ts-loader then checks them)
+  try {
+    const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+    rspackConfiguration.plugins!.push(
+      new ForkTsCheckerWebpackPlugin({
+        typescript: {
+          configFile: tsConfigFile,
+        },
+      }),
+    );
+  } catch {
+    // fork-ts-checker-webpack-plugin not available, skip
   }
 
   return rspackConfiguration;
 };
-
-function isAnyPluginRegistered(plugins: MultiNestCompilerPlugins) {
-  return (
-    (plugins.afterHooks && plugins.afterHooks.length > 0) ||
-    (plugins.beforeHooks && plugins.beforeHooks.length > 0) ||
-    (plugins.afterDeclarationsHooks &&
-      plugins.afterDeclarationsHooks.length > 0)
-  );
-}

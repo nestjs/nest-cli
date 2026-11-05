@@ -241,7 +241,8 @@ describe('rspackDefaultsFactory', () => {
     expect(forkPlugin).toBeDefined();
   });
 
-  it('should not include ForkTsCheckerWebpackPlugin when custom plugins are registered', () => {
+  it('should include ForkTsCheckerWebpackPlugin when custom plugins are registered', () => {
+    // builtin:swc-loader does not type-check, whether or not plugins are set
     const config = rspackDefaultsFactory(
       'src',
       '',
@@ -254,7 +255,7 @@ describe('rspackDefaultsFactory', () => {
     const forkPlugin = config.plugins.find(
       (p: any) => p.__type === 'ForkTsCheckerWebpackPlugin',
     );
-    expect(forkPlugin).toBeUndefined();
+    expect(forkPlugin).toBeDefined();
   });
 
   it('should set output filename based on relativeSourceRoot and entryFilename', () => {
