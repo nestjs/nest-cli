@@ -1,6 +1,6 @@
 import * as chokidar from 'chokidar';
 import { EventEmitter } from 'events';
-import { copyFileSync, statSync } from 'fs';
+import { copyFileSync, existsSync, statSync } from 'fs';
 import { globSync } from '../../../lib/compiler/helpers/glob.js';
 import { join, sep } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,13 +12,17 @@ vi.mock('chokidar', () => ({
   watch: vi.fn(),
 }));
 
-vi.mock('../../../lib/compiler/helpers/glob.js', () => ({
+vi.mock('../../../lib/compiler/helpers/glob.js', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('../../../lib/compiler/helpers/glob.js')
+  >()),
   globSync: vi.fn(),
   globEntriesSync: vi.fn(),
 }));
 
 vi.mock('fs', () => ({
   copyFileSync: vi.fn(),
+  existsSync: vi.fn(() => true),
   mkdirSync: vi.fn(),
   rmSync: vi.fn(),
   statSync: vi.fn(() => ({ isFile: () => true, isDirectory: () => false })),
@@ -452,12 +456,12 @@ describe('AssetsManager', () => {
       vi.useRealTimers();
     });
 
-    it('should not stall when asset glob matches no files', async () => {
-      // Chokidar does not emit 'ready' when given an empty array,
-      // which caused closeWatchers() to hang forever.
+    it('should not stall when the base directory of an asset glob does not exist', async () => {
+      // Chokidar never emits 'ready' for a path it cannot watch, which would
+      // make closeWatchers() hang forever.
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      vi.mocked(globSync).mockReturnValue([]);
+      vi.mocked(existsSync).mockReturnValueOnce(false);
       vi.mocked(getValueOrDefault)
         .mockReturnValueOnce([
           { include: 'does-not-exist/**/*', watchAssets: true },
@@ -468,7 +472,7 @@ describe('AssetsManager', () => {
 
       assetsManager.copyAssets({} as any, undefined, 'dist', false);
 
-      // No watcher should have been created for the empty glob
+      // No watcher should have been created for the missing directory
       expect(chokidar.watch).not.toHaveBeenCalled();
 
       // A warning should have been logged
@@ -525,6 +529,124 @@ describe('AssetsManager', () => {
       await new Promise((resolve) => setImmediate(resolve));
 
       // Now close should have been called
+      expect(mockWatcher.close).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('watch target', () => {
+    const srcDir = join(process.cwd(), 'src').replace(/\\/g, '/');
+    const file = { isFile: () => true } as any;
+    const directory = { isFile: () => false } as any;
+
+    const watchAssets = (asset: unknown) => {
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn();
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce([asset])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(false);
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      const [path, options] = vi.mocked(chokidar.watch).mock.calls[0];
+      const ignored = (options as any).ignored as (
+        path: string,
+        stats?: unknown,
+      ) => boolean;
+      return { path, ignored };
+    };
+
+    it('should watch the base directory of the glob, not the files matched at startup', () => {
+      // chokidar (v4+) does not accept globs: a list of the files matched at
+      // startup would miss every file created while the watcher runs.
+      const { path } = watchAssets({ include: '**/*.hbs', watchAssets: true });
+
+      expect(path).toBe(srcDir);
+      expect(globSync).not.toHaveBeenCalled();
+    });
+
+    it('should watch an asset entry that matches no file at startup', () => {
+      vi.mocked(globSync).mockReturnValue([]);
+
+      const { path } = watchAssets({
+        include: 'templates/*.hbs',
+        watchAssets: true,
+      });
+
+      expect(path).toBe(`${srcDir}/templates`);
+    });
+
+    it('should ignore the files that the glob does not select', () => {
+      const { ignored } = watchAssets({
+        include: '**/*.hbs',
+        exclude: 'drafts/**',
+        watchAssets: true,
+      });
+
+      expect(ignored(`${srcDir}/mail/new.hbs`, file)).toBe(false);
+      expect(ignored(`${srcDir}/main.ts`, file)).toBe(true);
+      expect(ignored(`${srcDir}/drafts/wip.hbs`, file)).toBe(true);
+    });
+
+    it('should never ignore a directory, or chokidar would not descend into it', () => {
+      const { ignored } = watchAssets({
+        include: '**/*.hbs',
+        exclude: 'drafts/**',
+        watchAssets: true,
+      });
+
+      expect(ignored(`${srcDir}/mail`, directory)).toBe(false);
+      expect(ignored(`${srcDir}/drafts`, directory)).toBe(false);
+      // chokidar first calls `ignored` without stats
+      expect(ignored(`${srcDir}/main.ts`)).toBe(false);
+    });
+
+    it('should select every file inside a directory named by the asset entry', () => {
+      const { path, ignored } = watchAssets({
+        include: 'public',
+        watchAssets: true,
+      });
+
+      expect(path).toBe(`${srcDir}/public`);
+      expect(ignored(`${srcDir}/public/b.txt`, file)).toBe(false);
+      expect(ignored(`${srcDir}/public/sub/c.txt`, file)).toBe(false);
+    });
+
+    it('should select dotfiles', () => {
+      const { ignored } = watchAssets({
+        include: 'assets/**/*',
+        watchAssets: true,
+      });
+
+      expect(ignored(`${srcDir}/assets/.keep`, file)).toBe(false);
+      expect(ignored(`${srcDir}/assets/img/.keep`, file)).toBe(false);
+    });
+
+    it('should copy the assets found by the initial scan in a build with "watchAssets" configured', async () => {
+      // `nest build` without --watch but with "compilerOptions.watchAssets"
+      // copies through the watcher, then closes it once the scan is over.
+      const mockWatcher = new EventEmitter() as any;
+      mockWatcher.close = vi.fn().mockResolvedValue(undefined);
+      vi.mocked(chokidar.watch).mockReturnValue(mockWatcher);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce(['**/*.hbs'])
+        .mockReturnValueOnce([]) // includeLibraryAssets
+        .mockReturnValueOnce('src')
+        .mockReturnValueOnce(true); // compilerOptions.watchAssets
+
+      assetsManager.copyAssets({} as any, undefined, 'dist', false);
+
+      expect(chokidar.watch).toHaveBeenCalledWith(srcDir, expect.anything());
+
+      const closed = assetsManager.closeWatchers();
+      mockWatcher.emit('add', `${srcDir}/a.hbs`);
+      mockWatcher.emit('add', `${srcDir}/mail/b.hbs`);
+      mockWatcher.emit('ready');
+      await closed;
+
+      expect(copyFileSync).toHaveBeenCalledTimes(2);
       expect(mockWatcher.close).toHaveBeenCalledTimes(1);
     });
   });

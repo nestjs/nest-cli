@@ -1,5 +1,6 @@
 import * as chokidar from 'chokidar';
-import { copyFileSync, mkdirSync, rmSync, statSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync, statSync } from 'fs';
+import { minimatch } from 'minimatch';
 import { dirname, join, resolve as resolvePath, sep } from 'path';
 import {
   ActionOnFile,
@@ -9,7 +10,7 @@ import {
 } from '../configuration/index.js';
 import { ERROR_PREFIX } from '../ui/index.js';
 import { copyPathResolve } from './helpers/copy-path-resolve.js';
-import { globSync } from './helpers/glob.js';
+import { globSync, splitPattern } from './helpers/glob.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import {
   areOutsidePathsAllowed,
@@ -164,19 +165,15 @@ export class AssetsManager {
         };
 
         if (isWatchEnabled || item.watchAssets) {
-          const matchedPaths = globSync(item.glob, {
-            ignore: item.exclude,
-            dot: true,
-          });
-
-          // Chokidar does not emit the 'ready' event when given an empty
-          // array of paths, which causes closeWatchers() to hang forever
-          // on Promise.all(watcherReadyPromises). Skip the watcher and
-          // warn the user so the build can finish normally.
-          if (matchedPaths.length === 0) {
+          // chokidar (v4+) does not accept globs, and a list of the files
+          // matched at startup would miss any file created afterwards. Watch
+          // the literal base directory of the glob instead, and let `ignored`
+          // drop the files that the glob (or its "exclude") does not select.
+          const { base } = splitPattern(item.glob);
+          if (!existsSync(base)) {
             console.warn(
-              `No files matched the asset pattern "${item.glob}". ` +
-                `Skipping watcher for this entry.`,
+              `The base directory "${base}" of the asset pattern "${item.glob}" ` +
+                `does not exist. Skipping watcher for this entry.`,
             );
             continue;
           }
@@ -186,7 +183,10 @@ export class AssetsManager {
             item.restartOnChange === false ? undefined : debouncedOnSuccess;
           // prettier-ignore
           const watcher = chokidar
-            .watch(matchedPaths)
+            .watch(base, {
+              ignored: (path, stats) =>
+                stats?.isFile() === true && !this.isWatchedAsset(path, item),
+            })
             .on('add', (path: string) => {
               this.safeActionOnFile({ ...option, path, action: 'change' });
               if (ready && restartApp) {
@@ -314,6 +314,21 @@ export class AssetsManager {
     }
 
     return result;
+  }
+
+  /**
+   * Whether a file under the watched base directory belongs to the asset
+   * entry. A pattern that names a directory selects every file inside it,
+   * as it does when the assets are copied without watch mode.
+   */
+  private isWatchedAsset(path: string, item: AssetEntry): boolean {
+    const posixPath = path.replace(/\\/g, '/');
+    const isIncluded =
+      minimatch(posixPath, item.glob, { dot: true }) ||
+      minimatch(posixPath, `${item.glob}/**`, { dot: true });
+    const isExcluded =
+      !!item.exclude && minimatch(posixPath, item.exclude, { dot: true });
+    return isIncluded && !isExcluded;
   }
 
   /**
