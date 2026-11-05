@@ -432,4 +432,45 @@ describe('BuildAction - Rspack', () => {
       ).toBe(true);
     });
   });
+
+  describe('CLI plugins', () => {
+    const pluginWarnings = async (builder: string, plugins: string[]) => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              builder: { type: 'rspack' },
+              webpack: false,
+              plugins,
+              assets: [],
+              manualRestart: false,
+            } as any,
+          }),
+        ),
+      };
+      (buildAction as any).runRspack = vi.fn();
+      (buildAction as any).runTsc = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild([undefined], { builder }, false, false);
+
+      const warnings = warn.mock.calls.map((call) => String(call[0]));
+      warn.mockRestore();
+      return warnings.filter((message) => message.includes('"plugins"'));
+    };
+
+    it('warns that the rspack builder does not apply them', async () => {
+      expect(await pluginWarnings('rspack', ['@nestjs/swagger'])).toHaveLength(
+        1,
+      );
+    });
+
+    it('does not warn when no plugin is configured', async () => {
+      expect(await pluginWarnings('rspack', [])).toHaveLength(0);
+    });
+
+    it('does not warn for the tsc builder', async () => {
+      expect(await pluginWarnings('tsc', ['@nestjs/swagger'])).toHaveLength(0);
+    });
+  });
 });

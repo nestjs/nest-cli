@@ -172,6 +172,19 @@ export class BuildAction extends AbstractAction {
         );
       }
 
+      const plugins = getValueOrDefault<unknown[]>(
+        configuration,
+        'compilerOptions.plugins',
+        appName,
+      );
+      if (plugins?.length && builder.type === 'rspack') {
+        // builtin:swc-loader cannot run the TypeScript transformers of CLI plugins
+        console.warn(
+          INFO_PREFIX +
+            ` "plugins" will not have any effect when "builder" is "rspack".`,
+        );
+      }
+
       switch (builder.type) {
         case 'tsc':
           await this.runTsc(
