@@ -1,4 +1,6 @@
 import { select } from '@inquirer/prompts';
+import * as fs from 'fs';
+import { join } from 'path';
 import { getValueOrDefault } from '../compiler/helpers/get-value-or-default.js';
 import { Configuration, ProjectConfiguration } from '../configuration/index.js';
 import { generateSelect } from '../questions/questions.js';
@@ -65,6 +67,23 @@ export function shouldGenerateSpec(
     }
   }
   return specValue;
+}
+
+/**
+ * Whether the project's package.json lists `@nestjs/testing`, which generated
+ * spec files import. True when no package.json says otherwise.
+ */
+export function hasTestingPackage(dir = process.cwd()): boolean {
+  try {
+    const pkg = JSON.parse(
+      fs.readFileSync(join(dir, 'package.json'), 'utf8'),
+    ) as Record<string, Record<string, string> | undefined>;
+    return ['dependencies', 'devDependencies'].some(
+      (section) => !!pkg[section]?.['@nestjs/testing'],
+    );
+  } catch {
+    return true;
+  }
 }
 
 export function shouldGenerateFlat(

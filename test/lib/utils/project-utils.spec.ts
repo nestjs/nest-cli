@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Configuration, ProjectConfiguration } from '../../../lib/configuration/index.js';
 import {
+  hasTestingPackage,
   shouldAskForProject,
   shouldGenerateSpec,
   shouldGenerateFlat,
@@ -348,6 +352,45 @@ describe('project-utils', () => {
       };
       const result = moveDefaultProjectToStart(config, 'default-app', '');
       expect(result).toEqual(['default-app']);
+    });
+  });
+
+  describe('hasTestingPackage', () => {
+    let dir: string;
+
+    beforeEach(() => {
+      dir = mkdtempSync(join(tmpdir(), 'nest-cli-project-utils-'));
+    });
+
+    afterEach(() => {
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    const writePackage = (content: string) =>
+      writeFileSync(join(dir, 'package.json'), content);
+
+    it('should find it in devDependencies', () => {
+      writePackage('{"devDependencies":{"@nestjs/testing":"^12.0.0"}}');
+      expect(hasTestingPackage(dir)).toBe(true);
+    });
+
+    it('should find it in dependencies', () => {
+      writePackage('{"dependencies":{"@nestjs/testing":"^12.0.0"}}');
+      expect(hasTestingPackage(dir)).toBe(true);
+    });
+
+    it('should say no when the package.json does not list it', () => {
+      writePackage('{"dependencies":{"@nestjs/core":"^12.0.0"}}');
+      expect(hasTestingPackage(dir)).toBe(false);
+    });
+
+    it('should not get in the way when there is no package.json to read', () => {
+      expect(hasTestingPackage(dir)).toBe(true);
+    });
+
+    it('should not get in the way when the package.json is invalid', () => {
+      writePackage('not json');
+      expect(hasTestingPackage(dir)).toBe(true);
     });
   });
 });

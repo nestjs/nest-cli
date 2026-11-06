@@ -38,6 +38,15 @@ export class NewAction extends AbstractAction {
 
     const projectDirectory = getProjectDirectory(context);
 
+    if (isMinimalIgnored(context, projectDirectory)) {
+      console.error(
+        ansis.red(
+          MESSAGES.MINIMAL_IGNORED(context.collection, projectDirectory),
+        ),
+      );
+      return exit();
+    }
+
     if (!context.skipInstall) {
       await installPackages(context, projectDirectory);
     }
@@ -65,6 +74,15 @@ const getProjectDirectory = (context: NewCommandContext): string => {
     context.directory || normalizeToKebabOrSnakeCase(context.name as string)
   );
 };
+
+/**
+ * A collection that doesn't know an option ignores it instead of failing, so
+ * an older `@nestjs/schematics` answers `--minimal` with a standard project.
+ */
+const isMinimalIgnored = (context: NewCommandContext, directory: string) =>
+  context.minimal &&
+  !context.dryRun &&
+  fileExists(join(process.cwd(), directory, 'src', 'app.module.ts'));
 
 const askForMissingInformation = async (context: NewCommandContext) => {
   console.info(MESSAGES.PROJECT_INFORMATION_START);
@@ -121,6 +139,12 @@ const mapContextToSchematicOptions = (
 
   if (context.observe) {
     options.push(new SchematicOption('observe', true));
+  }
+  if (context.minimal) {
+    options.push(new SchematicOption('minimal', true));
+    // Also keeps the schematic's module system prompt away: its choices are
+    // named after test runners, and this project has none.
+    options.push(new SchematicOption('type', 'esm'));
   }
   // note: skip-install is intentionally excluded — not sent to schematics
   return options;

@@ -62,6 +62,11 @@ export const MESSAGES = {
   OBSERVABILITY_UPGRADE_KEYS_HINT:
     'Or create a free account at https://observe.nestjs.com, issue an API key, and set OBSERVE_APP_KEY and OBSERVE_APP_SECRET in the environment.',
 
+  MINIMAL_JAVASCRIPT_UNSUPPORTED:
+    '--minimal is TypeScript only: JavaScript needs Babel and its own entry file to run decorators, so the project would not stay one file. Drop --language js, or drop --minimal for a standard JavaScript project.',
+  MINIMAL_IGNORED: (collection: string, directory: string) =>
+    `This version of ${collection} does not support --minimal, so it generated a standard project in ${directory}. Delete that folder, update ${collection} (npx @nestjs/cli@latest uses the newest one), and run this again.`,
+
   MAU_INSTALLATION_QUESTION: (name: string) =>
     `The ${name} package is required to deploy. Would you like to install it now?`,
   MAU_INSTALLATION_IN_PROGRESS: (name: string) =>
