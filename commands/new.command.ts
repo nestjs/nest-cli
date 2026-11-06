@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { Collection } from '../lib/schematics/index.js';
+import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { AbstractCommand } from './abstract.command.js';
 import { NewCommandContext } from './context/index.js';
 
@@ -43,6 +44,11 @@ export class NewCommand extends AbstractCommand {
         '--no-observe',
         'Skip observability setup without being prompted for it.',
       )
+      .option(
+        '--minimal',
+        'Generate an application whose code is one file, src/main.ts (TypeScript and ESM only).',
+        false,
+      )
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -68,6 +74,13 @@ export class NewCommand extends AbstractCommand {
           }
         }
 
+        if (options.minimal && language === 'js') {
+          console.error(
+            `${ERROR_PREFIX} ${MESSAGES.MINIMAL_JAVASCRIPT_UNSUPPORTED}`,
+          );
+          process.exit(1);
+        }
+
         const context: NewCommandContext = {
           name,
           directory: options.directory,
@@ -83,6 +96,7 @@ export class NewCommand extends AbstractCommand {
           // Stays undefined unless a flag was given, which is what tells the
           // action to prompt instead of assuming an answer.
           observe: options.observe,
+          minimal: options.minimal,
         };
 
         await this.action.handle(context);

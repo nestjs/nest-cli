@@ -146,6 +146,7 @@ describe('NewCommand', () => {
         collection: '@custom/schematics',
         strict: true,
         format: true,
+        minimal: false,
       });
     });
   });
@@ -205,6 +206,74 @@ describe('NewCommand', () => {
       expect(action.handle).toHaveBeenCalledWith(
         expect.objectContaining({ observe: false }),
       );
+    });
+  });
+
+  describe('--minimal', () => {
+    it('defaults to false', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ minimal: false }),
+      );
+    });
+
+    it('passes minimal: true', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new', '--minimal']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ minimal: true }),
+      );
+    });
+
+    it.each(['js', 'javascript', 'JS'])(
+      'refuses --language %s, saying what to do',
+      async (language) => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
+          throw new Error('exited');
+        }) as never);
+        const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const program = buildProgram(action);
+
+        await expect(
+          program.parseAsync([
+            'node',
+            'nest',
+            'new',
+            '--minimal',
+            '--language',
+            language,
+          ]),
+        ).rejects.toThrow('exited');
+
+        expect(exit).toHaveBeenCalledWith(1);
+        expect(error.mock.calls[0][0]).toContain('TypeScript only');
+        expect(action.handle).not.toHaveBeenCalled();
+        exit.mockRestore();
+        error.mockRestore();
+      },
+    );
+
+    it('has no --type to choose CommonJS with', async () => {
+      const program = buildProgram(action);
+      program.commands[0].exitOverride().configureOutput({
+        writeErr: () => {},
+      });
+
+      await expect(
+        program.parseAsync([
+          'node',
+          'nest',
+          'new',
+          '--minimal',
+          '--type',
+          'cjs',
+        ]),
+      ).rejects.toThrow(/unknown option '--type'/);
     });
   });
 });

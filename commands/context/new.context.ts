@@ -16,4 +16,5 @@ export interface NewCommandContext {
    * still has to ask.
    */
   observe?: boolean;
+  minimal: boolean;
 }

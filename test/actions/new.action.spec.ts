@@ -483,4 +483,61 @@ describe('NewAction', () => {
       expect(spawn).not.toHaveBeenCalled();
     });
   });
+
+  describe('--minimal', () => {
+    const passedOptions = () =>
+      (mockExecute.mock.calls[0][1] as SchematicOption[]).map((option) =>
+        option.toCommandString(),
+      );
+
+    it('asks the schematic for it, and for ESM so nothing prompts for a module system', async () => {
+      await action.handle(baseContext({ minimal: true, observe: false }));
+
+      expect(passedOptions()).toContain('--minimal');
+      expect(passedOptions()).toContain('--type="esm"');
+    });
+
+    it('leaves a standard project to the schematic', async () => {
+      await action.handle(baseContext({ minimal: false, observe: false }));
+
+      expect(passedOptions()).not.toContain('--minimal');
+      expect(
+        passedOptions().some((option) => option.startsWith('--type')),
+      ).toBe(false);
+    });
+
+    it('fails when the schematic generated a standard project instead', async () => {
+      const appModule = join(
+        process.cwd(),
+        'test-project',
+        'src',
+        'app.module.ts',
+      );
+      vi.mocked(existsSync).mockImplementation((path) => path === appModule);
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await action.handle(
+        baseContext({ minimal: true, observe: false, skipInstall: false }),
+      );
+
+      expect(process.exit).toHaveBeenCalledWith(1);
+      expect(error.mock.calls[0][0]).toContain('does not support --minimal');
+      expect(error.mock.calls[0][0]).toContain('test-project');
+      error.mockRestore();
+      vi.mocked(existsSync).mockReset();
+      vi.mocked(existsSync).mockImplementation(() => false);
+    });
+
+    it('does not look for files a dry run never wrote', async () => {
+      vi.mocked(existsSync).mockImplementation(() => true);
+
+      await action.handle(
+        baseContext({ minimal: true, observe: false, dryRun: true }),
+      );
+
+      expect(process.exit).toHaveBeenCalledTimes(1);
+      expect(process.exit).toHaveBeenCalledWith(0);
+      vi.mocked(existsSync).mockImplementation(() => false);
+    });
+  });
 });
