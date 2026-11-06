@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/cli",
-  "version": "12.0.11",
+  "version": "12.0.12",
   "type": "module",
   "description": "The Nest CLI: create NestJS applications, generate modules, controllers and CRUD resources, and build, run and watch projects and monorepos.",
   "keywords": [
