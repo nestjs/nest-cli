@@ -37,6 +37,7 @@ vi.mock('../../lib/utils/project-utils.js', async () => {
   return {
     ...original,
     askForProjectName: vi.fn(),
+    hasTestingPackage: vi.fn(),
   };
 });
 
@@ -44,7 +45,10 @@ import { GenerateAction } from '../../actions/generate.action.js';
 import { GenerateCommandContext } from '../../commands/context/generate.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
-import { askForProjectName } from '../../lib/utils/project-utils.js';
+import {
+  askForProjectName,
+  hasTestingPackage,
+} from '../../lib/utils/project-utils.js';
 
 describe('GenerateAction', () => {
   let action: GenerateAction;
@@ -80,7 +84,52 @@ describe('GenerateAction', () => {
     mockExecute.mockClear();
     vi.mocked(loadConfiguration).mockResolvedValue(defaultConfig() as any);
     vi.mocked(askForProjectName).mockReset();
+    vi.mocked(hasTestingPackage).mockReturnValue(true);
     action = new GenerateAction();
+  });
+
+  describe('spec files in a project without @nestjs/testing', () => {
+    const specOption = () => {
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      return findOption(schematicOptions, 'spec')!.toCommandString();
+    };
+
+    beforeEach(() => {
+      vi.mocked(hasTestingPackage).mockReturnValue(false);
+    });
+
+    it('should not generate them by default', async () => {
+      await action.handle(baseContext());
+
+      expect(specOption()).toBe('--spec=false');
+    });
+
+    it('should generate them when --spec is passed', async () => {
+      await action.handle(
+        baseContext({ spec: { value: true, passedAsInput: true } }),
+      );
+
+      expect(specOption()).toBe('--spec');
+    });
+
+    it('should generate them when nest-cli.json asks for them', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue({
+        ...defaultConfig(),
+        generateOptions: { spec: true },
+      } as any);
+
+      await action.handle(baseContext());
+
+      expect(specOption()).toBe('--spec');
+    });
+
+    it('should still generate them in a project that has it', async () => {
+      vi.mocked(hasTestingPackage).mockReturnValue(true);
+
+      await action.handle(baseContext());
+
+      expect(specOption()).toBe('--spec');
+    });
   });
 
   describe('--type option', () => {

@@ -13,6 +13,7 @@ import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
   getSpecFileSuffix,
+  hasTestingPackage,
   moveDefaultProjectToStart,
   shouldAskForProject,
   shouldGenerateFlat,
@@ -52,13 +53,17 @@ const generateFiles = async (context: GenerateCommandContext) => {
     typeof context.spec === 'boolean' ? context.spec : context.spec.value;
   const specPassedAsInput =
     typeof context.spec === 'boolean' ? false : context.spec.passedAsInput;
+  // A spec file can't run without `@nestjs/testing`, so a project that doesn't
+  // list it, like one from `nest new --minimal`, gets one only if it asks.
+  const specDefault =
+    specPassedAsInput === false ? specValue && hasTestingPackage() : specValue;
   const flatValue = context.flat !== undefined ? !!context.flat : false;
   const specFileSuffixValue = specFileSuffix as string;
   let generateSpec = shouldGenerateSpec(
     configuration,
     schematic,
     appName,
-    specValue,
+    specDefault,
     specPassedAsInput,
   );
   let generateFlat = shouldGenerateFlat(configuration, appName, flatValue);
@@ -104,7 +109,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
       configuration,
       schematic,
       project,
-      specValue,
+      specDefault,
       specPassedAsInput,
     );
     generateFlat = shouldGenerateFlat(configuration, project, flatValue);
