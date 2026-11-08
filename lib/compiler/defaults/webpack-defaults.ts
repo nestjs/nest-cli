@@ -7,6 +7,7 @@ import type nodeExternals from 'webpack-node-externals';
 import { defaultTsconfigFilename } from '../../configuration/defaults.js';
 import { appendTsExtension } from '../helpers/append-extension.js';
 import { MultiNestCompilerPlugins } from '../plugins/plugins-loader.js';
+import { isMissingLazyImport } from './lazy-imports.js';
 
 const require = createRequire(import.meta.url);
 
@@ -133,27 +134,7 @@ export const webpackDefaultsFactory = (
     },
     plugins: [
       new wp.IgnorePlugin({
-        checkResource(resource: any) {
-          const lazyImports = [
-            '@nestjs/microservices',
-            '@nestjs/microservices/microservices-module',
-            '@nestjs/websockets/socket-module',
-            'class-validator',
-            'class-transformer',
-            'class-transformer/storage',
-          ];
-          if (!lazyImports.includes(resource)) {
-            return false;
-          }
-          try {
-            require.resolve(resource, {
-              paths: [process.cwd()],
-            });
-          } catch {
-            return true;
-          }
-          return false;
-        },
+        checkResource: isMissingLazyImport,
       }),
     ],
   };

@@ -94,6 +94,27 @@ describe('webpackDefaultsFactory', () => {
     vi.restoreAllMocks();
   });
 
+  describe('lazy imports', () => {
+    it('should register an IgnorePlugin that matches the Nest 12 submodule specifiers', () => {
+      const mock = requireFns.webpack();
+
+      webpackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.build.json',
+        emptyPlugins,
+      );
+
+      const { checkResource } = mock.IgnorePlugin.mock.calls[0][0];
+      expect(checkResource('@nestjs/websockets/socket-module.js')).toBe(true);
+      expect(
+        checkResource('@nestjs/microservices/microservices-module.js'),
+      ).toBe(true);
+    });
+  });
+
   describe('happy path', () => {
     it('should produce a configuration object with expected entry filename', () => {
       const config = webpackDefaultsFactory(
