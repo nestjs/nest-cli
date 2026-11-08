@@ -185,6 +185,7 @@ describe('Rspack Compiler', () => {
         }),
         false,
         undefined,
+        false,
       );
     });
 
@@ -211,6 +212,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         true,
         undefined,
+        false,
       );
     });
 
@@ -236,6 +238,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         undefined,
+        false,
       );
     });
 
@@ -263,7 +266,50 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         tsOptions,
+        false,
       );
+    });
+
+    it('should enable bundleDependencies from the rspack builder options', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('')
+        .mockReturnValueOnce({
+          type: 'rspack',
+          options: { bundleDependencies: true },
+        });
+
+      compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras(),
+      );
+
+      expect(vi.mocked(rspackDefaultsFactory).mock.calls[0][8]).toBe(true);
+    });
+
+    it('should pass bundleDependencies exclude options through', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('')
+        .mockReturnValueOnce({
+          type: 'rspack',
+          options: { bundleDependencies: { exclude: ['typeorm'] } },
+        });
+
+      compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras(),
+      );
+
+      expect(vi.mocked(rspackDefaultsFactory).mock.calls[0][8]).toEqual({
+        exclude: ['typeorm'],
+      });
     });
 
     it('should use config factory function when provided', () => {
