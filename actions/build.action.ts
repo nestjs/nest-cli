@@ -15,6 +15,7 @@ import {
 import { PluginsLoader } from '../lib/compiler/plugins/plugins-loader.js';
 import { TypeScriptBinaryLoader } from '../lib/compiler/typescript-loader.js';
 import {
+  CompilerOptions,
   Configuration,
   ConfigurationLoader,
   NestConfigurationLoader,
@@ -169,6 +170,22 @@ export class BuildAction extends AbstractAction {
         console.warn(
           INFO_PREFIX +
             ` "emitDeclarations" will not have any effect when "builder" is not "swc".`,
+        );
+      }
+
+      const bundleDependencies = getValueOrDefault<
+        CompilerOptions['bundleDependencies']
+      >(
+        configuration,
+        'compilerOptions.bundleDependencies',
+        appName,
+        'bundleDependencies',
+        options,
+      );
+      if (bundleDependencies && builder.type !== 'rspack') {
+        console.warn(
+          INFO_PREFIX +
+            ` "bundleDependencies" will not have any effect when "builder" is not "rspack".`,
         );
       }
 

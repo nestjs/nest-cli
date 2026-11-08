@@ -2,7 +2,7 @@ import { builtinModules, createRequire } from 'module';
 import { join } from 'path';
 import type * as ts from 'typescript';
 import type nodeExternals from 'webpack-node-externals';
-import type { RspackBuilderOptions } from '../../configuration/index.js';
+import type { CompilerOptions } from '../../configuration/index.js';
 import { defaultTsconfigFilename } from '../../configuration/defaults.js';
 import {
   BundleDependenciesPlugin,
@@ -54,7 +54,7 @@ export const rspackDefaultsFactory = (
   _plugins: MultiNestCompilerPlugins,
   isEsm = false,
   tsOptions?: ts.CompilerOptions,
-  bundleDependenciesOption: RspackBuilderOptions['bundleDependencies'] = false,
+  bundleDependenciesOption: CompilerOptions['bundleDependencies'] = false,
 ): Record<string, any> => {
   const { nodeExternals: externals } = loadRspackDeps();
 

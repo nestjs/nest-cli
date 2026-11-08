@@ -2,13 +2,12 @@ import { existsSync } from 'fs';
 import { createRequire } from 'module';
 import { resolve } from 'path';
 import type * as ts from 'typescript';
-import { Configuration, RspackBuilderOptions } from '../configuration/index.js';
+import { CompilerOptions, Configuration } from '../configuration/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
 import { rspackDefaultsFactory } from './defaults/rspack-defaults.js';
-import { getBuilder } from './helpers/get-builder.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import { PluginsLoader } from './plugins/plugins-loader.js';
 
@@ -195,9 +194,14 @@ function getBundleDependencies(
   configuration: Required<Configuration>,
   cmdOptions: Record<string, any>,
   appName: string | undefined,
-): RspackBuilderOptions['bundleDependencies'] {
-  const builder = getBuilder(configuration, cmdOptions, appName);
-  return builder.type === 'rspack' && 'options' in builder
-    ? (builder.options?.bundleDependencies ?? false)
-    : false;
+): CompilerOptions['bundleDependencies'] {
+  const configured =
+    getValueOrDefault<CompilerOptions['bundleDependencies']>(
+      configuration,
+      'compilerOptions.bundleDependencies',
+      appName,
+    ) || false;
+  const flag: boolean | undefined = cmdOptions.bundleDependencies;
+  // `--bundle-dependencies` keeps a configured `exclude` list
+  return flag === undefined || (flag && configured) ? configured : flag;
 }
