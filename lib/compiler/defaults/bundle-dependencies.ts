@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'fs';
 import { builtinModules } from 'module';
 import { dirname, isAbsolute, join } from 'path';
 import { INFO_PREFIX } from '../../ui/index.js';
@@ -122,19 +122,35 @@ function hasNodeFile(dir: string, depth = 4): boolean {
   );
 }
 
+/**
+ * True when an installed optional dependency is limited to some platforms
+ * (`os` or `cpu`), the way `sharp` and `@node-rs/*` ship their binaries. The
+ * parent loads it by a computed name, so the parent has to stay external.
+ */
+function hasPlatformDependency(dir: string, pkg: Record<string, any>): boolean {
+  return Object.keys(pkg.optionalDependencies ?? {}).some((name) => {
+    const optionalDir = findPackageDir(name, dir);
+    const optionalPkg = optionalDir && readPackageJson(optionalDir);
+    return !!optionalPkg && !!(optionalPkg.os || optionalPkg.cpu);
+  });
+}
+
 function isNativePackage(dir: string, pkg: Record<string, any>): boolean {
   return (
     pkg.gypfile === true ||
     existsSync(join(dir, 'binding.gyp')) ||
-    hasNodeFile(dir)
+    hasNodeFile(dir) ||
+    hasPlatformDependency(dir, pkg)
   );
 }
 
 /**
  * Walks the installed production dependency graph of the project and returns
  * the packages that cannot be bundled and must stay external: the ones that
- * ship a native addon (`binding.gyp`, `gypfile` or `.node` files), the
- * `runtimeFilePackages` and the excluded ones.
+ * ship a native addon (`binding.gyp`, `gypfile` or `.node` files) or load one
+ * from a platform-specific optional dependency, the `runtimeFilePackages` and
+ * the excluded ones. When a package is installed in several versions, the one
+ * closest to the project is pinned.
  */
 export function findExternalPackages(
   cwd = process.cwd(),
@@ -158,7 +174,10 @@ export function findExternalPackages(
   while (queue.length) {
     const { names, from } = queue.shift()!;
     for (const name of names) {
-      const dir = findPackageDir(name, from);
+      // pnpm links packages into `node_modules`, and their dependencies are
+      // only found next to the real directory
+      const found = findPackageDir(name, from);
+      const dir = found && realpathSync(found);
       if (!dir || visited.has(dir)) {
         continue;
       }
@@ -172,7 +191,9 @@ export function findExternalPackages(
         runtimeFilePackages.includes(name) ||
         isNativePackage(dir, pkg)
       ) {
-        externalPackages.set(name, { name, version: pkg.version });
+        if (!externalPackages.has(name)) {
+          externalPackages.set(name, { name, version: pkg.version });
+        }
         continue;
       }
       queue.push({

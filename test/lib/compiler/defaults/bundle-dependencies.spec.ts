@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { dirname, join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -134,6 +134,67 @@ describe('bundle dependencies', () => {
       expect(findExternalPackages(projectDir, ['orm'])).toEqual([
         { name: 'orm', version: '2.0.0' },
         { name: 'swagger-ui-dist', version: '5.0.0' },
+      ]);
+    });
+
+    it('should keep a package external when its binary comes from a platform-specific optional dependency', () => {
+      write('package.json', JSON.stringify({ dependencies: { sharp: '*' } }));
+      installPackage('sharp', {
+        version: '0.34.0',
+        optionalDependencies: {
+          '@img/sharp-darwin-arm64': '*',
+          '@img/sharp-linux-x64': '*',
+        },
+      });
+      installPackage(
+        '@img/sharp-darwin-arm64',
+        { os: ['darwin'], cpu: ['arm64'] },
+        ['lib/sharp-darwin-arm64.node'],
+      );
+
+      expect(findExternalPackages()).toEqual([
+        { name: 'sharp', version: '0.34.0' },
+      ]);
+    });
+
+    it('should follow the real directories of linked packages, as pnpm installs them', () => {
+      write('package.json', JSON.stringify({ dependencies: { outer: '*' } }));
+      installPackage('.pnpm/outer@1.2.3/node_modules/outer', {
+        dependencies: { inner: '*' },
+      });
+      installPackage('.pnpm/inner@1.2.3/node_modules/inner', {}, [
+        'binding.gyp',
+      ]);
+      const link = (target: string, path: string) =>
+        symlinkSync(
+          join(projectDir, 'node_modules', target),
+          join(projectDir, 'node_modules', path),
+          'dir',
+        );
+      link('.pnpm/outer@1.2.3/node_modules/outer', 'outer');
+      link(
+        '.pnpm/inner@1.2.3/node_modules/inner',
+        '.pnpm/outer@1.2.3/node_modules/inner',
+      );
+
+      expect(findExternalPackages()).toEqual([
+        { name: 'inner', version: '1.2.3' },
+      ]);
+    });
+
+    it('should pin the version closest to the project when a package is installed twice', () => {
+      write(
+        'package.json',
+        JSON.stringify({ dependencies: { native: '*', outer: '*' } }),
+      );
+      installPackage('native', { version: '2.0.0' }, ['binding.gyp']);
+      installPackage('outer', { dependencies: { native: '*' } });
+      installPackage('outer/node_modules/native', { version: '1.0.0' }, [
+        'binding.gyp',
+      ]);
+
+      expect(findExternalPackages()).toEqual([
+        { name: 'native', version: '2.0.0' },
       ]);
     });
 
