@@ -77,6 +77,34 @@ describe('StartAction', () => {
     vi.restoreAllMocks();
   });
 
+  describe('spawnChildProcess - extra arguments', () => {
+    const run = (shell: boolean) => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+      process.argv = ['node', 'nest', 'start', '--', '--port', '{"a": 1}'];
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell },
+      );
+      onSuccess();
+      return vi.mocked(spawn).mock.calls[0];
+    };
+
+    it('should pass extra arguments verbatim when shell is disabled', () => {
+      const args = run(false)[1] as string[];
+      expect(args.slice(-2)).toEqual(['--port', '{"a": 1}']);
+    });
+
+    it('should quote extra arguments when shell is enabled', () => {
+      const command = run(true)[0] as string;
+      expect(command).toContain('"--port" "{\\"a\\": 1}"');
+    });
+  });
+
   describe('spawnChildProcess - env file arguments', () => {
     it('should pass multiple --env-file flags as separate spawn arguments', () => {
       const mockChild = createMockChild();
