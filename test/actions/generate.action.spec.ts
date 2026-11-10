@@ -287,4 +287,20 @@ describe('GenerateAction', () => {
       );
     });
   });
+
+  describe('failures', () => {
+    it('rethrows when the schematic fails', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue(defaultConfig() as any);
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      mockExecute.mockRejectedValueOnce(new Error('schematic failed'));
+
+      await expect(action.handle(baseContext())).rejects.toThrow(
+        'schematic failed',
+      );
+      expect(consoleError).toHaveBeenCalledTimes(1);
+      consoleError.mockRestore();
+    });
+  });
 });

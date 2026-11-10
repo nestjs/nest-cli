@@ -145,6 +145,7 @@ const generateFiles = async (context: GenerateCommandContext) => {
     if (error && error.message) {
       console.error(red(error.message));
     }
+    throw error;
   }
 };
 
