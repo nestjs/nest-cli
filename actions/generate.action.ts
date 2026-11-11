@@ -23,7 +23,14 @@ import { AbstractAction } from './abstract.action.js';
 
 export class GenerateAction extends AbstractAction {
   public async handle(context: GenerateCommandContext) {
-    await generateFiles(context);
+    try {
+      await generateFiles(context);
+    } catch (error) {
+      if (error && error.message) {
+        console.error(red(error.message));
+      }
+      throw error;
+    }
   }
 }
 
@@ -136,17 +143,10 @@ const generateFiles = async (context: GenerateCommandContext) => {
     new SchematicOption('specFileSuffix', generateSpecFileSuffix),
   );
   schematicOptions.push(new SchematicOption('format', context.format));
-  try {
-    if (!schematic) {
-      throw new Error('Unable to find a schematic for this configuration');
-    }
-    await collection.execute(schematic, schematicOptions);
-  } catch (error) {
-    if (error && error.message) {
-      console.error(red(error.message));
-    }
-    throw error;
+  if (!schematic) {
+    throw new Error('Unable to find a schematic for this configuration');
   }
+  await collection.execute(schematic, schematicOptions);
 };
 
 const mapContextToSchematicOptions = (

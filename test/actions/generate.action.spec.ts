@@ -302,5 +302,23 @@ describe('GenerateAction', () => {
       expect(consoleError).toHaveBeenCalledTimes(1);
       consoleError.mockRestore();
     });
+
+    it('prints an error thrown before the schematic runs', async () => {
+      vi.mocked(loadConfiguration).mockRejectedValueOnce(
+        new Error('invalid configuration'),
+      );
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      await expect(action.handle(baseContext())).rejects.toThrow(
+        'invalid configuration',
+      );
+      expect(consoleError).toHaveBeenCalledTimes(1);
+      expect(String(consoleError.mock.calls[0][0])).toContain(
+        'invalid configuration',
+      );
+      consoleError.mockRestore();
+    });
   });
 });
