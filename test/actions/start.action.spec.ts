@@ -103,6 +103,25 @@ describe('StartAction', () => {
       const command = run(true)[0] as string;
       expect(command).toContain('"--port" "{\\"a\\": 1}"');
     });
+
+    it('should not quote an output path with a space when shell is disabled', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+      process.argv = ['node', 'nest', 'start'];
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'my dist',
+        'node',
+        { shell: false },
+      );
+      onSuccess();
+      const args = vi.mocked(spawn).mock.calls[0][1] as string[];
+      const outputFilePath = args.find((arg) => arg.includes('my dist'));
+      expect(outputFilePath).toBeDefined();
+      expect(outputFilePath).not.toContain('"');
+    });
   });
 
   describe('spawnChildProcess - env file arguments', () => {

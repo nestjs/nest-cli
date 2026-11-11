@@ -253,8 +253,9 @@ export class StartAction extends BuildAction {
         childProcessArgs = childProcessArgs.map((arg) => JSON.stringify(arg));
       }
     }
-    outputFilePath =
-      outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
+    if (options.shell && outputFilePath.indexOf(' ') >= 0) {
+      outputFilePath = `"${outputFilePath}"`;
+    }
 
     const processArgs = [outputFilePath, ...childProcessArgs];
     if (debug) {
