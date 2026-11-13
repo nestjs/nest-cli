@@ -34,6 +34,14 @@ export interface WebpackBuilderOptions {
   configPath?: string;
 }
 
+export interface BundleDependenciesOptions {
+  /**
+   * Packages to leave out of the bundle. They stay external together with
+   * their own dependencies and are pinned in the generated `package.json`.
+   */
+  exclude?: string[];
+}
+
 export interface RspackBuilderOptions {
   configPath?: string;
 }
@@ -79,6 +87,25 @@ export interface CompilerOptions {
   manualRestart?: boolean;
   builder?: Builder;
   emitDeclarations?: boolean;
+  /**
+   * Bundle `node_modules` into the output instead of leaving them external.
+   *
+   * - `false` (default): only the app is compiled, `node_modules` are
+   *   installed next to it as before.
+   * - `true`: every dependency is bundled except Node builtins, packages with
+   *   native addons and packages that read their own files at runtime
+   *   (`swagger-ui-dist`). Those are pinned in a generated `package.json`
+   *   next to the bundle, to be installed with `npm install --omit=dev`.
+   * - `{ exclude: [...] }`: like `true`, but the listed packages stay
+   *   external as well, for dependencies that do not survive bundling
+   *   (dynamic `require` of user files, globs, own native loaders).
+   *
+   * Optional packages that are not installed are ignored. Only has an effect
+   * with the rspack builder. `--bundle-dependencies` and
+   * `--no-bundle-dependencies` override it, the former keeps a configured
+   * `exclude` list.
+   */
+  bundleDependencies?: boolean | BundleDependenciesOptions;
   /**
    * List of library project names whose assets should also be copied
    * when building this application.

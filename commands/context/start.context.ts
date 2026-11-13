@@ -10,6 +10,7 @@ export interface StartCommandContext {
   builder?: string;
   typeCheck?: boolean;
   emitDeclarations?: boolean;
+  bundleDependencies?: boolean;
   silent?: boolean;
   preserveWatchOutput?: boolean;
   debug?: boolean | string;

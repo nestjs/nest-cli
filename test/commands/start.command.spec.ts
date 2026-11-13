@@ -114,6 +114,38 @@ describe('StartCommand', () => {
     });
   });
 
+  describe('--bundle-dependencies', () => {
+    it.each([
+      [[], undefined],
+      [['--bundle-dependencies'], true],
+      [['--no-bundle-dependencies'], false],
+    ])('forwards %j as %s', async (flags, expected) => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'start', ...flags]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ bundleDependencies: expected }),
+      );
+    });
+
+    it('does not pass the flags on to the app', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'start',
+        '--no-bundle-dependencies',
+        '--custom-flag',
+      ]);
+
+      expect(action.handle.mock.calls[0][0].extraFlags).toEqual([
+        '--custom-flag',
+      ]);
+    });
+  });
+
   describe('pass-through of unknown flags', () => {
     // `nest start` forwards flags it does not recognise to the application,
     // which requires both allowUnknownOption (so they are not rejected) and

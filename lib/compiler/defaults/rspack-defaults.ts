@@ -2,7 +2,14 @@ import { builtinModules, createRequire } from 'module';
 import { join } from 'path';
 import type * as ts from 'typescript';
 import type nodeExternals from 'webpack-node-externals';
+import type { CompilerOptions } from '../../configuration/index.js';
 import { defaultTsconfigFilename } from '../../configuration/defaults.js';
+import {
+  BundleDependenciesPlugin,
+  createBundleExternals,
+  findExternalPackages,
+  isMissingOptionalPackage,
+} from './bundle-dependencies.js';
 import { appendTsExtension } from '../helpers/append-extension.js';
 import { MultiNestCompilerPlugins } from '../plugins/plugins-loader.js';
 import { isMissingLazyImport } from './lazy-imports.js';
@@ -47,6 +54,7 @@ export const rspackDefaultsFactory = (
   _plugins: MultiNestCompilerPlugins,
   isEsm = false,
   tsOptions?: ts.CompilerOptions,
+  bundleDependenciesOption: CompilerOptions['bundleDependencies'] = false,
 ): Record<string, any> => {
   const { nodeExternals: externals } = loadRspackDeps();
 
@@ -58,6 +66,17 @@ export const rspackDefaultsFactory = (
       : sourceMaps
         ? 'source-map'
         : false;
+
+  const bundleDependencies = !!bundleDependenciesOption;
+  const externalPackages = bundleDependencies
+    ? findExternalPackages(
+        process.cwd(),
+        typeof bundleDependenciesOption === 'object'
+          ? bundleDependenciesOption.exclude
+          : undefined,
+      )
+    : [];
+  const ignoredOptionalPackages = new Set<string>();
 
   const rspackConfiguration: Record<string, any> = {
     entry: appendTsExtension(join(sourceRoot, entryFilename)),
@@ -80,25 +99,32 @@ export const rspackDefaultsFactory = (
       experiments: { outputModule: true, topLevelAwait: true },
     }),
     ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/],
-    externals: [
-      externals(isEsm ? { importType: 'module' } : {}) as any,
-      ...(isEsm
-        ? [
-            ({ request }: { request?: string }, callback: Function) => {
-              if (!request) return callback();
-              const bare = request.startsWith('node:')
-                ? request.slice(5)
-                : request;
-              if (builtinModules.includes(bare)) {
-                return callback(null, `module ${request}`);
-              }
-              callback();
-            },
-          ]
-        : []),
-    ],
-    externalsPresets: { node: !isEsm },
+    externals: bundleDependencies
+      ? [createBundleExternals(isEsm, externalPackages)]
+      : [
+          externals(isEsm ? { importType: 'module' } : {}) as any,
+          ...(isEsm
+            ? [
+                ({ request }: { request?: string }, callback: Function) => {
+                  if (!request) return callback();
+                  const bare = request.startsWith('node:')
+                    ? request.slice(5)
+                    : request;
+                  if (builtinModules.includes(bare)) {
+                    return callback(null, `module ${request}`);
+                  }
+                  callback();
+                },
+              ]
+            : []),
+        ],
+    externalsPresets: { node: !isEsm && !bundleDependencies },
     module: {
+      // ESM dependencies load CommonJS peers through `createRequire(import.meta.url)`;
+      // left unparsed, those requires resolve from the build machine at runtime
+      ...(bundleDependencies && {
+        parser: { javascript: { createRequire: true } },
+      }),
       rules: [
         {
           test: /\.tsx?$/,
@@ -152,11 +178,30 @@ export const rspackDefaultsFactory = (
     const rspack = require('@rspack/core');
     rspackConfiguration.plugins!.push(
       new rspack.IgnorePlugin({
-        checkResource: isMissingLazyImport,
+        checkResource(resource: string) {
+          if (
+            !isMissingLazyImport(resource) &&
+            !(bundleDependencies && isMissingOptionalPackage(resource))
+          ) {
+            return false;
+          }
+          ignoredOptionalPackages.add(resource);
+          return true;
+        },
       }),
     );
   } catch {
     // @rspack/core not available, skip IgnorePlugin
+  }
+
+  if (bundleDependencies) {
+    rspackConfiguration.plugins!.push(
+      new BundleDependenciesPlugin({
+        isEsm,
+        externalPackages,
+        ignored: ignoredOptionalPackages,
+      }),
+    );
   }
 
   // builtin:swc-loader only strips types, so the checker runs even when CLI

@@ -91,6 +91,72 @@ describe('rspackDefaultsFactory', () => {
     });
   });
 
+  describe('bundleDependencies', () => {
+    const build = (bundleDependencies: boolean, isEsm = true) =>
+      rspackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        isEsm,
+        undefined,
+        bundleDependencies,
+      );
+
+    it('should keep node-externals by default', () => {
+      const nodeExternals = makeMockExternals();
+      requireFns['webpack-node-externals'].mockReturnValue(nodeExternals);
+
+      const config = build(false);
+
+      expect(nodeExternals).toHaveBeenCalled();
+      expect(config.externals).toHaveLength(2);
+      expect(
+        config.plugins.some(
+          (plugin: object) =>
+            plugin.constructor.name === 'BundleDependenciesPlugin',
+        ),
+      ).toBe(false);
+    });
+
+    it('should replace node-externals with builtin and native externals', () => {
+      const nodeExternals = makeMockExternals();
+      requireFns['webpack-node-externals'].mockReturnValue(nodeExternals);
+
+      const config = build(true);
+
+      expect(nodeExternals).not.toHaveBeenCalled();
+      expect(config.externals).toHaveLength(1);
+      expect(config.externalsPresets).toEqual({ node: false });
+      expect(
+        config.plugins.some(
+          (plugin: object) =>
+            plugin.constructor.name === 'BundleDependenciesPlugin',
+        ),
+      ).toBe(true);
+    });
+
+    it('should parse createRequire calls only when dependencies are bundled', () => {
+      expect(build(false).module.parser).toBeUndefined();
+      expect(build(true).module.parser).toEqual({
+        javascript: { createRequire: true },
+      });
+    });
+
+    it('should ignore optional packages only when they are not installed', () => {
+      const mock = requireFns['@rspack/core']();
+
+      build(true);
+
+      const { checkResource } = mock.IgnorePlugin.mock.calls[0][0];
+      expect(checkResource('kafkajs')).toBe(true);
+      expect(checkResource('@nestjs/websockets/socket-module.js')).toBe(true);
+      expect(checkResource('rxjs')).toBe(false);
+    });
+  });
+
   describe('happy path', () => {
     it('should produce a configuration object with expected entry filename', () => {
       const config = rspackDefaultsFactory(
