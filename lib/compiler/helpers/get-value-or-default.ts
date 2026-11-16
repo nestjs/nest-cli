@@ -13,7 +13,8 @@ export function getValueOrDefault<T = any>(
     | 'exec'
     | 'builder'
     | 'typeCheck'
-    | 'emitDeclarations',
+    | 'emitDeclarations'
+    | 'bundleDependencies',
   options: Record<string, any> = {},
   defaultValue?: T,
 ): T {

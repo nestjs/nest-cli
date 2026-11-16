@@ -30,6 +30,16 @@ export class BuildCommand extends AbstractCommand {
         () => false,
       )
       .option(
+        '--bundle-dependencies',
+        'Bundle node_modules into the output (when rspack is used).',
+        () => true,
+      )
+      .option(
+        '--no-bundle-dependencies',
+        'Leave node_modules out of the output (when rspack is used).',
+        () => false,
+      )
+      .option(
         '--emit-declarations',
         'Emit declaration files (.d.ts) when using SWC builder.',
       )
@@ -88,6 +98,7 @@ export class BuildCommand extends AbstractCommand {
           rspackPath: options.rspackPath,
           builder: options.builder,
           typeCheck: options.typeCheck,
+          bundleDependencies: options.bundleDependencies,
           // Left undefined when the flag is absent so `getValueOrDefault` can
           // still fall through to `compilerOptions.emitDeclarations`.
           emitDeclarations: options.emitDeclarations,

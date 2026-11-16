@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { requireFns } = vi.hoisted(() => {
@@ -88,6 +91,104 @@ describe('rspackDefaultsFactory', () => {
       expect(
         checkResource('@nestjs/microservices/microservices-module.js'),
       ).toBe(true);
+    });
+  });
+
+  describe('bundleDependencies', () => {
+    const build = (bundleDependencies: boolean, isEsm = true) =>
+      rspackDefaultsFactory(
+        '/abs/src',
+        'src',
+        'main',
+        false,
+        'tsconfig.json',
+        emptyPlugins,
+        isEsm,
+        undefined,
+        bundleDependencies,
+      );
+
+    it('should keep node-externals by default', () => {
+      const nodeExternals = makeMockExternals();
+      requireFns['webpack-node-externals'].mockReturnValue(nodeExternals);
+
+      const config = build(false);
+
+      expect(nodeExternals).toHaveBeenCalled();
+      expect(config.externals).toHaveLength(2);
+      expect(
+        config.plugins.some(
+          (plugin: object) =>
+            plugin.constructor.name === 'BundleDependenciesPlugin',
+        ),
+      ).toBe(false);
+    });
+
+    it('should replace node-externals with builtin and native externals', () => {
+      const nodeExternals = makeMockExternals();
+      requireFns['webpack-node-externals'].mockReturnValue(nodeExternals);
+
+      const config = build(true);
+
+      expect(nodeExternals).not.toHaveBeenCalled();
+      expect(config.externals).toHaveLength(1);
+      expect(config.externalsPresets).toEqual({ node: false });
+      expect(
+        config.plugins.some(
+          (plugin: object) =>
+            plugin.constructor.name === 'BundleDependenciesPlugin',
+        ),
+      ).toBe(true);
+    });
+
+    it('should parse createRequire calls only when dependencies are bundled', () => {
+      expect(build(false).module.parser).toBeUndefined();
+      expect(build(true).module.parser).toEqual({
+        javascript: { createRequire: true },
+      });
+    });
+
+    it('should ignore optional packages only when they are not installed', () => {
+      const mock = requireFns['@rspack/core']();
+
+      build(true);
+
+      const { checkResource } = mock.IgnorePlugin.mock.calls[0][0];
+      expect(checkResource('kafkajs')).toBe(true);
+      expect(checkResource('@nestjs/websockets/socket-module.js')).toBe(true);
+      expect(checkResource('rxjs')).toBe(false);
+    });
+
+    describe('with a pnpm layout', () => {
+      let projectDir: string;
+
+      beforeEach(() => {
+        projectDir = mkdtempSync(join(tmpdir(), 'nest-cli-rspack-'));
+        vi.spyOn(process, 'cwd').mockReturnValue(projectDir);
+      });
+
+      afterEach(() => {
+        rmSync(projectDir, { recursive: true, force: true });
+      });
+
+      it('should look for optional packages from the importing directory', () => {
+        // pnpm links `file-type` next to `@nestjs/common`, not into the project
+        const store = join(
+          projectDir,
+          'node_modules/.pnpm/@nestjs+common@12.0.0/node_modules',
+        );
+        mkdirSync(join(store, 'file-type'), { recursive: true });
+        writeFileSync(join(store, 'file-type/package.json'), '{}');
+        const mock = requireFns['@rspack/core']();
+
+        build(true);
+
+        const { checkResource } = mock.IgnorePlugin.mock.calls[0][0];
+        expect(
+          checkResource('file-type', join(store, '@nestjs/common/pipes/file')),
+        ).toBe(false);
+        expect(checkResource('file-type', join(projectDir, 'src'))).toBe(true);
+      });
     });
   });
 

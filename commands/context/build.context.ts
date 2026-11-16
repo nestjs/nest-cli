@@ -10,6 +10,7 @@ export interface BuildCommandContext {
   builder?: string;
   typeCheck?: boolean;
   emitDeclarations?: boolean;
+  bundleDependencies?: boolean;
   silent?: boolean;
   preserveWatchOutput?: boolean;
   all: boolean;

@@ -151,6 +151,22 @@ describe('BuildCommand', () => {
     });
   });
 
+  describe('--bundle-dependencies', () => {
+    it.each([
+      [[], undefined],
+      [['--bundle-dependencies'], true],
+      [['--no-bundle-dependencies'], false],
+    ])('forwards %j as %s', async (flags, expected) => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'build', ...flags]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ bundleDependencies: expected }),
+      );
+    });
+  });
+
   describe('--preserveWatchOutput', () => {
     it('stays undefined in tsc watch mode when the flag is absent, so the tsconfig value can apply', async () => {
       const program = buildProgram(action);

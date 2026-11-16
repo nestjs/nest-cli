@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { createRequire } from 'module';
 import { resolve } from 'path';
 import type * as ts from 'typescript';
-import { Configuration } from '../configuration/index.js';
+import { CompilerOptions, Configuration } from '../configuration/index.js';
 import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
@@ -76,6 +76,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       plugins,
       isEsmProject(),
       extras.tsOptions,
+      getBundleDependencies(configuration, extras.options, appName),
     );
 
     let rspack: any;
@@ -187,4 +188,20 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       console.log(statsOutput);
     };
   }
+}
+
+function getBundleDependencies(
+  configuration: Required<Configuration>,
+  cmdOptions: Record<string, any>,
+  appName: string | undefined,
+): CompilerOptions['bundleDependencies'] {
+  const configured =
+    getValueOrDefault<CompilerOptions['bundleDependencies']>(
+      configuration,
+      'compilerOptions.bundleDependencies',
+      appName,
+    ) || false;
+  const flag: boolean | undefined = cmdOptions.bundleDependencies;
+  // `--bundle-dependencies` keeps a configured `exclude` list
+  return flag === undefined || (flag && configured) ? configured : flag;
 }

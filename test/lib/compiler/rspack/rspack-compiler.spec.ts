@@ -185,6 +185,7 @@ describe('Rspack Compiler', () => {
         }),
         false,
         undefined,
+        false,
       );
     });
 
@@ -211,6 +212,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         true,
         undefined,
+        false,
       );
     });
 
@@ -236,6 +238,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         undefined,
+        false,
       );
     });
 
@@ -263,8 +266,47 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         tsOptions,
+        false,
       );
     });
+
+    it.each([
+      ['config true', true, undefined, true],
+      [
+        'config exclude',
+        { exclude: ['typeorm'] },
+        undefined,
+        { exclude: ['typeorm'] },
+      ],
+      [
+        'flag over config exclude',
+        { exclude: ['typeorm'] },
+        true,
+        { exclude: ['typeorm'] },
+      ],
+      ['flag without config', undefined, true, true],
+      ['negated flag over config', true, false, false],
+    ])(
+      'should resolve bundleDependencies: %s',
+      (_, configured, flag, expected) => {
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(getValueOrDefault)
+          .mockReturnValueOnce('main')
+          .mockReturnValueOnce('')
+          .mockReturnValueOnce(configured);
+
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({ options: { bundleDependencies: flag } }),
+        );
+
+        expect(vi.mocked(rspackDefaultsFactory).mock.calls[0][8]).toEqual(
+          expected,
+        );
+      },
+    );
 
     it('should use config factory function when provided', () => {
       vi.mocked(existsSync).mockReturnValue(true);
