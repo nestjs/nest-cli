@@ -78,7 +78,7 @@
     "gulp": "5.0.1",
     "gulp-clean": "0.4.0",
     "husky": "9.1.7",
-    "lint-staged": "17.6.0",
+    "lint-staged": "17.6.1",
     "oxlint": "1.93.0",
     "prettier": "3.10.1",
     "release-it": "21.1.2",
