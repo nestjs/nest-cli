@@ -178,10 +178,12 @@ export const rspackDefaultsFactory = (
     const rspack = require('@rspack/core');
     rspackConfiguration.plugins!.push(
       new rspack.IgnorePlugin({
-        checkResource(resource: string) {
+        // `context` is the importer's directory: pnpm links the dependencies
+        // of a package (`file-type` of `@nestjs/common`) only next to it
+        checkResource(resource: string, context: string) {
           if (
             !isMissingLazyImport(resource) &&
-            !(bundleDependencies && isMissingOptionalPackage(resource))
+            !(bundleDependencies && isMissingOptionalPackage(resource, context))
           ) {
             return false;
           }

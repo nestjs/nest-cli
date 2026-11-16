@@ -81,19 +81,19 @@ export function findPackageDir(name: string, from: string): string | undefined {
 }
 
 /**
- * True when the request is a known optional package that is not installed.
- * Unlike `require.resolve`, it does not depend on the package `exports`
- * conditions, which matters for ESM-only packages.
+ * True when the request is a known optional package that is not installed
+ * where it is imported from. Unlike `require.resolve`, it does not depend on
+ * the package `exports` conditions, which matters for ESM-only packages.
  */
 export function isMissingOptionalPackage(
   request: string,
-  cwd = process.cwd(),
+  from = process.cwd(),
 ): boolean {
   const name = getPackageName(request);
   if (!name || !optionalPackages.includes(name)) {
     return false;
   }
-  return !findPackageDir(name, cwd);
+  return !findPackageDir(name, from);
 }
 
 function readPackageJson(dir: string): Record<string, any> | undefined {

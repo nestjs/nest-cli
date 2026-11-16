@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { requireFns } = vi.hoisted(() => {
@@ -154,6 +157,38 @@ describe('rspackDefaultsFactory', () => {
       expect(checkResource('kafkajs')).toBe(true);
       expect(checkResource('@nestjs/websockets/socket-module.js')).toBe(true);
       expect(checkResource('rxjs')).toBe(false);
+    });
+
+    describe('with a pnpm layout', () => {
+      let projectDir: string;
+
+      beforeEach(() => {
+        projectDir = mkdtempSync(join(tmpdir(), 'nest-cli-rspack-'));
+        vi.spyOn(process, 'cwd').mockReturnValue(projectDir);
+      });
+
+      afterEach(() => {
+        rmSync(projectDir, { recursive: true, force: true });
+      });
+
+      it('should look for optional packages from the importing directory', () => {
+        // pnpm links `file-type` next to `@nestjs/common`, not into the project
+        const store = join(
+          projectDir,
+          'node_modules/.pnpm/@nestjs+common@12.0.0/node_modules',
+        );
+        mkdirSync(join(store, 'file-type'), { recursive: true });
+        writeFileSync(join(store, 'file-type/package.json'), '{}');
+        const mock = requireFns['@rspack/core']();
+
+        build(true);
+
+        const { checkResource } = mock.IgnorePlugin.mock.calls[0][0];
+        expect(
+          checkResource('file-type', join(store, '@nestjs/common/pipes/file')),
+        ).toBe(false);
+        expect(checkResource('file-type', join(projectDir, 'src'))).toBe(true);
+      });
     });
   });
 
