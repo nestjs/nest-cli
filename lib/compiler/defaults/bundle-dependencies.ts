@@ -43,6 +43,11 @@ export const runtimeFilePackages = ['swagger-ui-dist'];
 export interface ExternalPackage {
   name: string;
   version: string;
+  /**
+   * Limited to some platforms (`os` or `cpu`), so it is pinned in
+   * `optionalDependencies` and skipped by `npm install` elsewhere.
+   */
+  optional?: boolean;
 }
 
 /**
@@ -150,7 +155,7 @@ function isNativePackage(dir: string, pkg: Record<string, any>): boolean {
  * ship a native addon (`binding.gyp`, `gypfile` or `.node` files) or load one
  * from a platform-specific optional dependency, the `runtimeFilePackages` and
  * the excluded ones. When a package is installed in several versions, the one
- * closest to the project is pinned.
+ * closest to the project is pinned and the others are reported.
  */
 export function findExternalPackages(
   cwd = process.cwd(),
@@ -161,6 +166,7 @@ export function findExternalPackages(
     return [];
   }
   const externalPackages = new Map<string, ExternalPackage>();
+  const otherVersions = new Map<string, Set<string>>();
   const visited = new Set<string>();
   const queue: Array<{ names: string[]; from: string }> = [
     {
@@ -191,8 +197,18 @@ export function findExternalPackages(
         runtimeFilePackages.includes(name) ||
         isNativePackage(dir, pkg)
       ) {
-        if (!externalPackages.has(name)) {
-          externalPackages.set(name, { name, version: pkg.version });
+        const pinned = externalPackages.get(name);
+        if (!pinned) {
+          externalPackages.set(name, {
+            name,
+            version: pkg.version,
+            ...((pkg.os || pkg.cpu) && { optional: true }),
+          });
+        } else if (pinned.version !== pkg.version) {
+          otherVersions.set(
+            name,
+            (otherVersions.get(name) ?? new Set()).add(pkg.version),
+          );
         }
         continue;
       }
@@ -204,6 +220,14 @@ export function findExternalPackages(
         from: dir,
       });
     }
+  }
+  for (const [name, versions] of otherVersions) {
+    const { version } = externalPackages.get(name)!;
+    console.warn(
+      INFO_PREFIX +
+        ` "${name}" is installed in several versions. package.json pins ${version}, ` +
+        `the one closest to the project, not ${[...versions].join(', ')}.`,
+    );
   }
   return [...externalPackages.values()].sort((a, b) =>
     a.name.localeCompare(b.name),
@@ -264,12 +288,20 @@ export class BundleDependenciesPlugin {
       compilation.hooks.processAssets.tap(
         { name, stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
         () => {
+          const pin = (optional: boolean) =>
+            Object.fromEntries(
+              externalPackages
+                .filter((pkg) => !!pkg.optional === optional)
+                .map((pkg) => [pkg.name, pkg.version]),
+            );
+          const optionalDependencies = pin(true);
           const manifest = {
             private: true,
             type: isEsm ? 'module' : 'commonjs',
-            dependencies: Object.fromEntries(
-              externalPackages.map((pkg) => [pkg.name, pkg.version]),
-            ),
+            dependencies: pin(false),
+            ...(Object.keys(optionalDependencies).length > 0 && {
+              optionalDependencies,
+            }),
           };
           compilation.emitAsset(
             'package.json',

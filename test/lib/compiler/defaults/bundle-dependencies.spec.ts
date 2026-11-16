@@ -183,6 +183,7 @@ describe('bundle dependencies', () => {
     });
 
     it('should pin the version closest to the project when a package is installed twice', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       write(
         'package.json',
         JSON.stringify({ dependencies: { native: '*', outer: '*' } }),
@@ -195,6 +196,59 @@ describe('bundle dependencies', () => {
 
       expect(findExternalPackages()).toEqual([
         { name: 'native', version: '2.0.0' },
+      ]);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain(
+        '"native" is installed in several versions. package.json pins 2.0.0, the one closest to the project, not 1.0.0.',
+      );
+    });
+
+    it('should warn once per package about the versions it does not pin', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const nested = { a: '1.0.0', b: '1.5.0', c: '2.0.0', d: '1.0.0' };
+      write(
+        'package.json',
+        JSON.stringify({
+          dependencies: { native: '*', a: '*', b: '*', c: '*', d: '*' },
+        }),
+      );
+      installPackage('native', { version: '2.0.0' }, ['binding.gyp']);
+      Object.entries(nested).forEach(([name, version]) => {
+        installPackage(name, { dependencies: { native: '*' } });
+        installPackage(`${name}/node_modules/native`, { version }, [
+          'binding.gyp',
+        ]);
+      });
+
+      findExternalPackages();
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain(
+        'package.json pins 2.0.0, the one closest to the project, not 1.0.0, 1.5.0.',
+      );
+    });
+
+    it('should mark packages limited to some platforms as optional', () => {
+      write(
+        'package.json',
+        JSON.stringify({
+          dependencies: { sharp: '*' },
+          optionalDependencies: { '@img/sharp-darwin-arm64': '*' },
+        }),
+      );
+      installPackage('sharp', {
+        version: '0.34.0',
+        optionalDependencies: { '@img/sharp-darwin-arm64': '*' },
+      });
+      installPackage(
+        '@img/sharp-darwin-arm64',
+        { version: '0.34.0', os: ['darwin'], cpu: ['arm64'] },
+        ['lib/sharp-darwin-arm64.node'],
+      );
+
+      expect(findExternalPackages()).toEqual([
+        { name: '@img/sharp-darwin-arm64', version: '0.34.0', optional: true },
+        { name: 'sharp', version: '0.34.0' },
       ]);
     });
 
@@ -323,6 +377,29 @@ describe('bundle dependencies', () => {
       expect(JSON.parse(emitAsset.mock.calls[0][1].source)).toMatchObject({
         type: 'commonjs',
         dependencies: {},
+      });
+    });
+
+    it('should emit packages limited to some platforms as optional dependencies', () => {
+      const { taps, emitAsset } = setup({
+        isEsm: false,
+        externalPackages: [
+          {
+            name: '@img/sharp-darwin-arm64',
+            version: '0.34.5',
+            optional: true,
+          },
+          { name: 'sharp', version: '0.34.5' },
+        ],
+      });
+
+      taps.processAssets();
+
+      expect(JSON.parse(emitAsset.mock.calls[0][1].source)).toEqual({
+        private: true,
+        type: 'commonjs',
+        dependencies: { sharp: '0.34.5' },
+        optionalDependencies: { '@img/sharp-darwin-arm64': '0.34.5' },
       });
     });
 
