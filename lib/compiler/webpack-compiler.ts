@@ -184,7 +184,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
         assets: false,
       });
       if (!err && !stats!.hasErrors()) {
-        if (!onSuccess) {
+        if (!onSuccess && !watchMode && !watch) {
           // webpack ignores whatever this callback returns, so the close is
           // handled here rather than awaited — but its rejection still has to
           // be caught or it terminates the CLI after a successful compile.
@@ -194,7 +194,7 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
                 `${error instanceof Error ? error.message : String(error)}`,
             );
           });
-        } else {
+        } else if (onSuccess) {
           onSuccess();
         }
       } else if (!watchMode && !watch) {

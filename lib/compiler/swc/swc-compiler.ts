@@ -111,15 +111,14 @@ export class SwcCompiler extends BaseCompiler {
       console.log(SWC_LOG_PREFIX, cyan('Emitting declaration files...')),
     );
 
-    const tscPath = join(process.cwd(), 'node_modules', '.bin', 'tsc');
+    const cwd = process.cwd();
+    const tscPath = require.resolve('typescript/bin/tsc', {
+      paths: [cwd, ...(require.resolve.paths('typescript') ?? [])],
+    });
     const result = spawnSync(
-      tscPath,
-      ['--emitDeclarationOnly', '-p', tsConfigPath],
-      {
-        cwd: process.cwd(),
-        stdio: 'inherit',
-        shell: true,
-      },
+      process.execPath,
+      [tscPath, '--emitDeclarationOnly', '-p', tsConfigPath],
+      { cwd, stdio: 'inherit' },
     );
 
     if (result.status !== 0) {

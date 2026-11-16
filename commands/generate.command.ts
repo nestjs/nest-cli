@@ -86,7 +86,11 @@ export class GenerateCommand extends AbstractCommand {
                 : options.crud === true || options.crud === 'true',
           };
 
-          await this.action.handle(context);
+          try {
+            await this.action.handle(context);
+          } catch {
+            process.exit(1);
+          }
         },
       );
   }

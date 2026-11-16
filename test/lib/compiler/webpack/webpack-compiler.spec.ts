@@ -322,6 +322,31 @@ describe('Webpack Compiler', () => {
       expect(assetsManager.closeWatchers).toHaveBeenCalled();
     });
 
+    it('should keep watchers open in watch mode when there is no onSuccess hook', () => {
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      const mockStats = {
+        hasErrors: () => false,
+        toString: () => 'compiled successfully',
+      };
+
+      for (const [watchMode, watch] of [
+        [true, false],
+        [false, true],
+      ]) {
+        const callback = (compiler as any).createAfterCallback(
+          undefined,
+          assetsManager,
+          watchMode,
+          watch,
+        );
+        callback(null, mockStats);
+      }
+
+      expect(assetsManager.closeWatchers).not.toHaveBeenCalled();
+    });
+
     it('should report a closeWatchers rejection instead of leaving it unhandled', async () => {
       // webpack ignores this callback's return value, so the close cannot be
       // awaited; an unhandled rejection here would terminate the CLI after a

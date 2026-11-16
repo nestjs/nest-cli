@@ -4,7 +4,6 @@ import ora from 'ora';
 import { join } from 'path';
 import { AbstractRunner } from '../runners/abstract.runner.js';
 import { MESSAGES } from '../ui/index.js';
-import { normalizeToKebabOrSnakeCase } from '../utils/formatting.js';
 import { PackageManagerCommands } from './package-manager-commands.js';
 import { ProjectDependency } from './project.dependency.js';
 
@@ -23,11 +22,10 @@ export abstract class AbstractPackageManager {
     try {
       const commandArgs = `${this.cli.install} ${this.cli.silentFlag}`;
       const collect = true;
-      const normalizedDirectory = normalizeToKebabOrSnakeCase(directory);
       await this.runner.run(
         commandArgs,
         collect,
-        join(process.cwd(), normalizedDirectory),
+        join(process.cwd(), directory),
       );
       spinner.succeed();
       console.info();

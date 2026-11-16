@@ -468,7 +468,7 @@ describe('SWC Compiler', () => {
       expect(compiler['emitDeclarations']).not.toHaveBeenCalled();
     });
 
-    it('should spawn tsc with --emitDeclarationOnly flag', async () => {
+    it('should spawn tsc without a shell and with --emitDeclarationOnly flag', async () => {
       const originalEmitDeclarations =
         SwcCompiler.prototype['emitDeclarations'];
       compiler['emitDeclarations'] = originalEmitDeclarations.bind(compiler);
@@ -483,13 +483,14 @@ describe('SWC Compiler', () => {
       await new Promise((resolve) => process.nextTick(resolve));
 
       expect(childProcess.spawnSync).toHaveBeenCalledWith(
-        expect.stringContaining('tsc'),
-        ['--emitDeclarationOnly', '-p', 'tsconfig.json'],
-        expect.objectContaining({
-          cwd: process.cwd(),
-          stdio: 'inherit',
-          shell: true,
-        }),
+        process.execPath,
+        [
+          expect.stringMatching(/typescript[\\/]bin[\\/]tsc$/),
+          '--emitDeclarationOnly',
+          '-p',
+          'tsconfig.json',
+        ],
+        { cwd: process.cwd(), stdio: 'inherit' },
       );
     });
 

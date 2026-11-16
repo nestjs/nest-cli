@@ -90,7 +90,7 @@ describe('AbstractPackageManager', () => {
       expect(errorSpy).not.toHaveBeenCalled();
     });
 
-    it('should normalize the directory before passing to the runner', async () => {
+    it('should pass the directory to the runner as given', async () => {
       const { runner, runMock } = createRunner();
       const packageManager = new TestPackageManager(runner);
 
@@ -99,7 +99,7 @@ describe('AbstractPackageManager', () => {
       expect(runMock).toHaveBeenCalledWith(
         'install --silent',
         true,
-        join(process.cwd(), 'my-app'),
+        join(process.cwd(), 'My App'),
       );
     });
 

@@ -254,4 +254,19 @@ describe('GenerateCommand', () => {
       expect(context.specFileSuffix).toBe('test');
     });
   });
+
+  describe('failures', () => {
+    it('exits with code 1 when the action throws', async () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as never);
+      action.handle.mockRejectedValueOnce(new Error('boom'));
+
+      const program = await buildProgram(action);
+      await program.parseAsync(['node', 'nest', 'generate', 'foo', 'bar']);
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      exitSpy.mockRestore();
+    });
+  });
 });
