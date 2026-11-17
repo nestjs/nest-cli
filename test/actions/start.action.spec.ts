@@ -26,6 +26,7 @@ vi.mock('../../lib/utils/tree-kill.js', () => ({
 }));
 
 import { StartAction } from '../../actions/start.action.js';
+import { treeKillSync } from '../../lib/utils/tree-kill.js';
 
 describe('StartAction', () => {
   let startAction: StartAction;
@@ -414,6 +415,94 @@ describe('StartAction', () => {
       secondChild.emit('exit', 0);
 
       expect(exitSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should ignore late rebuilds after SIGINT without stripping exit listeners or respawning', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+      vi.mocked(treeKillSync).mockClear();
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+
+      // A rebuild completing while the child is shutting down must be ignored.
+      onSuccess();
+
+      expect(spawn).toHaveBeenCalledTimes(1);
+      expect(treeKillSync).not.toHaveBeenCalled();
+
+      mockChild.emit('exit', 0);
+      expect(exitSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should not spawn a new child if SIGINT arrives while waiting for the previous child to exit', () => {
+      const firstChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(firstChild);
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+      onSuccess();
+
+      const sigintHandler =
+        registeredHandlers['SIGINT'][registeredHandlers['SIGINT'].length - 1];
+      sigintHandler('SIGINT');
+
+      firstChild.emit('exit', 0);
+
+      expect(spawn).toHaveBeenCalledTimes(1);
+      expect(exitSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should skip treeKillSync when child process pid is undefined', () => {
+      const mockChild = createMockChild();
+      mockChild.pid = undefined;
+      vi.mocked(spawn).mockReturnValue(mockChild);
+      vi.mocked(treeKillSync).mockClear();
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false },
+      );
+
+      onSuccess();
+      onSuccess();
+
+      const exitHandler =
+        registeredHandlers['exit'][registeredHandlers['exit'].length - 1];
+      exitHandler();
+
+      expect(treeKillSync).not.toHaveBeenCalled();
     });
   });
 

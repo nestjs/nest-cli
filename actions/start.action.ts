@@ -129,10 +129,13 @@ export class StartAction extends BuildAction {
   ) {
     let childProcessRef: ChildProcess | undefined;
     let shuttingDown = false;
-    process.on(
-      'exit',
-      () => childProcessRef && killProcessSync(childProcessRef.pid!),
-    );
+    const killChildProcess = (child: ChildProcess | undefined) => {
+      if (child?.pid !== undefined) {
+        killProcessSync(child.pid);
+      }
+    };
+
+    process.on('exit', () => killChildProcess(childProcessRef));
 
     const signalHandler = (signal: NodeJS.Signals) => {
       shuttingDown = true;
@@ -149,60 +152,52 @@ export class StartAction extends BuildAction {
     process.on('SIGINT', signalHandler);
     process.on('SIGTERM', signalHandler);
 
+    const startChildProcess = () => {
+      childProcessRef = this.spawnChildProcess(
+        entryFile,
+        sourceRoot,
+        debugFlag,
+        outDirName,
+        binaryToRun,
+        {
+          shell: options.shell,
+          envFile: options.envFile,
+        },
+      );
+      childProcessRef.on('exit', (code, signal) => {
+        process.exitCode = code;
+        childProcessRef = undefined;
+        // Exit explicitly when shutting down; in watch/cluster mode the
+        // file watcher keeps the event loop alive and would otherwise
+        // require a second Ctrl+C to exit.
+        if (shuttingDown) {
+          process.exit(code ?? 0);
+        } else if (options.watch) {
+          this.reportAppExit(code, signal);
+        }
+      });
+    };
+
     return () => {
+      if (shuttingDown) {
+        return;
+      }
+
       if (childProcessRef) {
         childProcessRef.removeAllListeners('exit');
-        childProcessRef.on('exit', () => {
-          childProcessRef = this.spawnChildProcess(
-            entryFile,
-            sourceRoot,
-            debugFlag,
-            outDirName,
-            binaryToRun,
-            {
-              shell: options.shell,
-              envFile: options.envFile,
-            },
-          );
-          childProcessRef.on('exit', (code, signal) => {
+        childProcessRef.on('exit', (code) => {
+          if (shuttingDown) {
             childProcessRef = undefined;
-            // Exit explicitly when shutting down; in watch/cluster mode the
-            // file watcher keeps the event loop alive and would otherwise
-            // require a second Ctrl+C to exit.
-            if (shuttingDown) {
-              process.exit(code ?? 0);
-            } else if (options.watch) {
-              this.reportAppExit(code, signal);
-            }
-          });
+            process.exit(code ?? 0);
+            return;
+          }
+          startChildProcess();
         });
 
         (childProcessRef.stdin as NodeJS.ReadableStream | null)?.pause?.();
-        killProcessSync(childProcessRef.pid!);
+        killChildProcess(childProcessRef);
       } else {
-        childProcessRef = this.spawnChildProcess(
-          entryFile,
-          sourceRoot,
-          debugFlag,
-          outDirName,
-          binaryToRun,
-          {
-            shell: options.shell,
-            envFile: options.envFile,
-          },
-        );
-        childProcessRef.on('exit', (code, signal) => {
-          process.exitCode = code;
-          childProcessRef = undefined;
-          // Exit explicitly when shutting down; in watch/cluster mode the
-          // file watcher keeps the event loop alive and would otherwise
-          // require a second Ctrl+C to exit.
-          if (shuttingDown) {
-            process.exit(code ?? 0);
-          } else if (options.watch) {
-            this.reportAppExit(code, signal);
-          }
-        });
+        startChildProcess();
       }
     };
   }
