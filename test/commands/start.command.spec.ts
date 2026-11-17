@@ -54,6 +54,20 @@ describe('StartCommand', () => {
       expect(action.handle).not.toHaveBeenCalled();
     });
 
+    it('exits with code 1 when --builder receives an empty string', async () => {
+      const program = buildProgram(action);
+
+      await expect(
+        program.parseAsync(['node', 'nest', 'start', '--builder', '']),
+      ).rejects.toBeInstanceOf(ProcessExitError);
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Invalid builder option: '),
+      );
+      expect(action.handle).not.toHaveBeenCalled();
+    });
+
     it.each([['tsc'], ['webpack'], ['swc'], ['rspack']])(
       'accepts %s as a valid --builder value',
       async (builder) => {

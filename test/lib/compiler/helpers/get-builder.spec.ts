@@ -75,4 +75,53 @@ describe('getBuilder', () => {
     expect(typeof result).toBe('object');
     expect(result.type).toBeDefined();
   });
+
+  it('should throw when configured builder string is invalid', () => {
+    const config = makeConfiguration({
+      compilerOptions: { builder: 'esbuild' as any },
+    });
+
+    expect(() => getBuilder(config, {}, undefined)).toThrow(
+      'Invalid builder "esbuild". Available builders: tsc, webpack, swc, rspack.',
+    );
+  });
+
+  it('should include project name when a per-project builder is invalid', () => {
+    const config = makeConfiguration({
+      projects: {
+        api: {
+          compilerOptions: {
+            builder: { type: 'vite' as any },
+          },
+        },
+      },
+    });
+
+    expect(() => getBuilder(config, {}, 'api')).toThrow(
+      'Invalid builder {"type":"vite"} for project "api". Available builders: tsc, webpack, swc, rspack.',
+    );
+  });
+
+  it.each([[null], [[]], [{}], [42]])(
+    'should throw when configured builder has invalid shape %p',
+    (invalidBuilder) => {
+      const config = makeConfiguration({
+        compilerOptions: { builder: invalidBuilder as any },
+      });
+
+      expect(() => getBuilder(config, {}, undefined)).toThrow(
+        'Invalid builder',
+      );
+    },
+  );
+
+  it('should allow valid CLI --builder to override an invalid config builder', () => {
+    const config = makeConfiguration({
+      compilerOptions: { builder: 'esbuild' as any },
+    });
+
+    expect(getBuilder(config, { builder: 'swc' }, undefined)).toEqual({
+      type: 'swc',
+    });
+  });
 });

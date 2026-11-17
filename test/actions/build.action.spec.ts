@@ -473,4 +473,34 @@ describe('BuildAction - Rspack', () => {
       expect(await pluginWarnings('tsc', ['@nestjs/swagger'])).toHaveLength(0);
     });
   });
+
+  describe('builder validation', () => {
+    it('rejects invalid builder in --all before deleting outDir or building valid apps', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            projects: {
+              api: {
+                type: 'application',
+                compilerOptions: { builder: 'rspack', deleteOutDir: true },
+              },
+              broken: {
+                type: 'application',
+                compilerOptions: { builder: 'esbuild' as any },
+              },
+            },
+          }),
+        ),
+      };
+
+      await expect(
+        buildAction.runBuild([], { all: true }, false, false),
+      ).rejects.toThrow(
+        'Invalid builder "esbuild" for project "broken". Available builders: tsc, webpack, swc, rspack.',
+      );
+
+      expect(deleteOutDirIfEnabled).not.toHaveBeenCalled();
+      expect(RspackCompiler).not.toHaveBeenCalled();
+    });
+  });
 });
