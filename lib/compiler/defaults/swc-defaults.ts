@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { Configuration } from '../../configuration/index.js';
+import { Builder, Configuration } from '../../configuration/index.js';
 import { isEsmProject } from '../../utils/is-esm-project.js';
 import { getValueOrDefault } from '../helpers/get-value-or-default.js';
 
@@ -9,9 +9,16 @@ export const swcDefaultsFactory = (
   tsConfigExclude: string[] = [],
   appName?: string,
 ) => {
+  const builder = configuration
+    ? getValueOrDefault<Builder | undefined>(
+        configuration as Required<Configuration>,
+        'compilerOptions.builder',
+        appName,
+      )
+    : undefined;
   const builderOptions =
-    typeof configuration?.compilerOptions?.builder !== 'string'
-      ? configuration?.compilerOptions?.builder?.options
+    typeof builder === 'object' && builder?.type === 'swc'
+      ? (builder.options ?? {})
       : {};
   const esm = resolveSwcModuleType(tsOptions) === 'es6';
   // In a monorepo the root "sourceRoot" is the default project's, so reading

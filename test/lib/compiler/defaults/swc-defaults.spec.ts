@@ -368,6 +368,97 @@ describe('swcDefaultsFactory', () => {
       expect(result.cliOptions.sync).toBe(false);
       expect(result.cliOptions.copyFiles).toBe(false);
     });
+
+    it('should use per-project swc builder options in a monorepo', () => {
+      const configuration = {
+        compilerOptions: {
+          builder: {
+            type: 'tsc' as const,
+            options: {
+              configPath: 'tsconfig.json',
+            },
+          },
+        },
+        projects: {
+          api: {
+            sourceRoot: 'apps/api/src',
+            compilerOptions: {
+              builder: {
+                type: 'swc' as const,
+                options: {
+                  copyFiles: true,
+                  includeDotfiles: true,
+                  sync: true,
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const result = swcDefaultsFactory(
+        undefined,
+        configuration as any,
+        [],
+        'api',
+      );
+      expect(result.cliOptions.copyFiles).toBe(true);
+      expect(result.cliOptions.includeDotfiles).toBe(true);
+      expect(result.cliOptions.sync).toBe(true);
+      expect(
+        (result.cliOptions as Record<string, unknown>).configPath,
+      ).toBeUndefined();
+    });
+
+    it('should not leak root tsc builder options when a project sets builder to "swc"', () => {
+      const configuration = {
+        compilerOptions: {
+          builder: {
+            type: 'tsc' as const,
+            options: {
+              configPath: 'tsconfig.json',
+            },
+          },
+        },
+        projects: {
+          api: {
+            sourceRoot: 'apps/api/src',
+            compilerOptions: {
+              builder: 'swc' as const,
+            },
+          },
+        },
+      };
+
+      const result = swcDefaultsFactory(
+        undefined,
+        configuration as any,
+        [],
+        'api',
+      );
+      expect(
+        (result.cliOptions as Record<string, unknown>).configPath,
+      ).toBeUndefined();
+      expect(result.cliOptions.copyFiles).toBe(false);
+    });
+
+    it('should not merge root tsc builder options when running single-project build with swc', () => {
+      const configuration = {
+        compilerOptions: {
+          builder: {
+            type: 'tsc' as const,
+            options: {
+              configPath: 'tsconfig.build.json',
+            },
+          },
+        },
+      };
+
+      const result = swcDefaultsFactory(undefined, configuration as any);
+      expect(
+        (result.cliOptions as Record<string, unknown>).configPath,
+      ).toBeUndefined();
+    });
   });
 });
 
