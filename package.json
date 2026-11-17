@@ -74,7 +74,7 @@
     "@types/node": "26.6.6",
     "@types/webpack-node-externals": "3.0.4",
     "delete-empty": "3.0.0",
-    "fork-ts-checker-webpack-plugin": "9.1.0",
+    "fork-ts-checker-webpack-plugin": "9.2.0",
     "gulp": "5.0.1",
     "gulp-clean": "0.4.0",
     "husky": "9.1.7",
