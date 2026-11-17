@@ -89,6 +89,16 @@ export class BuildAction extends AbstractAction {
     }
 
     const appBuildContexts = appNames.map((appName) => {
+      const isWebpackEnabled = getValueOrDefault<boolean>(
+        configuration,
+        'compilerOptions.webpack',
+        appName,
+        'webpack',
+        options,
+      );
+      const builder = isWebpackEnabled
+        ? ({ type: 'webpack' } as const)
+        : getBuilder(configuration, options, appName);
       const pathToTsconfig = getTscConfigPath(configuration, options, appName);
       const {
         exclude,
@@ -97,6 +107,7 @@ export class BuildAction extends AbstractAction {
       } = this.tsConfigProvider.getByConfigFilename(pathToTsconfig);
       return {
         appName,
+        builder,
         pathToTsconfig,
         tsOptions,
         exclude,
@@ -117,6 +128,7 @@ export class BuildAction extends AbstractAction {
 
     const buildApp = async ({
       appName,
+      builder,
       pathToTsconfig,
       tsOptions,
       exclude,
@@ -124,17 +136,6 @@ export class BuildAction extends AbstractAction {
       tsRootDir,
     }: (typeof appBuildContexts)[number]) => {
       const assetsManager = this.createAssetsManager();
-
-      const isWebpackEnabled = getValueOrDefault<boolean>(
-        configuration,
-        'compilerOptions.webpack',
-        appName,
-        'webpack',
-        options,
-      );
-      const builder = isWebpackEnabled
-        ? { type: 'webpack' }
-        : getBuilder(configuration, options, appName);
 
       assetsManager.copyAssets(
         configuration,
