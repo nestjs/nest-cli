@@ -2,21 +2,16 @@ import * as ts from 'typescript';
 import { Configuration } from '../../configuration/index.js';
 import { ERROR_PREFIX } from '../../ui/index.js';
 import { BaseCompiler } from '../base-compiler.js';
-import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
 import { PluginsLoader } from '../plugins/plugins-loader.js';
 import {
   FOUND_NO_ISSUES_GENERATING_METADATA,
   FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED,
 } from './constants.js';
 import { SwcCompilerExtras } from './swc-compiler.js';
-import { TypeCheckerHost } from './type-checker-host.js';
 
 const [tsConfigPath, appName, sourceRoot, plugins] = process.argv.slice(2);
 
 class ForkedTypeChecker extends BaseCompiler {
-  private readonly pluginMetadataGenerator = new PluginMetadataGenerator();
-  private readonly typeCheckerHost = new TypeCheckerHost();
-
   public async run(
     configuration: Required<Configuration>,
     tsConfigPath: string,

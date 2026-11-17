@@ -37,12 +37,12 @@ export class StartCommand extends AbstractCommand {
       .option('--rspackPath [path]', 'Path to rspack configuration.')
       .option(
         '--type-check',
-        'Enable type checking (when SWC is used).',
+        'Enable type checking (when SWC or rspack is used).',
         () => true,
       )
       .option(
         '--no-type-check',
-        'Disable type checking (when SWC is used).',
+        'Disable type checking (when SWC or rspack is used).',
         () => false,
       )
       .option(

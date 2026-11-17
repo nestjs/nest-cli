@@ -433,13 +433,13 @@ describe('BuildAction - Rspack', () => {
     });
   });
 
-  describe('CLI plugins', () => {
+  describe('CLI plugins & typeCheck', () => {
     const pluginWarnings = async (builder: string, plugins: string[]) => {
       (buildAction as any).loader = {
         load: vi.fn().mockResolvedValue(
           makeConfiguration({
             compilerOptions: {
-              builder: { type: 'rspack' },
+              builder: { type: builder as any },
               webpack: false,
               plugins,
               assets: [],
@@ -459,9 +459,9 @@ describe('BuildAction - Rspack', () => {
       return warnings.filter((message) => message.includes('"plugins"'));
     };
 
-    it('warns that the rspack builder does not apply them', async () => {
+    it('defers rspack CLI plugin warnings to RspackCompiler', async () => {
       expect(await pluginWarnings('rspack', ['@nestjs/swagger'])).toHaveLength(
-        1,
+        0,
       );
     });
 
@@ -471,6 +471,62 @@ describe('BuildAction - Rspack', () => {
 
     it('does not warn for the tsc builder', async () => {
       expect(await pluginWarnings('tsc', ['@nestjs/swagger'])).toHaveLength(0);
+    });
+
+    it('forwards typeCheck option to runRspack', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              builder: { type: 'rspack' },
+              webpack: false,
+              plugins: [],
+              assets: [],
+              manualRestart: false,
+            } as any,
+          }),
+        ),
+      };
+      const runRspack = vi.fn();
+      (buildAction as any).runRspack = runRspack;
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild(
+        [undefined],
+        { builder: 'rspack', typeCheck: true },
+        false,
+        false,
+      );
+
+      const warnings = warn.mock.calls.map((call) => String(call[0]));
+      warn.mockRestore();
+
+      expect(runRspack).toHaveBeenCalledTimes(1);
+      expect(runRspack.mock.calls[0][2]).toEqual(
+        expect.objectContaining({ typeCheck: true }),
+      );
+      expect(warnings.some((message) => message.includes('"typeCheck"'))).toBe(
+        false,
+      );
+    });
+
+    it('warns when typeCheck is requested for a builder other than swc or rspack', async () => {
+      (buildAction as any).runTsc = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await buildAction.runBuild(
+        [undefined],
+        { builder: 'tsc', typeCheck: true },
+        false,
+        false,
+      );
+
+      const warnings = warn.mock.calls.map((call) => String(call[0]));
+      warn.mockRestore();
+
+      expect(warnings.some((message) => message.includes('"typeCheck"'))).toBe(
+        true,
+      );
     });
   });
 

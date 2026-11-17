@@ -157,10 +157,10 @@ export class BuildAction extends AbstractAction {
         'typeCheck',
         options,
       );
-      if (typeCheck && builder.type !== 'swc') {
+      if (typeCheck && builder.type !== 'swc' && builder.type !== 'rspack') {
         console.warn(
           INFO_PREFIX +
-            ` "typeCheck" will not have any effect when "builder" is not "swc".`,
+          ` "typeCheck" will not have any effect when "builder" is not "swc" or "rspack".`,
         );
       }
 
@@ -174,7 +174,7 @@ export class BuildAction extends AbstractAction {
       if (emitDeclarations && builder.type !== 'swc') {
         console.warn(
           INFO_PREFIX +
-            ` "emitDeclarations" will not have any effect when "builder" is not "swc".`,
+          ` "emitDeclarations" will not have any effect when "builder" is not "swc".`,
         );
       }
 
@@ -190,20 +190,7 @@ export class BuildAction extends AbstractAction {
       if (bundleDependencies && builder.type !== 'rspack') {
         console.warn(
           INFO_PREFIX +
-            ` "bundleDependencies" will not have any effect when "builder" is not "rspack".`,
-        );
-      }
-
-      const plugins = getValueOrDefault<unknown[]>(
-        configuration,
-        'compilerOptions.plugins',
-        appName,
-      );
-      if (plugins?.length && builder.type === 'rspack') {
-        // builtin:swc-loader cannot run the TypeScript transformers of CLI plugins
-        console.warn(
-          INFO_PREFIX +
-            ` "plugins" will not have any effect when "builder" is "rspack".`,
+          ` "bundleDependencies" will not have any effect when "builder" is not "rspack".`,
         );
       }
 
@@ -517,8 +504,8 @@ export class BuildAction extends AbstractAction {
       ) {
         console.warn(
           INFO_PREFIX +
-            ` Assets configured for library "${projectName}" will not be copied during application build.` +
-            ` Add it to "compilerOptions.includeLibraryAssets" or build the library separately.`,
+          ` Assets configured for library "${projectName}" will not be copied during application build.` +
+          ` Add it to "compilerOptions.includeLibraryAssets" or build the library separately.`,
         );
       }
     }

@@ -169,7 +169,7 @@ export class PluginMetadataGenerator {
     this.tsBinary = this.typescriptLoader.load();
   }
 
-  generate(options: PluginMetadataGenerateOptions) {
+  generate(options: PluginMetadataGenerateOptions): boolean | void {
     const {
       tsconfigPath,
       visitors,
@@ -181,7 +181,7 @@ export class PluginMetadataGenerator {
     } = options;
 
     if (visitors.length === 0) {
-      return;
+      return false;
     }
 
     if (tsProgramRef) {
@@ -193,9 +193,7 @@ export class PluginMetadataGenerator {
       );
     }
 
-    const onTypeCheckOrProgramInit = (program: ts.Program) => {
-      this.traverseAndPrintMetadata(program, visitors, outputDir, filename);
-
+    const printTypeCheckDiagnostics = (program: ts.Program) => {
       if (printDiagnostics) {
         const tsBinary = this.typescriptLoader.load();
         const diagnostics = tsBinary.getPreEmitDiagnostics(program);
@@ -218,10 +216,22 @@ export class PluginMetadataGenerator {
         }
       }
     };
+    const onTypeCheckOrProgramInit = (program: ts.Program) => {
+      this.traverseAndPrintMetadata(program, visitors, outputDir, filename);
+      printTypeCheckDiagnostics(program);
+    };
     this.typeCheckerHost.run(tsconfigPath, {
       watch,
-      onTypeCheck: onTypeCheckOrProgramInit,
-      onProgramInit: onTypeCheckOrProgramInit,
+      onTypeCheck: watch ? onTypeCheckOrProgramInit : printTypeCheckDiagnostics,
+      onProgramInit: watch
+        ? onTypeCheckOrProgramInit
+        : (program) =>
+            this.traverseAndPrintMetadata(
+              program,
+              visitors,
+              outputDir,
+              filename,
+            ),
     });
   }
 
@@ -230,7 +240,7 @@ export class PluginMetadataGenerator {
     visitors: Array<ReadonlyVisitor>,
     outputDir: string,
     filename?: string,
-  ) {
+  ): boolean {
     for (const sourceFile of programRef.getSourceFiles()) {
       if (!sourceFile.isDeclarationFile) {
         visitors.forEach((visitor) => visitor.visit(programRef, sourceFile));
@@ -273,7 +283,7 @@ export class PluginMetadataGenerator {
       }
     }
 
-    this.pluginMetadataPrinter.print(
+    return this.pluginMetadataPrinter.print(
       collectedMetadata,
       typeImports,
       {

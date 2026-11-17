@@ -22,12 +22,12 @@ export class BuildCommand extends AbstractCommand {
       )
       .option(
         '--type-check',
-        'Enable type checking (when SWC is used).',
+        'Enable type checking (when SWC or rspack is used).',
         () => true,
       )
       .option(
         '--no-type-check',
-        'Disable type checking (when SWC is used).',
+        'Disable type checking (when SWC or rspack is used).',
         () => false,
       )
       .option(

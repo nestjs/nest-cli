@@ -12,7 +12,7 @@ import {
 export interface TypeCheckerHostRunOptions {
   watch?: boolean;
   onTypeCheck?: (program: ts.Program) => void;
-  onProgramInit?: (program: ts.Program) => void;
+  onProgramInit?: (program: ts.Program) => boolean | void;
 }
 
 export class TypeCheckerHost {
@@ -116,15 +116,33 @@ export class TypeCheckerHost {
     const createProgram =
       tsBinary.createIncrementalProgram ?? tsBinary.createProgram;
 
-    const program = createProgram.call(ts, {
+    let program = createProgram.call(ts, {
       rootNames: fileNames,
       projectReferences,
       options: tsOptions,
     });
 
-    const programRef = program.getProgram
+    let programRef = program.getProgram
       ? program.getProgram()
       : (program as any as ts.Program);
+
+    if (options.onProgramInit) {
+      const shouldRebuild = options.onProgramInit(programRef);
+      const refreshed = this.tsConfigProvider.getByConfigFilename(tsconfigPath);
+      if (
+        shouldRebuild !== false ||
+        refreshed.fileNames.length !== fileNames.length
+      ) {
+        program = createProgram.call(ts, {
+          rootNames: refreshed.fileNames,
+          projectReferences: refreshed.projectReferences,
+          options: refreshed.options,
+        });
+        programRef = program.getProgram
+          ? program.getProgram()
+          : (program as any as ts.Program);
+      }
+    }
 
     const diagnostics = tsBinary.getPreEmitDiagnostics(programRef);
     if (diagnostics.length > 0) {

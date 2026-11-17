@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import * as ts from 'typescript';
 import ora from 'ora';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -60,9 +63,7 @@ describe('TypeCheckerHost', () => {
 
       const mockTsBinary = {
         ...ts,
-        createIncrementalProgram: vi
-          .fn()
-          .mockReturnValue(mockBuilderProgram),
+        createIncrementalProgram: vi.fn().mockReturnValue(mockBuilderProgram),
         getPreEmitDiagnostics: vi.fn().mockReturnValue(diagnostics),
         formatDiagnosticsWithColorAndContext: vi
           .fn()
@@ -242,6 +243,84 @@ describe('TypeCheckerHost', () => {
       expect(spinnerMock.succeed).toHaveBeenCalledTimes(1);
       expect(spinnerMock.fail).not.toHaveBeenCalled();
     });
+
+    it('should rebuild the program before diagnostics when onProgramInit writes a new file', () => {
+      const { mockProgram, mockTsBinary } = setupMocks([]);
+      const onProgramInit = vi.fn().mockReturnValue(true);
+      const onTypeCheck = vi.fn();
+
+      typeCheckerHost.run('tsconfig.json', {
+        watch: false,
+        onProgramInit,
+        onTypeCheck,
+      });
+
+      expect(onProgramInit).toHaveBeenCalledTimes(1);
+      expect(onProgramInit).toHaveBeenCalledWith(mockProgram);
+      expect(mockTsBinary.createIncrementalProgram).toHaveBeenCalledTimes(2);
+      expect(onTypeCheck).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip rebuilding the program when onProgramInit returns false and fileNames are unchanged', () => {
+      const { mockTsBinary } = setupMocks([]);
+      const onProgramInit = vi.fn().mockReturnValue(false);
+
+      typeCheckerHost.run('tsconfig.json', {
+        watch: false,
+        onProgramInit,
+      });
+
+      expect(onProgramInit).toHaveBeenCalledTimes(1);
+      expect(mockTsBinary.createIncrementalProgram).toHaveBeenCalledTimes(1);
+    });
+
+    it('should resolve ./metadata without TS2307 when onProgramInit writes metadata.ts on a cold start', () => {
+      const tempDir = mkdtempSync(join(tmpdir(), 'nest-typecheck-cold-'));
+      try {
+        const tsconfigPath = join(tempDir, 'tsconfig.json');
+        const mainPath = join(tempDir, 'main.ts');
+        const metadataPath = join(tempDir, 'metadata.ts');
+
+        writeFileSync(
+          tsconfigPath,
+          JSON.stringify({
+            compilerOptions: {
+              target: 'ES2021',
+              module: 'commonjs',
+              strict: true,
+              skipLibCheck: true,
+              types: [],
+            },
+            include: ['*.ts'],
+          }),
+        );
+        writeFileSync(
+          mainPath,
+          `import metadata from './metadata';\nexport const loaded = metadata;\n`,
+        );
+
+        const realHost = new TypeCheckerHost();
+        const onTypeCheck = vi.fn();
+
+        expect(() =>
+          realHost.run(tsconfigPath, {
+            watch: false,
+            onProgramInit: () => {
+              writeFileSync(
+                metadataPath,
+                `/* eslint-disable */\nexport default async () => ({});\n`,
+              );
+              return true;
+            },
+            onTypeCheck,
+          }),
+        ).not.toThrow();
+
+        expect(onTypeCheck).toHaveBeenCalledTimes(1);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    }, 15000);
   });
 
   describe('runInWatchMode (via run)', () => {
@@ -258,8 +337,7 @@ describe('TypeCheckerHost', () => {
       };
 
       let capturedReportWatchStatusCallback:
-        | ((diagnostic: ts.Diagnostic) => void)
-        | undefined;
+        ((diagnostic: ts.Diagnostic) => void) | undefined;
 
       const mockTsConfigProvider = {
         getByConfigFilename: vi.fn().mockReturnValue({
