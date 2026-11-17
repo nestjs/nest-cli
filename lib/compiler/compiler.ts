@@ -58,9 +58,7 @@ export class Compiler extends BaseCompiler {
       undefined,
       undefined,
       {
-        before: tsconfigPathsPlugin
-          ? [tsconfigPathsPlugin, ...before]
-          : before,
+        before: tsconfigPathsPlugin ? [tsconfigPathsPlugin, ...before] : before,
         after,
         afterDeclarations: tsconfigPathsPlugin
           ? [tsconfigPathsPlugin, ...afterDeclarations]
@@ -75,8 +73,8 @@ export class Compiler extends BaseCompiler {
       formatHost,
     );
     if (errorsCount) {
-      process.exit(1);
-    } else if (!errorsCount && onSuccess) {
+      throw new Error(`Found ${errorsCount} compilation error(s).`);
+    } else if (onSuccess) {
       onSuccess();
     }
   }

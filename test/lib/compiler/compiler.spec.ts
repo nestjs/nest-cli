@@ -121,36 +121,40 @@ describe('Compiler (tsc)', () => {
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  it('exits with code 1 and skips onSuccess when diagnostics are reported', () => {
+  it('throws and skips onSuccess without calling process.exit when diagnostics are reported', () => {
     compiler = buildCompiler([{ messageText: 'Type error' }]);
     const onSuccess = vi.fn();
 
-    compiler.run(
-      configuration,
-      'tsconfig.json',
-      undefined,
-      undefined,
-      onSuccess,
-    );
+    expect(() =>
+      compiler.run(
+        configuration,
+        'tsconfig.json',
+        undefined,
+        undefined,
+        onSuccess,
+      ),
+    ).toThrow('Found 1 compilation error(s).');
 
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(exitSpy).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(tsBinary.formatDiagnosticsWithColorAndContext).toHaveBeenCalled();
   });
 
-  it('reports diagnostics produced by the emit itself', () => {
+  it('throws when diagnostics are produced by the emit itself', () => {
     emit.mockReturnValue({ diagnostics: [{ messageText: 'Emit error' }] });
     const onSuccess = vi.fn();
 
-    compiler.run(
-      configuration,
-      'tsconfig.json',
-      undefined,
-      undefined,
-      onSuccess,
-    );
+    expect(() =>
+      compiler.run(
+        configuration,
+        'tsconfig.json',
+        undefined,
+        undefined,
+        onSuccess,
+      ),
+    ).toThrow('Found 1 compilation error(s).');
 
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(exitSpy).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
   });
 

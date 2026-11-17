@@ -428,6 +428,75 @@ describe('Rspack Compiler', () => {
       expect(mockRun).toHaveBeenCalled();
       expect(mockWatch).not.toHaveBeenCalled();
     });
+
+    it('should resolve non-watch run() only after rspack finishes and closes watchers', async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      mockRun.mockImplementation((cb) => {
+        cb(null, {
+          hasErrors: () => false,
+          toString: () => 'compiled successfully',
+        });
+      });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+
+      await compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras({
+          watchMode: false,
+          assetsManager: assetsManager as any,
+        }),
+      );
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      consoleSpy.mockRestore();
+    });
+
+    it('should reject non-watch run() and close watchers when stats has errors', async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      const mockExit = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      mockRun.mockImplementation((cb) => {
+        cb(null, {
+          hasErrors: () => true,
+          toString: () => 'errors found',
+        });
+      });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+
+      await expect(
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({
+            watchMode: false,
+            assetsManager: assetsManager as any,
+          }),
+        ),
+      ).rejects.toThrow('Rspack compilation failed.');
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(mockExit).not.toHaveBeenCalled();
+      mockExit.mockRestore();
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('createAfterCallback', () => {
@@ -534,38 +603,56 @@ describe('Rspack Compiler', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('should exit with code 1 when err is set and stats is undefined', () => {
+    it('should reject via onComplete and close watchers when err is set and stats is undefined', async () => {
       const mockExit = vi
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      const onComplete = {
+        resolve: vi.fn(),
+        reject: vi.fn(),
+      };
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
+        assetsManager,
         false,
         false,
+        onComplete,
       );
 
-      callback(new Error('compile error'), undefined);
+      const compileError = new Error('compile error');
+      callback(compileError, undefined);
+      await new Promise((resolve) => setImmediate(resolve));
 
-      expect(mockExit).toHaveBeenCalledWith(1);
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(onComplete.reject).toHaveBeenCalledWith(compileError);
+      expect(mockExit).not.toHaveBeenCalled();
 
       mockExit.mockRestore();
-      consoleSpy.mockRestore();
     });
 
-    it('should exit with code 1 on errors in non-watch mode', () => {
+    it('should reject via onComplete and close watchers on errors in non-watch mode', async () => {
       const mockExit = vi
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      const onComplete = {
+        resolve: vi.fn(),
+        reject: vi.fn(),
+      };
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
+        assetsManager,
         false,
         false,
+        onComplete,
       );
 
       const mockStats = {
@@ -574,8 +661,13 @@ describe('Rspack Compiler', () => {
       };
 
       callback(null, mockStats);
+      await new Promise((resolve) => setImmediate(resolve));
 
-      expect(mockExit).toHaveBeenCalledWith(1);
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(onComplete.reject).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Rspack compilation failed.' }),
+      );
+      expect(mockExit).not.toHaveBeenCalled();
 
       mockExit.mockRestore();
       consoleSpy.mockRestore();

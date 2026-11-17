@@ -473,4 +473,61 @@ describe('BuildAction - Rspack', () => {
       expect(await pluginWarnings('tsc', ['@nestjs/swagger'])).toHaveLength(0);
     });
   });
+
+  describe('error propagation and watcher cleanup', () => {
+    it('closes asset watchers and propagates compiler errors in parallel builds', async () => {
+      const managers: Array<{ closeWatchers: ReturnType<typeof vi.fn> }> = [];
+      (buildAction as any).createAssetsManager = vi.fn(() => {
+        const manager = {
+          copyAssets: vi.fn(),
+          closeWatchers: vi.fn().mockResolvedValue(undefined),
+        };
+        managers.push(manager);
+        return manager;
+      });
+      (buildAction as any).runRspack = vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Rspack compilation failed.'));
+
+      await expect(
+        buildAction.runBuild(
+          ['a', 'b'],
+          { builder: 'rspack', parallel: true },
+          false,
+          false,
+        ),
+      ).rejects.toThrow('Rspack compilation failed.');
+
+      expect(managers).toHaveLength(2);
+      expect(managers[1].closeWatchers).toHaveBeenCalledTimes(1);
+    });
+
+    it('exits with code 1 in handle() when runBuild rejects', async () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as never);
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      vi.spyOn(buildAction, 'runBuild').mockRejectedValue(
+        new Error('Found 2 compilation error(s).'),
+      );
+
+      await buildAction.handle({
+        apps: [],
+        watch: false,
+        watchAssets: false,
+      });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Found 2 compilation error(s).'),
+      );
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });

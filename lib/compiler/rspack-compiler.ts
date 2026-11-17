@@ -127,14 +127,13 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       watch = rspackConfiguration.watch;
     }
 
-    const afterCallback = this.createAfterCallback(
-      onSuccess,
-      extras.assetsManager,
-      extras.watchMode ?? false,
-      watch,
-    );
-
     if (extras.watchMode || watch) {
+      const afterCallback = this.createAfterCallback(
+        onSuccess,
+        extras.assetsManager,
+        extras.watchMode ?? false,
+        watch,
+      );
       compiler.hooks.watchRun.tapAsync(
         'Rebuild info',
         (params: any, callback: () => void) => {
@@ -144,7 +143,16 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       );
       compiler.watch(watchOptions! || {}, afterCallback);
     } else {
-      compiler.run(afterCallback);
+      return new Promise<void>((resolve, reject) => {
+        const afterCallback = this.createAfterCallback(
+          onSuccess,
+          extras.assetsManager,
+          extras.watchMode ?? false,
+          watch,
+          { resolve, reject },
+        );
+        compiler.run(afterCallback);
+      });
     }
   }
 
@@ -153,13 +161,40 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     assetsManager: AssetsManager,
     watchMode: boolean,
     watch: boolean | undefined,
+    onComplete?: {
+      resolve: () => void;
+      reject: (err: unknown) => void;
+    },
   ) {
+    const closeWatchersSafely = async () => {
+      try {
+        await assetsManager.closeWatchers();
+      } catch (error: unknown) {
+        console.error(
+          `${ERROR_PREFIX} Failed to close asset watchers. ` +
+            `${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    };
+
     return (err: Error | null | undefined, stats: any | undefined) => {
+      const isWatch = watchMode || !!watch;
       if (err && stats === undefined) {
         // Could not complete the compilation
         // The error caught is most likely thrown by underlying tasks
+        if (!isWatch && onComplete) {
+          if (!onSuccess) {
+            void closeWatchersSafely().finally(() => onComplete.reject(err));
+          } else {
+            onComplete.reject(err);
+          }
+          return;
+        }
         console.log(err);
-        return process.exit(1);
+        if (!isWatch && !onSuccess) {
+          void closeWatchersSafely();
+        }
+        return;
       }
       const statsOutput = stats!.toString({
         chunks: false,
@@ -168,24 +203,29 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
         assets: false,
       });
       if (!err && !stats!.hasErrors()) {
-        if (!onSuccess && !watchMode && !watch) {
-          // rspack ignores whatever this callback returns, so the close is
-          // handled here rather than awaited — but its rejection still has to
-          // be caught or it terminates the CLI after a successful compile.
-          assetsManager.closeWatchers().catch((error: unknown) => {
-            console.error(
-              `${ERROR_PREFIX} Failed to close asset watchers. ` +
-                `${error instanceof Error ? error.message : String(error)}`,
-            );
-          });
-        } else if (onSuccess) {
+        if (onSuccess) {
           onSuccess();
         }
-      } else if (!watchMode && !watch) {
         console.log(statsOutput);
-        return process.exit(1);
+        if (!onSuccess && !isWatch) {
+          // rspack ignores whatever this callback returns, so the close is
+          // handled here while resolving the outer non-watch Promise once done.
+          void closeWatchersSafely().finally(() => onComplete?.resolve());
+        } else {
+          onComplete?.resolve();
+        }
+        return;
       }
+
       console.log(statsOutput);
+      if (!isWatch) {
+        const failure = err ?? new Error('Rspack compilation failed.');
+        if (!onSuccess) {
+          void closeWatchersSafely().finally(() => onComplete?.reject(failure));
+        } else {
+          onComplete?.reject(failure);
+        }
+      }
     };
   }
 }

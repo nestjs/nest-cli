@@ -202,57 +202,64 @@ export class BuildAction extends AbstractAction {
         );
       }
 
-      switch (builder.type) {
-        case 'tsc':
-          await this.runTsc(
-            watchMode,
-            options,
-            configuration,
-            pathToTsconfig,
-            appName,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'webpack':
-          await this.runWebpack(
-            configuration,
-            appName,
-            options,
-            pathToTsconfig,
-            isDebugEnabled,
-            watchMode,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'rspack':
-          await this.runRspack(
-            configuration,
-            appName,
-            options,
-            pathToTsconfig,
-            tsOptions,
-            isDebugEnabled,
-            watchMode,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'swc':
-          await this.runSwc(
-            configuration,
-            appName,
-            pathToTsconfig,
-            watchMode,
-            options,
-            tsOptions,
-            exclude,
-            emitDeclarations,
-            onSuccess,
-            assetsManager,
-          );
-          break;
+      try {
+        switch (builder.type) {
+          case 'tsc':
+            await this.runTsc(
+              watchMode,
+              options,
+              configuration,
+              pathToTsconfig,
+              appName,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'webpack':
+            await this.runWebpack(
+              configuration,
+              appName,
+              options,
+              pathToTsconfig,
+              isDebugEnabled,
+              watchMode,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'rspack':
+            await this.runRspack(
+              configuration,
+              appName,
+              options,
+              pathToTsconfig,
+              tsOptions,
+              isDebugEnabled,
+              watchMode,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'swc':
+            await this.runSwc(
+              configuration,
+              appName,
+              pathToTsconfig,
+              watchMode,
+              options,
+              tsOptions,
+              exclude,
+              emitDeclarations,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+        }
+      } catch (err) {
+        if (!watchMode && !watchAssetsMode) {
+          await assetsManager.closeWatchers();
+        }
+        throw err;
       }
     };
 
@@ -390,14 +397,17 @@ export class BuildAction extends AbstractAction {
         this.tsLoader,
       );
 
-      compiler.run(
-        configuration,
-        pathToTsconfig,
-        appName,
-        undefined,
-        onSuccess,
-      );
-      await assetsManager.closeWatchers();
+      try {
+        compiler.run(
+          configuration,
+          pathToTsconfig,
+          appName,
+          undefined,
+          onSuccess,
+        );
+      } finally {
+        await assetsManager.closeWatchers();
+      }
     }
   }
 
