@@ -53,10 +53,10 @@ export function createBundlerAfterCallback({
     if (err && stats === undefined) {
       // Could not complete the compilation
       // The error caught is most likely thrown by underlying tasks
+      console.log(err);
       if (isWatch) {
         // Both webpack and rspack stop watching without re-arming after a
         // fatal watch error; exit so watch mode does not stay up dead.
-        console.log(err);
         return process.exit(1);
       }
       if (!onSuccess) {

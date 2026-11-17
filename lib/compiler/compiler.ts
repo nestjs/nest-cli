@@ -93,9 +93,6 @@ export class Compiler extends BaseCompiler {
       console.error(
         tsBinary.formatDiagnosticsWithColorAndContext(diagnostics, formatHost),
       );
-      console.info(
-        `Found ${diagnostics.length} error(s).` + tsBinary.sys.newLine,
-      );
     }
     return diagnostics.length;
   }

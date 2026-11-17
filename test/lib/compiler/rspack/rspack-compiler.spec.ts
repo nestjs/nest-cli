@@ -438,24 +438,37 @@ describe('Rspack Compiler', () => {
       const assetsManager = {
         closeWatchers: vi.fn().mockResolvedValue(undefined),
       };
+      let finish!: (err: Error | null, stats: unknown) => void;
       mockRun.mockImplementation((cb) => {
-        cb(null, {
-          hasErrors: () => false,
-          toString: () => 'compiled successfully',
-        });
+        finish = cb;
       });
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
-      await compiler.run(
-        makeConfiguration(),
-        'tsconfig.json',
-        undefined,
-        makeExtras({
-          watchMode: false,
-          assetsManager: assetsManager as any,
-        }),
-      );
+      let settled = false;
+      const running = Promise.resolve(
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({
+            watchMode: false,
+            assetsManager: assetsManager as any,
+          }),
+        ),
+      ).then(() => {
+        settled = true;
+      });
 
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(settled).toBe(false);
+
+      finish(null, {
+        hasErrors: () => false,
+        toString: () => 'compiled successfully',
+      });
+      await running;
+
+      expect(settled).toBe(true);
       expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
       consoleSpy.mockRestore();
     });
@@ -623,15 +636,18 @@ describe('Rspack Compiler', () => {
         onComplete,
       );
 
+      const logSpy = vi.spyOn(console, 'log').mockImplementation();
       const compileError = new Error('compile error');
       callback(compileError, undefined);
       await new Promise((resolve) => setImmediate(resolve));
 
       expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
       expect(onComplete.reject).toHaveBeenCalledWith(compileError);
+      expect(logSpy).toHaveBeenCalledWith(compileError);
       expect(mockExit).not.toHaveBeenCalled();
 
       mockExit.mockRestore();
+      logSpy.mockRestore();
     });
 
     it('should exit with code 1 on fatal error when err is set and stats is undefined in watch mode', () => {
