@@ -50,7 +50,9 @@ export interface TscBuilderOptions {
   configPath?: string;
 }
 
-export type BuilderVariant = 'tsc' | 'swc' | 'webpack' | 'rspack';
+export const AVAILABLE_BUILDERS = ['tsc', 'webpack', 'swc', 'rspack'] as const;
+
+export type BuilderVariant = (typeof AVAILABLE_BUILDERS)[number];
 export type Builder =
   | BuilderVariant
   | {
