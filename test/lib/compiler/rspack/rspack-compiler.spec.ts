@@ -634,6 +634,27 @@ describe('Rspack Compiler', () => {
       mockExit.mockRestore();
     });
 
+    it('should exit with code 1 on fatal error when err is set and stats is undefined in watch mode', () => {
+      const mockExit = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        { closeWatchers: vi.fn().mockResolvedValue(undefined) },
+        true,
+        false,
+      );
+
+      callback(new Error('fatal watch error'), undefined);
+
+      expect(mockExit).toHaveBeenCalledWith(1);
+
+      mockExit.mockRestore();
+      consoleSpy.mockRestore();
+    });
+
     it('should reject via onComplete and close watchers on errors in non-watch mode', async () => {
       const mockExit = vi
         .spyOn(process, 'exit')

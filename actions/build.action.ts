@@ -276,7 +276,16 @@ export class BuildAction extends AbstractAction {
           : appBuildContexts.length;
       for (let i = 0; i < appBuildContexts.length; i += concurrency) {
         const chunk = appBuildContexts.slice(i, i + concurrency);
-        await Promise.all(chunk.map((context) => buildApp(context)));
+        const results = await Promise.allSettled(
+          chunk.map((context) => buildApp(context)),
+        );
+        const firstFailure = results.find(
+          (result): result is PromiseRejectedResult =>
+            result.status === 'rejected',
+        );
+        if (firstFailure) {
+          throw firstFailure.reason;
+        }
       }
     } else {
       for (const context of appBuildContexts) {

@@ -503,6 +503,44 @@ describe('BuildAction - Rspack', () => {
       expect(managers[1].closeWatchers).toHaveBeenCalledTimes(1);
     });
 
+    it('waits for slower sibling builds in a parallel chunk to settle before rejecting', async () => {
+      let resolveSlowBuild!: () => void;
+      let slowBuildSettled = false;
+
+      (buildAction as any).runRspack = vi
+        .fn()
+        .mockImplementationOnce(() => Promise.reject(new Error('fast fail')))
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              resolveSlowBuild = () => {
+                slowBuildSettled = true;
+                resolve();
+              };
+            }),
+        );
+
+      const buildPromise = buildAction.runBuild(
+        ['a', 'b'],
+        { builder: 'rspack', parallel: true },
+        false,
+        false,
+      );
+
+      // Flush microtasks for the fast failure; the chunk must still wait for 'b'.
+      await new Promise((resolve) => setImmediate(resolve));
+      let settled = false;
+      void buildPromise.catch(() => {
+        settled = true;
+      });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(settled).toBe(false);
+
+      resolveSlowBuild();
+      await expect(buildPromise).rejects.toThrow('fast fail');
+      expect(slowBuildSettled).toBe(true);
+    });
+
     it('exits with code 1 in handle() when runBuild rejects', async () => {
       const exitSpy = vi
         .spyOn(process, 'exit')

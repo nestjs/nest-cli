@@ -182,17 +182,16 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       if (err && stats === undefined) {
         // Could not complete the compilation
         // The error caught is most likely thrown by underlying tasks
-        if (!isWatch && onComplete) {
-          if (!onSuccess) {
-            void closeWatchersSafely().finally(() => onComplete.reject(err));
-          } else {
-            onComplete.reject(err);
-          }
-          return;
+        if (isWatch) {
+          // rspack's Watching._done(err) stops watching without re-arming
+          // after a fatal error; exit so watch mode does not stay up dead.
+          console.log(err);
+          return process.exit(1);
         }
-        console.log(err);
-        if (!isWatch && !onSuccess) {
-          void closeWatchersSafely();
+        if (!onSuccess) {
+          void closeWatchersSafely().finally(() => onComplete?.reject(err));
+        } else {
+          onComplete?.reject(err);
         }
         return;
       }
