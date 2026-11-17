@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { AVAILABLE_BUILDERS } from '../lib/configuration/index.js';
 import { ERROR_PREFIX } from '../lib/ui/index.js';
 import { AbstractCommand } from './abstract.command.js';
 import { BuildCommandContext } from './context/index.js';
@@ -60,13 +61,15 @@ export class BuildCommand extends AbstractCommand {
       .action(async (apps: string[], options: Record<string, any>) => {
         const isWebpackEnabled = options.tsc ? false : options.webpack;
 
-        const availableBuilders = ['tsc', 'webpack', 'swc', 'rspack'];
-        if (options.builder && !availableBuilders.includes(options.builder)) {
+        if (
+          options.builder !== undefined &&
+          !(AVAILABLE_BUILDERS as readonly string[]).includes(options.builder)
+        ) {
           console.error(
             ERROR_PREFIX +
               ` Invalid builder option: ${
                 options.builder
-              }. Available builders: ${availableBuilders.join(', ')}`,
+              }. Available builders: ${AVAILABLE_BUILDERS.join(', ')}`,
           );
           process.exit(1);
         }
