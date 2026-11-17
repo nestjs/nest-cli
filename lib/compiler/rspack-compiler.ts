@@ -3,11 +3,15 @@ import { createRequire } from 'module';
 import { resolve } from 'path';
 import type * as ts from 'typescript';
 import { CompilerOptions, Configuration } from '../configuration/index.js';
-import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
+import { INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
 import { rspackDefaultsFactory } from './defaults/rspack-defaults.js';
+import {
+  BundlerCallbackCompletion,
+  createBundlerAfterCallback,
+} from './helpers/bundler-callback.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import { PluginsLoader } from './plugins/plugins-loader.js';
 
@@ -161,71 +165,16 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     assetsManager: AssetsManager,
     watchMode: boolean,
     watch: boolean | undefined,
-    onComplete?: {
-      resolve: () => void;
-      reject: (err: unknown) => void;
-    },
+    onComplete?: BundlerCallbackCompletion,
   ) {
-    const closeWatchersSafely = async () => {
-      try {
-        await assetsManager.closeWatchers();
-      } catch (error: unknown) {
-        console.error(
-          `${ERROR_PREFIX} Failed to close asset watchers. ` +
-            `${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-    };
-
-    return (err: Error | null | undefined, stats: any | undefined) => {
-      const isWatch = watchMode || !!watch;
-      if (err && stats === undefined) {
-        // Could not complete the compilation
-        // The error caught is most likely thrown by underlying tasks
-        if (isWatch) {
-          // rspack's Watching._done(err) stops watching without re-arming
-          // after a fatal error; exit so watch mode does not stay up dead.
-          console.log(err);
-          return process.exit(1);
-        }
-        if (!onSuccess) {
-          void closeWatchersSafely().finally(() => onComplete?.reject(err));
-        } else {
-          onComplete?.reject(err);
-        }
-        return;
-      }
-      const statsOutput = stats!.toString({
-        chunks: false,
-        colors: true,
-        modules: false,
-        assets: false,
-      });
-      if (!err && !stats!.hasErrors()) {
-        if (onSuccess) {
-          onSuccess();
-        }
-        console.log(statsOutput);
-        if (!onSuccess && !isWatch) {
-          // rspack ignores whatever this callback returns, so the close is
-          // handled here while resolving the outer non-watch Promise once done.
-          void closeWatchersSafely().finally(() => onComplete?.resolve());
-        } else {
-          onComplete?.resolve();
-        }
-        return;
-      }
-
-      console.log(statsOutput);
-      if (!isWatch) {
-        const failure = err ?? new Error('Rspack compilation failed.');
-        if (!onSuccess) {
-          void closeWatchersSafely().finally(() => onComplete?.reject(failure));
-        } else {
-          onComplete?.reject(failure);
-        }
-      }
-    };
+    return createBundlerAfterCallback({
+      bundlerName: 'Rspack',
+      onSuccess,
+      assetsManager,
+      watchMode,
+      watch,
+      onComplete,
+    });
   }
 }
 
