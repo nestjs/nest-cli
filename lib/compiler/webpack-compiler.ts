@@ -2,11 +2,15 @@ import { existsSync } from 'fs';
 import { createRequire } from 'module';
 import { resolve } from 'path';
 import { Configuration } from '../configuration/index.js';
-import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
+import { INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
 import { webpackDefaultsFactory } from './defaults/webpack-defaults.js';
+import {
+  BundlerCallbackCompletion,
+  createBundlerAfterCallback,
+} from './helpers/bundler-callback.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import { PluginsLoader } from './plugins/plugins-loader.js';
 import type webpack from 'webpack';
@@ -143,21 +147,29 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
       watch = webpackConfiguration.watch;
     }
 
-    const afterCallback = this.createAfterCallback(
-      onSuccess,
-      extras.assetsManager,
-      extras.watchMode ?? false,
-      watch,
-    );
-
     if (extras.watchMode || watch) {
+      const afterCallback = this.createAfterCallback(
+        onSuccess,
+        extras.assetsManager,
+        extras.watchMode ?? false,
+        watch,
+      );
       compiler.hooks.watchRun.tapAsync('Rebuild info', (params, callback) => {
         console.log(`\n${INFO_PREFIX} Webpack is building your sources...\n`);
         callback();
       });
       compiler.watch(watchOptions! || {}, afterCallback);
     } else {
-      compiler.run(afterCallback);
+      return new Promise<void>((resolve, reject) => {
+        const afterCallback = this.createAfterCallback(
+          onSuccess,
+          extras.assetsManager,
+          extras.watchMode ?? false,
+          watch,
+          { resolve, reject },
+        );
+        compiler.run(afterCallback);
+      });
     }
   }
 
@@ -166,42 +178,15 @@ export class WebpackCompiler extends BaseCompiler<WebpackCompilerExtras> {
     assetsManager: AssetsManager,
     watchMode: boolean,
     watch: boolean | undefined,
+    onComplete?: BundlerCallbackCompletion,
   ) {
-    return (
-      err: Error | null | undefined,
-      stats: webpack.Stats | webpack.MultiStats | undefined,
-    ) => {
-      if (err && stats === undefined) {
-        // Could not complete the compilation
-        // The error caught is most likely thrown by underlying tasks
-        console.log(err);
-        return process.exit(1);
-      }
-      const statsOutput = stats!.toString({
-        chunks: false,
-        colors: true,
-        modules: false,
-        assets: false,
-      });
-      if (!err && !stats!.hasErrors()) {
-        if (!onSuccess && !watchMode && !watch) {
-          // webpack ignores whatever this callback returns, so the close is
-          // handled here rather than awaited — but its rejection still has to
-          // be caught or it terminates the CLI after a successful compile.
-          assetsManager.closeWatchers().catch((error: unknown) => {
-            console.error(
-              `${ERROR_PREFIX} Failed to close asset watchers. ` +
-                `${error instanceof Error ? error.message : String(error)}`,
-            );
-          });
-        } else if (onSuccess) {
-          onSuccess();
-        }
-      } else if (!watchMode && !watch) {
-        console.log(statsOutput);
-        return process.exit(1);
-      }
-      console.log(statsOutput);
-    };
+    return createBundlerAfterCallback({
+      bundlerName: 'Webpack',
+      onSuccess,
+      assetsManager,
+      watchMode,
+      watch,
+      onComplete,
+    });
   }
 }

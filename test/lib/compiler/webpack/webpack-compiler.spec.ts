@@ -280,6 +280,86 @@ describe('Webpack Compiler', () => {
 
       expect(mockRun).toHaveBeenCalled();
     });
+
+    it('should resolve non-watch run() only after webpack finishes and closes watchers', async () => {
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      let finish!: (err: Error | null, stats: unknown) => void;
+      mockRun.mockImplementation((cb) => {
+        finish = cb;
+      });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+
+      let settled = false;
+      const running = Promise.resolve(
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({
+            watchMode: false,
+            assetsManager: assetsManager as any,
+          }),
+        ),
+      ).then(() => {
+        settled = true;
+      });
+
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(settled).toBe(false);
+
+      finish(null, {
+        hasErrors: () => false,
+        toString: () => 'compiled successfully',
+      });
+      await running;
+
+      expect(settled).toBe(true);
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      consoleSpy.mockRestore();
+    });
+
+    it('should reject non-watch run() and close watchers when stats has errors', async () => {
+      vi.mocked(getValueOrDefault)
+        .mockReturnValueOnce('main')
+        .mockReturnValueOnce('');
+
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+      mockRun.mockImplementation((cb) => {
+        cb(null, {
+          hasErrors: () => true,
+          toString: () => 'errors found',
+        });
+      });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+
+      await expect(
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({
+            watchMode: false,
+            assetsManager: assetsManager as any,
+          }),
+        ),
+      ).rejects.toThrow('Webpack compilation failed.');
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(exitSpy).not.toHaveBeenCalled();
+      exitSpy.mockRestore();
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('createAfterCallback', () => {
@@ -373,7 +453,39 @@ describe('Webpack Compiler', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('should exit with code 1 when err is set and stats is undefined', () => {
+    it('should reject via onComplete and close watchers when err is set and stats is undefined', async () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const assetsManager = makeAssetsManager();
+      const onComplete = {
+        resolve: vi.fn(),
+        reject: vi.fn(),
+      };
+
+      const callback = (compiler as any).createAfterCallback(
+        undefined,
+        assetsManager,
+        false,
+        false,
+        onComplete,
+      );
+
+      const logSpy = vi.spyOn(console, 'log').mockImplementation();
+      const compileError = new Error('compile error');
+      callback(compileError, undefined);
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(onComplete.reject).toHaveBeenCalledWith(compileError);
+      expect(logSpy).toHaveBeenCalledWith(compileError);
+      expect(exitSpy).not.toHaveBeenCalled();
+
+      exitSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    it('should exit with code 1 on fatal error when err is set and stats is undefined in watch mode', () => {
       const exitSpy = vi
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
@@ -382,11 +494,11 @@ describe('Webpack Compiler', () => {
       const callback = (compiler as any).createAfterCallback(
         undefined,
         makeAssetsManager(),
-        false,
+        true,
         false,
       );
 
-      callback(new Error('compile error'), undefined);
+      callback(new Error('fatal watch error'), undefined);
 
       expect(exitSpy).toHaveBeenCalledWith(1);
 
@@ -394,22 +506,33 @@ describe('Webpack Compiler', () => {
       logSpy.mockRestore();
     });
 
-    it('should exit with code 1 when the build has errors in non-watch mode', () => {
+    it('should reject via onComplete and close watchers when the build has errors in non-watch mode', async () => {
       const exitSpy = vi
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const assetsManager = makeAssetsManager();
+      const onComplete = {
+        resolve: vi.fn(),
+        reject: vi.fn(),
+      };
 
       const callback = (compiler as any).createAfterCallback(
         undefined,
-        makeAssetsManager(),
+        assetsManager,
         false,
         false,
+        onComplete,
       );
 
       callback(null, makeStats(true));
+      await new Promise((resolve) => setImmediate(resolve));
 
-      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(onComplete.reject).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Webpack compilation failed.' }),
+      );
+      expect(exitSpy).not.toHaveBeenCalled();
 
       exitSpy.mockRestore();
       logSpy.mockRestore();

@@ -207,57 +207,64 @@ export class BuildAction extends AbstractAction {
         );
       }
 
-      switch (builder.type) {
-        case 'tsc':
-          await this.runTsc(
-            watchMode,
-            options,
-            configuration,
-            pathToTsconfig,
-            appName,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'webpack':
-          await this.runWebpack(
-            configuration,
-            appName,
-            options,
-            pathToTsconfig,
-            isDebugEnabled,
-            watchMode,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'rspack':
-          await this.runRspack(
-            configuration,
-            appName,
-            options,
-            pathToTsconfig,
-            tsOptions,
-            isDebugEnabled,
-            watchMode,
-            onSuccess,
-            assetsManager,
-          );
-          break;
-        case 'swc':
-          await this.runSwc(
-            configuration,
-            appName,
-            pathToTsconfig,
-            watchMode,
-            options,
-            tsOptions,
-            exclude,
-            emitDeclarations,
-            onSuccess,
-            assetsManager,
-          );
-          break;
+      try {
+        switch (builder.type) {
+          case 'tsc':
+            await this.runTsc(
+              watchMode,
+              options,
+              configuration,
+              pathToTsconfig,
+              appName,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'webpack':
+            await this.runWebpack(
+              configuration,
+              appName,
+              options,
+              pathToTsconfig,
+              isDebugEnabled,
+              watchMode,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'rspack':
+            await this.runRspack(
+              configuration,
+              appName,
+              options,
+              pathToTsconfig,
+              tsOptions,
+              isDebugEnabled,
+              watchMode,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+          case 'swc':
+            await this.runSwc(
+              configuration,
+              appName,
+              pathToTsconfig,
+              watchMode,
+              options,
+              tsOptions,
+              exclude,
+              emitDeclarations,
+              onSuccess,
+              assetsManager,
+            );
+            break;
+        }
+      } catch (err) {
+        if (!watchMode && !watchAssetsMode) {
+          await assetsManager.closeWatchers();
+        }
+        throw err;
       }
     };
 
@@ -274,7 +281,16 @@ export class BuildAction extends AbstractAction {
           : appBuildContexts.length;
       for (let i = 0; i < appBuildContexts.length; i += concurrency) {
         const chunk = appBuildContexts.slice(i, i + concurrency);
-        await Promise.all(chunk.map((context) => buildApp(context)));
+        const results = await Promise.allSettled(
+          chunk.map((context) => buildApp(context)),
+        );
+        const firstFailure = results.find(
+          (result): result is PromiseRejectedResult =>
+            result.status === 'rejected',
+        );
+        if (firstFailure) {
+          throw firstFailure.reason;
+        }
       }
     } else {
       for (const context of appBuildContexts) {
@@ -395,14 +411,17 @@ export class BuildAction extends AbstractAction {
         this.tsLoader,
       );
 
-      compiler.run(
-        configuration,
-        pathToTsconfig,
-        appName,
-        undefined,
-        onSuccess,
-      );
-      await assetsManager.closeWatchers();
+      try {
+        compiler.run(
+          configuration,
+          pathToTsconfig,
+          appName,
+          undefined,
+          onSuccess,
+        );
+      } finally {
+        await assetsManager.closeWatchers();
+      }
     }
   }
 

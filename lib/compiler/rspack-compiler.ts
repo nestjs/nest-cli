@@ -3,11 +3,15 @@ import { createRequire } from 'module';
 import { resolve } from 'path';
 import type * as ts from 'typescript';
 import { CompilerOptions, Configuration } from '../configuration/index.js';
-import { ERROR_PREFIX, INFO_PREFIX } from '../ui/index.js';
+import { INFO_PREFIX } from '../ui/index.js';
 import { isEsmProject } from '../utils/is-esm-project.js';
 import { AssetsManager } from './assets-manager.js';
 import { BaseCompiler } from './base-compiler.js';
 import { rspackDefaultsFactory } from './defaults/rspack-defaults.js';
+import {
+  BundlerCallbackCompletion,
+  createBundlerAfterCallback,
+} from './helpers/bundler-callback.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
 import { PluginsLoader } from './plugins/plugins-loader.js';
 
@@ -127,14 +131,13 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       watch = rspackConfiguration.watch;
     }
 
-    const afterCallback = this.createAfterCallback(
-      onSuccess,
-      extras.assetsManager,
-      extras.watchMode ?? false,
-      watch,
-    );
-
     if (extras.watchMode || watch) {
+      const afterCallback = this.createAfterCallback(
+        onSuccess,
+        extras.assetsManager,
+        extras.watchMode ?? false,
+        watch,
+      );
       compiler.hooks.watchRun.tapAsync(
         'Rebuild info',
         (params: any, callback: () => void) => {
@@ -144,7 +147,16 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       );
       compiler.watch(watchOptions! || {}, afterCallback);
     } else {
-      compiler.run(afterCallback);
+      return new Promise<void>((resolve, reject) => {
+        const afterCallback = this.createAfterCallback(
+          onSuccess,
+          extras.assetsManager,
+          extras.watchMode ?? false,
+          watch,
+          { resolve, reject },
+        );
+        compiler.run(afterCallback);
+      });
     }
   }
 
@@ -153,40 +165,16 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     assetsManager: AssetsManager,
     watchMode: boolean,
     watch: boolean | undefined,
+    onComplete?: BundlerCallbackCompletion,
   ) {
-    return (err: Error | null | undefined, stats: any | undefined) => {
-      if (err && stats === undefined) {
-        // Could not complete the compilation
-        // The error caught is most likely thrown by underlying tasks
-        console.log(err);
-        return process.exit(1);
-      }
-      const statsOutput = stats!.toString({
-        chunks: false,
-        colors: true,
-        modules: false,
-        assets: false,
-      });
-      if (!err && !stats!.hasErrors()) {
-        if (!onSuccess && !watchMode && !watch) {
-          // rspack ignores whatever this callback returns, so the close is
-          // handled here rather than awaited — but its rejection still has to
-          // be caught or it terminates the CLI after a successful compile.
-          assetsManager.closeWatchers().catch((error: unknown) => {
-            console.error(
-              `${ERROR_PREFIX} Failed to close asset watchers. ` +
-                `${error instanceof Error ? error.message : String(error)}`,
-            );
-          });
-        } else if (onSuccess) {
-          onSuccess();
-        }
-      } else if (!watchMode && !watch) {
-        console.log(statsOutput);
-        return process.exit(1);
-      }
-      console.log(statsOutput);
-    };
+    return createBundlerAfterCallback({
+      bundlerName: 'Rspack',
+      onSuccess,
+      assetsManager,
+      watchMode,
+      watch,
+      onComplete,
+    });
   }
 }
 

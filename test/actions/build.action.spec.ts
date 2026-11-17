@@ -474,6 +474,101 @@ describe('BuildAction - Rspack', () => {
     });
   });
 
+  describe('error propagation and watcher cleanup', () => {
+    it('closes asset watchers and propagates compiler errors in parallel builds', async () => {
+      const managers: Array<{ closeWatchers: ReturnType<typeof vi.fn> }> = [];
+      (buildAction as any).createAssetsManager = vi.fn(() => {
+        const manager = {
+          copyAssets: vi.fn(),
+          closeWatchers: vi.fn().mockResolvedValue(undefined),
+        };
+        managers.push(manager);
+        return manager;
+      });
+      (buildAction as any).runRspack = vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Rspack compilation failed.'));
+
+      await expect(
+        buildAction.runBuild(
+          ['a', 'b'],
+          { builder: 'rspack', parallel: true },
+          false,
+          false,
+        ),
+      ).rejects.toThrow('Rspack compilation failed.');
+
+      expect(managers).toHaveLength(2);
+      expect(managers[1].closeWatchers).toHaveBeenCalledTimes(1);
+    });
+
+    it('waits for slower sibling builds in a parallel chunk to settle before rejecting', async () => {
+      let resolveSlowBuild!: () => void;
+      let slowBuildSettled = false;
+
+      (buildAction as any).runRspack = vi
+        .fn()
+        .mockImplementationOnce(() => Promise.reject(new Error('fast fail')))
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              resolveSlowBuild = () => {
+                slowBuildSettled = true;
+                resolve();
+              };
+            }),
+        );
+
+      const buildPromise = buildAction.runBuild(
+        ['a', 'b'],
+        { builder: 'rspack', parallel: true },
+        false,
+        false,
+      );
+
+      // Flush microtasks for the fast failure; the chunk must still wait for 'b'.
+      await new Promise((resolve) => setImmediate(resolve));
+      let settled = false;
+      void buildPromise.catch(() => {
+        settled = true;
+      });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(settled).toBe(false);
+
+      resolveSlowBuild();
+      await expect(buildPromise).rejects.toThrow('fast fail');
+      expect(slowBuildSettled).toBe(true);
+    });
+
+    it('exits with code 1 in handle() when runBuild rejects', async () => {
+      const exitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as never);
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      vi.spyOn(buildAction, 'runBuild').mockRejectedValue(
+        new Error('Found 2 compilation error(s).'),
+      );
+
+      await buildAction.handle({
+        apps: [],
+        watch: false,
+        watchAssets: false,
+      });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Found 2 compilation error(s).'),
+      );
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
   describe('builder validation', () => {
     it('rejects invalid builder in --all before deleting outDir or building valid apps', async () => {
       (buildAction as any).loader = {
