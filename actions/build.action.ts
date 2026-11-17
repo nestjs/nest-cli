@@ -89,13 +89,17 @@ export class BuildAction extends AbstractAction {
     }
 
     const appBuildContexts = appNames.map((appName) => {
-      const isWebpackEnabled = getValueOrDefault<boolean>(
-        configuration,
-        'compilerOptions.webpack',
-        appName,
-        'webpack',
-        options,
-      );
+      const hasCliBuilder = options.builder !== undefined;
+      const isWebpackEnabled =
+        options.webpack === true ||
+        (!hasCliBuilder &&
+          getValueOrDefault<boolean>(
+            configuration,
+            'compilerOptions.webpack',
+            appName,
+            'webpack',
+            options,
+          ));
       const builder = isWebpackEnabled
         ? ({ type: 'webpack' } as const)
         : getBuilder(configuration, options, appName);

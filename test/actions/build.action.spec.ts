@@ -503,4 +503,93 @@ describe('BuildAction - Rspack', () => {
       expect(RspackCompiler).not.toHaveBeenCalled();
     });
   });
+
+  describe('CLI --builder precedence over compilerOptions.webpack', () => {
+    it('lets CLI --builder override root compilerOptions.webpack: true', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              webpack: true,
+              plugins: [],
+              assets: [],
+              manualRestart: false,
+            },
+          }),
+        ),
+      };
+      const runSwc = vi.fn();
+      (buildAction as any).runSwc = runSwc;
+
+      await buildAction.runBuild([undefined], { builder: 'swc' }, false, false);
+
+      expect(runSwc).toHaveBeenCalledTimes(1);
+      expect(WebpackCompiler).not.toHaveBeenCalled();
+    });
+
+    it('lets CLI --builder override per-project compilerOptions.webpack: true', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            projects: {
+              api: {
+                type: 'application',
+                compilerOptions: { webpack: true },
+              },
+            },
+          }),
+        ),
+      };
+      const runSwc = vi.fn();
+      (buildAction as any).runSwc = runSwc;
+
+      await buildAction.runBuild(['api'], { builder: 'swc' }, false, false);
+
+      expect(runSwc).toHaveBeenCalledTimes(1);
+      expect(WebpackCompiler).not.toHaveBeenCalled();
+    });
+
+    it('keeps compilerOptions.webpack: true when CLI --builder is omitted', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              webpack: true,
+              builder: { type: 'tsc' },
+              plugins: [],
+              assets: [],
+              manualRestart: false,
+            },
+          }),
+        ),
+      };
+
+      await buildAction.runBuild([undefined], {}, false, false);
+
+      expect(WebpackCompiler).toHaveBeenCalledTimes(1);
+    });
+
+    it('still respects explicit CLI --webpack: false (--tsc)', async () => {
+      (buildAction as any).loader = {
+        load: vi.fn().mockResolvedValue(
+          makeConfiguration({
+            compilerOptions: {
+              webpack: true,
+              builder: { type: 'tsc' },
+              plugins: [],
+              assets: [],
+              manualRestart: false,
+            },
+          }),
+        ),
+      };
+      const runTsc = vi.fn();
+      (buildAction as any).runTsc = runTsc;
+
+      await buildAction.runBuild([undefined], { webpack: false }, false, false);
+
+      expect(runTsc).toHaveBeenCalledTimes(1);
+      expect(WebpackCompiler).not.toHaveBeenCalled();
+    });
+  });
 });
