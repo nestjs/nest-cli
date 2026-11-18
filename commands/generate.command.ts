@@ -1,11 +1,7 @@
 import { bold, cyan, green } from 'ansis';
 import Table, { TableConstructorOptions } from 'cli-table3';
 import { Command } from 'commander';
-import {
-  AbstractCollection,
-  CollectionFactory,
-} from '../lib/schematics/index.js';
-import { Schematic } from '../lib/schematics/nest.collection.js';
+import type { Schematic } from '../lib/schematics/nest.collection.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import { AbstractCommand } from './abstract.command.js';
 import { GenerateCommandContext } from './context/index.js';
@@ -15,7 +11,11 @@ export class GenerateCommand extends AbstractCommand {
     program
       .command('generate <schematic> [name] [path]')
       .alias('g')
-      .description(await this.buildDescription())
+      .description(
+        isHelpRequested()
+          ? await this.buildDescription()
+          : 'Generate a Nest element.',
+      )
       .option(
         '-d, --dry-run',
         'Report actions that would be taken without writing out results.',
@@ -150,8 +150,17 @@ export class GenerateCommand extends AbstractCommand {
   }
 
   private async getSchematics(collection: string): Promise<Schematic[]> {
-    const abstractCollection: AbstractCollection =
-      CollectionFactory.create(collection);
-    return abstractCollection.getSchematics();
+    const { CollectionFactory } = await import('../lib/schematics/index.js');
+    return CollectionFactory.create(collection).getSchematics();
   }
+}
+
+// Only help output shows the schematics table, and building it loads the
+// collection (`@angular-devkit/schematics` for a custom one)
+function isHelpRequested(args = process.argv.slice(2)): boolean {
+  return (
+    args.length === 0 ||
+    args[0] === 'help' ||
+    args.some((arg) => arg === '--help' || /^-[a-zA-Z]*h/.test(arg))
+  );
 }

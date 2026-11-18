@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../lib/utils/load-configuration.js', () => ({
   loadConfiguration: vi.fn().mockResolvedValue({
@@ -24,6 +24,7 @@ vi.mock('../../lib/schematics/index.js', async () => {
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { GenerateCommand } from '../../commands/generate.command.js';
 import { GenerateCommandContext } from '../../commands/context/generate.context.js';
+import { loadConfiguration } from '../../lib/utils/load-configuration.js';
 
 class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
@@ -252,6 +253,36 @@ describe('GenerateCommand', () => {
       );
 
       expect(context.specFileSuffix).toBe('test');
+    });
+  });
+
+  describe('description', () => {
+    const argv = process.argv;
+    const describeWith = async (...args: string[]) => {
+      process.argv = ['node', 'nest', ...args];
+      const program = await buildProgram(action);
+      return program.commands[0].description();
+    };
+
+    afterEach(() => {
+      process.argv = argv;
+    });
+
+    it.each([[], ['--help'], ['g', '-h'], ['g', '-dh'], ['help', 'g']])(
+      'lists the schematics when help is printed (%j)',
+      async (...args: string[]) => {
+        const description = await describeWith(...args);
+
+        expect(description).toContain('controller');
+      },
+    );
+
+    it('skips the schematics when a command runs', async () => {
+      vi.mocked(loadConfiguration).mockClear();
+      const description = await describeWith('g', 'controller', 'users');
+
+      expect(description).toBe('Generate a Nest element.');
+      expect(loadConfiguration).not.toHaveBeenCalled();
     });
   });
 

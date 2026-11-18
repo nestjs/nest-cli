@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { Collection } from '../lib/schematics/index.js';
+import { Collection } from '../lib/schematics/collection.js';
 import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { AbstractCommand } from './abstract.command.js';
 import { NewCommandContext } from './context/index.js';
