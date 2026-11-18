@@ -157,10 +157,10 @@ export class BuildAction extends AbstractAction {
         'typeCheck',
         options,
       );
-      if (typeCheck && builder.type !== 'swc') {
+      if (typeCheck && builder.type !== 'swc' && builder.type !== 'rspack') {
         console.warn(
           INFO_PREFIX +
-            ` "typeCheck" will not have any effect when "builder" is not "swc".`,
+            ` "typeCheck" will not have any effect when "builder" is not "swc" or "rspack".`,
         );
       }
 
@@ -191,19 +191,6 @@ export class BuildAction extends AbstractAction {
         console.warn(
           INFO_PREFIX +
             ` "bundleDependencies" will not have any effect when "builder" is not "rspack".`,
-        );
-      }
-
-      const plugins = getValueOrDefault<unknown[]>(
-        configuration,
-        'compilerOptions.plugins',
-        appName,
-      );
-      if (plugins?.length && builder.type === 'rspack') {
-        // builtin:swc-loader cannot run the TypeScript transformers of CLI plugins
-        console.warn(
-          INFO_PREFIX +
-            ` "plugins" will not have any effect when "builder" is "rspack".`,
         );
       }
 

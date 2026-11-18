@@ -55,6 +55,7 @@ export const rspackDefaultsFactory = (
   isEsm = false,
   tsOptions?: ts.CompilerOptions,
   bundleDependenciesOption: CompilerOptions['bundleDependencies'] = false,
+  typeCheck = false,
 ): Record<string, any> => {
   const { nodeExternals: externals } = loadRspackDeps();
 
@@ -207,18 +208,21 @@ export const rspackDefaultsFactory = (
   }
 
   // builtin:swc-loader only strips types, so the checker runs even when CLI
-  // plugins are registered (unlike webpack, where ts-loader then checks them)
-  try {
-    const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-    rspackConfiguration.plugins!.push(
-      new ForkTsCheckerWebpackPlugin({
-        typescript: {
-          configFile: tsConfigFile,
-        },
-      }),
-    );
-  } catch {
-    // fork-ts-checker-webpack-plugin not available, skip
+  // plugins are registered (unlike webpack, where ts-loader then checks them).
+  // With `typeCheck`, the CLI type-checks the program itself instead
+  if (!typeCheck) {
+    try {
+      const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+      rspackConfiguration.plugins!.push(
+        new ForkTsCheckerWebpackPlugin({
+          typescript: {
+            configFile: tsConfigFile,
+          },
+        }),
+      );
+    } catch {
+      // fork-ts-checker-webpack-plugin not available, skip
+    }
   }
 
   return rspackConfiguration;

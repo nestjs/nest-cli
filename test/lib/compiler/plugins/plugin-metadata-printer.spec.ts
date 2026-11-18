@@ -1,20 +1,29 @@
-﻿import { join } from 'path';
+import { join } from 'path';
 import * as ts from 'typescript';
-import { writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PluginMetadataPrinter } from '../../../../lib/compiler/plugins/plugin-metadata-printer.js';
 
 vi.mock('fs', async (importOriginal) => {
   const actual = await importOriginal<typeof import('fs')>();
-  return { ...actual, writeFileSync: vi.fn() };
+  return {
+    ...actual,
+    existsSync: vi.fn().mockReturnValue(false),
+    readFileSync: vi.fn().mockReturnValue(''),
+    writeFileSync: vi.fn(),
+  };
 });
 
+const existsSyncMock = vi.mocked(existsSync);
+const readFileSyncMock = vi.mocked(readFileSync);
 const writeFileSyncMock = vi.mocked(writeFileSync);
 
 describe('PluginMetadataPrinter', () => {
   let printer: PluginMetadataPrinter;
 
   beforeEach(() => {
+    existsSyncMock.mockReset().mockReturnValue(false);
+    readFileSyncMock.mockReset().mockReturnValue('');
     writeFileSyncMock.mockClear();
     printer = new PluginMetadataPrinter();
   });
@@ -84,5 +93,30 @@ describe('PluginMetadataPrinter', () => {
     expect(contents).toContain('"@nestjs/common"');
     expect(contents).toContain('"./controller.ts"');
     expect(contents).toContain('"foo"');
+  });
+
+  it('skips writeFileSync when the existing file on disk has identical bytes', () => {
+    printer.print({}, {}, { outputDir: '/tmp' }, ts);
+    const [, firstContents] = writeFileSyncMock.mock.calls[0] as [
+      string,
+      string,
+    ];
+    writeFileSyncMock.mockClear();
+
+    existsSyncMock.mockReturnValue(true);
+    readFileSyncMock.mockReturnValue(firstContents);
+
+    printer.print({}, {}, { outputDir: '/tmp' }, ts);
+
+    expect(writeFileSyncMock).not.toHaveBeenCalled();
+  });
+
+  it('overwrites metadata.ts when existing bytes on disk differ', () => {
+    existsSyncMock.mockReturnValue(true);
+    readFileSyncMock.mockReturnValue('/* stale */\n');
+
+    printer.print({}, {}, { outputDir: '/tmp' }, ts);
+
+    expect(writeFileSyncMock).toHaveBeenCalledTimes(1);
   });
 });

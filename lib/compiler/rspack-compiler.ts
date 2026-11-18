@@ -13,7 +13,10 @@ import {
   createBundlerAfterCallback,
 } from './helpers/bundler-callback.js';
 import { getValueOrDefault } from './helpers/get-value-or-default.js';
-import { PluginsLoader } from './plugins/plugins-loader.js';
+import {
+  MultiNestCompilerPlugins,
+  PluginsLoader,
+} from './plugins/plugins-loader.js';
 
 const require = createRequire(import.meta.url);
 
@@ -71,6 +74,25 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     );
     const entryFileRoot =
       getValueOrDefault<string>(configuration, 'root', appName) || '';
+    const bundleDependencies = getBundleDependencies(
+      configuration,
+      extras.options,
+      appName,
+    );
+    const typeCheck = getTypeCheck(configuration, extras.options, appName);
+    const rawPlugins = getValueOrDefault<Array<string | { name: string }>>(
+      configuration,
+      'compilerOptions.plugins',
+      appName,
+    );
+    const configuredPlugins = Array.isArray(rawPlugins) ? rawPlugins : [];
+    this.reportPluginCapabilities(
+      configuredPlugins,
+      plugins,
+      typeCheck,
+      Boolean(extras.options?.silent),
+    );
+
     const defaultOptions = rspackDefaultsFactory(
       pathToSource,
       entryFileRoot,
@@ -80,7 +102,8 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       plugins,
       isEsmProject(),
       extras.tsOptions,
-      getBundleDependencies(configuration, extras.options, appName),
+      bundleDependencies,
+      typeCheck,
     );
 
     let rspack: any;
@@ -132,6 +155,12 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
     }
 
     if (extras.watchMode || watch) {
+      if (typeCheck) {
+        this.runTypeChecker(configuration, tsConfigPath, appName, {
+          watch: true,
+          typeCheck: true,
+        });
+      }
       const afterCallback = this.createAfterCallback(
         onSuccess,
         extras.assetsManager,
@@ -155,7 +184,24 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
           watch,
           { resolve, reject },
         );
-        compiler.run(afterCallback);
+        const executeRspackRun = () => compiler.run(afterCallback);
+        if (typeCheck) {
+          Promise.resolve(
+            this.runTypeChecker(configuration, tsConfigPath, appName, {
+              watch: false,
+              typeCheck: true,
+            }),
+          )
+            .then(executeRspackRun)
+            .catch(async (error) => {
+              if (!onSuccess) {
+                await extras.assetsManager.closeWatchers();
+              }
+              reject(error);
+            });
+        } else {
+          executeRspackRun();
+        }
       });
     }
   }
@@ -176,6 +222,76 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       onComplete,
     });
   }
+
+  private reportPluginCapabilities(
+    configuredPlugins: Array<string | { name: string }>,
+    plugins: MultiNestCompilerPlugins,
+    typeCheck: boolean,
+    silent: boolean,
+  ): void {
+    if (silent || configuredPlugins.length === 0) {
+      return;
+    }
+
+    const pluginNames = configuredPlugins.map((entry) =>
+      typeof entry === 'string' ? entry : entry.name,
+    );
+    const visitorKeys = new Set(
+      (plugins?.readonlyVisitors ?? []).map((visitor) => visitor.key),
+    );
+    const visitorNames = pluginNames.filter((name) => visitorKeys.has(name));
+    const transformerOnlyNames = pluginNames.filter(
+      (name) => !visitorKeys.has(name),
+    );
+
+    if (!typeCheck) {
+      if (visitorNames.length > 0) {
+        const transformerNote =
+          transformerOnlyNames.length > 0
+            ? ` AST-transformer-only plugin(s) (${transformerOnlyNames.join(', ')}) cannot run in "rspack".`
+            : '';
+        console.warn(
+          `${INFO_PREFIX} CLI plugin metadata generation is disabled for "rspack". Pass "--type-check" or set "compilerOptions.typeCheck": true to generate metadata.ts for: ${visitorNames.join(', ')}.${transformerNote}`,
+        );
+      } else {
+        console.warn(
+          `${INFO_PREFIX} "plugins" (${transformerOnlyNames.join(', ')}) will not have any effect when "builder" is "rspack" because "builtin:swc-loader" does not execute TypeScript AST transformers.`,
+        );
+      }
+      return;
+    }
+
+    if (visitorKeys.size === 0) {
+      console.warn(
+        `${INFO_PREFIX} "typeCheck" is enabled, but none of the configured plugins (${transformerOnlyNames.join(', ')}) expose a ReadonlyVisitor. Skipping metadata generation.`,
+      );
+      return;
+    }
+
+    if (transformerOnlyNames.length > 0) {
+      console.warn(
+        `${INFO_PREFIX} Ignoring AST-transformer-only plugin(s) in "rspack" (${transformerOnlyNames.join(', ')}); metadata generation will run only for ReadonlyVisitor plugin(s): ${[...visitorKeys].join(', ')}.`,
+      );
+    }
+  }
+}
+
+function getTypeCheck(
+  configuration: Required<Configuration>,
+  cmdOptions: Record<string, any>,
+  appName: string | undefined,
+): boolean {
+  const flag: boolean | undefined = cmdOptions?.typeCheck;
+  if (flag !== undefined) {
+    return flag;
+  }
+  return Boolean(
+    getValueOrDefault<boolean>(
+      configuration,
+      'compilerOptions.typeCheck',
+      appName,
+    ),
+  );
 }
 
 function getBundleDependencies(

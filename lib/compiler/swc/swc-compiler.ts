@@ -1,5 +1,5 @@
 import { cyan } from 'ansis';
-import { fork, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { stat } from 'fs/promises';
 import {
@@ -10,28 +10,18 @@ import {
 import { minimatch } from 'minimatch';
 import { createRequire } from 'module';
 import * as path from 'path';
-import { dirname, isAbsolute, join, posix, relative } from 'path';
-import { fileURLToPath } from 'url';
+import { isAbsolute, join, posix, relative } from 'path';
 import { Configuration } from '../../configuration/index.js';
 import { ERROR_PREFIX } from '../../ui/index.js';
-import { treeKillSync } from '../../utils/tree-kill.js';
 import { AssetsManager } from '../assets-manager.js';
 import { BaseCompiler } from '../base-compiler.js';
 import { swcDefaultsFactory } from '../defaults/swc-defaults.js';
 import { getValueOrDefault } from '../helpers/get-value-or-default.js';
 import type { TsConfigProviderOutput } from '../helpers/tsconfig-provider.js';
-import { PluginMetadataGenerator } from '../plugins/plugin-metadata-generator.js';
 import { PluginsLoader } from '../plugins/plugins-loader.js';
 import { watchDirectoryRecursively } from '../watchers/recursive-directory-watcher.js';
-import {
-  FOUND_NO_ISSUES_GENERATING_METADATA,
-  FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED,
-  SWC_LOG_PREFIX,
-} from './constants.js';
-import { TypeCheckerHost } from './type-checker-host.js';
+import { SWC_LOG_PREFIX } from './constants.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
 export type SwcCompilerExtras = {
@@ -45,9 +35,6 @@ export type SwcCompilerExtras = {
 };
 
 export class SwcCompiler extends BaseCompiler {
-  private readonly pluginMetadataGenerator = new PluginMetadataGenerator();
-  private readonly typeCheckerHost = new TypeCheckerHost();
-
   constructor(pluginsLoader: PluginsLoader) {
     super(pluginsLoader);
   }
@@ -126,97 +113,6 @@ export class SwcCompiler extends BaseCompiler {
         ERROR_PREFIX +
           ' Failed to emit declaration files. Please ensure "declaration" is enabled in your tsconfig.',
       );
-    }
-  }
-
-  private runTypeChecker(
-    configuration: Required<Configuration>,
-    tsConfigPath: string,
-    appName: string | undefined,
-    extras: SwcCompilerExtras,
-  ) {
-    if (extras.watch) {
-      const args = [
-        tsConfigPath,
-        appName ?? 'undefined',
-        // The forked checker resolves its plugin metadata output directory
-        // from this value, so it has to be the built application's source
-        // root, not the monorepo's default project one.
-        getValueOrDefault<string | undefined>(
-          configuration,
-          'sourceRoot',
-          appName,
-          'sourceRoot',
-        ) ?? 'src',
-        // Same for the plugins: a monorepo application can declare its own
-        // "compilerOptions.plugins", and the non-watch path loads them per
-        // application through loadPlugins().
-        JSON.stringify(
-          getValueOrDefault(
-            configuration,
-            'compilerOptions.plugins',
-            appName,
-          ) ?? [],
-        ),
-      ];
-
-      const childProcessRef = fork(
-        join(__dirname, 'forked-type-checker.js'),
-        args,
-        {
-          cwd: process.cwd(),
-        },
-      );
-      process.on(
-        'exit',
-        () => childProcessRef && treeKillSync(childProcessRef.pid!),
-      );
-    } else {
-      const { readonlyVisitors } = this.loadPlugins(
-        configuration,
-        tsConfigPath,
-        appName,
-      );
-      const outputDir = this.getPathToSource(
-        configuration,
-        tsConfigPath,
-        appName,
-      );
-
-      let fulfilled = false;
-      return new Promise<void>((resolve, reject) => {
-        try {
-          this.typeCheckerHost.run(tsConfigPath, {
-            watch: extras.watch,
-            onTypeCheck: (program) => {
-              if (!fulfilled) {
-                fulfilled = true;
-                resolve();
-              }
-              if (readonlyVisitors.length > 0) {
-                process.nextTick(() =>
-                  console.log(FOUND_NO_ISSUES_GENERATING_METADATA),
-                );
-
-                this.pluginMetadataGenerator.generate({
-                  outputDir,
-                  visitors: readonlyVisitors,
-                  tsProgramRef: program,
-                });
-              } else {
-                process.nextTick(() =>
-                  console.log(FOUND_NO_ISSUES_METADATA_GENERATION_SKIPPED),
-                );
-              }
-            },
-          });
-        } catch (err) {
-          if (!fulfilled) {
-            fulfilled = true;
-            reject(err);
-          }
-        }
-      });
     }
   }
 

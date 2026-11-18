@@ -258,6 +258,27 @@ describe('rspackDefaultsFactory', () => {
     expect(forkPlugin).toBeDefined();
   });
 
+  it('should not include ForkTsCheckerWebpackPlugin when typeCheck is enabled', () => {
+    // The CLI type-checks the program itself, so the checker would run twice
+    const config = rspackDefaultsFactory(
+      'src',
+      '',
+      'main',
+      false,
+      'tsconfig.json',
+      registeredPlugins,
+      false,
+      undefined,
+      false,
+      true,
+    );
+
+    const forkPlugin = config.plugins.find(
+      (p: any) => p.__type === 'ForkTsCheckerWebpackPlugin',
+    );
+    expect(forkPlugin).toBeUndefined();
+  });
+
   it('should set output filename based on relativeSourceRoot and entryFilename', () => {
     const config = rspackDefaultsFactory(
       'src',

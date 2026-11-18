@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import * as ts from 'typescript';
 import { DeepPluginMeta } from '../interfaces/readonly-visitor.interface.js';
@@ -25,7 +25,7 @@ export class PluginMetadataPrinter {
     typeImports: Record<string, string>,
     options: PluginMetadataPrintOptions,
     tsBinary: typeof ts,
-  ) {
+  ): boolean {
     const objectLiteralExpr = tsBinary.factory.createObjectLiteralExpression(
       Object.keys(metadata).map((key) =>
         this.recursivelyCreatePropertyAssignment(
@@ -75,15 +75,18 @@ export class PluginMetadataPrinter {
       options.filename ?? SERIALIZED_METADATA_FILENAME,
     );
     const eslintPrefix = `/* eslint-disable */\n`;
-    writeFileSync(
-      filename,
+    const serialized =
       eslintPrefix +
-        printer.printNode(
-          tsBinary.EmitHint.Unspecified,
-          exportAssignment,
-          resultFile,
-        ),
-    );
+      printer.printNode(
+        tsBinary.EmitHint.Unspecified,
+        exportAssignment,
+        resultFile,
+      );
+    if (existsSync(filename) && readFileSync(filename, 'utf8') === serialized) {
+      return false;
+    }
+    writeFileSync(filename, serialized);
+    return true;
   }
 
   private recursivelyCreatePropertyAssignment(

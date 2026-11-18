@@ -83,6 +83,8 @@ describe('Rspack Compiler', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRun.mockReset();
+    mockWatch.mockReset();
 
     // Re-set mock return values after clearAllMocks
     mockRspackModule.rspack.mockReturnValue(mockCompiler);
@@ -93,6 +95,7 @@ describe('Rspack Compiler', () => {
         beforeHooks: [],
         afterHooks: [],
         afterDeclarationsHooks: [],
+        readonlyVisitors: [],
       }),
       resolvePluginReferences: () => vi.fn(),
     } as unknown as PluginsLoader;
@@ -110,6 +113,7 @@ describe('Rspack Compiler', () => {
       beforeHooks: [],
       afterHooks: [],
       afterDeclarationsHooks: [],
+      readonlyVisitors: [],
     });
     vi.spyOn(compiler as any, 'getPathToSource').mockReturnValue('src');
   });
@@ -182,9 +186,11 @@ describe('Rspack Compiler', () => {
           beforeHooks: [],
           afterHooks: [],
           afterDeclarationsHooks: [],
+          readonlyVisitors: [],
         }),
         false,
         undefined,
+        false,
         false,
       );
     });
@@ -213,6 +219,7 @@ describe('Rspack Compiler', () => {
         true,
         undefined,
         false,
+        false,
       );
     });
 
@@ -238,6 +245,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         undefined,
+        false,
         false,
       );
     });
@@ -266,6 +274,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         tsOptions,
+        false,
         false,
       );
     });
@@ -439,7 +448,7 @@ describe('Rspack Compiler', () => {
         closeWatchers: vi.fn().mockResolvedValue(undefined),
       };
       let finish!: (err: Error | null, stats: unknown) => void;
-      mockRun.mockImplementation((cb) => {
+      mockRun.mockImplementationOnce((cb) => {
         finish = cb;
       });
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
@@ -485,7 +494,7 @@ describe('Rspack Compiler', () => {
       const assetsManager = {
         closeWatchers: vi.fn().mockResolvedValue(undefined),
       };
-      mockRun.mockImplementation((cb) => {
+      mockRun.mockImplementationOnce((cb) => {
         cb(null, {
           hasErrors: () => true,
           toString: () => 'errors found',
@@ -509,6 +518,207 @@ describe('Rspack Compiler', () => {
       expect(mockExit).not.toHaveBeenCalled();
       mockExit.mockRestore();
       consoleSpy.mockRestore();
+    });
+
+    it.each([
+      ['config true', true, undefined, true],
+      ['config false', false, undefined, false],
+      ['flag true without config', undefined, true, true],
+      ['negated flag over config', true, false, false],
+    ])(
+      'should resolve typeCheck and invoke runTypeChecker in non-watch mode: %s',
+      async (_, configured, flag, expected) => {
+        vi.mocked(existsSync).mockReturnValue(true);
+        const runTypeCheckerSpy = vi
+          .spyOn(compiler as any, 'runTypeChecker')
+          .mockResolvedValue(undefined);
+        mockRun.mockImplementationOnce((cb) => {
+          cb(null, {
+            hasErrors: () => false,
+            toString: () => 'compiled successfully',
+          });
+        });
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+        const defaultGet = vi
+          .mocked(getValueOrDefault)
+          .mockImplementation((_, propertyPath) => {
+            if (propertyPath === 'entryFile') return 'main';
+            if (propertyPath === 'compilerOptions.typeCheck') {
+              return configured;
+            }
+            return '';
+          });
+
+        await compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({ options: { typeCheck: flag } }),
+        );
+
+        if (expected) {
+          expect(runTypeCheckerSpy).toHaveBeenCalledWith(
+            expect.anything(),
+            'tsconfig.json',
+            undefined,
+            { watch: false, typeCheck: true },
+          );
+        } else {
+          expect(runTypeCheckerSpy).not.toHaveBeenCalled();
+        }
+        // The CLI's own type check replaces ForkTsChecker in the defaults
+        expect(vi.mocked(rspackDefaultsFactory).mock.lastCall?.[9]).toBe(
+          expected,
+        );
+        expect(mockRun).toHaveBeenCalledTimes(1);
+        defaultGet.mockReturnValue('');
+        consoleSpy.mockRestore();
+      },
+    );
+
+    it('should invoke runTypeChecker in watch mode when typeCheck is enabled', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      const runTypeCheckerSpy = vi
+        .spyOn(compiler as any, 'runTypeChecker')
+        .mockReturnValue(undefined);
+
+      compiler.run(
+        makeConfiguration(),
+        'tsconfig.json',
+        undefined,
+        makeExtras({ watchMode: true, options: { typeCheck: true } }),
+      );
+
+      expect(runTypeCheckerSpy).toHaveBeenCalledWith(
+        expect.anything(),
+        'tsconfig.json',
+        undefined,
+        { watch: true, typeCheck: true },
+      );
+      expect(mockWatch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reject and close watchers when runTypeChecker fails in non-watch mode', async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.spyOn(compiler as any, 'runTypeChecker').mockRejectedValue(
+        new Error('Type check failed'),
+      );
+      const assetsManager = {
+        closeWatchers: vi.fn().mockResolvedValue(undefined),
+      };
+
+      await expect(
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({
+            watchMode: false,
+            options: { typeCheck: true },
+            assetsManager: assetsManager as any,
+          }),
+        ),
+      ).rejects.toThrow('Type check failed');
+
+      expect(assetsManager.closeWatchers).toHaveBeenCalledTimes(1);
+      expect(mockRun).not.toHaveBeenCalled();
+    });
+
+    describe('plugin capability diagnostics', () => {
+      const runWithPlugins = (
+        configuredPlugins: Array<string | { name: string }>,
+        visitorKeys: string[],
+        typeCheck: boolean,
+        silent = false,
+      ) => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(compiler as any, 'runTypeChecker').mockResolvedValue(
+          undefined,
+        );
+        vi.spyOn(compiler as any, 'loadPlugins').mockReturnValue({
+          beforeHooks: [],
+          afterHooks: [],
+          afterDeclarationsHooks: [],
+          readonlyVisitors: visitorKeys.map((key) => ({
+            key,
+            typeImports: {},
+            visit: vi.fn(),
+            collect: vi.fn().mockReturnValue({}),
+          })),
+        });
+        vi.mocked(getValueOrDefault).mockImplementation((_, propertyPath) => {
+          if (propertyPath === 'entryFile') return 'main';
+          if (propertyPath === 'compilerOptions.plugins') {
+            return configuredPlugins;
+          }
+          if (propertyPath === 'compilerOptions.typeCheck') {
+            return typeCheck;
+          }
+          return '';
+        });
+
+        compiler.run(
+          makeConfiguration(),
+          'tsconfig.json',
+          undefined,
+          makeExtras({ options: { silent } }),
+        );
+
+        const warnings = warnSpy.mock.calls.map((c) => String(c[0]));
+        warnSpy.mockRestore();
+        return warnings;
+      };
+
+      it('prints an opt-in hint when ReadonlyVisitor plugins are configured and typeCheck is false', () => {
+        const warnings = runWithPlugins(
+          ['@nestjs/swagger'],
+          ['@nestjs/swagger'],
+          false,
+        );
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('--type-check');
+        expect(warnings[0]).toContain('@nestjs/swagger');
+      });
+
+      it('warns on transformer-only plugins when typeCheck is false', () => {
+        const warnings = runWithPlugins(['my-ast-plugin'], [], false);
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('builtin:swc-loader');
+        expect(warnings[0]).toContain('my-ast-plugin');
+      });
+
+      it('warns when typeCheck is true but no ReadonlyVisitor plugins are active', () => {
+        const warnings = runWithPlugins(['my-ast-plugin'], [], true);
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('ReadonlyVisitor');
+        expect(warnings[0]).toContain('Skipping metadata generation');
+      });
+
+      it('does not warn when typeCheck is true and no plugins are configured', () => {
+        const warnings = runWithPlugins([], [], true);
+        expect(warnings).toHaveLength(0);
+      });
+
+      it('warns on mixed transformer-only plugins even when ReadonlyVisitor plugins are active', () => {
+        const warnings = runWithPlugins(
+          ['@nestjs/swagger', 'custom-ast-plugin'],
+          ['@nestjs/swagger'],
+          true,
+        );
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('custom-ast-plugin');
+        expect(warnings[0]).toContain('@nestjs/swagger');
+      });
+
+      it('suppresses plugin capability warnings when --silent is enabled', () => {
+        const warnings = runWithPlugins(
+          ['@nestjs/swagger'],
+          ['@nestjs/swagger'],
+          false,
+          true,
+        );
+        expect(warnings).toHaveLength(0);
+      });
     });
   });
 
