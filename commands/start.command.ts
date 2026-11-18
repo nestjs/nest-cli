@@ -42,7 +42,7 @@ export class StartCommand extends AbstractCommand {
       )
       .option(
         '--no-type-check',
-        'Disable type checking (when SWC or rspack is used).',
+        'Disable type checking (when SWC is used).',
         () => false,
       )
       .option(

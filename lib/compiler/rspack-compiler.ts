@@ -103,6 +103,7 @@ export class RspackCompiler extends BaseCompiler<RspackCompilerExtras> {
       isEsmProject(),
       extras.tsOptions,
       bundleDependencies,
+      typeCheck,
     );
 
     let rspack: any;

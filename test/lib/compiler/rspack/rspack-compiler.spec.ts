@@ -191,6 +191,7 @@ describe('Rspack Compiler', () => {
         false,
         undefined,
         false,
+        false,
       );
     });
 
@@ -218,6 +219,7 @@ describe('Rspack Compiler', () => {
         true,
         undefined,
         false,
+        false,
       );
     });
 
@@ -243,6 +245,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         undefined,
+        false,
         false,
       );
     });
@@ -271,6 +274,7 @@ describe('Rspack Compiler', () => {
         expect.anything(),
         false,
         tsOptions,
+        false,
         false,
       );
     });
@@ -562,6 +566,10 @@ describe('Rspack Compiler', () => {
         } else {
           expect(runTypeCheckerSpy).not.toHaveBeenCalled();
         }
+        // The CLI's own type check replaces ForkTsChecker in the defaults
+        expect(vi.mocked(rspackDefaultsFactory).mock.lastCall?.[9]).toBe(
+          expected,
+        );
         expect(mockRun).toHaveBeenCalledTimes(1);
         defaultGet.mockReturnValue('');
         consoleSpy.mockRestore();
