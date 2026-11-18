@@ -89,6 +89,14 @@ export class CommandLoader {
 
 function lazyAction(load: () => Promise<AbstractAction>): AbstractAction {
   return {
-    handle: async (context?: any) => (await load()).handle(context),
+    handle: async (context?: any) => {
+      // Most commands only exit on a failed action, so an action that fails
+      // to load (a broken install) prints its error here
+      const action = await load().catch((err) => {
+        console.error(err);
+        process.exit(1);
+      });
+      return action.handle(context);
+    },
   };
 }
