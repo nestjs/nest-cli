@@ -1,23 +1,32 @@
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The loader instantiates every real action; stub them so no compiler, config
-// loader or package manager is constructed while exercising the wiring.
-vi.mock('../../actions/index.js', () => {
-  class StubAction {
-    public handle = vi.fn().mockResolvedValue(undefined);
-  }
-  return {
-    AddAction: StubAction,
-    BuildAction: StubAction,
-    DeployAction: StubAction,
-    GenerateAction: StubAction,
-    InfoAction: StubAction,
-    NewAction: StubAction,
-    StartAction: StubAction,
-    UpgradeAction: StubAction,
+// Stub every action so no compiler, config loader or package manager is
+// constructed, and record which action modules get imported.
+const actions = vi.hoisted(() => {
+  const imported: string[] = [];
+  const handles: Record<string, ReturnType<typeof vi.fn>> = {};
+  const stub = (name: string) => {
+    imported.push(name);
+    handles[name] = vi.fn().mockResolvedValue(undefined);
+    return {
+      [name]: class {
+        public handle = handles[name];
+      },
+    };
   };
+  return { imported, handles, stub };
 });
+vi.mock('../../actions/add.action.js', () => actions.stub('AddAction'));
+vi.mock('../../actions/build.action.js', () => actions.stub('BuildAction'));
+vi.mock('../../actions/deploy.action.js', () => actions.stub('DeployAction'));
+vi.mock('../../actions/generate.action.js', () =>
+  actions.stub('GenerateAction'),
+);
+vi.mock('../../actions/info.action.js', () => actions.stub('InfoAction'));
+vi.mock('../../actions/new.action.js', () => actions.stub('NewAction'));
+vi.mock('../../actions/start.action.js', () => actions.stub('StartAction'));
+vi.mock('../../actions/upgrade.action.js', () => actions.stub('UpgradeAction'));
 
 vi.mock('../../lib/utils/load-configuration.js', () => ({
   loadConfiguration: vi.fn().mockResolvedValue({
@@ -158,6 +167,24 @@ describe('CommandLoader', () => {
           'upgrade',
         ].sort(),
       );
+    });
+  });
+
+  describe('lazy actions', () => {
+    it('imports no action while registering the commands', async () => {
+      program = buildProgram(true);
+      await CommandLoader.load(program);
+
+      expect(actions.imported).toEqual([]);
+    });
+
+    it('imports only the action of the command that runs', async () => {
+      program = buildProgram(true);
+      await CommandLoader.load(program);
+      await program.parseAsync(['node', 'nest', 'info']);
+
+      expect(actions.imported).toEqual(['InfoAction']);
+      expect(actions.handles.InfoAction).toHaveBeenCalledOnce();
     });
   });
 
