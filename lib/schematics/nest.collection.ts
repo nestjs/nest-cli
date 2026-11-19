@@ -122,9 +122,13 @@ export class NestCollection extends AbstractCollection {
     super('@nestjs/schematics', runner);
   }
 
-  public async execute(name: string, options: SchematicOption[]) {
+  public async execute(
+    name: string,
+    options: SchematicOption[],
+    extraFlags?: string,
+  ) {
     const schematic: string = this.validate(name);
-    await super.execute(schematic, options);
+    await super.execute(schematic, options, extraFlags);
   }
 
   public getSchematics(): Schematic[] {

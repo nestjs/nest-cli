@@ -16,6 +16,8 @@ import {
   AbstractCollection,
   Collection,
   CollectionFactory,
+  describeSkippedPrompt,
+  getSkippedPrompts,
   SchematicOption,
 } from '../lib/schematics/index.js';
 import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
@@ -102,12 +104,35 @@ const askForMissingInformation = async (context: NewCommandContext) => {
 };
 
 const generateApplicationFiles = async (context: NewCommandContext) => {
-  const collection: AbstractCollection = CollectionFactory.create(
-    (context.collection as Collection) || Collection.NESTJS,
-  );
+  const collectionName =
+    (context.collection as Collection) || Collection.NESTJS;
+  const collection: AbstractCollection =
+    CollectionFactory.create(collectionName);
   const schematicOptions: SchematicOption[] =
     mapContextToSchematicOptions(context);
-  await collection.execute('application', schematicOptions);
+  if (isInteractive()) {
+    await collection.execute('application', schematicOptions);
+  } else {
+    // The schematics binary only checks stdout, so with a terminal there but
+    // nothing on stdin (a coding agent's shell) it would still ask, and fail.
+    const skipped = await getSkippedPrompts(
+      collectionName,
+      'application',
+      schematicOptions,
+    );
+    if (skipped.length > 0) {
+      console.info(
+        MESSAGES.SCHEMATIC_PROMPTS_DEFAULTED(
+          skipped.map(describeSkippedPrompt),
+        ),
+      );
+    }
+    await collection.execute(
+      'application',
+      schematicOptions,
+      '--no-interactive',
+    );
+  }
   console.info();
 };
 
@@ -145,6 +170,8 @@ const mapContextToSchematicOptions = (
     // Also keeps the schematic's module system prompt away: its choices are
     // named after test runners, and this project has none.
     options.push(new SchematicOption('type', 'esm'));
+  } else if (context.type !== undefined) {
+    options.push(new SchematicOption('type', context.type));
   }
   // note: skip-install is intentionally excluded — not sent to schematics
   return options;
@@ -178,6 +205,7 @@ const askForObservability = async (): Promise<boolean> => {
   // there to say no. Without a TTY (CI, piped input, `execSync`) nobody
   // consented to the extra dependency, so stay off rather than block or assume.
   if (!isInteractive()) {
+    console.info(MESSAGES.OBSERVABILITY_DEFAULTED);
     return false;
   }
 
@@ -223,6 +251,10 @@ const askForPackageManager = async () => {
 };
 
 const initializeGitRepository = async (dir: string) => {
+  // `nest new .` in a folder that is already a repository keeps it as it is.
+  if (fileExists(join(process.cwd(), dir, '.git'))) {
+    return;
+  }
   const runner = new GitRunner();
   await runner.run('init', true, join(process.cwd(), dir)).catch(() => {
     console.error(ansis.red(MESSAGES.GIT_INITIALIZATION_ERROR));

@@ -6,9 +6,12 @@ import {
   AbstractCollection,
   Collection,
   CollectionFactory,
+  describeSkippedPrompt,
+  getSkippedPrompts,
   SchematicOption,
 } from '../lib/schematics/index.js';
 import { MESSAGES } from '../lib/ui/index.js';
+import { isInteractive } from '../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
@@ -41,9 +44,10 @@ const generateFiles = async (context: GenerateCommandContext) => {
   let appName = context.project ?? '';
   const specFileSuffix = context.specFileSuffix;
 
-  const collection: AbstractCollection = CollectionFactory.create(
-    collectionOption || configuration.collection || Collection.NESTJS,
-  );
+  const collectionName =
+    collectionOption || configuration.collection || Collection.NESTJS;
+  const collection: AbstractCollection =
+    CollectionFactory.create(collectionName);
 
   const schematicOptions: SchematicOption[] =
     mapContextToSchematicOptions(context);
@@ -101,10 +105,20 @@ const generateFiles = async (context: GenerateCommandContext) => {
       defaultLabel,
     );
 
-    const selectedProjectName = (await askForProjectName(
-      MESSAGES.PROJECT_SELECTION_QUESTION,
-      projects,
-    )) as string;
+    let selectedProjectName: string;
+    if (isInteractive()) {
+      selectedProjectName = (await askForProjectName(
+        MESSAGES.PROJECT_SELECTION_QUESTION,
+        projects,
+      )) as string;
+    } else {
+      selectedProjectName = projects[0];
+      console.info(
+        MESSAGES.PROJECT_SELECTION_DEFAULTED(
+          selectedProjectName.replace(defaultLabel, ''),
+        ),
+      );
+    }
 
     const project: string = selectedProjectName.replace(defaultLabel, '');
     if (project !== configuration.sourceRoot) {
@@ -146,7 +160,30 @@ const generateFiles = async (context: GenerateCommandContext) => {
   if (!schematic) {
     throw new Error('Unable to find a schematic for this configuration');
   }
-  await collection.execute(schematic, schematicOptions);
+  if (isInteractive()) {
+    await collection.execute(schematic, schematicOptions);
+    return;
+  }
+  // The schematics binary only checks stdout, so with a terminal there but
+  // nothing on stdin (a coding agent's shell) it would still ask, and fail.
+  const skipped = await getSkippedPrompts(
+    collectionName,
+    schematic,
+    schematicOptions,
+  );
+  if (
+    skipped.some(
+      ({ name, default: value }) => name === 'name' && value === undefined,
+    )
+  ) {
+    throw new Error(MESSAGES.SCHEMATIC_NAME_REQUIRED(schematic));
+  }
+  if (skipped.length > 0) {
+    console.info(
+      MESSAGES.SCHEMATIC_PROMPTS_DEFAULTED(skipped.map(describeSkippedPrompt)),
+    );
+  }
+  await collection.execute(schematic, schematicOptions, '--no-interactive');
 };
 
 const mapContextToSchematicOptions = (
@@ -169,6 +206,8 @@ const mapContextToSchematicOptions = (
     options.push(new SchematicOption('type', context.type));
   if (context.crud !== undefined)
     options.push(new SchematicOption('crud', context.crud));
+  if (context.prefix !== undefined)
+    options.push(new SchematicOption('prefix', context.prefix));
   // 'schematic', 'spec', 'flat', 'specFileSuffix' are handled separately
   return options;
 };

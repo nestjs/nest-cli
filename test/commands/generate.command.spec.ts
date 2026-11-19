@@ -24,6 +24,10 @@ vi.mock('../../lib/schematics/index.js', async () => {
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { GenerateCommand } from '../../commands/generate.command.js';
 import { GenerateCommandContext } from '../../commands/context/generate.context.js';
+import {
+  disablePrompts,
+  isInteractive,
+} from '../../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
 
 class FakeAction extends AbstractAction {
@@ -130,6 +134,12 @@ describe('GenerateCommand', () => {
       const context = await run('generate', 'resource', 'users');
 
       expect(context.crud).toBeUndefined();
+    });
+
+    it('is false for --no-crud', async () => {
+      const context = await run('generate', 'resource', 'users', '--no-crud');
+
+      expect(context.crud).toBe(false);
     });
   });
 
@@ -241,6 +251,28 @@ describe('GenerateCommand', () => {
       );
 
       expect(context.collection).toBe('@my/schematics');
+    });
+
+    it('forwards --prefix', async () => {
+      const context = await run(
+        'generate',
+        'library',
+        'shared',
+        '--prefix',
+        '@acme',
+      );
+
+      expect(context.prefix).toBe('@acme');
+    });
+
+    it('turns every prompt off with --no-interactive', async () => {
+      try {
+        await run('generate', 'resource', 'users', '--no-interactive');
+
+        expect(isInteractive()).toBe(false);
+      } finally {
+        disablePrompts(false);
+      }
     });
 
     it('forwards --spec-file-suffix', async () => {

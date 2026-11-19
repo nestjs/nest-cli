@@ -4,7 +4,7 @@ import { EMOJIS } from './emojis.js';
 export const MESSAGES = {
   PROJECT_NAME_QUESTION: 'What name would you like to use for the new project?',
   PROJECT_NAME_DEFAULTED: (name: string) =>
-    `No terminal to ask in, so the project is called ${name}. Pass a name to choose another.`,
+    `Not prompting, so the project is called ${name}. Pass a name to choose another.`,
   PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
@@ -14,7 +14,7 @@ export const MESSAGES = {
     `\nFailed to execute command: ${command}`,
   PACKAGE_MANAGER_QUESTION: `Which package manager would you ${EMOJIS.HEART}  to use?`,
   PACKAGE_MANAGER_DEFAULTED: (name: string) =>
-    `No terminal to ask in, so using ${name}. Pass --package-manager to choose another.`,
+    `Not prompting, so using ${name}. Pass --package-manager to choose another.`,
   PACKAGE_MANAGER_INSTALLATION_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPDATE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
   PACKAGE_MANAGER_UPGRADE_IN_PROGRESS: `Installation in progress... ${EMOJIS.COFFEE}`,
@@ -64,6 +64,18 @@ export const MESSAGES = {
 
   MINIMAL_JAVASCRIPT_UNSUPPORTED:
     '--minimal is TypeScript only: JavaScript needs Babel and its own entry file to run decorators, so the project would not stay one file. Drop --language js, or drop --minimal for a standard JavaScript project.',
+  MINIMAL_COMMONJS_UNSUPPORTED:
+    '--minimal is ESM only. Drop --type cjs, or drop --minimal for a standard CommonJS project.',
+  MODULE_TYPE_INVALID: (type: string) =>
+    `Invalid module system "${type}". Use --type esm (with Vitest) or --type cjs (with Jest).`,
+  OBSERVABILITY_DEFAULTED:
+    'Not prompting, so @nestjs/observe is not set up. Pass --observe to set it up.',
+  PROJECT_SELECTION_DEFAULTED: (project: string) =>
+    `Not prompting, so generating in the default project, ${project}. Pass --project to choose another.`,
+  SCHEMATIC_PROMPTS_DEFAULTED: (answers: string[]) =>
+    `Not prompting, so using the defaults: ${answers.join(', ')}. Pass the flags to choose otherwise.`,
+  SCHEMATIC_NAME_REQUIRED: (schematic: string) =>
+    `Not prompting, so the name has to be given. Pass it as an argument, e.g. nest generate ${schematic} <name>.`,
   MINIMAL_IGNORED: (collection: string, directory: string) =>
     `This version of ${collection} does not support --minimal, so it generated a standard project in ${directory}. Delete that folder, update ${collection} (npx @nestjs/cli@latest uses the newest one), and run this again.`,
 

@@ -2,6 +2,7 @@ import { bold, cyan, green } from 'ansis';
 import Table, { TableConstructorOptions } from 'cli-table3';
 import { Command } from 'commander';
 import type { Schematic } from '../lib/schematics/nest.collection.js';
+import { disablePrompts } from '../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import { AbstractCommand } from './abstract.command.js';
 import { GenerateCommandContext } from './context/index.js';
@@ -54,9 +55,18 @@ export class GenerateCommand extends AbstractCommand {
       )
       .option(
         '--type <type>',
-        'Transport layer type (rest, graphql, microservice)',
+        'Transport layer of a resource (rest, graphql-code-first, graphql-schema-first, microservice, ws).',
       )
-      .option('--crud [value]', 'Generate CRUD entry points')
+      .option('--crud [value]', 'Generate CRUD entry points for a resource.')
+      .option('--no-crud', 'Generate a resource without CRUD entry points.')
+      .option(
+        '--prefix <prefix>',
+        'Import path prefix of a library (default: @app, or defaultLibraryPrefix in nest-cli.json).',
+      )
+      .option(
+        '--no-interactive',
+        'Never prompt: use the default for every question not answered by a flag (also the case without a TTY or under CI).',
+      )
       .action(
         async (
           schematic: string,
@@ -64,6 +74,9 @@ export class GenerateCommand extends AbstractCommand {
           path: string,
           options: Record<string, any>,
         ) => {
+          if (options.interactive === false) {
+            disablePrompts();
+          }
           const context: GenerateCommandContext = {
             schematic,
             name,
@@ -84,6 +97,7 @@ export class GenerateCommand extends AbstractCommand {
               options.crud === undefined
                 ? undefined
                 : options.crud === true || options.crud === 'true',
+            prefix: options.prefix,
           };
 
           try {

@@ -6,6 +6,7 @@ import {
   readFileContent,
   removeTempDir,
   runNest,
+  runNestRaw,
   scaffoldApp,
 } from './helpers.js';
 
@@ -252,6 +253,36 @@ describe('Generate Command (e2e)', () => {
       expect(fileExists(path.join(catsDir, 'entities', 'cat.entity.ts'))).toBe(
         true,
       );
+    });
+  });
+
+  describe('without a TTY', () => {
+    it('should say which defaults answered the prompts of a resource', () => {
+      const output = runNest('generate resource cats --dry-run', appPath);
+
+      expect(output).toContain('using the defaults: --type rest, --crud.');
+      expect(output).toContain('cats.controller.ts');
+    });
+
+    it('should take every answer from flags', () => {
+      const output = runNest(
+        'generate resource cats --type ws --no-crud --dry-run',
+        appPath,
+      );
+
+      expect(output).not.toContain('Not prompting');
+      expect(output).toContain('cats.gateway.ts');
+      expect(output).not.toContain('create-cat.dto.ts');
+    });
+
+    it('should fail with a hint when the name is missing', () => {
+      const { exitCode, stdout, stderr } = runNestRaw(
+        'generate resource --dry-run',
+        appPath,
+      );
+
+      expect(exitCode).not.toBe(0);
+      expect(stdout + stderr).toContain('nest generate resource <name>');
     });
   });
 

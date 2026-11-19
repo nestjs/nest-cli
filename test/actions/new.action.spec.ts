@@ -274,11 +274,16 @@ describe('NewAction', () => {
 
     it('stays off without a TTY, where nobody can decline', async () => {
       vi.mocked(isInteractive).mockReturnValue(false);
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
 
       await action.handle(baseContext({ observe: undefined }));
 
       expect(confirm).not.toHaveBeenCalled();
       expect(observeOption()).toBeUndefined();
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('Pass --observe to set it up'),
+      );
+      info.mockRestore();
     });
 
     it('respects a declined prompt', async () => {
@@ -353,19 +358,48 @@ describe('NewAction', () => {
     });
 
     it('keeps what the flags already answered, and says nothing about it', async () => {
-      await action.handle(baseContext({ observe: false }));
+      await action.handle(baseContext({ observe: false, type: 'esm' }));
 
       expect(schematicOption('name')).toContain('test-project');
       expect(schematicOption('package-manager')).toContain('npm');
       expect(console.info).not.toHaveBeenCalledWith(
-        expect.stringContaining('No terminal'),
+        expect.stringContaining('Not prompting'),
       );
+    });
+
+    it("keeps the schematic's own prompts away, saying which defaults they took", async () => {
+      await action.handle(baseContext({ observe: false }));
+
+      expect(mockExecute.mock.calls[0][2]).toBe('--no-interactive');
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining('--type esm'),
+      );
+    });
+
+    it('passes the module system chosen with --type', async () => {
+      await action.handle(baseContext({ observe: false, type: 'cjs' }));
+
+      expect(schematicOption('type')).toBe('--type="cjs"');
+    });
+
+    it('keeps a minimal application on ESM', async () => {
+      await action.handle(baseContext({ observe: false, minimal: true }));
+
+      expect(schematicOption('type')).toBe('--type="esm"');
     });
   });
 
   describe('with a TTY', () => {
     beforeEach(() => {
       vi.mocked(isInteractive).mockReturnValue(true);
+    });
+
+    it('lets the schematic ask its own questions', async () => {
+      vi.mocked(confirm).mockResolvedValue(false as never);
+
+      await action.handle(baseContext({ observe: undefined }));
+
+      expect(mockExecute.mock.calls[0][2]).toBeUndefined();
     });
 
     it('asks for the project name', async () => {

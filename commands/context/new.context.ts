@@ -17,4 +17,6 @@ export interface NewCommandContext {
    */
   observe?: boolean;
   minimal: boolean;
+  /** Module system, `esm` or `cjs`; the schematic's default when undefined. */
+  type?: string;
 }
