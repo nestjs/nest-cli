@@ -389,6 +389,19 @@ describe('tsconfig paths hooks', () => {
       expect(output.get('dist/main.js')).toContain('from "./lib/service.js"');
     });
 
+    it('should resolve an alias written with the emitted extension when moduleResolution is omitted', () => {
+      const output = createSpec(
+        path.join(__dirname, './fixtures/esm-imports'),
+        ['src/main.ts'],
+        {
+          module: ts.ModuleKind.NodeNext,
+          paths: { '~lib/*': ['./src/lib/*'] },
+        },
+      );
+
+      expect(output.get('dist/main.js')).toContain('from "./lib/service.js"');
+    });
+
     it('should replace aliased dynamic imports with loadable paths', () => {
       const output = createSpec(
         path.join(__dirname, './fixtures/esm-imports'),
