@@ -82,6 +82,28 @@ describe('PluginMetadataGenerator (#3364: nodenext import extensions)', () => {
       ).toBe(true);
     });
 
+    it('reads moduleResolution as written on a TypeScript that cannot compute it', () => {
+      const tsWithoutComputation = {
+        ...ts,
+        getEmitModuleResolutionKind: undefined,
+      } as unknown as typeof ts;
+      expect(
+        requiresExplicitImportExtensions(
+          { module: ts.ModuleKind.NodeNext },
+          tsWithoutComputation,
+        ),
+      ).toBe(false);
+      expect(
+        requiresExplicitImportExtensions(
+          {
+            module: ts.ModuleKind.NodeNext,
+            moduleResolution: ts.ModuleResolutionKind.NodeNext,
+          },
+          tsWithoutComputation,
+        ),
+      ).toBe(true);
+    });
+
     it('returns false for the Bundler resolver (extensions not required)', () => {
       expect(
         requiresExplicitImportExtensions(

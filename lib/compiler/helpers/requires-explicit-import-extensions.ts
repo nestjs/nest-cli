@@ -1,5 +1,4 @@
 import * as ts from 'typescript';
-import { getComputedOptionValue } from './get-computed-options.js';
 
 /**
  * Returns `true` when the consuming project uses an ESM-style module
@@ -16,13 +15,29 @@ export function requiresExplicitImportExtensions(
   options: ts.CompilerOptions,
   tsBinary: typeof ts,
 ): boolean {
-  const moduleResolution = getComputedOptionValue(
-    options,
-    'moduleResolution',
-    tsBinary,
-  );
+  const moduleResolution = getModuleResolution(options, tsBinary);
   return (
     moduleResolution === tsBinary.ModuleResolutionKind.Node16 ||
     moduleResolution === tsBinary.ModuleResolutionKind.NodeNext
   );
+}
+
+/**
+ * `getParsedCommandLineOfConfigFile()` leaves an omitted `moduleResolution`
+ * undefined, while the compiler computes it from `module`. That computation,
+ * `getEmitModuleResolutionKind()`, is internal, so a TypeScript without it
+ * falls back to the option as written.
+ */
+function getModuleResolution(
+  options: ts.CompilerOptions,
+  tsBinary: typeof ts,
+): ts.ModuleResolutionKind | undefined {
+  const { getEmitModuleResolutionKind } = tsBinary as typeof ts & {
+    getEmitModuleResolutionKind?: (
+      options: ts.CompilerOptions,
+    ) => ts.ModuleResolutionKind;
+  };
+  return typeof getEmitModuleResolutionKind === 'function'
+    ? getEmitModuleResolutionKind(options)
+    : options.moduleResolution;
 }
