@@ -46,7 +46,8 @@ describe('SchematicRunner', () => {
 
     describe('getModulePathsMock', () => {
       it('it should return a subset of the resolve paths', () => {
-        const realModulePath = require.resolve.paths('@angular-devkit/schematics-cli') ?? [];
+        const realModulePath =
+          require.resolve.paths('@angular-devkit/schematics-cli') ?? [];
         const mockedModulePath = getModulePathsMock(__filename)();
 
         // require.resolve.paths() may include extra global paths

@@ -10,9 +10,7 @@
     "strict": true,
     "esModuleInterop": true,
     "useUnknownInCatchVariables": false,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
   "include": ["actions", "bin", "commands", "lib"],
   "exclude": ["node_modules", "e2e"]

@@ -27,7 +27,11 @@ describe('getWebpackConfigPath', () => {
   it('should return webpackPath from CLI options when provided', () => {
     const config = makeConfiguration();
     expect(
-      getWebpackConfigPath(config, { webpackPath: 'custom-webpack.js' }, undefined),
+      getWebpackConfigPath(
+        config,
+        { webpackPath: 'custom-webpack.js' },
+        undefined,
+      ),
     ).toBe('custom-webpack.js');
   });
 

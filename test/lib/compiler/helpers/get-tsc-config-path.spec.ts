@@ -86,9 +86,9 @@ describe('getTscConfigPath', () => {
         },
       },
     });
-    expect(
-      getTscConfigPath(config, { path: 'from-cli.json' }, undefined),
-    ).toBe('from-cli.json');
+    expect(getTscConfigPath(config, { path: 'from-cli.json' }, undefined)).toBe(
+      'from-cli.json',
+    );
   });
 
   it('should prioritize tsConfigPath over builder configPath', () => {
