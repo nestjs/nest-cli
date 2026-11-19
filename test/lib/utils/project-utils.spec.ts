@@ -2,7 +2,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { Configuration, ProjectConfiguration } from '../../../lib/configuration/index.js';
+import {
+  Configuration,
+  ProjectConfiguration,
+} from '../../../lib/configuration/index.js';
 import {
   hasTestingPackage,
   shouldAskForProject,
@@ -43,9 +46,7 @@ describe('project-utils', () => {
     });
 
     it('should return false when configurationProjects is undefined', () => {
-      expect(
-        shouldAskForProject('service', undefined as any, ''),
-      ).toBeFalsy();
+      expect(shouldAskForProject('service', undefined as any, '')).toBeFalsy();
     });
 
     it('should return false when configurationProjects is empty', () => {
@@ -193,9 +194,9 @@ describe('project-utils', () => {
           },
         },
       };
-      expect(
-        shouldGenerateSpec(config, 'service', 'myApp', true, false),
-      ).toBe(false);
+      expect(shouldGenerateSpec(config, 'service', 'myApp', true, false)).toBe(
+        false,
+      );
     });
   });
 

@@ -10,7 +10,9 @@ import {
 
 function createImportCall(specifier: string): ts.CallExpression {
   return ts.factory.createCallExpression(
-    ts.factory.createToken(ts.SyntaxKind.ImportKeyword) as unknown as ts.Expression,
+    ts.factory.createToken(
+      ts.SyntaxKind.ImportKeyword,
+    ) as unknown as ts.Expression,
     undefined,
     [ts.factory.createStringLiteral(specifier)],
   );
@@ -161,9 +163,9 @@ describe('PluginMetadataGenerator (#3364: nodenext import extensions)', () => {
     });
 
     it('leaves bare-specifier dynamic imports alone', () => {
-      expect(
-        rewriteAsyncImportString('await import("@nestjs/common")'),
-      ).toBe('await import("@nestjs/common")');
+      expect(rewriteAsyncImportString('await import("@nestjs/common")')).toBe(
+        'await import("@nestjs/common")',
+      );
     });
 
     it('does not re-append the extension on a previously-rewritten string', () => {
@@ -204,10 +206,7 @@ describe('PluginMetadataGenerator (#3364: nodenext import extensions)', () => {
       const fakeObjectLiteral = ts.factory.createObjectLiteralExpression([]);
       const metadata: Record<
         string,
-        Record<
-          string,
-          Array<[ts.CallExpression, Record<string, never>]>
-        >
+        Record<string, Array<[ts.CallExpression, Record<string, never>]>>
       > = {
         '@nestjs/swagger': {
           models: [
@@ -233,9 +232,9 @@ describe('PluginMetadataGenerator (#3364: nodenext import extensions)', () => {
         'import("../shared/user.dto.js")',
         'import("@nestjs/common")',
       ]);
-      expect(
-        printNode(metadata['@nestjs/swagger'].controllers[0][0]),
-      ).toBe('import("./app.controller.js")');
+      expect(printNode(metadata['@nestjs/swagger'].controllers[0][0])).toBe(
+        'import("./app.controller.js")',
+      );
     });
   });
 });

@@ -73,8 +73,6 @@ describe('AbstractCollection', () => {
 
     await collection.execute('guard', [new SchematicOption('name', 'auth')]);
 
-    expect(runMock).toHaveBeenCalledWith(
-      '@test/schematics:guard --name=auth',
-    );
+    expect(runMock).toHaveBeenCalledWith('@test/schematics:guard --name=auth');
   });
 });

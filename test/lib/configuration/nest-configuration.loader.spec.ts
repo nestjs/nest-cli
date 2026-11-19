@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { Configuration, ConfigurationLoader } from '../../../lib/configuration/index.js';
+import {
+  Configuration,
+  ConfigurationLoader,
+} from '../../../lib/configuration/index.js';
 import { NestConfigurationLoader } from '../../../lib/configuration/nest-configuration.loader.js';
 import { Reader } from '../../../lib/readers/index.js';
 

@@ -327,10 +327,7 @@ export function npmInstall(appPath: string, args = ''): void {
 function readNewestNpmLog(cacheDir: string): string {
   try {
     const logsDir = path.join(cacheDir, '_logs');
-    const newest = fs
-      .readdirSync(logsDir)
-      .sort()
-      .at(-1);
+    const newest = fs.readdirSync(logsDir).sort().at(-1);
     if (!newest) return '(no log files found)';
     const content = fs.readFileSync(path.join(logsDir, newest), 'utf-8');
     return content.split('\n').slice(-80).join('\n');

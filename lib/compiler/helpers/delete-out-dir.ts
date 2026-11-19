@@ -44,7 +44,8 @@ export async function deleteOutDirIfEnabled(
   // compiler's own resolution to remove the buildinfo wherever it actually is.
   const tsBuildInfoFile =
     tsOptions &&
-    (tsOptions.tsBuildInfoFile ?? ts.getTsBuildInfoEmitOutputFilePath(tsOptions));
+    (tsOptions.tsBuildInfoFile ??
+      ts.getTsBuildInfoEmitOutputFilePath(tsOptions));
 
   // Both paths are validated before anything is removed, so that a rejected
   // "tsBuildInfoFile" cannot leave a half-deleted output directory behind.
