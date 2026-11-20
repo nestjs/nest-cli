@@ -1,5 +1,9 @@
 import * as path from 'path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../lib/utils/is-interactive.js', () => ({
+  isInteractive: vi.fn(() => true),
+}));
 
 const mockExecute = vi.fn().mockResolvedValue(undefined);
 vi.mock('../../lib/schematics/index.js', async () => {
@@ -44,6 +48,7 @@ vi.mock('../../lib/utils/project-utils.js', async () => {
 import { GenerateAction } from '../../actions/generate.action.js';
 import { GenerateCommandContext } from '../../commands/context/generate.context.js';
 import { SchematicOption } from '../../lib/schematics/index.js';
+import { isInteractive } from '../../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
 import {
   askForProjectName,
@@ -85,7 +90,90 @@ describe('GenerateAction', () => {
     vi.mocked(loadConfiguration).mockResolvedValue(defaultConfig() as any);
     vi.mocked(askForProjectName).mockReset();
     vi.mocked(hasTestingPackage).mockReturnValue(true);
+    vi.mocked(isInteractive).mockReturnValue(true);
     action = new GenerateAction();
+  });
+
+  describe('without a TTY', () => {
+    let info: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      vi.mocked(isInteractive).mockReturnValue(false);
+      info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      info.mockRestore();
+    });
+
+    it("keeps the schematic's prompts away, saying which defaults they took", async () => {
+      await action.handle(baseContext());
+
+      expect(mockExecute.mock.calls[0][2]).toBe('--no-interactive');
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('--type rest, --crud'),
+      );
+    });
+
+    it('says nothing when the flags answered every prompt', async () => {
+      await action.handle(baseContext({ type: 'ws', crud: false }));
+
+      expect(mockExecute.mock.calls[0][2]).toBe('--no-interactive');
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('fails before running the schematic when there is no name', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await expect(
+        action.handle(baseContext({ name: undefined })),
+      ).rejects.toThrow('nest generate resource <name>');
+      expect(mockExecute).not.toHaveBeenCalled();
+      error.mockRestore();
+    });
+
+    it('forwards --prefix to the library schematic', async () => {
+      await action.handle(
+        baseContext({ schematic: 'library', name: 'shared', prefix: '@acme' }),
+      );
+
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      expect(findOption(schematicOptions, 'prefix')!.toCommandString()).toBe(
+        '--prefix="@acme"',
+      );
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('generates in the default project of a monorepo instead of asking', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue({
+        ...defaultConfig(),
+        monorepo: true,
+        sourceRoot: 'apps/api/src',
+        projects: {
+          api: {
+            type: 'application',
+            root: 'apps/api',
+            sourceRoot: 'apps/api/src',
+          },
+          worker: {
+            type: 'application',
+            root: 'apps/worker',
+            sourceRoot: 'apps/worker/src',
+          },
+        },
+      } as any);
+
+      await action.handle(baseContext({ schematic: 'service', name: 'users' }));
+
+      expect(askForProjectName).not.toHaveBeenCalled();
+      const [, schematicOptions] = mockExecute.mock.calls[0];
+      expect(
+        findOption(schematicOptions, 'source-root')!.toCommandString(),
+      ).toBe('--source-root="apps/api/src"');
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('default project, api. Pass --project'),
+      );
+    });
   });
 
   describe('spec files in a project without @nestjs/testing', () => {

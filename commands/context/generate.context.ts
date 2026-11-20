@@ -12,4 +12,6 @@ export interface GenerateCommandContext {
   format: boolean;
   type?: string;
   crud?: boolean;
+  /** Import path prefix of a library. */
+  prefix?: string;
 }

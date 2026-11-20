@@ -6,7 +6,9 @@ import {
   readFileContent,
   removeTempDir,
   runNest,
+  runNestRaw,
   scaffoldApp,
+  writeFileContent,
 } from './helpers.js';
 
 describe('New Command (e2e)', () => {
@@ -129,5 +131,58 @@ describe('New Command (e2e)', () => {
     expect(pkg.scripts['build']).toBeDefined();
     expect(pkg.scripts['start']).toBeDefined();
     expect(pkg.scripts['test']).toBeDefined();
+  });
+
+  describe('in a directory that already has files', () => {
+    it('should generate around files the project does not include', () => {
+      writeFileContent(path.join(tmpDir, 'SPEC.md'), '# What to build');
+      writeFileContent(path.join(tmpDir, 'notes', 'todo.md'), '- ship');
+
+      runNest('new . --skip-install --skip-git -p npm --no-observe', tmpDir);
+
+      expect(readFileContent(path.join(tmpDir, 'SPEC.md'))).toBe(
+        '# What to build',
+      );
+      expect(readFileContent(path.join(tmpDir, 'notes', 'todo.md'))).toBe(
+        '- ship',
+      );
+      expect(fileExists(path.join(tmpDir, 'package.json'))).toBe(true);
+      expect(fileExists(path.join(tmpDir, 'src', 'main.ts'))).toBe(true);
+    });
+
+    it('should refuse to overwrite a file the project includes', () => {
+      writeFileContent(path.join(tmpDir, 'package.json'), '{ "name": "mine" }');
+
+      const { exitCode } = runNestRaw(
+        'new . --skip-install --skip-git -p npm --no-observe',
+        tmpDir,
+      );
+
+      expect(exitCode).not.toBe(0);
+      expect(readFileContent(path.join(tmpDir, 'package.json'))).toBe(
+        '{ "name": "mine" }',
+      );
+      expect(fileExists(path.join(tmpDir, 'src', 'main.ts'))).toBe(false);
+    });
+  });
+
+  describe('without a TTY', () => {
+    it('should say which defaults answered the questions it could not ask', () => {
+      const output = runNest(
+        'new prompts-app --skip-install --skip-git',
+        tmpDir,
+      );
+
+      expect(output).toContain('--package-manager');
+      expect(output).toContain('Pass --observe to set it up');
+      expect(output).toContain('--type esm');
+    });
+
+    it('should create a CommonJS project with --type cjs', () => {
+      const appPath = scaffoldApp(tmpDir, 'cjs-app', '--type cjs --no-observe');
+
+      expect(fileExists(path.join(appPath, 'jest.config.ts'))).toBe(true);
+      expect(fileExists(path.join(appPath, 'vitest.config.ts'))).toBe(false);
+    });
   });
 });

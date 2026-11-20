@@ -1,6 +1,11 @@
 import { Command } from 'commander';
 import { Collection } from '../lib/schematics/collection.js';
 import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
+import { disablePrompts } from '../lib/utils/is-interactive.js';
+import {
+  AgentSkillsTarget,
+  parseAgentSkills,
+} from '../lib/utils/agent-skills.js';
 import { AbstractCommand } from './abstract.command.js';
 import { NewCommandContext } from './context/index.js';
 
@@ -35,8 +40,12 @@ export class NewCommand extends AbstractCommand {
       .option('--strict', 'Enables strict mode in TypeScript.', true)
       .option(
         '-t, --skip-tests',
-        'Do not generate testing files for the new project.',
+        'Create the project without tests: no spec or e2e files, no Vitest/Jest config, test scripts or test dependencies. Unlike --minimal, keeps the module, controller and service files.',
         false,
+      )
+      .option(
+        '--type [type]',
+        'Module system: esm (tested with Vitest, the default) or cjs (tested with Jest).',
       )
       .option('--format', 'Format generated files using Prettier.', false)
       .option('--observe', 'Auto-configure observability with @nestjs/observe.')
@@ -46,9 +55,18 @@ export class NewCommand extends AbstractCommand {
       )
       .option(
         '--minimal',
-        'Generate an application whose code is one file, src/main.ts (TypeScript and ESM only).',
+        'Generate an application whose code is one file, src/main.ts, with no tests, linter or formatter (TypeScript and ESM only).',
         false,
       )
+      .option(
+        '--no-interactive',
+        'Never prompt: use the default for every question not answered by a flag (also the case without a TTY or under CI).',
+      )
+      .option(
+        '--skills <agents>',
+        'Coding agents to add the official NestJS agent skills for, comma-separated: all (Codex, Cursor and Claude Code), agents (.agents/skills), claude (.claude/skills), cursor (.cursor/skills), or none.',
+      )
+      .option('--skip-skills', 'Do not add the NestJS agent skills.', false)
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -74,11 +92,40 @@ export class NewCommand extends AbstractCommand {
           }
         }
 
+        const type =
+          typeof options.type === 'string'
+            ? options.type.toLowerCase()
+            : undefined;
+        if (options.type !== undefined && type !== 'esm' && type !== 'cjs') {
+          console.error(
+            `${ERROR_PREFIX} ${MESSAGES.MODULE_TYPE_INVALID(String(options.type))}`,
+          );
+          process.exit(1);
+        }
+        if (options.minimal && type === 'cjs') {
+          console.error(
+            `${ERROR_PREFIX} ${MESSAGES.MINIMAL_COMMONJS_UNSUPPORTED}`,
+          );
+          process.exit(1);
+        }
+        if (options.interactive === false) {
+          disablePrompts();
+        }
+
         if (options.minimal && language === 'js') {
           console.error(
             `${ERROR_PREFIX} ${MESSAGES.MINIMAL_JAVASCRIPT_UNSUPPORTED}`,
           );
           process.exit(1);
+        }
+
+        // Stays undefined unless a flag was given, like `observe`, so the
+        // action knows to ask.
+        let skills: AgentSkillsTarget[] | undefined;
+        if (options.skipSkills) {
+          skills = [];
+        } else if (options.skills !== undefined) {
+          skills = parseAgentSkills(options.skills);
         }
 
         const context: NewCommandContext = {
@@ -97,6 +144,8 @@ export class NewCommand extends AbstractCommand {
           // action to prompt instead of assuming an answer.
           observe: options.observe,
           minimal: options.minimal,
+          type,
+          skills,
         };
 
         await this.action.handle(context);

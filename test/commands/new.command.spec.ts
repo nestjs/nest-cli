@@ -1,8 +1,12 @@
 import { Command } from 'commander';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { NewCommand } from '../../commands/new.command.js';
 import { Collection } from '../../lib/schematics/index.js';
+import {
+  disablePrompts,
+  isInteractive,
+} from '../../lib/utils/is-interactive.js';
 
 class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
@@ -258,11 +262,12 @@ describe('NewCommand', () => {
       },
     );
 
-    it('has no --type to choose CommonJS with', async () => {
+    it('refuses --type cjs, saying what to do', async () => {
+      const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
+        throw new Error('exited');
+      }) as never);
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const program = buildProgram(action);
-      program.commands[0].exitOverride().configureOutput({
-        writeErr: () => {},
-      });
 
       await expect(
         program.parseAsync([
@@ -273,7 +278,108 @@ describe('NewCommand', () => {
           '--type',
           'cjs',
         ]),
-      ).rejects.toThrow(/unknown option '--type'/);
+      ).rejects.toThrow('exited');
+
+      expect(exit).toHaveBeenCalledWith(1);
+      expect(error.mock.calls[0][0]).toContain('ESM only');
+      expect(action.handle).not.toHaveBeenCalled();
+      exit.mockRestore();
+      error.mockRestore();
+    });
+  });
+
+  describe('--type', () => {
+    it('leaves the module system to the schematic when omitted', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ type: undefined }),
+      );
+    });
+
+    it.each([
+      ['esm', 'esm'],
+      ['cjs', 'cjs'],
+      ['CJS', 'cjs'],
+    ])('passes --type %s as %s', async (value, type) => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new', '--type', value]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ type }),
+      );
+    });
+
+    it('refuses another value, naming the valid ones', async () => {
+      const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
+        throw new Error('exited');
+      }) as never);
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const program = buildProgram(action);
+
+      await expect(
+        program.parseAsync(['node', 'nest', 'new', '--type', 'commonjs']),
+      ).rejects.toThrow('exited');
+
+      expect(error.mock.calls[0][0]).toContain('--type esm');
+      expect(action.handle).not.toHaveBeenCalled();
+      exit.mockRestore();
+      error.mockRestore();
+    });
+  });
+
+  describe('--no-interactive', () => {
+    afterEach(() => disablePrompts(false));
+
+    it('turns every prompt off', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new', '--no-interactive']);
+
+      expect(isInteractive()).toBe(false);
+      expect(action.handle).toHaveBeenCalledTimes(1);
+    });
+  });
+  describe('agent skills', () => {
+    const parsedSkills = async (...args: string[]) => {
+      const program = buildProgram(action);
+      await program.parseAsync(['node', 'nest', 'new', ...args]);
+      return action.handle.mock.calls[0][0].skills;
+    };
+
+    it('leaves skills undefined without a flag, so the action asks', async () => {
+      expect(await parsedSkills()).toBeUndefined();
+    });
+
+    it.each([
+      [['--skills', 'all'], ['all']],
+      [['--skills', 'claude'], ['claude']],
+      [
+        ['--skills', 'claude,agents'],
+        ['claude', 'agents'],
+      ],
+      [
+        ['--skills', 'Claude, claude ,cursor'],
+        ['claude', 'cursor'],
+      ],
+      [['--skills', 'none'], []],
+      [['--skip-skills'], []],
+      [['--skills', 'all', '--skip-skills'], []],
+    ])('reads %j as %j', async (args, expected) => {
+      expect(await parsedSkills(...args)).toEqual(expected);
+    });
+
+    it('throws on a target the installer does not know', async () => {
+      const program = buildProgram(action);
+
+      await expect(
+        program.parseAsync(['node', 'nest', 'new', '--skills', 'claude,vim']),
+      ).rejects.toThrow(/Invalid skills target "vim"/);
+
+      expect(action.handle).not.toHaveBeenCalled();
     });
   });
 });
