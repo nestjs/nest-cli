@@ -69,6 +69,12 @@ export const printObservabilityNextSteps = (
   console.info();
   console.info(ansis.bold(MESSAGES.OBSERVABILITY_LINK_COMMAND));
   console.info(ansis.gray(keysHint));
+  // Without a TTY, whoever reads this is most likely a coding agent, which
+  // can start the link and hand the user the code to approve.
+  if (!isInteractive()) {
+    console.info();
+    console.info(MESSAGES.OBSERVABILITY_AGENT_HINT);
+  }
   console.info();
 };
 

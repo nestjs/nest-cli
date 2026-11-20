@@ -2,10 +2,15 @@ import * as fs from 'fs';
 import { join } from 'path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MESSAGES } from '../../../lib/ui/index.js';
+import { isInteractive } from '../../../lib/utils/is-interactive.js';
 import {
   hasObserveDependency,
   printObservabilityNextSteps,
 } from '../../../lib/utils/observe-link.js';
+
+vi.mock('../../../lib/utils/is-interactive.js', () => ({
+  isInteractive: vi.fn(() => true),
+}));
 
 vi.mock('fs', () => ({
   existsSync: vi.fn(),
@@ -86,5 +91,25 @@ describe('printObservabilityNextSteps', () => {
     const output = info.mock.calls.flat().join('\n');
     expect(output).toContain(MESSAGES.OBSERVABILITY_UPGRADE_KEYS_HINT);
     expect(output).not.toContain(MESSAGES.OBSERVABILITY_KEYS_HINT);
+  });
+
+  it('should tell a coding agent how to link when not interactive', () => {
+    vi.mocked(isInteractive).mockReturnValueOnce(false);
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    printObservabilityNextSteps();
+
+    const output = info.mock.calls.flat().join('\n');
+    expect(output).toContain(MESSAGES.OBSERVABILITY_AGENT_HINT);
+    expect(output).toContain(MESSAGES.OBSERVABILITY_LINK_COMMAND);
+  });
+
+  it('should not print the agent hint in a terminal', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    printObservabilityNextSteps();
+
+    const output = info.mock.calls.flat().join('\n');
+    expect(output).not.toContain(MESSAGES.OBSERVABILITY_AGENT_HINT);
   });
 });
