@@ -86,7 +86,7 @@
     "tsconfig-paths-webpack-plugin": "4.2.0",
     "vite": "8.3.8",
     "vitest": "5.1.1",
-    "webpack": "5.112.2",
+    "webpack": "5.113.0",
     "webpack-node-externals": "3.0.0"
   },
   "lint-staged": {
