@@ -274,18 +274,27 @@ describe('NewAction', () => {
       );
     });
 
-    it('stays off without a TTY, where nobody can decline', async () => {
+    it('sets it up when not prompting, as the prompt would by default', async () => {
       vi.mocked(isInteractive).mockReturnValue(false);
       const info = vi.spyOn(console, 'info').mockImplementation(() => {});
 
       await action.handle(baseContext({ observe: undefined }));
 
       expect(confirm).not.toHaveBeenCalled();
-      expect(observeOption()).toBeUndefined();
+      expect(observeOption()?.toCommandString()).toBe('--observe');
       expect(info).toHaveBeenCalledWith(
-        expect.stringContaining('Pass --observe to set it up'),
+        expect.stringContaining('Pass --no-observe to skip it'),
       );
       info.mockRestore();
+    });
+
+    it('leaves it out when not prompting with --no-observe', async () => {
+      vi.mocked(isInteractive).mockReturnValue(false);
+
+      await action.handle(baseContext({ observe: false }));
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(observeOption()).toBeUndefined();
     });
 
     it('respects a declined prompt', async () => {
@@ -305,7 +314,7 @@ describe('NewAction', () => {
       await action.handle(baseContext({ observe: undefined }));
 
       expect(confirm).not.toHaveBeenCalled();
-      expect(observeOption()).toBeUndefined();
+      expect(observeOption()?.toCommandString()).toBe('--observe');
     });
   });
 

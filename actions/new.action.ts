@@ -230,12 +230,13 @@ const installPackages = async (
 };
 
 const askForObservability = async (): Promise<boolean> => {
-  // The prompt below defaults to yes, but that only holds where someone is
-  // there to say no. Without a TTY (CI, piped input, `execSync`) nobody
-  // consented to the extra dependency, so stay off rather than block or assume.
+  // When not prompting (no TTY, CI, --no-interactive), take the prompt's own
+  // default, yes, as with the agent skills: coding agents create most projects
+  // this way, and the SDK sends nothing until the project is linked. The
+  // message says how to link it, and --no-observe opts out.
   if (!isInteractive()) {
     console.info(MESSAGES.OBSERVABILITY_DEFAULTED);
-    return false;
+    return true;
   }
 
   return (await confirm({

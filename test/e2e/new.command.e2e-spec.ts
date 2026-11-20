@@ -174,7 +174,7 @@ describe('New Command (e2e)', () => {
       );
 
       expect(output).toContain('--package-manager');
-      expect(output).toContain('Pass --observe to set it up');
+      expect(output).toContain('Pass --no-observe to skip it');
       expect(output).toContain('--type esm');
     });
 

@@ -79,7 +79,7 @@ export const MESSAGES = {
   MODULE_TYPE_INVALID: (type: string) =>
     `Invalid module system "${type}". Use --type esm (with Vitest) or --type cjs (with Jest).`,
   OBSERVABILITY_DEFAULTED:
-    'Not prompting, so @nestjs/observe is not set up. Pass --observe to set it up.',
+    'Not prompting, so @nestjs/observe is set up (it sends nothing until you run npx @nestjs/observe link). Pass --no-observe to skip it.',
   PROJECT_SELECTION_DEFAULTED: (project: string) =>
     `Not prompting, so generating in the default project, ${project}. Pass --project to choose another.`,
   SCHEMATIC_PROMPTS_DEFAULTED: (answers: string[]) =>
