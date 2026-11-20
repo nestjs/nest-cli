@@ -96,6 +96,8 @@ describe('NewAction', () => {
     language: 'ts',
     collection: '@nestjs/schematics',
     strict: false,
+    // Answered, so only the agent skills cases below prompt or run npx.
+    skills: [],
     ...overrides,
   });
 
@@ -572,6 +574,196 @@ describe('NewAction', () => {
       expect(process.exit).toHaveBeenCalledTimes(1);
       expect(process.exit).toHaveBeenCalledWith(0);
       vi.mocked(existsSync).mockImplementation(() => false);
+    });
+  });
+  describe('NestJS agent skills', () => {
+    const skillsOptions = () =>
+      (mockExecute.mock.calls[0][1] as SchematicOption[])
+        .map((option) => option.toCommandString())
+        .filter((option) => option.startsWith('--skills'));
+
+    const printedLines = () =>
+      vi
+        .mocked(console.info)
+        .mock.calls.flat()
+        .map((line) => String(line))
+        .join('\n');
+
+    /** A child process that exits with `code` once it has been spawned. */
+    const exitsWith = (code: number) => {
+      const child = new EventEmitter();
+      setTimeout(() => child.emit('exit', code), 0);
+      return child as never;
+    };
+
+    beforeEach(() => {
+      vi.spyOn(console, 'info').mockImplementation(() => {});
+      vi.mocked(spawn).mockReturnValue(exitsWith(0));
+    });
+
+    afterEach(() => {
+      vi.mocked(console.info).mockRestore();
+    });
+
+    describe('the schematic option', () => {
+      it('sends each target as its own --skills flag', async () => {
+        await action.handle(baseContext({ skills: ['agents', 'cursor'] }));
+
+        expect(skillsOptions()).toEqual([
+          '--skills="agents"',
+          '--skills="cursor"',
+        ]);
+      });
+
+      it('sends a lone target twice, the only way schematics-cli makes it an array', async () => {
+        await action.handle(baseContext({ skills: ['all'] }));
+
+        expect(skillsOptions()).toEqual(['--skills="all"', '--skills="all"']);
+      });
+
+      it('sends nothing for no targets', async () => {
+        await action.handle(baseContext({ skills: [] }));
+
+        expect(skillsOptions()).toEqual([]);
+      });
+    });
+
+    describe('the prompt', () => {
+      it('asks with a TTY, offering all by default', async () => {
+        vi.mocked(isInteractive).mockReturnValue(true);
+        vi.mocked(select).mockResolvedValue('claude' as never);
+
+        await action.handle(baseContext({ skills: undefined, observe: false }));
+
+        expect(select).toHaveBeenCalledTimes(1);
+        const question = vi.mocked(select).mock.calls[0][0] as {
+          default: string;
+          choices: { value: string }[];
+        };
+        expect(question.default).toBe('all');
+        expect(question.choices.map((choice) => choice.value)).toEqual([
+          'all',
+          'agents',
+          'claude',
+          'cursor',
+          'none',
+        ]);
+        expect(skillsOptions()).toEqual([
+          '--skills="claude"',
+          '--skills="claude"',
+        ]);
+      });
+
+      it('adds none when the answer is none', async () => {
+        vi.mocked(isInteractive).mockReturnValue(true);
+        vi.mocked(select).mockResolvedValue('none' as never);
+
+        await action.handle(
+          baseContext({
+            skills: undefined,
+            observe: false,
+            skipInstall: false,
+          }),
+        );
+
+        expect(skillsOptions()).toEqual([]);
+        expect(spawn).not.toHaveBeenCalled();
+      });
+
+      it('adds them for every agent without a TTY, and says so', async () => {
+        vi.mocked(isInteractive).mockReturnValue(false);
+
+        await action.handle(baseContext({ skills: undefined }));
+
+        expect(select).not.toHaveBeenCalled();
+        expect(skillsOptions()).toEqual(['--skills="all"', '--skills="all"']);
+        expect(printedLines()).toContain('--skip-skills');
+      });
+
+      it('does not ask when a flag answered', async () => {
+        vi.mocked(isInteractive).mockReturnValue(true);
+
+        await action.handle(
+          baseContext({ skills: ['cursor'], observe: false }),
+        );
+
+        expect(select).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('the installer', () => {
+      it('runs @nestjs/skills in the new project after installing packages', async () => {
+        await action.handle(
+          baseContext({ skills: ['claude', 'agents'], skipInstall: false }),
+        );
+
+        expect(spawn).toHaveBeenCalledWith(
+          'npx',
+          ['--yes', '@nestjs/skills@latest', 'add', '--agent', 'claude,agents'],
+          expect.objectContaining({
+            cwd: join(process.cwd(), 'test-project'),
+            stdio: 'inherit',
+            shell: process.platform === 'win32',
+          }),
+        );
+        expect(process.exit).toHaveBeenCalledWith(0);
+      });
+
+      it('runs nothing for no targets', async () => {
+        await action.handle(baseContext({ skills: [], skipInstall: false }));
+
+        expect(spawn).not.toHaveBeenCalled();
+        expect(printedLines()).not.toContain('@nestjs/skills');
+      });
+
+      it('warns with the command to run later when the installer fails, without failing', async () => {
+        vi.mocked(spawn).mockReturnValue(exitsWith(1));
+
+        await action.handle(
+          baseContext({ skills: ['all'], skipInstall: false }),
+        );
+
+        expect(printedLines()).toContain(
+          'npx @nestjs/skills@latest add --agent all',
+        );
+        expect(process.exit).toHaveBeenCalledWith(0);
+        expect(process.exit).not.toHaveBeenCalledWith(1);
+      });
+
+      it('warns the same way when npx cannot start', async () => {
+        const child = new EventEmitter();
+        setTimeout(() => child.emit('error', new Error('ENOENT')), 0);
+        vi.mocked(spawn).mockReturnValue(child as never);
+
+        await action.handle(
+          baseContext({ skills: ['cursor'], skipInstall: false }),
+        );
+
+        expect(printedLines()).toContain(
+          'npx @nestjs/skills@latest add --agent cursor',
+        );
+        expect(process.exit).toHaveBeenCalledWith(0);
+      });
+
+      it('skips it with --skip-install, and prints the command instead', async () => {
+        await action.handle(
+          baseContext({ skills: ['all'], skipInstall: true }),
+        );
+
+        expect(spawn).not.toHaveBeenCalled();
+        expect(printedLines()).toContain(
+          'npx @nestjs/skills@latest add --agent all',
+        );
+      });
+
+      it('skips it on a dry run, which wrote no project to add them to', async () => {
+        await action.handle(
+          baseContext({ skills: ['all'], skipInstall: false, dryRun: true }),
+        );
+
+        expect(spawn).not.toHaveBeenCalled();
+        expect(printedLines()).not.toContain('@nestjs/skills');
+      });
     });
   });
 });

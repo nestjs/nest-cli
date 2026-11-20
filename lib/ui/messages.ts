@@ -62,6 +62,16 @@ export const MESSAGES = {
   OBSERVABILITY_UPGRADE_KEYS_HINT:
     'Or create a free account at https://observe.nestjs.com, issue an API key, and set OBSERVE_APP_KEY and OBSERVE_APP_SECRET in the environment.',
 
+  AGENT_SKILLS_QUESTION:
+    'Which coding agents should get the official NestJS agent skills?',
+  AGENT_SKILLS_DEFAULTED:
+    'Not prompting, so adding the NestJS agent skills for Codex, Cursor and Claude Code. Pass --skills to choose others, or --skip-skills for none.',
+  AGENT_SKILLS_INSTALLATION_IN_PROGRESS: `${EMOJIS.SPARKLES}  Adding the NestJS agent skills...`,
+  AGENT_SKILLS_INSTALLATION_FAILED:
+    'The NestJS agent skills could not be added (offline?). To add them later, run this in the project:',
+  AGENT_SKILLS_INSTALLATION_SKIPPED:
+    'Packages were not installed, so neither were the NestJS agent skills. To add them, run this in the project:',
+
   MINIMAL_JAVASCRIPT_UNSUPPORTED:
     '--minimal is TypeScript only: JavaScript needs Babel and its own entry file to run decorators, so the project would not stay one file. Drop --language js, or drop --minimal for a standard JavaScript project.',
   MINIMAL_COMMONJS_UNSUPPORTED:

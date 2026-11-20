@@ -24,6 +24,13 @@ import { EMOJIS, MESSAGES } from '../lib/ui/index.js';
 import { detectPackageManager } from '../lib/utils/detect-package-manager.js';
 import { normalizeToKebabOrSnakeCase } from '../lib/utils/formatting.js';
 import { gracefullyExitOnPromptError } from '../lib/utils/gracefully-exit-on-prompt-error.js';
+import {
+  AGENT_SKILLS_TARGETS,
+  AgentSkillsTarget,
+  DEFAULT_AGENT_SKILLS,
+  installAgentSkills,
+  printAgentSkillsNextSteps,
+} from '../lib/utils/agent-skills.js';
 import { isInteractive } from '../lib/utils/is-interactive.js';
 import {
   offerObserveLink,
@@ -53,6 +60,16 @@ export class NewAction extends AbstractAction {
       await installPackages(context, projectDirectory);
     }
     if (!context.dryRun) {
+      const skills = context.skills ?? [];
+      // Before `git init`, so the skills are part of the first commit.
+      if (context.skipInstall) {
+        printAgentSkillsNextSteps(
+          skills,
+          MESSAGES.AGENT_SKILLS_INSTALLATION_SKIPPED,
+        );
+      } else {
+        await installAgentSkills(projectDirectory, skills);
+      }
       if (!context.skipGit) {
         await initializeGitRepository(projectDirectory);
         await createGitIgnoreFile(projectDirectory);
@@ -100,6 +117,10 @@ const askForMissingInformation = async (context: NewCommandContext) => {
 
   if (context.observe === undefined) {
     context.observe = await askForObservability();
+  }
+
+  if (context.skills === undefined) {
+    context.skills = await askForAgentSkills();
   }
 };
 
@@ -165,6 +186,14 @@ const mapContextToSchematicOptions = (
   if (context.observe) {
     options.push(new SchematicOption('observe', true));
   }
+  // AGENTS.md gives the command that installs the skills. schematics-cli builds an
+  // array only from a repeated flag (one `--skills=x` reaches the schema as a
+  // string, which fails it), so a lone target is sent twice; the schematic
+  // dedupes. No targets: nothing is sent, and the schematic's default is none.
+  const skills = context.skills ?? [];
+  for (const target of skills.length === 1 ? [...skills, ...skills] : skills) {
+    options.push(new SchematicOption('skills', target));
+  }
   if (context.minimal) {
     options.push(new SchematicOption('minimal', true));
     // Also keeps the schematic's module system prompt away: its choices are
@@ -213,6 +242,28 @@ const askForObservability = async (): Promise<boolean> => {
     message: MESSAGES.OBSERVABILITY_QUESTION,
     default: true,
   }).catch(gracefullyExitOnPromptError)) as boolean;
+};
+
+const askForAgentSkills = async (): Promise<AgentSkillsTarget[]> => {
+  // Agents running `nest new` are the ones the skills help most, and they
+  // rarely have a TTY, so the skills are on when not prompting.
+  if (!isInteractive()) {
+    console.info(MESSAGES.AGENT_SKILLS_DEFAULTED);
+    return DEFAULT_AGENT_SKILLS;
+  }
+
+  const answer = (await select({
+    message: MESSAGES.AGENT_SKILLS_QUESTION,
+    choices: [
+      ...Object.entries(AGENT_SKILLS_TARGETS).map(([value, description]) => ({
+        name: `${value} - ${description}`,
+        value,
+      })),
+      { name: 'none', value: 'none' },
+    ],
+    default: DEFAULT_AGENT_SKILLS[0],
+  }).catch(gracefullyExitOnPromptError)) as AgentSkillsTarget | 'none';
+  return !answer || answer === 'none' ? [] : [answer];
 };
 
 const askForProjectName = async () => {

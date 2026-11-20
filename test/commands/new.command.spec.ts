@@ -343,4 +343,43 @@ describe('NewCommand', () => {
       expect(action.handle).toHaveBeenCalledTimes(1);
     });
   });
+  describe('agent skills', () => {
+    const parsedSkills = async (...args: string[]) => {
+      const program = buildProgram(action);
+      await program.parseAsync(['node', 'nest', 'new', ...args]);
+      return action.handle.mock.calls[0][0].skills;
+    };
+
+    it('leaves skills undefined without a flag, so the action asks', async () => {
+      expect(await parsedSkills()).toBeUndefined();
+    });
+
+    it.each([
+      [['--skills', 'all'], ['all']],
+      [['--skills', 'claude'], ['claude']],
+      [
+        ['--skills', 'claude,agents'],
+        ['claude', 'agents'],
+      ],
+      [
+        ['--skills', 'Claude, claude ,cursor'],
+        ['claude', 'cursor'],
+      ],
+      [['--skills', 'none'], []],
+      [['--skip-skills'], []],
+      [['--skills', 'all', '--skip-skills'], []],
+    ])('reads %j as %j', async (args, expected) => {
+      expect(await parsedSkills(...args)).toEqual(expected);
+    });
+
+    it('throws on a target the installer does not know', async () => {
+      const program = buildProgram(action);
+
+      await expect(
+        program.parseAsync(['node', 'nest', 'new', '--skills', 'claude,vim']),
+      ).rejects.toThrow(/Invalid skills target "vim"/);
+
+      expect(action.handle).not.toHaveBeenCalled();
+    });
+  });
 });

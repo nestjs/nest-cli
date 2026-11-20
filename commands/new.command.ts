@@ -2,6 +2,10 @@ import { Command } from 'commander';
 import { Collection } from '../lib/schematics/collection.js';
 import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { disablePrompts } from '../lib/utils/is-interactive.js';
+import {
+  AgentSkillsTarget,
+  parseAgentSkills,
+} from '../lib/utils/agent-skills.js';
 import { AbstractCommand } from './abstract.command.js';
 import { NewCommandContext } from './context/index.js';
 
@@ -58,6 +62,11 @@ export class NewCommand extends AbstractCommand {
         '--no-interactive',
         'Never prompt: use the default for every question not answered by a flag (also the case without a TTY or under CI).',
       )
+      .option(
+        '--skills <agents>',
+        'Coding agents to add the official NestJS agent skills for, comma-separated: all (Codex, Cursor and Claude Code), agents (.agents/skills), claude (.claude/skills), cursor (.cursor/skills), or none.',
+      )
+      .option('--skip-skills', 'Do not add the NestJS agent skills.', false)
       .action(async (name: string, options: Record<string, any>) => {
         const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
 
@@ -110,6 +119,15 @@ export class NewCommand extends AbstractCommand {
           process.exit(1);
         }
 
+        // Stays undefined unless a flag was given, like `observe`, so the
+        // action knows to ask.
+        let skills: AgentSkillsTarget[] | undefined;
+        if (options.skipSkills) {
+          skills = [];
+        } else if (options.skills !== undefined) {
+          skills = parseAgentSkills(options.skills);
+        }
+
         const context: NewCommandContext = {
           name,
           directory: options.directory,
@@ -127,6 +145,7 @@ export class NewCommand extends AbstractCommand {
           observe: options.observe,
           minimal: options.minimal,
           type,
+          skills,
         };
 
         await this.action.handle(context);
