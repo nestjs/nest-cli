@@ -57,6 +57,8 @@ export const MESSAGES = {
     'Link this project to NestJS Observe now? You approve a code in the browser (signing up for free if needed), and the key pair is written into .env.',
   OBSERVABILITY_NEXT_STEPS: `${EMOJIS.SPARKLES}  @nestjs/observe is wired up. To connect it, run this in the project and approve the code it prints:`,
   OBSERVABILITY_LINK_COMMAND: 'npx @nestjs/observe link',
+  OBSERVABILITY_AGENT_HINT:
+    "Coding agent? If you can leave a command running in the background, start `npx @nestjs/observe link --no-browser` in the project and give the user the address and code it prints: they approve it in the browser, and it writes the key pair into .env. Otherwise, tell the user to run `npx @nestjs/observe link`. Don't write the keys yourself.",
   OBSERVABILITY_KEYS_HINT:
     'Or create a free account at https://observe.nestjs.com and paste the app key and secret into ObserveModule.forRoot() in your AppModule.',
   OBSERVABILITY_UPGRADE_KEYS_HINT:
