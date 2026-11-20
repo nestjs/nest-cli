@@ -122,7 +122,11 @@ export class WatchCompiler extends BaseCompiler<TypescriptWatchCompilerExtras> {
         options,
         host,
         oldProgram,
-        undefined,
+        // A new array on each call, not `undefined`: after a tsconfig change
+        // that leaves the program as it was, TypeScript would then reuse the
+        // old builder and never report the end of the compilation. Empty, since
+        // tsconfig parsing errors are not reported by `nest build` either.
+        [],
         projectReferences,
       );
       const origProgramEmit = program.emit;
