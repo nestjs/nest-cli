@@ -15,8 +15,31 @@ class FakeAction extends AbstractAction {
 const buildProgram = (action: FakeAction) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr: () => {} });
   new NewCommand(action).load(program);
   return program;
+};
+
+const expectCommandError = async (
+  action: FakeAction,
+  args: string[],
+  code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
+  message: string,
+): Promise<void> => {
+  const commandErrors: string[] = [];
+  const program = new Command();
+  program.exitOverride();
+  program.configureOutput({ writeErr: (output) => commandErrors.push(output) });
+  new NewCommand(action).load(program);
+  await expect(
+    program.parseAsync(['node', 'nest', 'new', ...args]),
+  ).rejects.toMatchObject({
+    code,
+    exitCode: 1,
+  });
+
+  expect(commandErrors.join('')).toContain(message);
+  expect(action.handle).not.toHaveBeenCalled();
 };
 
 describe('NewCommand', () => {
@@ -24,6 +47,11 @@ describe('NewCommand', () => {
 
   beforeEach(() => {
     action = new FakeAction();
+  });
+
+  afterEach(() => {
+    disablePrompts(false);
+    vi.restoreAllMocks();
   });
 
   describe('--language normalization', () => {
@@ -44,6 +72,9 @@ describe('NewCommand', () => {
       ['js', 'js'],
       ['ts', 'ts'],
       ['JS', 'js'],
+      ['TYPESCRIPT', 'ts'],
+      ['JavaScript', 'js'],
+      [' JS ', 'js'],
     ])('normalizes --language %s to %s', async (input, expected) => {
       const program = buildProgram(action);
 
@@ -56,13 +87,12 @@ describe('NewCommand', () => {
     });
 
     it('throws an Error when --language receives an invalid value', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'new', '--language', 'ruby']),
-      ).rejects.toThrow(/Invalid language "ruby"/);
-
-      expect(action.handle).not.toHaveBeenCalled();
+      await expectCommandError(
+        action,
+        ['--language', 'ruby'],
+        'commander.invalidArgument',
+        'Allowed choices are',
+      );
     });
   });
 
@@ -135,6 +165,10 @@ describe('NewCommand', () => {
         '--format',
         '--language',
         'javascript',
+        '--type',
+        'cjs',
+        '--skills',
+        'all',
       ]);
 
       expect(action.handle).toHaveBeenCalledTimes(1);
@@ -151,6 +185,8 @@ describe('NewCommand', () => {
         strict: true,
         format: true,
         minimal: false,
+        type: 'cjs',
+        skills: ['all'],
       });
     });
   });
@@ -295,7 +331,7 @@ describe('NewCommand', () => {
       await program.parseAsync(['node', 'nest', 'new']);
 
       expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ type: undefined }),
+        expect.objectContaining({ type: 'esm' }),
       );
     });
 
@@ -303,6 +339,8 @@ describe('NewCommand', () => {
       ['esm', 'esm'],
       ['cjs', 'cjs'],
       ['CJS', 'cjs'],
+      ['ESM', 'esm'],
+      [' ESM ', 'esm'],
     ])('passes --type %s as %s', async (value, type) => {
       const program = buildProgram(action);
 
@@ -314,20 +352,12 @@ describe('NewCommand', () => {
     });
 
     it('refuses another value, naming the valid ones', async () => {
-      const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
-        throw new Error('exited');
-      }) as never);
-      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'new', '--type', 'commonjs']),
-      ).rejects.toThrow('exited');
-
-      expect(error.mock.calls[0][0]).toContain('--type esm');
-      expect(action.handle).not.toHaveBeenCalled();
-      exit.mockRestore();
-      error.mockRestore();
+      await expectCommandError(
+        action,
+        ['--type', 'commonjs'],
+        'commander.invalidArgument',
+        'Allowed choices are',
+      );
     });
   });
 
@@ -343,6 +373,7 @@ describe('NewCommand', () => {
       expect(action.handle).toHaveBeenCalledTimes(1);
     });
   });
+
   describe('agent skills', () => {
     const parsedSkills = async (...args: string[]) => {
       const program = buildProgram(action);
@@ -373,13 +404,207 @@ describe('NewCommand', () => {
     });
 
     it('throws on a target the installer does not know', async () => {
+      await expectCommandError(
+        action,
+        ['--skills', 'claude,vim'],
+        'commander.invalidArgument',
+        'Allowed choices are',
+      );
+    });
+  });
+
+  describe('--package-manager', () => {
+    it.each([
+      ['npm', 'npm'],
+      ['pnpm', 'pnpm'],
+      ['yarn', 'yarn'],
+      ['bun', 'bun'],
+      ['PNPM', 'pnpm'],
+      [' YARN ', 'yarn'],
+    ])('normalizes "%s" to "%s"', async (input, expected) => {
       const program = buildProgram(action);
 
-      await expect(
-        program.parseAsync(['node', 'nest', 'new', '--skills', 'claude,vim']),
-      ).rejects.toThrow(/Invalid skills target "vim"/);
+      await program.parseAsync([
+        'node',
+        'nest',
+        'new',
+        '--package-manager',
+        input,
+      ]);
 
-      expect(action.handle).not.toHaveBeenCalled();
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ packageManager: expected }),
+      );
     });
+
+    it.each(['deno', 'ruby', 'invalid'])(
+      'rejects an unsupported package manager: "%s"',
+      async (value) => {
+        await expectCommandError(
+          action,
+          ['--package-manager', value],
+          'commander.invalidArgument',
+          'Allowed choices are',
+        );
+      },
+    );
+  });
+
+  describe('--directory', () => {
+    it('forwards the supplied directory', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'new',
+        '--directory',
+        'apps/My-App',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          directory: 'apps/My-App',
+        }),
+      );
+    });
+  });
+
+  describe('--collection', () => {
+    it('forwards a custom schematic collection', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'new',
+        '--collection',
+        '@any/custom-schematics',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: '@any/custom-schematics',
+        }),
+      );
+    });
+
+    it('uses the NestJS collection by default', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'new']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: Collection.NESTJS,
+        }),
+      );
+    });
+  });
+
+  describe('required option arguments', () => {
+    it.each([
+      {
+        option: '--directory',
+        expectedMessage: "option '--directory <directory>' argument missing",
+      },
+      {
+        option: '--package-manager',
+        expectedMessage:
+          "option '-p, --package-manager <packageManager>' argument missing",
+      },
+      {
+        option: '--language',
+        expectedMessage: "option '-l, --language <language>' argument missing",
+      },
+      {
+        option: '--collection',
+        expectedMessage:
+          "option '-c, --collection <collectionName>' argument missing",
+      },
+      {
+        option: '--type',
+        expectedMessage: "option '--type <type>' argument missing",
+      },
+      {
+        option: '--skills',
+        expectedMessage: "option '--skills <agents>' argument missing",
+      },
+    ])(
+      'rejects $option when its value is missing',
+      async ({ option, expectedMessage }) => {
+        await expectCommandError(
+          action,
+          [option],
+          'commander.optionMissingArgument',
+          expectedMessage,
+        );
+      },
+    );
+  });
+
+  describe('short option aliases', () => {
+    it('accepts short aliases for package manager, language and collection', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync([
+        'node',
+        'nest',
+        'new',
+        '-p',
+        'PNPM',
+        '-l',
+        'JS',
+        '-c',
+        '@any/schematics',
+      ]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          packageManager: 'pnpm',
+          language: 'js',
+          collection: '@any/schematics',
+        }),
+      );
+    });
+  });
+
+  describe.each([
+    {
+      option: '--directory',
+      expectedMessage: 'Directory cannot be empty.',
+    },
+    {
+      option: '--collection',
+      expectedMessage: 'Collection cannot be empty.',
+    },
+    {
+      option: '--package-manager',
+      expectedMessage: 'Package Manager cannot be empty',
+    },
+    {
+      option: '--language',
+      expectedMessage: 'Language cannot be empty',
+    },
+    {
+      option: '--type',
+      expectedMessage: 'Module type cannot be empty',
+    },
+    {
+      option: '--skills',
+      expectedMessage: 'Agent Skills cannot be empty',
+    },
+  ])('$option validation', ({ option, expectedMessage }) => {
+    it.each(['', ' ', '\t', '\n', ' \t\n '])(
+      'rejects an empty or whitespace-only value: %j',
+      async (value) => {
+        await expectCommandError(
+          action,
+          [option, value],
+          'commander.invalidArgument',
+          expectedMessage,
+        );
+      },
+    );
   });
 });
