@@ -3,8 +3,8 @@ import { Collection } from '../lib/schematics/collection.js';
 import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { disablePrompts } from '../lib/utils/is-interactive.js';
 import {
+  AGENT_SKILLS_TARGETS,
   AgentSkillsTarget,
-  parseAgentSkills,
 } from '../lib/utils/agent-skills.js';
 import { AbstractCommand } from './abstract.command.js';
 import { NewCommandContext } from './context/index.js';
@@ -19,6 +19,9 @@ export class NewCommand extends AbstractCommand {
       javascript: 'js',
       js: 'js',
     };
+    const AGENT_SKILLS = Object.keys(
+      AGENT_SKILLS_TARGETS,
+    ) as AgentSkillsTarget[];
 
     type PackageManager = (typeof PACKAGE_MANAGERS)[number];
     type ModuleType = (typeof MODULE_TYPES)[number];
@@ -38,7 +41,7 @@ export class NewCommand extends AbstractCommand {
       minimal: boolean;
       type: ModuleType;
       interactive: boolean;
-      skills?: string;
+      skills?: AgentSkillsTarget[];
       skipSkills: boolean;
     }
 
@@ -47,7 +50,17 @@ export class NewCommand extends AbstractCommand {
       .alias('n')
       .argument('[name]', 'The name of the new project.')
       .description('Generate Nest application.')
-      .option('--directory <directory>', 'Specify the destination directory')
+      .addOption(
+        new Option(
+          '--directory <directory>',
+          'Specify the destination directory',
+        ).argParser((val: string) => {
+          const normalized = val.trim();
+          if (!normalized || normalized.length === 0)
+            throw new InvalidArgumentError('Directory cannot be empty.');
+          return normalized;
+        }),
+      )
       .option(
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
@@ -61,9 +74,11 @@ export class NewCommand extends AbstractCommand {
           `Specify package manager. (choices: ${PACKAGE_MANAGERS.map((val) => `"${val}"`).join(', ')})`,
         ).argParser((val: string) => {
           const normalized = val.trim().toLowerCase() as PackageManager;
+          if (!normalized || normalized.length === 0)
+            throw new InvalidArgumentError('Package Manager cannot be empty');
           if (!PACKAGE_MANAGERS.includes(normalized))
             throw new InvalidArgumentError(
-              `Allowed choices are ${PACKAGE_MANAGERS.map((val) => `"${val}"`).join(', ')}.`,
+              `Allowed choices are ${PACKAGE_MANAGERS.map((val) => `'${val}'`).join(', ')}.`,
             );
           return normalized;
         }),
@@ -77,6 +92,8 @@ export class NewCommand extends AbstractCommand {
         )
           .argParser((val: string) => {
             const normalized = val.trim().toLowerCase();
+            if (!normalized || normalized.length === 0)
+              throw new InvalidArgumentError('Language cannot be empty');
             const result = LANGUAGES[normalized];
             if (!result)
               throw new InvalidArgumentError(
@@ -88,10 +105,18 @@ export class NewCommand extends AbstractCommand {
           })
           .default(LANGUAGES.typescript),
       )
-      .option(
-        '-c, --collection <collectionName>',
-        'Schematics collection to use',
-        Collection.NESTJS,
+      .addOption(
+        new Option(
+          '-c, --collection <collectionName>',
+          'Schematics collection to use',
+        )
+          .argParser((val: string) => {
+            const normalized = val.trim().toLowerCase();
+            if (!normalized || normalized.length === 0)
+              throw new InvalidArgumentError('Collection cannot be empty.');
+            return normalized;
+          })
+          .default(Collection.NESTJS),
       )
       .option('--strict', 'Enables strict mode in TypeScript.', true)
       .option(
@@ -106,6 +131,8 @@ export class NewCommand extends AbstractCommand {
         )
           .argParser((val: string) => {
             const normalized = val.trim().toLowerCase() as ModuleType;
+            if (!normalized || normalized.length === 0)
+              throw new InvalidArgumentError('Module type cannot be empty');
             if (!MODULE_TYPES.includes(normalized))
               throw new InvalidArgumentError(
                 `Allowed choices are ${MODULE_TYPES.join(', ')}.`,
@@ -129,9 +156,28 @@ export class NewCommand extends AbstractCommand {
         '--no-interactive',
         'Never prompt: use the default for every question not answered by a flag (also the case without a TTY or under CI).',
       )
-      .option(
-        '--skills <agents>',
-        'Coding agents to add the official NestJS agent skills for, comma-separated: all (Codex, Cursor and Claude Code), agents (.agents/skills), claude (.claude/skills), cursor (.cursor/skills), or none.',
+      .addOption(
+        new Option(
+          '--skills <agents>',
+          'Coding agents to add the official NestJS agent skills for, comma-separated: all (Codex, Cursor and Claude Code), agents (.agents/skills), claude (.claude/skills), cursor (.cursor/skills), or none.',
+        ).argParser((val: string) => {
+          const normalized = val
+            .split(',')
+            .map((name) => name.trim().toLowerCase())
+            .filter(Boolean);
+          if (normalized.length === 0)
+            throw new InvalidArgumentError('Agent Skills cannot be empty');
+          if (normalized.includes('none')) return [];
+          const allowedSet = new Set<string>(AGENT_SKILLS);
+          const invalidValues = normalized.filter(
+            (value) => !allowedSet.has(value),
+          );
+          if (invalidValues.length > 0)
+            throw new InvalidArgumentError(
+              `Allowed choices are ${AGENT_SKILLS.join(', ')} (comma-separated), or none.`,
+            );
+          return [...new Set(normalized)] as AgentSkillsTarget[];
+        }),
       )
       .option('--skip-skills', 'Do not add the NestJS agent skills.', false)
       .action(async (name: string | undefined, options: NewCommandOptions) => {
@@ -154,12 +200,9 @@ export class NewCommand extends AbstractCommand {
 
         // Stays undefined unless a flag was given, like `observe`, so the
         // action knows to ask.
-        let skills: AgentSkillsTarget[] | undefined;
-        if (options.skipSkills || options.skills === 'none') {
-          skills = [];
-        } else if (options.skills !== undefined) {
-          skills = parseAgentSkills(options.skills);
-        }
+        const skills = options.skipSkills
+          ? []
+          : options.skills && options.skills;
 
         const context: NewCommandContext = {
           name,
