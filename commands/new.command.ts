@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, InvalidArgumentError, Option } from 'commander';
 import { Collection } from '../lib/schematics/collection.js';
 import { ERROR_PREFIX, MESSAGES } from '../lib/ui/index.js';
 import { disablePrompts } from '../lib/utils/is-interactive.js';
@@ -11,11 +11,43 @@ import { NewCommandContext } from './context/index.js';
 
 export class NewCommand extends AbstractCommand {
   public load(program: Command) {
+    const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'] as const;
+    const MODULE_TYPES = ['esm', 'cjs'] as const;
+    const LANGUAGES: Record<string, string> = {
+      typescript: 'ts',
+      ts: 'ts',
+      javascript: 'js',
+      js: 'js',
+    };
+
+    type PackageManager = (typeof PACKAGE_MANAGERS)[number];
+    type ModuleType = (typeof MODULE_TYPES)[number];
+
+    interface NewCommandOptions {
+      directory?: string;
+      dryRun: boolean;
+      skipGit: boolean;
+      skipInstall: boolean;
+      skipTests: boolean;
+      packageManager?: PackageManager;
+      language: 'js' | 'ts';
+      collection: string;
+      strict: boolean;
+      format: boolean;
+      observe?: boolean;
+      minimal: boolean;
+      type: ModuleType;
+      interactive: boolean;
+      skills?: string;
+      skipSkills: boolean;
+    }
+
     program
-      .command('new [name]')
+      .command('new')
       .alias('n')
+      .argument('[name]', 'The name of the new project.')
       .description('Generate Nest application.')
-      .option('--directory [directory]', 'Specify the destination directory')
+      .option('--directory <directory>', 'Specify the destination directory')
       .option(
         '-d, --dry-run',
         'Report actions that would be performed without writing out results.',
@@ -23,17 +55,41 @@ export class NewCommand extends AbstractCommand {
       )
       .option('-g, --skip-git', 'Skip git repository initialization.', false)
       .option('-s, --skip-install', 'Skip package installation.', false)
-      .option(
-        '-p, --package-manager [packageManager]',
-        'Specify package manager.',
+      .addOption(
+        new Option(
+          '-p, --package-manager <packageManager>',
+          `Specify package manager. (choices: ${PACKAGE_MANAGERS.map((val) => `"${val}"`).join(', ')})`,
+        ).argParser((val: string) => {
+          const normalized = val.trim().toLowerCase() as PackageManager;
+          if (!PACKAGE_MANAGERS.includes(normalized))
+            throw new InvalidArgumentError(
+              `Allowed choices are ${PACKAGE_MANAGERS.map((val) => `"${val}"`).join(', ')}.`,
+            );
+          return normalized;
+        }),
+      )
+      .addOption(
+        new Option(
+          '-l, --language <language>',
+          `Programming language. (choices: ${Object.keys(LANGUAGES)
+            .map((val) => `"${val}"`)
+            .join(', ')})`,
+        )
+          .argParser((val: string) => {
+            const normalized = val.trim().toLowerCase();
+            const result = LANGUAGES[normalized];
+            if (!result)
+              throw new InvalidArgumentError(
+                `Allowed choices are ${Object.keys(LANGUAGES)
+                  .map((val) => `"${val}"`)
+                  .join(', ')}.`,
+              );
+            return result;
+          })
+          .default(LANGUAGES.typescript),
       )
       .option(
-        '-l, --language [language]',
-        'Programming language to be used (TypeScript or JavaScript)',
-        'TypeScript',
-      )
-      .option(
-        '-c, --collection [collectionName]',
+        '-c, --collection <collectionName>',
         'Schematics collection to use',
         Collection.NESTJS,
       )
@@ -43,9 +99,20 @@ export class NewCommand extends AbstractCommand {
         'Create the project without tests: no spec or e2e files, no Vitest/Jest config, test scripts or test dependencies. Unlike --minimal, keeps the module, controller and service files.',
         false,
       )
-      .option(
-        '--type [type]',
-        'Module system: esm (tested with Vitest, the default) or cjs (tested with Jest).',
+      .addOption(
+        new Option(
+          '--type <type>',
+          'Module system: `esm` (default, Vitest) or `cjs` (Jest). `--minimal` is ESM-only.',
+        )
+          .argParser((val: string) => {
+            const normalized = val.trim().toLowerCase() as ModuleType;
+            if (!MODULE_TYPES.includes(normalized))
+              throw new InvalidArgumentError(
+                `Allowed choices are ${MODULE_TYPES.join(', ')}.`,
+              );
+            return normalized;
+          })
+          .default('esm'),
       )
       .option('--format', 'Format generated files using Prettier.', false)
       .option('--observe', 'Auto-configure observability with @nestjs/observe.')
@@ -67,42 +134,8 @@ export class NewCommand extends AbstractCommand {
         'Coding agents to add the official NestJS agent skills for, comma-separated: all (Codex, Cursor and Claude Code), agents (.agents/skills), claude (.claude/skills), cursor (.cursor/skills), or none.',
       )
       .option('--skip-skills', 'Do not add the NestJS agent skills.', false)
-      .action(async (name: string, options: Record<string, any>) => {
-        const availableLanguages = ['js', 'ts', 'javascript', 'typescript'];
-
-        let language = options.language;
-        if (language) {
-          const lowercasedLanguage = language.toLowerCase();
-          const langMatch = availableLanguages.includes(lowercasedLanguage);
-          if (!langMatch) {
-            throw new Error(
-              `Invalid language "${language}" selected. Available languages are "typescript" or "javascript"`,
-            );
-          }
-          switch (lowercasedLanguage) {
-            case 'javascript':
-              language = 'js';
-              break;
-            case 'typescript':
-              language = 'ts';
-              break;
-            default:
-              language = lowercasedLanguage;
-              break;
-          }
-        }
-
-        const type =
-          typeof options.type === 'string'
-            ? options.type.toLowerCase()
-            : undefined;
-        if (options.type !== undefined && type !== 'esm' && type !== 'cjs') {
-          console.error(
-            `${ERROR_PREFIX} ${MESSAGES.MODULE_TYPE_INVALID(String(options.type))}`,
-          );
-          process.exit(1);
-        }
-        if (options.minimal && type === 'cjs') {
+      .action(async (name: string | undefined, options: NewCommandOptions) => {
+        if (options.minimal && options.type === 'cjs') {
           console.error(
             `${ERROR_PREFIX} ${MESSAGES.MINIMAL_COMMONJS_UNSUPPORTED}`,
           );
@@ -112,7 +145,7 @@ export class NewCommand extends AbstractCommand {
           disablePrompts();
         }
 
-        if (options.minimal && language === 'js') {
+        if (options.minimal && options.language === 'js') {
           console.error(
             `${ERROR_PREFIX} ${MESSAGES.MINIMAL_JAVASCRIPT_UNSUPPORTED}`,
           );
@@ -122,7 +155,7 @@ export class NewCommand extends AbstractCommand {
         // Stays undefined unless a flag was given, like `observe`, so the
         // action knows to ask.
         let skills: AgentSkillsTarget[] | undefined;
-        if (options.skipSkills) {
+        if (options.skipSkills || options.skills === 'none') {
           skills = [];
         } else if (options.skills !== undefined) {
           skills = parseAgentSkills(options.skills);
@@ -136,7 +169,7 @@ export class NewCommand extends AbstractCommand {
           skipInstall: options.skipInstall,
           skipTests: options.skipTests,
           packageManager: options.packageManager,
-          language,
+          language: options.language,
           collection: options.collection,
           strict: options.strict,
           format: options.format === true,
@@ -144,7 +177,7 @@ export class NewCommand extends AbstractCommand {
           // action to prompt instead of assuming an answer.
           observe: options.observe,
           minimal: options.minimal,
-          type,
+          type: options.type,
           skills,
         };
 
