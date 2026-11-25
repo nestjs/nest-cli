@@ -34,9 +34,13 @@ class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
 }
 
-const buildProgram = async (action: FakeAction) => {
+const buildProgram = async (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr });
   await new GenerateCommand(action).load(program);
   return program;
 };
@@ -49,6 +53,27 @@ describe('GenerateCommand', () => {
     await program.parseAsync(['node', 'nest', ...args]);
     expect(action.handle).toHaveBeenCalledTimes(1);
     return action.handle.mock.calls[0][0];
+  };
+
+  const expectCommandError = async (
+    args: string[],
+    code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
+    message?: string,
+  ) => {
+    const commandErrors: string[] = [];
+    const program = await buildProgram(action, (output) =>
+      commandErrors.push(output),
+    );
+
+    await expect(
+      program.parseAsync(['node', 'nest', 'generate', ...args]),
+    ).rejects.toMatchObject({
+      code,
+      exitCode: 1,
+    });
+
+    if (message) expect(commandErrors.join('')).toContain(message);
+    expect(action.handle).not.toHaveBeenCalled();
   };
 
   beforeEach(() => {
@@ -141,6 +166,28 @@ describe('GenerateCommand', () => {
 
       expect(context.crud).toBe(false);
     });
+
+    it.each(['TRUE', 'FALSE', 'yes', 'no', '1', '0', 'invalid'])(
+      'rejects the invalid value "%s"',
+      async (value) => {
+        await expectCommandError(
+          ['resource', 'users', '--crud', value],
+          'commander.invalidArgument',
+          'CRUD value must be either "true" or "false".',
+        );
+      },
+    );
+
+    it.each(['', '   '])(
+      'rejects an empty or whitespace-only value ("%s")',
+      async (value) => {
+        await expectCommandError(
+          ['resource', 'users', '--crud', value],
+          'commander.invalidArgument',
+          'CRUD value must be either "true" or "false".',
+        );
+      },
+    );
   });
 
   describe('--flat / --no-flat', () => {
@@ -217,52 +264,180 @@ describe('GenerateCommand', () => {
       ).toBe(true);
     });
 
-    it('forwards --type', async () => {
-      const context = await run(
-        'generate',
-        'resource',
-        'users',
-        '--type',
-        'graphql',
+    describe('--type', () => {
+      it('forwards the supplied value', async () => {
+        const context = await run(
+          'generate',
+          'resource',
+          'users',
+          '--type',
+          'graphql',
+        );
+
+        expect(context.type).toBe('graphql');
+      });
+
+      it('requires a value', async () => {
+        await expectCommandError(
+          ['resource', 'users', '--type'],
+          'commander.optionMissingArgument',
+        );
+      });
+
+      it.each(['', '   '])(
+        'rejects an empty or whitespace-only value ("%s")',
+        async (value) => {
+          await expectCommandError(
+            ['resource', 'users', '--type', value],
+            'commander.invalidArgument',
+            'Type cannot be empty.',
+          );
+        },
       );
 
-      expect(context.type).toBe('graphql');
+      it('preserves the original value when it contains surrounding whitespace', async () => {
+        const context = await run(
+          'generate',
+          'resource',
+          'users',
+          '--type',
+          ' graphql ',
+        );
+
+        expect(context.type).toBe(' graphql ');
+      });
     });
 
-    it('forwards --project', async () => {
-      const context = await run(
-        'generate',
-        'controller',
-        'users',
-        '--project',
-        'api',
+    describe('--project', () => {
+      it('forwards the supplied value', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--project',
+          'api',
+        );
+
+        expect(context.project).toBe('api');
+      });
+
+      it('requires a value', async () => {
+        await expectCommandError(
+          ['controller', 'users', '--project'],
+          'commander.optionMissingArgument',
+        );
+      });
+
+      it.each(['', '   '])(
+        'rejects an empty or whitespace-only value ("%s")',
+        async (value) => {
+          await expectCommandError(
+            ['controller', 'users', '--project', value],
+            'commander.invalidArgument',
+            'Project cannot be empty.',
+          );
+        },
       );
 
-      expect(context.project).toBe('api');
+      it('preserves the original value when it contains surrounding whitespace', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--project',
+          ' api ',
+        );
+
+        expect(context.project).toBe(' api ');
+      });
     });
 
-    it('forwards --collection', async () => {
-      const context = await run(
-        'generate',
-        'controller',
-        'users',
-        '--collection',
-        '@my/schematics',
+    describe('--collection', () => {
+      it('forwards the supplied value', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--collection',
+          '@my/schematics',
+        );
+
+        expect(context.collection).toBe('@my/schematics');
+      });
+
+      it('requires a value', async () => {
+        await expectCommandError(
+          ['controller', 'users', '--collection'],
+          'commander.optionMissingArgument',
+        );
+      });
+
+      it.each(['', '   '])(
+        'rejects an empty or whitespace-only value ("%s")',
+        async (value) => {
+          await expectCommandError(
+            ['controller', 'users', '--collection', value],
+            'commander.invalidArgument',
+            'Collection cannot be empty.',
+          );
+        },
       );
 
-      expect(context.collection).toBe('@my/schematics');
+      it('preserves the original value when it contains surrounding whitespace', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--collection',
+          ' @my/schematics ',
+        );
+
+        expect(context.collection).toBe(' @my/schematics ');
+      });
     });
 
-    it('forwards --prefix', async () => {
-      const context = await run(
-        'generate',
-        'library',
-        'shared',
-        '--prefix',
-        '@acme',
+    describe('--prefix', () => {
+      it('forwards the supplied value', async () => {
+        const context = await run(
+          'generate',
+          'library',
+          'shared',
+          '--prefix',
+          '@acme',
+        );
+
+        expect(context.prefix).toBe('@acme');
+      });
+
+      it('requires a value', async () => {
+        await expectCommandError(
+          ['library', 'shared', '--prefix'],
+          'commander.optionMissingArgument',
+        );
+      });
+
+      it.each(['', '   '])(
+        'rejects an empty or whitespace-only value ("%s")',
+        async (value) => {
+          await expectCommandError(
+            ['library', 'shared', '--prefix', value],
+            'commander.invalidArgument',
+            'Prefix cannot be empty.',
+          );
+        },
       );
 
-      expect(context.prefix).toBe('@acme');
+      it('preserves the original value when it contains surrounding whitespace', async () => {
+        const context = await run(
+          'generate',
+          'library',
+          'shared',
+          '--prefix',
+          ' @acme ',
+        );
+
+        expect(context.prefix).toBe(' @acme ');
+      });
     });
 
     it('turns every prompt off with --no-interactive', async () => {
@@ -275,16 +450,48 @@ describe('GenerateCommand', () => {
       }
     });
 
-    it('forwards --spec-file-suffix', async () => {
-      const context = await run(
-        'generate',
-        'controller',
-        'users',
-        '--spec-file-suffix',
-        'test',
+    describe('--spec-file-suffix', () => {
+      it('forwards the supplied value', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--spec-file-suffix',
+          'test',
+        );
+
+        expect(context.specFileSuffix).toBe('test');
+      });
+
+      it('requires a value', async () => {
+        await expectCommandError(
+          ['generate', 'controller', 'users', '--spec-file-suffix'],
+          'commander.optionMissingArgument',
+        );
+      });
+
+      it.each(['', '   '])(
+        'rejects an empty or whitespace-only value ("%s")',
+        async (value) => {
+          await expectCommandError(
+            ['generate', 'controller', 'users', '--spec-file-suffix', value],
+            'commander.invalidArgument',
+            'Spec file suffix cannot be empty.',
+          );
+        },
       );
 
-      expect(context.specFileSuffix).toBe('test');
+      it('preserves the original value when it contains surrounding whitespace', async () => {
+        const context = await run(
+          'generate',
+          'controller',
+          'users',
+          '--spec-file-suffix',
+          ' test ',
+        );
+
+        expect(context.specFileSuffix).toBe(' test ');
+      });
     });
   });
 

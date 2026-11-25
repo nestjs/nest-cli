@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
-import { UpgradeCommandContext } from '../../commands/context/index.js';
+import type { UpgradeCommandContext } from '../../commands/context/index.js';
 import { UpgradeCommand } from '../../commands/upgrade.command.js';
 
 class FakeAction extends AbstractAction {
@@ -14,11 +14,35 @@ const ProcessExitError = class extends Error {
   }
 };
 
-const buildProgram = (action: FakeAction) => {
+const buildProgram = (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr });
   new UpgradeCommand(action).load(program);
   return program;
+};
+
+const expectCommandError = async (
+  action: FakeAction,
+  args: string[],
+  code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
+  message: string,
+): Promise<void> => {
+  const commandErrors: string[] = [];
+  const program = buildProgram(action, (output) => commandErrors.push(output));
+
+  await expect(
+    program.parseAsync(['node', 'nest', 'upgrade', ...args]),
+  ).rejects.toMatchObject({
+    code,
+    exitCode: 1,
+  });
+
+  expect(commandErrors.join('')).toContain(message);
+  expect(action.handle).not.toHaveBeenCalled();
 };
 
 describe('UpgradeCommand', () => {
@@ -66,8 +90,8 @@ describe('UpgradeCommand', () => {
           '-s, --skip-install',
           '--observe',
           '--no-observe',
-          '-t, --tag [tag]',
-          '-c, --collection [collectionName]',
+          '-t, --tag <tag>',
+          '-c, --collection <collectionName>',
         ]),
       );
     });
@@ -131,6 +155,43 @@ describe('UpgradeCommand', () => {
 
     it('passes observe: false for --no-observe', async () => {
       expect((await run('upgrade', '--no-observe')).observe).toBe(false);
+    });
+  });
+
+  describe('option argument validation', () => {
+    it.each(['--tag', '-t', '--collection', '-c'])(
+      'requires an argument for %s',
+      async (flag) => {
+        await expectCommandError(
+          action,
+          [flag],
+          'commander.optionMissingArgument',
+          'argument missing',
+        );
+      },
+    );
+
+    it.each([
+      ['--tag', ''],
+      ['--tag', ' \t\r\n'],
+      ['-t', ''],
+      ['-t', ' \t\r\n'],
+      ['--collection', ''],
+      ['--collection', ' \t\r\n'],
+      ['-c', ''],
+      ['-c', ' \t\r\n'],
+    ])('rejects an empty value for %s', async (flag, value) => {
+      const message =
+        flag === '--tag' || flag === '-t'
+          ? 'Tag cannot be empty.'
+          : 'Collection name cannot be empty.';
+
+      await expectCommandError(
+        action,
+        [flag, value],
+        'commander.invalidArgument',
+        message,
+      );
     });
   });
 

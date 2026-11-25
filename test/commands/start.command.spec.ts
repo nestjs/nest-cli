@@ -14,9 +14,13 @@ const ProcessExitError = class extends Error {
   }
 };
 
-const buildProgram = (action: FakeAction) => {
+const buildProgram = (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr });
   new StartCommand(action).load(program);
   return program;
 };
@@ -24,78 +28,87 @@ const buildProgram = (action: FakeAction) => {
 describe('StartCommand', () => {
   let action: FakeAction;
   let exitSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  const expectCommandError = async (
+    action: FakeAction,
+    args: string[],
+    code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
+    message: string,
+  ): Promise<void> => {
+    const commandErrors: string[] = [];
+    const program = buildProgram(action, (output) =>
+      commandErrors.push(output),
+    );
+
+    await expect(
+      program.parseAsync(['node', 'nest', 'start', ...args]),
+    ).rejects.toMatchObject({
+      code,
+      exitCode: 1,
+    });
+
+    expect(commandErrors.join('')).toContain(message);
+    expect(action.handle).not.toHaveBeenCalled();
+  };
 
   beforeEach(() => {
     action = new FakeAction();
     exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
       throw new ProcessExitError(code);
     }) as never);
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     exitSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
   });
 
   describe('--builder validation', () => {
-    it('exits with code 1 when --builder receives an unknown value', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'start', '--builder', 'foo']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid builder option: foo'),
+    it('rejects an unknown builder value before the action runs', async () => {
+      await expectCommandError(
+        action,
+        ['--builder', 'foo'],
+        'commander.invalidArgument',
+        'Allowed choices are',
       );
-      expect(action.handle).not.toHaveBeenCalled();
     });
 
-    it('exits with code 1 when --builder receives an empty string', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'start', '--builder', '']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid builder option: '),
+    it('rejects an empty builder value before the action runs', async () => {
+      await expectCommandError(
+        action,
+        ['--builder', ''],
+        'commander.invalidArgument',
+        'Builder cannot be empty.',
       );
-      expect(action.handle).not.toHaveBeenCalled();
     });
 
-    it.each([['tsc'], ['webpack'], ['swc'], ['rspack']])(
-      'accepts %s as a valid --builder value',
-      async (builder) => {
+    it.each([
+      ['tsc', 'tsc'],
+      ['Webpack', 'webpack'],
+      ['SWC', 'swc'],
+      ['rspack', 'rspack'],
+    ])(
+      'accepts %s as a valid --builder value and normalizes to %s',
+      async (value, expected) => {
         const program = buildProgram(action);
 
-        await program.parseAsync([
-          'node',
-          'nest',
-          'start',
-          '--builder',
-          builder,
-        ]);
+        await program.parseAsync(['node', 'nest', 'start', '--builder', value]);
 
         expect(exitSpy).not.toHaveBeenCalled();
         expect(action.handle).toHaveBeenCalledTimes(1);
         expect(action.handle).toHaveBeenCalledWith(
-          expect.objectContaining({ builder }),
+          expect.objectContaining({ builder: expected }),
         );
       },
     );
 
-    it('does not validate the builder when the option is omitted', async () => {
+    it('allows starting without explicitly specifying a builder', async () => {
       const program = buildProgram(action);
 
       await program.parseAsync(['node', 'nest', 'start']);
 
       expect(exitSpy).not.toHaveBeenCalled();
       expect(action.handle).toHaveBeenCalledTimes(1);
+      expect(action.handle.mock.calls[0][0].builder).toBeUndefined();
     });
   });
 
@@ -348,6 +361,65 @@ describe('StartCommand', () => {
 
       expect(action.handle).toHaveBeenCalledWith(
         expect.objectContaining({ preserveWatchOutput: false }),
+      );
+    });
+  });
+
+  describe('option argument validation', () => {
+    it.each([
+      '--config',
+      '--path',
+      '--builder',
+      '--webpackPath',
+      '--rspackPath',
+      '--sourceRoot',
+      '--entryFile',
+      '--exec',
+      '--env-file',
+    ])('requires an argument for %s', async (flag) => {
+      await expectCommandError(
+        action,
+        [flag],
+        'commander.optionMissingArgument',
+        'argument missing',
+      );
+    });
+
+    it.each([
+      ['--config', ''],
+      ['--config', ' \t\r\n'],
+      ['--path', ''],
+      ['--path', ' \t\r\n'],
+      ['--builder', ''],
+      ['--builder', ' \t\r\n'],
+      ['--webpackPath', ''],
+      ['--webpackPath', ' \t\r\n'],
+      ['--rspackPath', ''],
+      ['--rspackPath', ' \t\r\n'],
+      ['--sourceRoot', ''],
+      ['--sourceRoot', ' \t\r\n'],
+      ['--entryFile', ''],
+      ['--entryFile', ' \t\r\n'],
+      ['--exec', ''],
+      ['--exec', ' \t\r\n'],
+      ['--env-file', ''],
+      ['--env-file', ' \t\r\n'],
+      ['--debug', ''],
+      ['--debug', ' \t\r\n'],
+    ])('rejects an empty value for %s', async (flag, value) => {
+      await expectCommandError(
+        action,
+        [flag, value],
+        'commander.invalidArgument',
+        'cannot be empty.',
+      );
+    });
+
+    it('keeps the --debug host/port argument optional', async () => {
+      const program = buildProgram(action);
+      await program.parseAsync(['node', 'nest', 'start', '--debug']);
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ debug: true }),
       );
     });
   });

@@ -12,34 +12,15 @@ class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
 }
 
-const buildProgram = (action: FakeAction) => {
+const buildProgram = (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
-  program.configureOutput({ writeErr: () => {} });
+  program.configureOutput({ writeErr });
   new NewCommand(action).load(program);
   return program;
-};
-
-const expectCommandError = async (
-  action: FakeAction,
-  args: string[],
-  code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
-  message: string,
-): Promise<void> => {
-  const commandErrors: string[] = [];
-  const program = new Command();
-  program.exitOverride();
-  program.configureOutput({ writeErr: (output) => commandErrors.push(output) });
-  new NewCommand(action).load(program);
-  await expect(
-    program.parseAsync(['node', 'nest', 'new', ...args]),
-  ).rejects.toMatchObject({
-    code,
-    exitCode: 1,
-  });
-
-  expect(commandErrors.join('')).toContain(message);
-  expect(action.handle).not.toHaveBeenCalled();
 };
 
 describe('NewCommand', () => {
@@ -49,9 +30,33 @@ describe('NewCommand', () => {
     action = new FakeAction();
   });
 
+  const expectCommandError = async (
+    action: FakeAction,
+    args: string[],
+    code:
+      | 'commander.optionMissingArgument'
+      | 'commander.invalidArgument'
+      | 'commander.minimalCommonJsUnsupported'
+      | 'commander.minimalJavaScriptUnsupported',
+    message?: string,
+  ): Promise<void> => {
+    const commandErrors: string[] = [];
+    const program = buildProgram(action, (output) =>
+      commandErrors.push(output),
+    );
+    await expect(
+      program.parseAsync(['node', 'nest', 'new', ...args]),
+    ).rejects.toMatchObject({
+      code,
+      exitCode: 1,
+    });
+
+    expect(commandErrors.join('')).toContain(message);
+    expect(action.handle).not.toHaveBeenCalled();
+  };
+
   afterEach(() => {
     disablePrompts(false);
-    vi.restoreAllMocks();
   });
 
   describe('--language normalization', () => {
@@ -271,56 +276,24 @@ describe('NewCommand', () => {
     });
 
     it.each(['js', 'javascript', 'JS'])(
-      'refuses --language %s, saying what to do',
+      'refuses --language %s, saying TypeScript is required',
       async (language) => {
-        const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
-          throw new Error('exited');
-        }) as never);
-        const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-        const program = buildProgram(action);
-
-        await expect(
-          program.parseAsync([
-            'node',
-            'nest',
-            'new',
-            '--minimal',
-            '--language',
-            language,
-          ]),
-        ).rejects.toThrow('exited');
-
-        expect(exit).toHaveBeenCalledWith(1);
-        expect(error.mock.calls[0][0]).toContain('TypeScript only');
-        expect(action.handle).not.toHaveBeenCalled();
-        exit.mockRestore();
-        error.mockRestore();
+        await expectCommandError(
+          action,
+          ['--minimal', '--language', language],
+          'commander.minimalJavaScriptUnsupported',
+          'TypeScript only',
+        );
       },
     );
 
-    it('refuses --type cjs, saying what to do', async () => {
-      const exit = vi.spyOn(process, 'exit').mockImplementation((() => {
-        throw new Error('exited');
-      }) as never);
-      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync([
-          'node',
-          'nest',
-          'new',
-          '--minimal',
-          '--type',
-          'cjs',
-        ]),
-      ).rejects.toThrow('exited');
-
-      expect(exit).toHaveBeenCalledWith(1);
-      expect(error.mock.calls[0][0]).toContain('ESM only');
-      expect(action.handle).not.toHaveBeenCalled();
-      exit.mockRestore();
-      error.mockRestore();
+    it('refuses --type=cjs with --minimal, saying ESM is required', async () => {
+      await expectCommandError(
+        action,
+        ['--type=cjs', '--minimal'],
+        'commander.minimalCommonJsUnsupported',
+        'ESM only',
+      );
     });
   });
 

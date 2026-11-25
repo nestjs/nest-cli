@@ -7,69 +7,72 @@ class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
 }
 
-const ProcessExitError = class extends Error {
-  constructor(public code: number | undefined) {
-    super(`process.exit(${code})`);
-  }
-};
-
-const buildProgram = (action: FakeAction) => {
+const buildProgram = (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr });
   new BuildCommand(action).load(program);
   return program;
 };
 
 describe('BuildCommand', () => {
   let action: FakeAction;
-  let exitSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  const expectCommandError = async (
+    action: FakeAction,
+    args: string[],
+    code: 'commander.optionMissingArgument' | 'commander.invalidArgument',
+    message?: string,
+  ): Promise<void> => {
+    const commandErrors: string[] = [];
+    const program = buildProgram(action, (output) =>
+      commandErrors.push(output),
+    );
+    await expect(
+      program.parseAsync(['node', 'nest', 'build', ...args]),
+    ).rejects.toMatchObject({
+      code,
+      exitCode: 1,
+    });
+
+    if (message) expect(commandErrors.join('')).toContain(message);
+    expect(action.handle).not.toHaveBeenCalled();
+  };
 
   beforeEach(() => {
     action = new FakeAction();
-    exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
-      throw new ProcessExitError(code);
-    }) as never);
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    exitSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
   });
 
   describe('--builder validation', () => {
     it('exits with code 1 when --builder receives an unknown value', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'build', '--builder', 'foo']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid builder option: foo'),
+      await expectCommandError(
+        action,
+        ['--builder', 'foo'],
+        'commander.invalidArgument',
+        'Allowed choices are',
       );
-      expect(action.handle).not.toHaveBeenCalled();
     });
 
     it('exits with code 1 when --builder receives an empty string', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'build', '--builder', '']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid builder option: '),
+      await expectCommandError(
+        action,
+        ['--builder', ''],
+        'commander.invalidArgument',
+        'Builder cannot be empty.',
       );
-      expect(action.handle).not.toHaveBeenCalled();
     });
 
-    it.each([['tsc'], ['webpack'], ['swc'], ['rspack']])(
-      'accepts %s as a valid --builder value',
-      async (builder) => {
+    it.each([
+      ['tsc', 'tsc'],
+      ['Webpack', 'webpack'],
+      ['SWC', 'swc'],
+      ['rspack', 'rspack'],
+    ])(
+      'accepts %s as a valid --builder value and normalizes to %s',
+      async (builder, expected) => {
         const program = buildProgram(action);
 
         await program.parseAsync([
@@ -80,10 +83,9 @@ describe('BuildCommand', () => {
           builder,
         ]);
 
-        expect(exitSpy).not.toHaveBeenCalled();
         expect(action.handle).toHaveBeenCalledTimes(1);
         expect(action.handle).toHaveBeenCalledWith(
-          expect.objectContaining({ builder }),
+          expect.objectContaining({ builder: expected }),
         );
       },
     );
@@ -93,35 +95,37 @@ describe('BuildCommand', () => {
 
       await program.parseAsync(['node', 'nest', 'build']);
 
-      expect(exitSpy).not.toHaveBeenCalled();
       expect(action.handle).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('--parallel validation', () => {
     it('exits with code 1 when --parallel receives a non-positive integer', async () => {
-      const program = buildProgram(action);
-
-      await expect(
-        program.parseAsync(['node', 'nest', 'build', '--parallel', '0']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid --parallel value'),
+      await expectCommandError(
+        action,
+        ['--parallel', '0'],
+        'commander.invalidArgument',
+        'Expected a positive safe integer.',
       );
-      expect(action.handle).not.toHaveBeenCalled();
     });
 
     it('exits with code 1 when --parallel receives a non-numeric string', async () => {
+      await expectCommandError(
+        action,
+        ['--parallel', '4abc'],
+        'commander.invalidArgument',
+        'Expected a positive safe integer.',
+      );
+    });
+
+    it('passes true when --parallel is provided without a value', async () => {
       const program = buildProgram(action);
 
-      await expect(
-        program.parseAsync(['node', 'nest', 'build', '--parallel', 'abc']),
-      ).rejects.toBeInstanceOf(ProcessExitError);
+      await program.parseAsync(['node', 'nest', 'build', '--parallel']);
 
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(action.handle).not.toHaveBeenCalled();
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ parallel: true }),
+      );
     });
 
     it('forwards a positive integer to the action context', async () => {
@@ -129,7 +133,6 @@ describe('BuildCommand', () => {
 
       await program.parseAsync(['node', 'nest', 'build', '--parallel', '4']);
 
-      expect(exitSpy).not.toHaveBeenCalled();
       expect(action.handle).toHaveBeenCalledWith(
         expect.objectContaining({ parallel: 4 }),
       );
@@ -222,6 +225,44 @@ describe('BuildCommand', () => {
 
       expect(action.handle).toHaveBeenCalledWith(
         expect.objectContaining({ preserveWatchOutput: false }),
+      );
+    });
+  });
+
+  describe('required option arguments', () => {
+    it.each([
+      '--builder',
+      '--config',
+      '--path',
+      '--webpackPath',
+      '--rspackPath',
+    ])('rejects %s when its value is missing', async (option) => {
+      await expectCommandError(
+        action,
+        [option],
+        'commander.optionMissingArgument',
+        'argument missing',
+      );
+    });
+  });
+
+  describe('path options', () => {
+    it.each([
+      ['--config', 'nest-cli.json', { config: 'nest-cli.json' }],
+      ['--path', 'src/main.ts', { path: 'src/main.ts' }],
+      [
+        '--webpackPath',
+        'webpack.config.js',
+        { webpackPath: 'webpack.config.js' },
+      ],
+      ['--rspackPath', 'rspack.config.js', { rspackPath: 'rspack.config.js' }],
+    ])('forwards the value supplied to %s', async (option, value, expected) => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'build', option, value]);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining(expected),
       );
     });
   });

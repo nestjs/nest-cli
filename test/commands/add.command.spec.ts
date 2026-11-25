@@ -2,8 +2,8 @@ import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractAction } from '../../actions/abstract.action.js';
 import { AddCommand } from '../../commands/add.command.js';
+import type { AddCommandContext } from '../../commands/context/index.js';
 import { NewCommand } from '../../commands/new.command.js';
-import { AddCommandContext } from '../../commands/context/index.js';
 
 class FakeAction extends AbstractAction {
   public handle = vi.fn().mockResolvedValue(undefined);
@@ -15,9 +15,13 @@ const ProcessExitError = class extends Error {
   }
 };
 
-const buildProgram = (action: FakeAction) => {
+const buildProgram = (
+  action: FakeAction,
+  writeErr: (output: string) => void = () => {},
+) => {
   const program = new Command();
   program.exitOverride();
+  program.configureOutput({ writeErr });
   new AddCommand(action).load(program);
   return program;
 };
@@ -31,6 +35,28 @@ describe('AddCommand', () => {
     await program.parseAsync(['node', 'nest', ...args]);
     expect(action.handle).toHaveBeenCalledTimes(1);
     return action.handle.mock.calls[0][0];
+  };
+
+  const expectCommandError = async (
+    action: FakeAction,
+    args: string[],
+    code: 'commander.optionMissingArgument',
+    message?: string,
+  ): Promise<void> => {
+    const commandErrors: string[] = [];
+    const program = buildProgram(action, (output) =>
+      commandErrors.push(output),
+    );
+
+    await expect(
+      program.parseAsync(['node', 'nest', 'add', '@nestjs/swagger', ...args]),
+    ).rejects.toMatchObject({
+      code,
+      exitCode: 1,
+    });
+
+    if (message) expect(commandErrors.join('')).toContain(message);
+    expect(action.handle).not.toHaveBeenCalled();
   };
 
   beforeEach(() => {
@@ -68,10 +94,31 @@ describe('AddCommand', () => {
     ).toBe(true);
   });
 
-  it('forwards --project', async () => {
-    const context = await run('add', '@nestjs/swagger', '--project', 'api');
+  describe('--project', () => {
+    it('leaves project undefined when the flag is omitted', async () => {
+      const context = await run('add', '@nestjs/swagger');
 
-    expect(context.project).toBe('api');
+      expect(context.project).toBeUndefined();
+    });
+
+    it('forwards the project name as a string', async () => {
+      const context = await run('add', '@nestjs/swagger', '--project', 'api');
+
+      expect(typeof context.project).toBe('string');
+      expect(context.project).toBe('api');
+    });
+
+    it.each(['--project', '-p'])(
+      'requires an argument when %s is supplied',
+      async (flag) => {
+        await expectCommandError(
+          action,
+          [flag],
+          'commander.optionMissingArgument',
+          'argument missing',
+        );
+      },
+    );
   });
 
   it('honors the short -d / -s / -p aliases for documented flags', async () => {
