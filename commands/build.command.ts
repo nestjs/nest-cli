@@ -1,19 +1,62 @@
-import { Command } from 'commander';
-import { AVAILABLE_BUILDERS } from '../lib/configuration/index.js';
-import { ERROR_PREFIX } from '../lib/ui/index.js';
+import { type Command, InvalidArgumentError } from 'commander';
+import {
+  AVAILABLE_BUILDERS,
+  type BuilderVariant,
+} from '../lib/configuration/index.js';
 import { AbstractCommand } from './abstract.command.js';
-import { BuildCommandContext } from './context/index.js';
+import type { BuildCommandContext } from './context/index.js';
 
 export class BuildCommand extends AbstractCommand {
   public load(program: Command): void {
+    type BuildCommandOptions = {
+      config?: string;
+      path?: string;
+      watch?: boolean;
+      builder?: BuilderVariant;
+      watchAssets?: boolean;
+      webpack?: boolean;
+      typeCheck?: boolean;
+      bundleDependencies?: boolean;
+      emitDeclarations?: boolean;
+      silent?: boolean;
+      webpackPath?: string;
+      rspackPath?: string;
+      tsc?: boolean;
+      preserveWatchOutput?: boolean;
+      all?: boolean;
+      parallel?: number | true;
+    };
+
     program
       .command('build [apps...]')
-      .option('-c, --config [path]', 'Path to nest-cli configuration file.')
-      .option('-p, --path [path]', 'Path to tsconfig file.')
+      .option(
+        '-c, --config <path>',
+        'Path to nest-cli configuration file.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Config path cannot be empty.');
+          return val;
+        },
+      )
+      .option('-p, --path <path>', 'Path to tsconfig file.', (val: string) => {
+        if (!val.trim())
+          throw new InvalidArgumentError('Path cannot be empty.');
+        return val;
+      })
       .option('-w, --watch', 'Run in watch mode (live-reload).')
       .option(
-        '-b, --builder [name]',
-        'Builder to be used (tsc, webpack, swc, rspack).',
+        '-b, --builder <name>',
+        `Builder to be used (choices: ${AVAILABLE_BUILDERS.join(', ')}).`,
+        (val: string) => {
+          const builder = val.trim().toLowerCase() as BuilderVariant;
+          if (!builder)
+            throw new InvalidArgumentError('Builder cannot be empty.');
+          if (!AVAILABLE_BUILDERS.includes(builder))
+            throw new InvalidArgumentError(
+              `Allowed choices are ${AVAILABLE_BUILDERS.map((val) => `'${val}'`).join(', ')}`,
+            );
+          return builder;
+        },
       )
       .option('--watchAssets', 'Watch non-ts (e.g., .graphql) files mode.')
       .option(
@@ -45,8 +88,24 @@ export class BuildCommand extends AbstractCommand {
         'Emit declaration files (.d.ts) when using SWC builder.',
       )
       .option('--silent', 'Suppress informational compiler logs.')
-      .option('--webpackPath [path]', 'Path to webpack configuration.')
-      .option('--rspackPath [path]', 'Path to rspack configuration.')
+      .option(
+        '--webpackPath <path>',
+        'Path to webpack configuration.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Webpack path cannot be empty.');
+          return val;
+        },
+      )
+      .option(
+        '--rspackPath <path>',
+        'Path to rspack configuration.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Rspack path cannot be empty.');
+          return val;
+        },
+      )
       .option('--tsc', 'Use typescript compiler for compilation.')
       .option(
         '--preserveWatchOutput',
@@ -56,39 +115,19 @@ export class BuildCommand extends AbstractCommand {
       .option(
         '--parallel [concurrency]',
         'Build projects in parallel (with --all). Optionally limit concurrency.',
+        (val: string) => {
+          const normalized = val.trim();
+          if (!/^\d+$/.test(normalized))
+            throw new InvalidArgumentError('Expected a positive safe integer.');
+          const parsed = Number(normalized);
+          if (!Number.isSafeInteger(parsed) || parsed < 1)
+            throw new InvalidArgumentError('Expected a positive safe integer.');
+          return parsed;
+        },
       )
       .description('Build Nest application.')
-      .action(async (apps: string[], options: Record<string, any>) => {
+      .action(async (apps: string[], options: BuildCommandOptions) => {
         const isWebpackEnabled = options.tsc ? false : options.webpack;
-
-        if (
-          options.builder !== undefined &&
-          !(AVAILABLE_BUILDERS as readonly string[]).includes(options.builder)
-        ) {
-          console.error(
-            ERROR_PREFIX +
-              ` Invalid builder option: ${
-                options.builder
-              }. Available builders: ${AVAILABLE_BUILDERS.join(', ')}`,
-          );
-          process.exit(1);
-        }
-
-        let parallel: number | boolean | undefined;
-        if (options.parallel === true || options.parallel === undefined) {
-          // `--parallel` with no value means unlimited; absent means sequential.
-          parallel = options.parallel;
-        } else {
-          const parsed = parseInt(options.parallel, 10);
-          if (!Number.isFinite(parsed) || parsed < 1) {
-            console.error(
-              ERROR_PREFIX +
-                ` Invalid --parallel value: "${options.parallel}". Expected a positive integer (e.g. --parallel 4) or no value for unlimited concurrency.`,
-            );
-            process.exit(1);
-          }
-          parallel = parsed;
-        }
 
         const context: BuildCommandContext = {
           apps: apps.length > 0 ? apps : [],
@@ -109,11 +148,11 @@ export class BuildCommand extends AbstractCommand {
           // Left undefined when the flag is absent so `WatchCompiler` can
           // fall through to the tsconfig 'preserveWatchOutput' option.
           preserveWatchOutput:
-            !!options.watch && !isWebpackEnabled
+            options.watch && !isWebpackEnabled
               ? options.preserveWatchOutput
               : false,
           all: !!options.all,
-          parallel,
+          parallel: options.parallel,
         };
 
         await this.action.handle(context);

@@ -1,10 +1,16 @@
-import { Command } from 'commander';
+import { type Command, InvalidArgumentError } from 'commander';
 import { getRemainingFlags } from '../lib/utils/remaining-flags.js';
 import { AbstractCommand } from './abstract.command.js';
-import { AddCommandContext } from './context/index.js';
+import type { AddCommandContext } from './context/index.js';
 
 export class AddCommand extends AbstractCommand {
   public load(program: Command): void {
+    type AddCommandOptions = {
+      dryRun?: boolean;
+      skipInstall: boolean;
+      project?: string;
+    };
+
     program
       .command('add <library>')
       .allowUnknownOption()
@@ -18,12 +24,20 @@ export class AddCommand extends AbstractCommand {
         'Report actions that would be performed without writing out results.',
       )
       .option('-s, --skip-install', 'Skip package installation.', false)
-      .option('-p, --project [project]', 'Project in which to generate files.')
+      .option(
+        '-p, --project <project>',
+        'Project in which to generate files.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Project cannot be empty.');
+          return val;
+        },
+      )
       .usage('<library> [options] [library-specific-options]')
       .action(
         async (
           library: string,
-          options: Record<string, any>,
+          options: AddCommandOptions,
           command: Command,
         ) => {
           const context: AddCommandContext = {

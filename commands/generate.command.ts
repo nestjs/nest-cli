@@ -1,14 +1,29 @@
 import { bold, cyan, green } from 'ansis';
-import Table, { TableConstructorOptions } from 'cli-table3';
-import { Command } from 'commander';
+import Table, { type TableConstructorOptions } from 'cli-table3';
+import { type Command, InvalidArgumentError } from 'commander';
 import type { Schematic } from '../lib/schematics/nest.collection.js';
 import { disablePrompts } from '../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import { AbstractCommand } from './abstract.command.js';
-import { GenerateCommandContext } from './context/index.js';
+import type { GenerateCommandContext } from './context/index.js';
 
 export class GenerateCommand extends AbstractCommand {
   public async load(program: Command): Promise<void> {
+    type GenerateCommandOptions = {
+      dryRun?: boolean;
+      project?: string;
+      interactive?: false;
+      flat?: boolean;
+      spec: { value: boolean; passedAsInput: boolean };
+      specFileSuffix?: string;
+      skipImport: boolean;
+      format: boolean;
+      collection?: string;
+      type?: string;
+      crud?: boolean;
+      prefix?: string;
+    };
+
     program
       .command('generate <schematic> [name] [path]')
       .alias('g')
@@ -21,7 +36,16 @@ export class GenerateCommand extends AbstractCommand {
         '-d, --dry-run',
         'Report actions that would be taken without writing out results.',
       )
-      .option('-p, --project [project]', 'Project in which to generate files.')
+      .option(
+        '-p, --project <project>',
+        'Project in which to generate files.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Project cannot be empty.');
+
+          return val;
+        },
+      )
       .option(
         '--flat',
         'Enforce flat structure of generated element.',
@@ -41,8 +65,14 @@ export class GenerateCommand extends AbstractCommand {
         { value: true, passedAsInput: false },
       )
       .option(
-        '--spec-file-suffix [suffix]',
+        '--spec-file-suffix <suffix>',
         'Use a custom suffix for spec files.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Spec file suffix cannot be empty.');
+
+          return val;
+        },
       )
       .option('--skip-import', 'Skip importing', () => true, false)
       .option('--format', 'Format generated files using Prettier.', false)
@@ -50,18 +80,48 @@ export class GenerateCommand extends AbstractCommand {
         return { value: false, passedAsInput: true };
       })
       .option(
-        '-c, --collection [collectionName]',
+        '-c, --collection <collectionName>',
         'Schematics collection to use.',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Collection cannot be empty.');
+
+          return val;
+        },
       )
       .option(
         '--type <type>',
         'Transport layer of a resource (rest, graphql-code-first, graphql-schema-first, microservice, ws).',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Type cannot be empty.');
+
+          return val;
+        },
       )
-      .option('--crud [value]', 'Generate CRUD entry points for a resource.')
+      .option(
+        '--crud [value]',
+        'Generate CRUD entry points for a resource.',
+        (val: string) => {
+          if (!val.trim() || (val !== 'true' && val !== 'false')) {
+            throw new InvalidArgumentError(
+              'CRUD value must be either "true" or "false".',
+            );
+          }
+
+          return val === 'true';
+        },
+      )
       .option('--no-crud', 'Generate a resource without CRUD entry points.')
       .option(
         '--prefix <prefix>',
         'Import path prefix of a library (default: @app, or defaultLibraryPrefix in nest-cli.json).',
+        (val: string) => {
+          if (!val.trim())
+            throw new InvalidArgumentError('Prefix cannot be empty.');
+
+          return val;
+        },
       )
       .option(
         '--no-interactive',
@@ -72,7 +132,7 @@ export class GenerateCommand extends AbstractCommand {
           schematic: string,
           name: string,
           path: string,
-          options: Record<string, any>,
+          options: GenerateCommandOptions,
         ) => {
           if (options.interactive === false) {
             disablePrompts();
@@ -90,13 +150,7 @@ export class GenerateCommand extends AbstractCommand {
             skipImport: options.skipImport,
             format: options.format === true,
             type: options.type,
-            // `--crud [value]` yields a string whenever a value is supplied,
-            // so `--crud false` must still be forwarded (as false) rather than
-            // dropped, which would let the schematic apply its own default.
-            crud:
-              options.crud === undefined
-                ? undefined
-                : options.crud === true || options.crud === 'true',
+            crud: options.crud,
             prefix: options.prefix,
           };
 
