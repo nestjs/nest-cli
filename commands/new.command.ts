@@ -129,7 +129,6 @@ export class NewCommand extends AbstractCommand {
             );
           return moduleType;
         },
-        'esm',
       )
       .option('--format', 'Format generated files using Prettier.', false)
       .option('--observe', 'Auto-configure observability with @nestjs/observe.')
