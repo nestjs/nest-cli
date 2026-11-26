@@ -304,7 +304,7 @@ describe('NewCommand', () => {
       await program.parseAsync(['node', 'nest', 'new']);
 
       expect(action.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'esm' }),
+        expect.objectContaining({ type: undefined }),
       );
     });
 
