@@ -305,6 +305,16 @@ describe('StartCommand', () => {
         expect.objectContaining({ webpack: false }),
       );
     });
+
+    it('selects the tsc builder when --tsc is passed', async () => {
+      const program = buildProgram(action);
+
+      await program.parseAsync(['node', 'nest', 'start', '--tsc']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ builder: 'tsc' }),
+      );
+    });
   });
 
   describe('--preserveWatchOutput', () => {
