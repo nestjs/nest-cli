@@ -32,6 +32,10 @@ $ npm install -g @nestjs/cli
 
 Learn more in the [official documentation](https://docs.nestjs.com/cli/overview).
 
+## Observability
+
+`nest new` offers to set up [NestJS Observe](https://observe.nestjs.com/?ref=readme-cli), the official observability platform for Nest, and once the dependencies are installed, to link the project to it: `npx @nestjs/observe link` writes the app key and secret into `.env`. Pass `--observe` or `--no-observe` to decide without being prompted. From then on the application's requests, jobs, errors, queries and traces are reported with no further setup. See [`nest new`](https://docs.nestjs.com/cli/usages#nest-new) and the [Observability](https://docs.nestjs.com/observability/overview) chapter.
+
 ## Stay in touch
 
 - Website - [https://nestjs.com](https://nestjs.com/)
