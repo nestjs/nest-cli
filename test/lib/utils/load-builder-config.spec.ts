@@ -183,6 +183,22 @@ describe('loadBuilderConfig', () => {
     expect(config).toEqual({ resolvedFromExtensionless: true });
   });
 
+  it('should load an absolute config path', async () => {
+    const filePath = join(projectRoot, 'absolute.config.cjs');
+    writeFileSync(
+      filePath,
+      'module.exports = { loadedFromAbsolutePath: true };',
+    );
+
+    const config = await loadBuilderConfig(
+      filePath,
+      'rspack.config.js',
+      join(projectRoot, 'elsewhere'),
+    );
+
+    expect(config).toEqual({ loadedFromAbsolutePath: true });
+  });
+
   it('should resolve directory index config file path', async () => {
     mkdirSync(join(projectRoot, 'config', 'rspack'), { recursive: true });
     writeFileSync(

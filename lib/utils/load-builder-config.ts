@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { createRequire } from 'module';
-import { extname, join } from 'path';
+import { extname, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import { resolveModulePath } from './resolve-module-path.js';
 
@@ -18,7 +18,7 @@ export async function loadBuilderConfig<T = any>(
   defaultPath: string,
   cwd = process.cwd(),
 ): Promise<T> {
-  const pathToConfigFile = join(cwd, configPath);
+  const pathToConfigFile = resolve(cwd, configPath);
   // `require.resolve` handles extensionless and directory-index paths, but
   // does not know about ESM-only extensions, hence the `existsSync` fallback.
   const resolvedPath =

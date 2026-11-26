@@ -138,7 +138,7 @@ export class BuildCommand extends AbstractCommand {
           path: options.path,
           webpackPath: options.webpackPath,
           rspackPath: options.rspackPath,
-          builder: options.builder,
+          builder: options.tsc ? 'tsc' : options.builder,
           typeCheck: options.typeCheck,
           bundleDependencies: options.bundleDependencies,
           // Left undefined when the flag is absent so `getValueOrDefault` can

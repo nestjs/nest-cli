@@ -97,6 +97,18 @@ describe('BuildCommand', () => {
 
       expect(action.handle).toHaveBeenCalledTimes(1);
     });
+
+    it('selects the tsc builder when --tsc is passed', async () => {
+      const program = buildProgram(action);
+
+      // Without this, a "builder" set in nest-cli.json (e.g. "rspack", the
+      // monorepo default) would still be used.
+      await program.parseAsync(['node', 'nest', 'build', '--tsc']);
+
+      expect(action.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ builder: 'tsc', webpack: false }),
+      );
+    });
   });
 
   describe('--parallel validation', () => {

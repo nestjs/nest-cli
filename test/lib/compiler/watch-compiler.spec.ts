@@ -231,9 +231,24 @@ describe('WatchCompiler', () => {
         {},
         {},
         undefined,
-        undefined,
+        [],
         [{ path: '../lib' }],
       );
+    });
+
+    it('passes a new diagnostics array on each call, so TypeScript builds a new builder after a tsconfig change', () => {
+      const { host, origCreateProgram } = overriddenCreateProgram();
+      const oldProgram = host.createProgram(['main.ts'], {}, {}, undefined);
+
+      // What TypeScript's watch calls when a tsconfig change leaves the program as it was
+      host.createProgram(undefined, undefined, {}, oldProgram, [], undefined);
+
+      const [first, second] = origCreateProgram.mock.calls.map(
+        (args: unknown[]) => args[4],
+      );
+      expect(first).toEqual([]);
+      expect(second).toEqual([]);
+      expect(second).not.toBe(first);
     });
 
     it('applies plugin transformers when the program emits', () => {
