@@ -243,4 +243,77 @@ describe('CommandLoader', () => {
       );
     });
   });
+
+  describe('options given without their value', () => {
+    let errors: string[];
+
+    const run = async (...args: string[]) => {
+      program = buildProgram(true);
+      program.configureOutput({ writeErr: (str) => errors.push(str) });
+      await CommandLoader.load(program);
+      return program.parseAsync(['node', 'nest', ...args]);
+    };
+    const handled = () =>
+      Object.values(actions.handles).flatMap((handle) => handle.mock.calls);
+
+    beforeEach(() => {
+      errors = [];
+      Object.values(actions.handles).forEach((handle) => handle.mockClear());
+    });
+
+    it.each([
+      [['new', 'my-app', '--language'], '-l, --language [language]'],
+      [['new', 'my-app', '--package-manager'], '--package-manager'],
+      [['build', '--builder'], '-b, --builder [name]'],
+      [['start', '--env-file'], '--env-file [path]'],
+      [['start', '--exec'], '-e, --exec [binary]'],
+      [['generate', 'controller', 'cats', '--project'], '--project'],
+      [['add', 'some-lib', '--project'], '--project'],
+      [['upgrade', '--tag'], '-t, --tag [tag]'],
+    ])('rejects %j before any action runs', async (args, flags) => {
+      await expect(run(...args)).rejects.toMatchObject({
+        code: 'commander.optionMissingArgument',
+        exitCode: 1,
+      });
+
+      expect(errors.join('')).toMatch(/^error: option '.+' argument missing/);
+      expect(errors.join('')).toContain(flags);
+      expect(handled()).toEqual([]);
+    });
+
+    // Commander leaves an option-like argument alone after a `[value]`
+    // option, so a forgotten value must not turn into a real run.
+    it('rejects --project followed by --dry-run instead of running for real', async () => {
+      await expect(
+        run('generate', 'controller', 'cats', '--project', '--dry-run'),
+      ).rejects.toMatchObject({ code: 'commander.optionMissingArgument' });
+
+      expect(handled()).toEqual([]);
+    });
+
+    it('passes values given on the command line', async () => {
+      await run('start', '--env-file', '.env', '--exec', 'bun');
+
+      expect(actions.handles.StartAction).toHaveBeenCalledWith(
+        expect.objectContaining({ envFile: ['.env'], exec: 'bun' }),
+      );
+    });
+
+    it.each([
+      [['start', '--debug'], 'StartAction', { debug: true }],
+      [['build', '--all', '--parallel'], 'BuildAction', { parallel: true }],
+      [
+        ['generate', 'resource', 'cats', '--crud'],
+        'GenerateAction',
+        { crud: true },
+      ],
+    ])('still accepts %j without a value', async (args, name, expected) => {
+      await run(...args);
+
+      expect(errors).toEqual([]);
+      expect(actions.handles[name]).toHaveBeenCalledWith(
+        expect.objectContaining(expected),
+      );
+    });
+  });
 });
