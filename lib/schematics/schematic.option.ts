@@ -15,7 +15,10 @@ export class SchematicOption {
       if (this.name === 'name') {
         return `--${this.normalizedName}=${this.format()}`;
       } else if (this.name === 'version' || this.name === 'path') {
-        return `--${this.normalizedName}=${this.value}`;
+        // The runner hands the command line to a shell, which cuts the value
+        // off at its first space
+        const value = /\s/.test(this.value) ? `"${this.value}"` : this.value;
+        return `--${this.normalizedName}=${value}`;
       } else {
         return `--${this.normalizedName}="${this.value}"`;
       }
