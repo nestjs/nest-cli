@@ -193,6 +193,42 @@ describe('StartAction', () => {
       );
     });
 
+    it('should quote an --env-file path with a space when shell is enabled', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: true, envFile: ['config files/.env'] },
+      );
+      onSuccess();
+
+      const command = vi.mocked(spawn).mock.calls[0][0] as string;
+      expect(command).toContain('--env-file="config files/.env"');
+    });
+
+    it('should not quote an --env-file path with a space when shell is disabled', () => {
+      const mockChild = createMockChild();
+      vi.mocked(spawn).mockReturnValue(mockChild);
+
+      const onSuccess = (startAction as any).createOnSuccessHook(
+        'main',
+        'src',
+        false,
+        'dist',
+        'node',
+        { shell: false, envFile: ['config files/.env'] },
+      );
+      onSuccess();
+
+      const processArgs = vi.mocked(spawn).mock.calls[0][1] as string[];
+      expect(processArgs).toContain('--env-file=config files/.env');
+    });
+
     it('should skip an env file that does not exist, and say so once', async () => {
       const { existsSync } = await import('fs');
       vi.mocked(existsSync).mockImplementation(

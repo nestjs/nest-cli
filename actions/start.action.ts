@@ -262,7 +262,12 @@ export class StartAction extends BuildAction {
     if (options.envFile && options.envFile.length > 0) {
       const envFileNodeArgs = options.envFile
         .filter(envFileExists)
-        .map((envFilePath) => `--env-file=${envFilePath}`);
+        // Same as the output path: a shell splits a path with a space in two
+        .map((envFilePath) =>
+          options.shell && /\s/.test(envFilePath)
+            ? `--env-file="${envFilePath}"`
+            : `--env-file=${envFilePath}`,
+        );
       processArgs.unshift(...envFileNodeArgs);
     }
 
