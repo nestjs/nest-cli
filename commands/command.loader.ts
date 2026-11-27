@@ -73,6 +73,32 @@ export class CommandLoader {
     ).load(program);
 
     this.handleInvalidCommand(program);
+    this.rejectMissingOptionValues(program);
+  }
+
+  /**
+   * Commander sets an option declared with `[value]` to `true` when it is
+   * given without a value. Only the options listed here mean something then;
+   * every other one fails, as an option declared with `<value>` would, before
+   * `true` reaches an action that expects a string.
+   */
+  private static rejectMissingOptionValues(program: Command) {
+    const valueOptional = ['--debug', '--parallel', '--crud'];
+    program.hook('preAction', (_, command) => {
+      for (const option of command.options) {
+        const name = option.attributeName();
+        if (
+          option.optional &&
+          !valueOptional.includes(option.long ?? '') &&
+          command.getOptionValueSource(name) === 'cli' &&
+          command.getOptionValue(name) === true
+        ) {
+          command.error(`error: option '${option.flags}' argument missing`, {
+            code: 'commander.optionMissingArgument',
+          });
+        }
+      }
+    });
   }
 
   private static handleInvalidCommand(program: Command) {
