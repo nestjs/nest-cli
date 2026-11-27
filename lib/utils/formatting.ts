@@ -1,7 +1,7 @@
 /**
  *
  * @param str
- * @returns formated string
+ * @returns formatted string
  * @description normalizes input to supported path and file name format.
  * Changes camelCase strings to kebab-case, replaces spaces with dash and keeps underscores.
  */
