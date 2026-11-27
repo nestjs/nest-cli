@@ -12,6 +12,7 @@ import {
 } from '../lib/schematics/index.js';
 import { MESSAGES } from '../lib/ui/index.js';
 import { isCollectionInstalled } from '../lib/utils/is-collection-installed.js';
+import { isInteractive } from '../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../lib/utils/load-configuration.js';
 import {
   askForProjectName,
@@ -101,10 +102,22 @@ export class AddAction extends AbstractAction {
         defaultLabel,
       );
 
-      const selectedProject = (await askForProjectName(
-        MESSAGES.LIBRARY_PROJECT_SELECTION_QUESTION,
-        projects,
-      )) as string;
+      // Without a TTY (CI, a pipe) the picker would never be answered, so
+      // take the default project instead, the way `nest generate` does.
+      let selectedProject: string;
+      if (isInteractive()) {
+        selectedProject = (await askForProjectName(
+          MESSAGES.LIBRARY_PROJECT_SELECTION_QUESTION,
+          projects,
+        )) as string;
+      } else {
+        selectedProject = projects[0];
+        console.info(
+          MESSAGES.LIBRARY_PROJECT_SELECTION_DEFAULTED(
+            selectedProject.replace(defaultLabel, ''),
+          ),
+        );
+      }
       const projectName = selectedProject.replace(defaultLabel, '');
       if (projectName !== configuration.sourceRoot) {
         sourceRoot = configurationProjects[projectName].sourceRoot;

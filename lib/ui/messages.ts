@@ -8,6 +8,8 @@ export const MESSAGES = {
   PROJECT_SELECTION_QUESTION: 'Which project would you like to generate to?',
   LIBRARY_PROJECT_SELECTION_QUESTION:
     'Which project would you like to add the library to?',
+  LIBRARY_PROJECT_SELECTION_DEFAULTED: (project: string) =>
+    `Not prompting, so adding the library to the default project, ${project}. Pass --project to choose another.`,
   DRY_RUN_MODE: 'Command has been executed in dry run mode, nothing changed!',
   PROJECT_INFORMATION_START: `${EMOJIS.SPARKLES}  We will scaffold your app in a few seconds..`,
   RUNNER_EXECUTION_ERROR: (command: string) =>

@@ -28,6 +28,10 @@ vi.mock('../../lib/utils/is-collection-installed.js', () => ({
   isCollectionInstalled: vi.fn(() => true),
 }));
 
+vi.mock('../../lib/utils/is-interactive.js', () => ({
+  isInteractive: vi.fn(() => true),
+}));
+
 vi.mock('../../lib/utils/project-utils.js', () => ({
   shouldAskForProject: vi.fn(() => false),
   askForProjectName: vi.fn(),
@@ -42,9 +46,11 @@ import {
 } from '../../lib/schematics/index.js';
 import { PackageManagerFactory } from '../../lib/package-managers/index.js';
 import { isCollectionInstalled } from '../../lib/utils/is-collection-installed.js';
+import { isInteractive } from '../../lib/utils/is-interactive.js';
 import { loadConfiguration } from '../../lib/utils/load-configuration.js';
 import {
   askForProjectName,
+  moveDefaultProjectToStart,
   shouldAskForProject,
 } from '../../lib/utils/project-utils.js';
 
@@ -67,6 +73,7 @@ describe('AddAction flow', () => {
     addProduction.mockResolvedValue(true);
     execute.mockResolvedValue(undefined);
     vi.mocked(shouldAskForProject).mockReturnValue(false);
+    vi.mocked(isInteractive).mockReturnValue(true);
     vi.mocked(isCollectionInstalled).mockReturnValue(true);
     vi.mocked(loadConfiguration).mockResolvedValue({
       sourceRoot: 'src',
@@ -257,6 +264,36 @@ describe('AddAction flow', () => {
       const options = execute.mock.calls[0][1] as SchematicOption[];
       expect(options.map((opt) => opt.toCommandString())).toContain(
         '--source-root="apps/web/src"',
+      );
+    });
+
+    it('adds to the default project in a monorepo without a TTY instead of prompting', async () => {
+      vi.mocked(loadConfiguration).mockResolvedValue({
+        sourceRoot: 'apps/api/src',
+        projects: {
+          api: { sourceRoot: 'apps/api/src' },
+          worker: { sourceRoot: 'apps/worker/src' },
+        },
+      } as any);
+      vi.mocked(shouldAskForProject).mockReturnValue(true);
+      vi.mocked(isInteractive).mockReturnValue(false);
+      vi.mocked(moveDefaultProjectToStart).mockReturnValue([
+        'api [ Default ]',
+        'worker',
+      ]);
+      vi.mocked(askForProjectName).mockResolvedValue('worker' as any);
+
+      await action.handle(context());
+
+      expect(askForProjectName).not.toHaveBeenCalled();
+      const options = execute.mock.calls[0][1] as SchematicOption[];
+      expect(options.map((opt) => opt.toCommandString())).toContain(
+        '--source-root="apps/api/src"',
+      );
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'adding the library to the default project, api. Pass --project',
+        ),
       );
     });
   });
