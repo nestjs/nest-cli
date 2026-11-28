@@ -97,6 +97,12 @@ describe('Schematic Option', () => {
       input: 'path/to/generate',
       expected: 'path/to/generate',
     },
+    {
+      description: 'should quote a path that contains a space',
+      option: 'path',
+      input: 'path with space',
+      expected: '"path with space"',
+    },
   ];
 
   tests.forEach((test) => {
