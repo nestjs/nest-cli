@@ -66,8 +66,8 @@
     "typescript": "~6.0.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "21.2.4",
-    "@commitlint/config-angular": "21.2.4",
+    "@commitlint/cli": "21.3.0",
+    "@commitlint/config-angular": "21.3.0",
     "@rspack/core": "^2.0.0",
     "@swc/cli": "0.8.2",
     "@swc/core": "1.16.22",
